@@ -2,14 +2,24 @@
 #define _VERTEX_
 #include <GL/glew.h>
 
+// TODO
+// REMOVE THIS DEFINITION.
 typedef unsigned int Index;
 
-struct Block_vertex
+
+///////////
+//Structs//
+///////////
+
+/*
+Represents a 3D vertex with texture coordinates.
+*/
+struct vertex
 {
 
-	GLbyte positions[3]; // X, Y, Z. Z = 0 for 2D. Z is for depth
-	GLbyte face_direction;
-	GLfloat texture_coordinates[2];
+	GLbyte positions[3];
+	GLbyte dummy;
+	GLfloat textureCoords[2];
 
 };
 

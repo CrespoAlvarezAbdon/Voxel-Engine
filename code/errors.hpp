@@ -1,46 +1,53 @@
 #ifndef _APP_ERRORS_
 #define _APP_ERRORS_
+
 #include <string>
 using namespace std;
 
-class Error
+///////////
+//Classes//
+///////////
+
+/*
+Abstraction for a error report system that allows the programmer
+to debug code easier.
+*/
+class error
 {
 
 public:
 
-	enum class Error_types {GLEW_INIT_FAILED, NO_UNIFORM_FOUND};
+	// Error type enumeration.
+	enum class errorTypes {GLEW_INIT_FAILED, NO_UNIFORM_FOUND};
 
-	// Constructors
-	Error(Error_types error_type, const string& error_log = string()) noexcept : error_type_(error_type), error_log_(error_log) {}
-	Error(const Error& e) = default;
-	Error(Error && e) = default;
+	// Constructors.
 
-	// Operators
-	Error& operator =(const Error& e) = delete;
-	Error& operator =(Error&& e) = delete;
+	error(errorTypes error_type, const string& error_log = string());
 
-	// Non-modifying methods
-	const Error_types type() const noexcept;
-	const string& error_log() const noexcept;
+
+	// Observers.
+
+	const errorTypes type() const;
+	const string& message() const;
 
 private:
 
-	Error_types error_type_;
-	string error_log_;
+	errorTypes errorType_;
+	string errorLog_;
 
 };
 
-inline const Error::Error_types Error::type() const noexcept
+inline const error::errorTypes error::type() const
 {
 
-	return error_type_;
+	return errorType_;
 
 }
 
-inline const string& Error::error_log() const noexcept
+inline const string& error::message() const
 {
 
-	return error_log_;
+	return errorLog_;
 
 }
 

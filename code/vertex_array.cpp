@@ -6,14 +6,15 @@ using namespace std;
 vertexArray::vertexArray()
 {
 
-    glGenVertexArrays(1, &renderer_ID_); // First parameter, number of arrays to generate
+    // The first parameter is the number of arrays to generate.
+    glGenVertexArrays(1, &rendererID_); 
 
 }
 
 void vertexArray::bind() const
 {
 
-    glBindVertexArray(renderer_ID_);
+    glBindVertexArray(rendererID_);
 
 }
 
@@ -24,65 +25,46 @@ void vertexArray::unbind() const
 
 }
 
-void vertexArray::add_layout(const vertexBufferLayout& layout)
+void vertexArray::addLayout(const vertexBufferLayout& layout)
 {
 
-    const vector<Vertex_buffer_element>& elements = layout.elements();
+    const vector<vertexBufferElement>& elements = layout.elements();
     unsigned int offset = 0;
 
     for (unsigned int i = 0; i < elements.size(); i++)
     {
 
-        Vertex_buffer_element element = elements[i];
+        vertexBufferElement element = elements[i];
 
-        // We define the vertices' layout
         glEnableVertexAttribArray(i);
-        glVertexAttribPointer(i, element.count, element.type, element.is_normalized ? GL_TRUE : GL_FALSE, layout.stride(), (const void*)offset); 
-        // first parameter = attribute index
-        // second parameter = number of values that represent the attribute
-        // third parameter = the type of what is representing the vertices (in this case float)
-        // fourth parameter = size of a vertex
-        // fifth parameter = attributes offset (size to go to the second attribute if there is one. If not, simply put 0 in this parameter) (if you have to put a number, use const void * cast)
 
-        offset += element.count * OpenGL_size_of(element.type);
+        // First parameter = attribute index.
+        // Second parameter = number of values that represent the attribute.
+        // Third parameter = the type of what is representing the vertices (in this case float).
+        // Fourth parameter = size of a vertex.
+        // Fifth parameter = attributes offset (size to go to the second attribute if there is one. If not, simply put 0 in this parameter) (if you have to put a number, use const void * cast).
+        glVertexAttribPointer(i, element.count, element.type, element.is_normalized ? GL_TRUE : GL_FALSE, layout.stride(), (const void*) offset); 
+        
+        offset += element.count * openGLSizeOf(element.type);
 
     }
 
 }
 
-void vertexArray::add_dynamic_buffer(const vertexBuffer& vb, const vertexBufferLayout& layout, size_t size, const void* data) // Change this to use Vertex_array::add_layout()
+void vertexArray::addDynamicBuffer(const vertexBuffer& vb, const vertexBufferLayout& layout, size_t size, const void* data) 
 {
 
     bind();
     vb.bind();
-    glBufferSubData(GL_ARRAY_BUFFER, 0, size, data); // Set the vertices' data
+    glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 
-    const vector<Vertex_buffer_element>& elements = layout.elements();
-    unsigned int offset = 0;
-
-    for (unsigned int i = 0; i < elements.size(); i++)
-    {
-
-        Vertex_buffer_element element = elements[i];
-
-        // We define the vertices' layout
-        glEnableVertexAttribArray(i);
-        glVertexAttribPointer(i, element.count, element.type, element.is_normalized ? GL_TRUE : GL_FALSE, layout.stride(), (const void*)offset);
-        // first parameter = attribute index
-        // second parameter = number of values that represent the attribute
-        // third parameter = the type of what is representing the vertices
-        // fourth parameter = size of a vertex
-        // fifth parameter = attributes offset (size to go to the second attribute if there is one. If not, simply put 0 in this parameter) (if you have to put a number, use const void * cast)
-
-        offset += element.count * OpenGL_size_of(element.type);
-
-    }
+    addLayout(layout);
 
 }
 
 vertexArray::~vertexArray()
 {
 
-    glDeleteVertexArrays(1, &renderer_ID_);
+    glDeleteVertexArrays(1, &rendererID_);
 
 }

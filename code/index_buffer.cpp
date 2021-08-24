@@ -1,41 +1,47 @@
 #include <GL/glew.h>
 #include "index_buffer.h"
 
-Index_buffer::Index_buffer() : indices_count_(0)
+
+// indexBuffer class.
+
+indexBuffer::indexBuffer() : nIndices_(0)
 {
 
-    glGenBuffers(1, &renderer_ID_);
+    glGenBuffers(1, &rendererID_);
 
 }
 
-void Index_buffer::prepare_static(const unsigned int* data, unsigned int indices_count)
+void indexBuffer::prepareStatic(const unsigned int* data, unsigned int indicesCount)
 {
 
-    indices_count_ = indices_count;
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer_ID_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_count * sizeof(GLuint), data, GL_STATIC_DRAW);    // GLuint instead of unsigned int cause there may be some platforms
-                                                                                                    // where unsigned int doesn't have the same size as GLuint and OpenGL uses GLuint not unsigned int
+    nIndices_ = indicesCount;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID_);
+
+    // We use GLuint instead of unsigned int because there may be some platforms
+    // where unsigned int doesn't have the same size as GLuint and OpenGL uses GLuint not unsigned int.
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesCount * sizeof(GLuint), data, GL_STATIC_DRAW);   
+                                                                                                    
 
 }
 
-void Index_buffer::bind() const
+void indexBuffer::bind() const
 {
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer_ID_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID_);
 
 }
 
-void Index_buffer::unbind() const
+void indexBuffer::unbind() const
 {
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 }
 
-Index_buffer::~Index_buffer()
+indexBuffer::~indexBuffer()
 {
 
-    glDeleteBuffers(1, &renderer_ID_);
+    glDeleteBuffers(1, &rendererID_);
 
 }
 

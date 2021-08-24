@@ -1,5 +1,6 @@
 #ifndef _CHUNK_
 #define _CHUNK_
+
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
@@ -17,11 +18,7 @@
 #include "shader.h"
 #include "vertex.h"
 #include "camera.h"
-#include "threadPool.h"
-
-
-#include <iostream>
-#include <ostream>
+#include "texture.h"
 using namespace std;
 
 
@@ -37,7 +34,7 @@ using namespace std;
 #define SCY 16
 // Chunk size in Z axis.
 #define SCZ 16
-// Block's id.
+// Block's ID.
 typedef unsigned short Cube;
 
 //////////////////////////////
@@ -57,41 +54,96 @@ struct chunkRenderingData
 {
 
 	glm::vec3 chunkPos;
-	vector<Block_vertex> vertices;
+	vector<vertex> vertices;
 
 };
 
 /*
 Represents a section of the voxel world, with its blocks, mesh, position and other infomation.
+Chunks that are marked as 'dirty' or 'changed' will have their mesh regenerated if they are withing
+a player's view range and they are visibile (still W.I.P on that second part of the condition).
 */
-class Chunk
+class chunk
 {
 
 public:
 
-	Chunk(chunkManager& chunkManager);
+	// Constructors.
 
-	void set(GLbyte x, GLbyte y, GLbyte z, Cube block_id);
-	void renewMesh();
+	/*
+	Construct an empty dirty chunk.
+	*/
+	chunk(chunkManager& chunkManager);
 
-	Cube get(GLbyte x, GLbyte y, GLbyte z);
 
+	// Observers.
+
+	/*
+	Get the ID of the cube at chunk coordinates x y z.
+	*/
+	Cube get(GLbyte x, GLbyte y, GLbyte z) const;
+
+	/*
+	Get chunk's x axis coordinate (chunk relative).
+	*/
 	GLbyte x() const;
+
+	/*
+	Get chunk's y axis coordinate (chunk relative).
+	*/
 	GLbyte y() const;
+
+	/*
+	Get chunk's z axis coordinate (chunk relative).
+	*/
 	GLbyte z() const;
+
+	/*
+	Get this chunk's chunk relative position.
+	*/
 	const glm::vec3& chunkPos() const;
-	glm::vec3& chunkPos();
+
+	/*
+	Get this chunk's position.
+	*/
 	const glm::vec3& pos() const;
-	const vector<Block_vertex>& vertices() const;
+
+	const vector<vertex>& vertices() const;
+
 	const chunkRenderingData& renderingData() const;
 
 	unsigned int nBlocks() const;
-	unsigned int& nBlocks();
+	
+	/*
+	True if the chunk is dirty and false otherwise.
+	*/
 	bool changed() const;
-	bool& changed();
+	
 	bool hasBlocks() const;
 
-	~Chunk();
+
+	// Modifiers.
+
+	/*
+	Sets the value of a block within the chunk.
+	The chunk is marked as dirty.
+	*/
+	void set(GLbyte x, GLbyte y, GLbyte z, Cube block_id);
+
+	glm::vec3& chunkPos();
+
+	unsigned int& nBlocks();
+
+	/*
+	Mark chunk as dirty (changed() = true) or as not dirty (change() = false)
+	*/
+	bool& changed();
+
+
+	/*
+	Regenerate the chunk's mesh.
+	*/
+	void renewMesh();
 	
 private:
 
@@ -103,98 +155,98 @@ private:
 
 };
 
-inline Cube Chunk::get(GLbyte x, GLbyte y, GLbyte z)
+inline Cube chunk::get(GLbyte x, GLbyte y, GLbyte z) const
 {
 
 	return blocks_[x][y][z];
 
 }
 
-inline GLbyte Chunk::x() const
+inline GLbyte chunk::x() const
 {
 
 	return renderingData_.chunkPos.x;
 
 }
 
-inline GLbyte Chunk::y() const
+inline GLbyte chunk::y() const
 {
 
 	return renderingData_.chunkPos.y;
 
 }
 
-inline GLbyte Chunk::z() const
+inline GLbyte chunk::z() const
 {
 
 	return renderingData_.chunkPos.z;
 
 }
 
-inline const glm::vec3& Chunk::chunkPos() const 
+inline const glm::vec3& chunk::chunkPos() const 
 {
 
 	return renderingData_.chunkPos;
 
 }
 
-inline glm::vec3& Chunk::chunkPos()
+inline glm::vec3& chunk::chunkPos()
 {
 
 	return renderingData_.chunkPos;
 	
 }
 
-inline const glm::vec3& Chunk::pos() const
+inline const glm::vec3& chunk::pos() const
 {
 
 	return glm::vec3(renderingData_.chunkPos.x * SCX, renderingData_.chunkPos.y * SCY, renderingData_.chunkPos.z * SCZ);
 
 }
 
-inline const vector<Block_vertex>& Chunk::vertices() const
+inline const vector<vertex>& chunk::vertices() const
 {
 
 	return renderingData_.vertices;
 
 }
 
-inline const chunkRenderingData& Chunk::renderingData() const
+inline const chunkRenderingData& chunk::renderingData() const
 {
 
 	return renderingData_;
 
 }
 
-inline unsigned int Chunk::nBlocks() const
+inline unsigned int chunk::nBlocks() const
 {
 
 	return nBlocks_;
 
 }
 
-inline unsigned int& Chunk::nBlocks()
+inline unsigned int& chunk::nBlocks()
 {
 
 	return nBlocks_;
 
 }
 
-inline bool Chunk::changed() const
+inline bool chunk::changed() const
 {
 
 	return changed_;
 
 }
 
-inline bool& Chunk::changed()
+inline bool& chunk::changed()
 {
 
 	return changed_;
 
 }
 
-inline bool Chunk::hasBlocks() const 
+inline bool chunk::hasBlocks() const 
 {
 
 	return nBlocks_;
@@ -203,29 +255,44 @@ inline bool Chunk::hasBlocks() const
 
 
 /*
-Used for managing the chunks' life cycle.
+Used for managing the chunk life cycle.
+A chunk manager object has two deques of drawable chunks,
+one for the rendering thread which is read only and another write only
+which the rendering thread should NEVER access.
 */
 class chunkManager
 {
 
 public:
 
-	chunkManager(int nChunksToDraw, const Camera& playerCamera);
+	// Constructors.
+
+	chunkManager(int nChunksToDraw, const camera& playerCamera);
 
 
 	// Observers.
 
-	const unordered_map<glm::vec3, Chunk*>& chunks();
+	const unordered_map<glm::vec3, chunk*>& chunks();
+
 	deque<chunkRenderingData> const* drawableChunksRead() const;
-	const deque<glm::vec3>& meshRenewQueue() const;
+
 	int nChunksToDraw() const;
+
 
 	// Modifiers.
 
-	Chunk* chunk(GLbyte x, GLbyte y, GLbyte z);
-	Chunk* chunk(const glm::vec3& chunkPos);
+	chunk* selectChunk(GLbyte x, GLbyte y, GLbyte z);
+
+	chunk* selectChunk(const glm::vec3& chunkPos);
+
+	/*
+	WARNING. This operation is not thread-safe.
+	To push back a chunk's rendering data into this deque,
+	use chunkManager::pushDrawableChunks(...) method to prevent
+	race conditions when using multiple threads in the
+	chunk management system.
+	*/
 	deque<chunkRenderingData>* drawableChunksWrite();
-	deque<glm::vec3>& meshRenewQueue();
 
 
 	/*
@@ -279,7 +346,10 @@ public:
 	such as synchronization and data transfering with the rendering thread.
 	*/
 	void manageChunks(const atomic<bool>& app_finished, unsigned int nMeshingThreads,
-		mutex& managerThreadMutex, condition_variable& managerThreadCV);
+					  mutex& managerThreadMutex, condition_variable& managerThreadCV);
+
+
+	// Destructors.
 
 	/*
 	Frees any memory allocated in the process of generating the world, like
@@ -290,19 +360,18 @@ public:
 private:
 
 	int nChunksToDraw_;
-	unordered_map<glm::vec3, Chunk*> chunks_;
+	unordered_map<glm::vec3, chunk*> chunks_;
 	deque<chunkRenderingData>* drawableChunksWrite_,
 		                     * drawableChunksRead_;
-	deque<Chunk*> freeChunks_;
-	deque<glm::vec3> chunksToUpdate_;
-	const Camera& playerCamera_;
+	deque<chunk*> freeChunks_;
+	const camera& playerCamera_;
 	recursive_mutex drawableChunksWriteMutex_,
 		            chunksMutex_,
 		            freeChunksMutex_;
 
 };
 
-inline const unordered_map<glm::vec3, Chunk*>& chunkManager::chunks()
+inline const unordered_map<glm::vec3, chunk*>& chunkManager::chunks()
 {
 
 	return chunks_;
@@ -316,31 +385,10 @@ inline deque<chunkRenderingData> const * chunkManager::drawableChunksRead() cons
 
 }
 
-/*
-WARNING. This operation is not thread-safe.
-To push back a chunk's rendering data into this deque,
-use chunkManager::pushDrawableChunks(...) method to prevent
-race conditions when using multiple threads in the
-chunk management system.
-*/
 inline deque<chunkRenderingData>* chunkManager::drawableChunksWrite()
 {
 
 	return drawableChunksWrite_;
-
-}
-
-inline const deque<glm::vec3>& chunkManager::meshRenewQueue() const
-{
-
-	return chunksToUpdate_;
-
-}
-
-inline deque<glm::vec3>& chunkManager::meshRenewQueue()
-{
-
-	return chunksToUpdate_;
 
 }
 

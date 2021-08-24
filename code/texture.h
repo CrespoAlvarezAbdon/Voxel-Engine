@@ -5,50 +5,141 @@
 #include <GL/glew.h>
 using namespace std;
 
-class Texture
+
+///////////////
+//Definitions//
+///////////////
+
+///////////
+//Classes//
+///////////
+
+/*
+Represents a texture (a 2D image).
+It can (and should be) used to create texture atlases.
+*/
+class texture
 {
 
 public:
 
-	Texture(const string& filepath);
+	// Constructors.
 
-	void bind(unsigned int slot = 0) const; // "slot" is the slot where you want to bind the texture
+	/*
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
+	texture(const string& filepath);
+
+
+	// Observers.
+	int width() const;
+	int height() const;
+	GLuint rendererID() const;
+	static const texture* blockTextureAtlas();
+	static int blockAtlasResolution();
+
+
+	// Modifiers.
+
+	/*
+	Set 'blockTextureAtlas' as the texture atlas for the blocks.
+	*/
+	static void setBlockAtlas(const texture& blockTextureAtlas);
+
+	/*
+	Set the block texture atlas' resolution.
+	The resolution will always make block textures be square.
+	That is, if you execute texture::blockAtlasResolution() = 32, now
+	the block textures will have a resolution of 32x32 pixels.
+	WARNING. You must set the resolution at least once before the method
+	chunkManager::manageChunks starts executing in the chunk management thread.
+	NOTE. W.I.P. In the future, a texture pack will include information
+	about the resolution of the textures.
+	*/
+	static void setBlockAtlasResolution(int resolution);
+
+
+	/*
+	Bind a texture to an OpenGL texture slot (slot 0 by default).
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
+	void bind(unsigned int slot = 0) const;
+
+	/*
+	Unbind a texture.
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
 	void unbind() const;
 
-	int width() const noexcept;
-	int height() const noexcept;
 
-	GLuint renderer_ID() const noexcept;
+	// Destructors.
 
-	~Texture();
+	/*
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
+	~texture();
 
 private:
 
-	GLuint renderer_ID_;
-	string texture_filepath_; // For debuggin purposes
-	unsigned char* local_buffer_; // Buffer to hold texture's data
-	int width_, height_, bits_per_pixel;
+	static texture const * blockTextureAtlas_;
+	static unsigned int blockAtlasResolution_;
+
+	GLuint rendererID_;
+	string textureFilepath_; 
+	// Local buffer to store the texture data when loading it from disk.
+	unsigned char* buffer_;
+	int width_,
+		height_,
+		bitsPerPixel_;
 
 };
 
-inline int Texture::width() const noexcept
+inline int texture::width() const
 {
 
 	return width_;
 
 }
 
-inline int Texture::height() const noexcept
+inline int texture::height() const
 {
 
 	return height_;
 
 }
 
-inline GLuint Texture::renderer_ID() const noexcept
+inline GLuint texture::rendererID() const
 {
 
-	return renderer_ID_;
+	return rendererID_;
+
+}
+
+inline const texture* texture::blockTextureAtlas()
+{
+
+	return blockTextureAtlas_;
+
+}
+
+inline int texture::blockAtlasResolution() 
+{
+
+	return blockAtlasResolution_;
+
+}
+
+inline void texture::setBlockAtlas(const texture& blockTextureAtlas)
+{
+
+	blockTextureAtlas_ = &blockTextureAtlas;
+
+}
+
+inline void texture::setBlockAtlasResolution(int resolution)
+{
+
+	blockAtlasResolution_ = resolution;
 
 }
 

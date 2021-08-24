@@ -1,149 +1,212 @@
 #ifndef _CAMERA_
 #define _CAMERA_
+
 #include <GLFW/glfw3.h>
 #include <gtx/quaternion.hpp>
 #include <gtx/rotate_vector.hpp>
 #include <glm.hpp>
 
-class Camera
+
+///////////
+//Classes//
+///////////
+
+/*
+Abstaction of a first person camera.
+NOTE. In the future (W.I.P) multiple types of cameras will be added.
+*/
+class camera
 {
 
 public:
 
-	Camera(float FOV, float width, float height, float z_near, float z_far, GLFWwindow* window, const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f), const glm::vec3& direction = glm::vec3(0.0f, 0.0f, 0.0f));
+	// Constructors.
 
+	camera(float FOV, float width, float height, float zNear, float zFar, GLFWwindow* window, 
+		   const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f), const glm::vec3& direction = glm::vec3(0.0f, 0.0f, 0.0f));
+
+
+	// Observers.
+
+	float FOV() const;
+
+	float zFar() const;
+
+	float mouseSensibility() const;
+
+	float movementSpeed() const;
+
+	const glm::mat4& projectionMatrix() const;
+
+	const glm::mat4& viewMatrix() const;
+
+	/*
+	Get the camera's chunk relative position.
+	*/
+	const glm::vec3& chunkPos() const;
+
+	/*
+	Get the camera's position.
+	*/
+	const glm::vec3& pos() const;
+
+
+	// Modifiers.
+
+	float& mouseSensibility();
+
+	float& movementSpeed();
+
+	glm::mat4& projectionMatrix();
+
+	glm::mat4& viewMatrix();
+
+	glm::vec3& pos();
+
+	glm::vec3& chunkPos();
+
+
+	/*
+	Update the camera's position and the direction it's looking at
+	taking into account the delta time to avoid the FPS from altering the movement speed.
+	NOTE. Once this method is called, the next method you should instantly call is
+	camera::updateView() to reflect the change in the camera's position and view direction.
+	*/
 	void updatePos(float timeStep);
+
+	/*
+	Update the camera's vision.
+	NOTE. You should call this method after a call to camera::updatePos(...) was made
+	in order to reflect the change in the camera's position and view direction.
+	*/
 	void updateView();
 
-	float FOV() const noexcept;
-	float z_far() const noexcept;
-	float mouse_sensibility() const noexcept;
-	float& mouse_sensibility() noexcept;
-	float movement_speed() const noexcept;
-	float& movement_speed() noexcept;
-	const glm::mat4& projection_matrix() const noexcept;
-	glm::mat4& projection_matrix() noexcept;
-	const glm::mat4& view_matrix() const noexcept;
-	glm::mat4& view_matrix() noexcept;
-	const glm::vec3& pos() const noexcept;
-	glm::vec3& pos() noexcept;
-	const glm::vec3& chunkPos() const noexcept;
-	glm::vec3& chunkPos() noexcept;
 
 private:
 
-	float FOV_, z_far_, angle_x_, angle_y_, mouse_sensibility_, movement_speed_;
-	double mouse_x_, mouse_y_, old_mouse_x_, old_mouse_y_;
-	glm::mat4 projection_, view_;
+	float FOV_, 
+		  zFar_, 
+		  angleX_, 
+		  angleY_, 
+		  mouseSensibility_, 
+		  movementSpeed_;
+	double mouseX_, 
+		   mouseY_, 
+		   oldMouseX_, 
+		   oldMouseY_;
+	glm::mat4 projectionMatrix_, 
+		      viewMatrix_;
 	GLFWwindow* window_;
-	glm::vec3 position_, direction_, up_axis_, chunk_relative_position_, old_chunk_relative_pos_;
-
-	// old_ variables like old_mouse_x_ and old_chunk_relative_pos_ are used to store the value of, respectively, mouse_x_ and chunk_relative_position before doing any changes to them
+	glm::vec3 position_,
+		      direction_, 
+		      upAxis_, 
+		      chunkRelativePosition_,
+		      oldChunkRelativePos_;
 
 };
 
-inline void Camera::updateView()
+inline void camera::updateView()
 {
 
-	view_ = glm::lookAt(position_, position_ + direction_, up_axis_);
+	viewMatrix_ = glm::lookAt(position_, position_ + direction_, upAxis_);
 
 }
 
-inline float Camera::FOV() const noexcept
+inline float camera::FOV() const
 {
 
 	return FOV_;
 
 }
 
-inline float Camera::z_far() const noexcept
+inline float camera::zFar() const
 {
 
-	return z_far_;
+	return zFar_;
 
 }
 
-inline float Camera::mouse_sensibility() const noexcept
+inline float camera::mouseSensibility() const
 {
 
-	return mouse_sensibility_;
+	return mouseSensibility_;
 
 }
 
-inline float& Camera::mouse_sensibility() noexcept
+inline float& camera::mouseSensibility()
 {
 
-	return mouse_sensibility_;
+	return mouseSensibility_;
 
 }
 
-inline float Camera::movement_speed() const noexcept
+inline float camera::movementSpeed() const
 {
 
-	return movement_speed_;
+	return movementSpeed_;
 
 }
 
-inline float& Camera::movement_speed() noexcept
+inline float& camera::movementSpeed()
 {
 
-	return movement_speed_;
+	return movementSpeed_;
 
 }
 
-inline const glm::mat4& Camera::projection_matrix() const noexcept
+inline const glm::mat4& camera::projectionMatrix() const
 {
 
-	return projection_;
+	return projectionMatrix_;
 
 }
 
-inline glm::mat4& Camera::projection_matrix() noexcept
+inline glm::mat4& camera::projectionMatrix()
 {
 
-	return projection_;
+	return projectionMatrix_;
 
 }
 
-inline const glm::mat4& Camera::view_matrix() const noexcept
+inline const glm::mat4& camera::viewMatrix() const
 {
 
-	return view_;
+	return viewMatrix_;
 
 }
 
-inline glm::mat4& Camera::view_matrix() noexcept
+inline glm::mat4& camera::viewMatrix()
 {
 
-	return view_;
+	return viewMatrix_;
 
 }
 
-inline const glm::vec3& Camera::pos() const noexcept
+inline const glm::vec3& camera::pos() const
 {
 
 	return position_;
 
 }
 
-inline glm::vec3& Camera::pos() noexcept
+inline glm::vec3& camera::pos()
 {
 
 	return position_;
 
 }
 
-inline const glm::vec3& Camera::chunkPos() const noexcept
+inline const glm::vec3& camera::chunkPos() const
 {
 
-	return chunk_relative_position_;
+	return chunkRelativePosition_;
 
 }
 
-inline glm::vec3& Camera::chunkPos() noexcept
+inline glm::vec3& camera::chunkPos()
 {
 
-	return chunk_relative_position_;
+	return chunkRelativePosition_;
 
 }
 

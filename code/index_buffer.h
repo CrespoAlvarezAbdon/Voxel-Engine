@@ -1,32 +1,74 @@
 #ifndef _INDEXBUFFER_
 #define _INDEXBUFFER_
 
-class Index_buffer
+
+///////////
+//Classes//
+///////////
+
+/*
+Abstraction of an IBO (index buffer object).
+*/
+class indexBuffer
 {
 
 public:
 
-	Index_buffer();
-	void prepare_static(const unsigned int* data, unsigned int indices_count);
+	// Constructors.
 
+	/*
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
+	indexBuffer();
+
+
+	// Observers.
+
+	/*
+	Number of indices.
+	*/
+	unsigned int nIndices() const;
+
+
+	// Modifiers.
+
+
+	/*
+	Supply the buffer with vertex data (static geometry).
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
+	void prepareStatic(const unsigned int* data, unsigned int indicesCount);
+
+	/*
+	Bind the IBO to the corresponding OpenGL context of the thread from
+	which a call to this method was made.
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
 	void bind() const;
+
+	/*
+	Unbind the IBO to the corresponding OpenGL context of the thread from
+	which a call to this method was made.
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
 	void unbind() const;
 
-	unsigned int indices_count() const noexcept;
 
-	~Index_buffer();
+	// Destructors.
+
+	~indexBuffer();
 
 private:
 
-	unsigned int renderer_ID_;
-	unsigned int indices_count_;
+	unsigned int rendererID_;
+	unsigned int nIndices_;
 
 };
 
-inline unsigned int Index_buffer::indices_count() const noexcept
+inline unsigned int indexBuffer::nIndices() const
 {
 
-	return indices_count_; 
+	return nIndices_; 
 
 }
 

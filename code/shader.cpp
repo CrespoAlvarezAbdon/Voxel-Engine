@@ -1,77 +1,83 @@
-#include <iostream>
-#include <ostream>
 #include <iterator>
 #include <fstream>
 #include <ios>
+#include <stdexcept>
 #include <GL/glew.h>
 #include "shader.h"
 
-unsigned int Shader::compile_shader(const string& shader_source, unsigned int type)
+
+// 'shader' class.
+
+unsigned int shader::compileShader(const string& shaderSource, unsigned int type)
 {
 
-    unsigned int shader_id = glCreateShader(type);
-    const char* source_pointer = shader_source.c_str();
+    unsigned int shaderID = glCreateShader(type);
+    const char* source = shaderSource.c_str();
 
-    glShaderSource(shader_id, 1, &source_pointer, nullptr);
-    glCompileShader(shader_id);
+    glShaderSource(shaderID, 1, &source, nullptr);
+    glCompileShader(shaderID);
 
-    int compile_result;
-    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compile_result);
-    if (!compile_result)
+    int compileResult;
+    glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compileResult);
+    if (!compileResult)
     {
 
-        // Errors were detected while compiling the shader
+        // Errors were detected while compiling the shader.
         int length;
-        glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &length);
-        char* compile_log = new char[length];
-        glGetShaderInfoLog(shader_id, length, &length, compile_log);
+        glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length);
+        char* compileLog = new char[length];
+        glGetShaderInfoLog(shaderID, length, &length, compileLog);
 
         if (type == GL_VERTEX_SHADER)
-            cout << "ERRORS WHILE COMPILING VERTEX SHADER:\n";
+            throw runtime_error("ERROR WHILE COMPILING VERTEX SHADER:\n" + string(compileLog));
         else
-            cout << "ERRORS WHILE COMPILING FRAGMENT SHADER:\n";
-        cout << compile_log << endl;
+            throw runtime_error("ERROR WHILE COMPILING FRAGMENT SHADER:\n" + string(compileLog));
 
-        delete[] compile_log;
+        delete[] compileLog;
 
     }
 
-    return shader_id;
+    return shaderID;
 
 }
 
-// creates a shader and returns the unique identifier of the shader created
-unsigned int Shader::create_shader(const string& vertex_shader, const string& fragment_shader) // these two strings are the source code of the vertex shader and the fragment shader
+unsigned int shader::createShader(const string& vertexShader, const string& fragmentShader)
 {
 
-    unsigned int shader_program = glCreateProgram();
-    // Compile shaders
-    unsigned int vertex_shader_obj = compile_shader(vertex_shader, GL_VERTEX_SHADER);
-    unsigned int fragment_shader_obj = compile_shader(fragment_shader, GL_FRAGMENT_SHADER);
+    unsigned int shaderID = glCreateProgram();
 
-    // Attach shaders (like object code in C++ compiling procedure for example)
-    glAttachShader(shader_program, vertex_shader_obj);
-    glAttachShader(shader_program, fragment_shader_obj);
-    glLinkProgram(shader_program); // Linking stage
-    glValidateProgram(shader_program); // Validation stage
+    // Compile the two shaders and get their corresponding IDs.
+    unsigned int vertexShaderID = compileShader(vertexShader, GL_VERTEX_SHADER);
+    unsigned int fragmentShaderID = compileShader(fragmentShader, GL_FRAGMENT_SHADER);
 
-    glDeleteShader(vertex_shader_obj); // Delete object files (like object code in C++ compiling procedure for example)
-    glDeleteShader(fragment_shader_obj);
+    // Attach the shaders.
+    glAttachShader(shaderID, vertexShaderID);
+    glAttachShader(shaderID, fragmentShaderID);
 
-    return shader_program;
+    // Linking stage.
+    glLinkProgram(shaderID);
+
+    // Validation stage.
+    glValidateProgram(shaderID);
+
+    // Delete object files since we don't need them outside this method.
+    glDeleteShader(vertexShaderID); 
+    glDeleteShader(fragmentShaderID);
+
+    return shaderID;
 
 }
 
-Shader::Shader(const string& vertex_shader_path, const string& fragment_shader_path) // The attributes that represent the filepaths are only for debugging purposes
-	: vertex_shader_path_(vertex_shader_path), fragment_shader_path_(fragment_shader_path), renderer_ID_(0)
+shader::shader(const string& vertexShaderPath, const string& fragmentShaderPath)
+	: rendererID_(0)
 {
 
-    // Load the shaders from the files and compile them
-    ifstream vertex_shader_file(vertex_shader_path);
-    noskipws(vertex_shader_file); // Don't skip whitespaces (they have rights too you meanie person! D:)
+    // Load the two shaders from the files and compile them later in the Shader::createShader() private method.
+    ifstream vertex_shader_file(vertexShaderPath);
+    noskipws(vertex_shader_file); // Don't skip whitespaces.
     istream_iterator<char> vertex_It(vertex_shader_file);
 
-    ifstream fragment_shader_file(fragment_shader_path);
+    ifstream fragment_shader_file(fragmentShaderPath);
     noskipws(fragment_shader_file);
     istream_iterator<char> fragment_It(fragment_shader_file);
 
@@ -82,72 +88,78 @@ Shader::Shader(const string& vertex_shader_path, const string& fragment_shader_p
     vertex_shader_file.close();
     fragment_shader_file.close();
 
-    renderer_ID_ = create_shader(vertex_shader, fragment_shader); // Shader compilation here
+    rendererID_ = createShader(vertex_shader, fragment_shader);
 
 }
 
-void Shader::bind() const
+void shader::bind() const
 {
 
-    glUseProgram(renderer_ID_);
+    glUseProgram(rendererID_);
 
 }
 
-void Shader::unbind() const
+void shader::unbind() const
 {
 
     glUseProgram(0);
 
 }
 
-GLint Shader::get_uniform_location(const string& name) const
+GLint shader::getUniformLocation(const string& name) const
 {
 
-    if (uniform_location_cache.find(name) != uniform_location_cache.end()) // We use a cache to prevent getting the location N times, which is costly
-        return uniform_location_cache[name];
+    // We use a cache to prevent getting the location N times because
+    // it is a costly operation.
+    if (uniformLocationCache_.find(name) != uniformLocationCache_.end()) 
+        return uniformLocationCache_[name];
 
-    int location = glGetUniformLocation(renderer_ID_, name.c_str());
+    int location = glGetUniformLocation(rendererID_, name.c_str());
 
     if (location == -1)
-        cout << "ERROR: Uniform " << name << " doesn't exist\n";
+        throw runtime_error("ERROR: Uniform " + name + " doesn't exist\n");
 
-    uniform_location_cache[name] = location;
+    uniformLocationCache_[name] = location;
 
     return location;
 
 }
 
-void Shader::set_uniform_1i(const string& name, int i1)
+void shader::setUniform1i(const string& name, int i1)
 {
 
-    glUniform1i(get_uniform_location(name), i1);
+    glUniform1i(getUniformLocation(name), i1);
 
 }
 
-void Shader::set_uniform_1iv(const string& name, const int* v, int v_size)
+void shader::setUniform1iv(const string& name, const int* v, int vSize)
 {
 
-    glUniform1iv(get_uniform_location(name), v_size, v);
+    glUniform1iv(getUniformLocation(name), vSize, v);
 
 }
 
-void Shader::set_uniform_4f(const string& name, float f1, float f2, float f3, float f4)
+void shader::setUniformVec4f(const string& name, float f1, float f2, float f3, float f4)
 {
 
-    glUniform4f(get_uniform_location(name), f1, f2, f3, f4);
+    glUniform4f(getUniformLocation(name), f1, f2, f3, f4);
 
 }
 
-void Shader::set_uniform_matrix4f(const string& name, const glm::mat4& matrix)
+void shader::setUniformMatrix4f(const string& name, const glm::mat4& matrix)
 {
 
-    glUniformMatrix4fv(get_uniform_location(name), 1, GL_FALSE, &matrix[0][0]); // The third parameter means that it isn't necessary to transpose the matrix since glm
-                                                                                // creates matrix that OpenGL don't need to transpose in order to understand them
+    /* 
+    The third parameter means that it isn't necessary to transpose the matrix since glm
+    creates matrices that OpenGL doesn't need to transpose in order to understand them.
+    */
+    glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &matrix[0][0]); 
+
 }
 
-Shader::~Shader()
+shader::~shader()
 {
 
-    glDeleteProgram(renderer_ID_);
+    glDeleteProgram(rendererID_);
 
 }

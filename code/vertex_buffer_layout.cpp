@@ -1,6 +1,9 @@
 #include "vertex_buffer_layout.h"
 
-unsigned int OpenGL_size_of(unsigned int type)
+
+// Non-member functions.
+
+unsigned int openGLSizeOf(unsigned int type)
 {
 
 	switch (type)
@@ -16,13 +19,16 @@ unsigned int OpenGL_size_of(unsigned int type)
 
 }
 
+
+// vertexBufferLayout.
+
 template <>
 void vertexBufferLayout::push<GLfloat>(unsigned int count)
 {
 
 	elements_.push_back({ GL_FLOAT, count, true });
 
-	stride_ += count * OpenGL_size_of(GL_FLOAT);
+	stride_ += count * openGLSizeOf(GL_FLOAT);
 
 }
 
@@ -32,7 +38,7 @@ void vertexBufferLayout::push<unsigned int>(unsigned int count)
 
 	elements_.push_back({ GL_UNSIGNED_INT, count, false });
 
-	stride_ += count * OpenGL_size_of(GL_UNSIGNED_INT);
+	stride_ += count * openGLSizeOf(GL_UNSIGNED_INT);
 
 }
 
@@ -42,7 +48,7 @@ void vertexBufferLayout::push<unsigned char>(unsigned int count)
 
 	elements_.push_back({ GL_UNSIGNED_BYTE, count, true });
 
-	stride_ += count * OpenGL_size_of(GL_UNSIGNED_BYTE);
+	stride_ += count * openGLSizeOf(GL_UNSIGNED_BYTE);
 
 }
 
@@ -52,7 +58,7 @@ void vertexBufferLayout::push<GLbyte>(unsigned int count)
 
 	elements_.push_back({ GL_BYTE, count, false });
 
-	stride_ += count * OpenGL_size_of(GL_BYTE);
+	stride_ += count * openGLSizeOf(GL_BYTE);
 
 }
 
@@ -62,6 +68,6 @@ void vertexBufferLayout::push<GLint>(unsigned int count)
 
 	elements_.push_back({ GL_INT, count, false });
 
-	stride_ += count * OpenGL_size_of(GL_INT);
+	stride_ += count * openGLSizeOf(GL_INT);
 
 }

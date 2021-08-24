@@ -1,28 +1,73 @@
 #ifndef _VERTEXARRAY_
 #define _VERTEXARRAY_
+
 #include "vertex_buffer.h"
 #include "vertex_buffer_layout.h"
 
+///////////
+//Classes//
+///////////
+
+/*
+Represents a vertex array object (VAO) from OpenGL.
+See the corresponding official documentation for more info about VAOs.
+*/
 class vertexArray
 {
 
 public:
 
+	// Constructors
+
+	/*
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
 	vertexArray();
 
+
+	// Observers.
+
+
+	// Modifiers.
+
+
+	/*
+	Bind the VAO.
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
 	void bind() const;
 
+	/*
+	Unbind the VAO.
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
 	void unbind() const;
 
-	void add_layout(const vertexBufferLayout& layout);
+	/*
+	Add a vertex buffer layout to the VAO so the GPU can figure out
+	what is the data we sent to it.
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
+	void addLayout(const vertexBufferLayout& layout);
 
-	void add_dynamic_buffer(const vertexBuffer& vb, const vertexBufferLayout& layout, size_t size, const void* data);
+	/*
+	Submit vertex data to a vertex buffer object which has been prepared for dynamic
+	geometry with a call to vertexBuffer::preprareDynamic(...) done before this one.
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
+	void addDynamicBuffer(const vertexBuffer& vb, const vertexBufferLayout& layout, size_t size, const void* data);
 
+
+	// Destructors.
+
+	/*
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
 	~vertexArray();
 
 private:
 
-	unsigned int renderer_ID_;
+	unsigned int rendererID_;
 
 };
 

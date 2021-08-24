@@ -86,7 +86,7 @@ int main()
    
     // Create a windowed mode window and its OpenGL context.
     // TODO: abstract this and the checking done after this call.
-    mainWindow = glfwCreateWindow((int)width, (int)height, "Deep dive", NULL, NULL);
+    mainWindow = glfwCreateWindow((int)width, (int)height, "Voxel Engine", NULL, NULL);
 
     if (!mainWindow)
     {
@@ -120,16 +120,16 @@ int main()
 
     // With the previously created context, now initialize GLEW.
     if (glewInit() != GLEW_OK) 
-        throw Error(Error::Error_types::GLEW_INIT_FAILED);
+        throw error(error::errorTypes::GLEW_INIT_FAILED);
 
 
     // Configurable options.
     int nChunksToDraw = 32; // WARNING. This option is for beefy computers. Average should be between 12 and 20.
-    Texture atlas("Resources/Textures/atlas.png");
-    Player player(45.0f, width, height, 0.1f, 500.0f, mainWindow, glm::vec3(128.0f, 145.0f, 128.0f));
+    texture blockTextureAtlas("Resources/Textures/atlas.png");
+    player player(45.0f, width, height, 0.1f, 500.0f, mainWindow, glm::vec3(128.0f, 145.0f, 128.0f));
 
     // Rendering related.
-    Shader default_shader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
+    shader default_shader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
     vertexArray va;
     vertexBufferLayout layout;
     vertexBufferProvider vboProvider;
@@ -138,26 +138,33 @@ int main()
               MVPmatrix;
     
     // Chunk management thread related.
-    chunkManager chunkMng(nChunksToDraw, player.camera());
-    cout << "[DEBUG]: Finished loading chunks!" << endl;
+    chunkManager chunkMng(nChunksToDraw, player.getCamera());
     int nMeshingThreads = 2;
     atomic<bool> app_finished = false;
     deque<chunkRenderingData> const* chunksToDraw = nullptr;
     mutex managerThreadMutex;
     condition_variable managerThreadCV;
+
+    // Configure some last things before starting to load the terrain.
+    texture::setBlockAtlas(blockTextureAtlas);
+    texture::setBlockAtlasResolution(512);
+    
+    cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << endl
+         << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << endl;
+
     thread chunk_management(&chunkManager::manageChunks, &chunkMng, ref(app_finished), nMeshingThreads,
                             ref(managerThreadMutex), ref(managerThreadCV));
 
 
     // The layout at the moment has only two floats that represent the vertex's position. 
-    // If we want more things in the layout, call layout.push() again for each new thing
+    // If we want more things in the layout, call layout.push() again for each new thing.
     layout.push<GLbyte>(3); 
     layout.push<GLbyte>(1);
     layout.push<GLfloat>(2); 
 
     va.bind();
     default_shader.bind();
-    atlas.bind();
+    blockTextureAtlas.bind();
 
     // Main game loop.
     double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
@@ -170,12 +177,12 @@ int main()
     while (!glfwWindowShouldClose(mainWindow))
     {
 
-        // Times calculation
+        // Times calculation.
         actualTime = glfwGetTime();
         timeStep = actualTime - lastFrameTime;
         lastFrameTime = actualTime;
 
-        // ms/frame calculation
+        // ms/frame calculation and display.
         nFramesDrawn++;
         if (actualTime - lastSecondTime >= 1.0)
         {
@@ -186,7 +193,7 @@ int main()
 
         }
 
-        // Coordinate main thread and chunk management thread
+        // Coordinate main thread and chunk management thread.
         if(managerThreadMutex.try_lock())
         {
 
@@ -198,17 +205,17 @@ int main()
 
         }
 
-        // Rendering starts here 
+        // Rendering starts here.
         renderer.clear();
 
-        // Update camera
-        player.camera().updatePos(timeStep);
-        player.camera().updateView();
+        // Update camera.
+        player.setCamera().updatePos(timeStep);
+        player.setCamera().updateView();
        
         if (chunksToDraw)
         {
 
-            // Render chunks
+            // Render chunks.
             for (unsigned int i = 0; i < chunksToDraw->size(); i++)
             {
 
@@ -218,13 +225,13 @@ int main()
 
                     vbo = vboProvider.requestVBO();
                     vbo->bind();
-                    vbo->prepare_static(chunksToDraw->operator[](i).vertices.data(), sizeof(Block_vertex) * nVertices);
+                    vbo->prepareStatic(chunksToDraw->operator[](i).vertices.data(), sizeof(vertex) * nVertices);
 
-                    va.add_layout(layout);
+                    va.addLayout(layout);
 
                     model_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(chunksToDraw->operator[](i).chunkPos.x * SCX, chunksToDraw->operator[](i).chunkPos.y * SCY, chunksToDraw->operator[](i).chunkPos.z * SCZ));
-                    MVPmatrix = player.camera().projection_matrix() * player.camera().view_matrix() * model_matrix;
-                    default_shader.set_uniform_matrix4f("u_MVP", MVPmatrix);
+                    MVPmatrix = player.getCamera().projectionMatrix() * player.getCamera().viewMatrix() * model_matrix;
+                    default_shader.setUniformMatrix4f("u_MVP", MVPmatrix);
 
                     renderer.draw(nVertices);
 

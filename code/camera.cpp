@@ -5,60 +5,64 @@
 #include <ostream>
 using namespace std;
 
-Camera::Camera(float FOV, float width, float height, float z_near, float z_far, GLFWwindow* window, const glm::vec3& position, const glm::vec3& direction)
-    : FOV_(FOV), z_far_(z_far), angle_x_(0), angle_y_(0), mouse_sensibility_(0.25f), movement_speed_(20.0f),
-    mouse_x_(0), mouse_y_(0), old_mouse_x_(0), old_mouse_y_(0),
-    projection_(glm::perspective(FOV_, width/height, z_near, z_far_)), view_(glm::mat4(1.0f)), window_(window),
-    position_(position), direction_(direction), up_axis_(glm::vec3(0.0f, 1.0f, 0.0f))
+
+// 'camera' class.
+
+camera::camera(float FOV, float width, float height, float zNear, float zFar, GLFWwindow* window, const glm::vec3& position, const glm::vec3& direction)
+    : FOV_(FOV), zFar_(zFar), angleX_(0), angleY_(0), mouseSensibility_(0.25f), movementSpeed_(20.0f),
+    mouseX_(0), mouseY_(0), oldMouseX_(0), oldMouseY_(0),
+    projectionMatrix_(glm::perspective(FOV_, width/height, zNear, zFar_)), viewMatrix_(glm::mat4(1.0f)), window_(window),
+    position_(position), direction_(direction), upAxis_(glm::vec3(0.0f, 1.0f, 0.0f))
 {
 
-    chunk_relative_position_.x = round(position_.x/SCX);
-    chunk_relative_position_.y = round(position_.y/SCY);
-    chunk_relative_position_.z = round(position_.z/SCZ);
+    chunkRelativePosition_.x = round(position_.x/SCX);
+    chunkRelativePosition_.y = round(position_.y/SCY);
+    chunkRelativePosition_.z = round(position_.z/SCZ);
 
-    old_chunk_relative_pos_ = chunk_relative_position_;
+    oldChunkRelativePos_ = chunkRelativePosition_;
 
 }
 
-void Camera::updatePos(float timeStep) 
+void camera::updatePos(float timeStep) 
 {
 
-    old_chunk_relative_pos_ = chunk_relative_position_;
+    oldChunkRelativePos_ = chunkRelativePosition_;
 
-    // Get and compute keyboard input
+    // Get and compute keyboard input.
     if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS)
-        position_ += direction_ * movement_speed_ * timeStep;
+        position_ += direction_ * movementSpeed_ * timeStep;
     if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS)
-        position_ -= direction_ * movement_speed_ * timeStep;
+        position_ -= direction_ * movementSpeed_ * timeStep;
     if (glfwGetKey(window_, GLFW_KEY_A) == GLFW_PRESS)
-        position_ -= glm::normalize(glm::cross(direction_, up_axis_)) * movement_speed_ * timeStep;
+        position_ -= glm::normalize(glm::cross(direction_, upAxis_)) * movementSpeed_ * timeStep;
     if (glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS)
-        position_ += glm::normalize(glm::cross(direction_, up_axis_)) * movement_speed_ * timeStep;
+        position_ += glm::normalize(glm::cross(direction_, upAxis_)) * movementSpeed_ * timeStep;
     if (glfwGetKey(window_, GLFW_KEY_SPACE) == GLFW_PRESS)
-        position_ += up_axis_ * movement_speed_ * timeStep;
+        position_ += upAxis_ * movementSpeed_ * timeStep;
     if (glfwGetKey(window_, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        position_ -= up_axis_ * movement_speed_ * timeStep;
+        position_ -= upAxis_ * movementSpeed_ * timeStep;
 
-    // Calculate chunk-relative coordinates
-    chunk_relative_position_.x = trunc(position_.x / SCX);
-    chunk_relative_position_.y = trunc(position_.y / SCY);
-    chunk_relative_position_.z = trunc(position_.z / SCZ);
+    // Update chunk-relative coordinates.
+    chunkRelativePosition_.x = trunc(position_.x / SCX);
+    chunkRelativePosition_.y = trunc(position_.y / SCY);
+    chunkRelativePosition_.z = trunc(position_.z / SCZ);
 
-    // Get and compute mouse input
-    old_mouse_x_ = mouse_x_;
-    old_mouse_y_ = mouse_y_;
-    glfwGetCursorPos(window_, &mouse_x_, &mouse_y_);
+    // Get and compute mouse input.
+    oldMouseX_ = mouseX_;
+    oldMouseY_ = mouseY_;
+    glfwGetCursorPos(window_, &mouseX_, &mouseY_);
 
-    angle_x_ += (mouse_x_ - old_mouse_x_) * mouse_sensibility_;
-    angle_y_ += (old_mouse_y_ - mouse_y_) * mouse_sensibility_;
+    angleX_ += (mouseX_ - oldMouseX_) * mouseSensibility_;
+    angleY_ += (oldMouseY_ - mouseY_) * mouseSensibility_;
 
-    if (angle_y_ > 89.0f)
-        angle_y_ = 89.0f;
-    if (angle_y_ < -89.0f)
-        angle_y_ = -89.0f;
+    if (angleY_ > 89.0f)
+        angleY_ = 89.0f;
+    if (angleY_ < -89.0f)
+        angleY_ = -89.0f;
 
-    direction_.x = cos(glm::radians(angle_x_)) * cos(glm::radians(angle_y_));
-    direction_.y = sin(glm::radians(angle_y_));
-    direction_.z = sin(glm::radians(angle_x_)) * cos(glm::radians(angle_y_));
+    // Update the camera's direction.
+    direction_.x = cos(glm::radians(angleX_)) * cos(glm::radians(angleY_));
+    direction_.y = sin(glm::radians(angleY_));
+    direction_.z = sin(glm::radians(angleX_)) * cos(glm::radians(angleY_));
 
 }
