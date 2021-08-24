@@ -26,7 +26,6 @@
 #include "camera.h"
 #include "chunk.h"
 #include "entity.h"
-#include "threadPool.h"
 #include <iostream>
 #include <ostream>
 using namespace std;
@@ -37,6 +36,7 @@ using namespace std;
 // 2º. ADD BLOCK ADDING/REMOVING.
 // 3º. ADD BLOCK ADDING/REMOVING CAPABLE OF UPDATING NEIGHBOR CHUNKS ON LIMIT BLOCK (aka BLOCK IN A CHUNK'S FRONTIER) CHANGED.
 // 4º. INVESTIGATE ADDING MUTEX TO BLOCK ADDING/REMOVING.
+// 5º. VERIFY CUSTOM CHUNK ATLAS SIZE AND RESOLUTION.
 
 /* General OpenGL notes.
 
