@@ -1,23 +1,19 @@
-#include "chunk.h"
-#include "camera.h"
 #include <cmath>
-#include <iostream>
-#include <ostream>
-using namespace std;
-
+#include "camera.h"
 
 // 'camera' class.
 
-camera::camera(float FOV, float width, float height, float zNear, float zFar, GLFWwindow* window, const glm::vec3& position, const glm::vec3& direction)
+camera::camera(float FOV, float width, float height, float zNear, float zFar, GLFWwindow* window, 
+               const glm::vec3& position, const glm::vec3& direction)
     : FOV_(FOV), zFar_(zFar), angleX_(0), angleY_(0), mouseSensibility_(0.25f), movementSpeed_(20.0f),
-    mouseX_(0), mouseY_(0), oldMouseX_(0), oldMouseY_(0),
-    projectionMatrix_(glm::perspective(FOV_, width/height, zNear, zFar_)), viewMatrix_(glm::mat4(1.0f)), window_(window),
-    position_(position), direction_(direction), upAxis_(glm::vec3(0.0f, 1.0f, 0.0f))
+    mouseX_(0), mouseY_(0), oldMouseX_(0), oldMouseY_(0), projectionMatrix_(glm::perspective(FOV_, width / height, zNear, zFar_)),
+    viewMatrix_(glm::mat4(1.0f)), window_(window), position_(position), direction_(direction),
+    upAxis_(glm::vec3(0.0f, 1.0f, 0.0f)), chunkMng_(nullptr)
 {
 
-    chunkRelativePosition_.x = round(position_.x/SCX);
-    chunkRelativePosition_.y = round(position_.y/SCY);
-    chunkRelativePosition_.z = round(position_.z/SCZ);
+    chunkRelativePosition_.x = trunc(position_.x/SCX);
+    chunkRelativePosition_.y = trunc(position_.y/SCY);
+    chunkRelativePosition_.z = trunc(position_.z/SCZ);
 
     oldChunkRelativePos_ = chunkRelativePosition_;
 
@@ -28,7 +24,7 @@ void camera::updatePos(float timeStep)
 
     oldChunkRelativePos_ = chunkRelativePosition_;
 
-    // Get and compute keyboard input.
+    // Get and compute keyboard input for movement.
     if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS)
         position_ += direction_ * movementSpeed_ * timeStep;
     if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS)

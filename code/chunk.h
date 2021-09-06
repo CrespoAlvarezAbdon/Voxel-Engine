@@ -22,24 +22,11 @@
 using namespace std;
 
 
-///////////////
-//Definitions//
-///////////////
-
-// How many chunks to load in the y-axis.
-#define Y_CHUNKS_RANGE 12
-// Chunk size in X axis.
-#define SCX 16
-// Chunk size in Y axis.
-#define SCY 16
-// Chunk size in Z axis.
-#define SCZ 16
-// Block's ID.
-typedef unsigned short Cube;
-
 //////////////////////////////
 //Forward class declarations//
 //////////////////////////////
+
+class camera;
 class chunkManager;
 
 
@@ -58,6 +45,7 @@ struct chunkRenderingData
 
 };
 
+// TODO. ADD DOCUMENTATION TO THE NEW ADDED METHODS.
 /*
 Represents a section of the voxel world, with its blocks, mesh, position and other infomation.
 Chunks that are marked as 'dirty' or 'changed' will have their mesh regenerated if they are withing
@@ -81,7 +69,7 @@ public:
 	/*
 	Get the ID of the cube at chunk coordinates x y z.
 	*/
-	Cube get(GLbyte x, GLbyte y, GLbyte z) const;
+	block getBlock(GLbyte x, GLbyte y, GLbyte z);
 
 	/*
 	Get chunk's x axis coordinate (chunk relative).
@@ -111,15 +99,15 @@ public:
 	const vector<vertex>& vertices() const;
 
 	const chunkRenderingData& renderingData() const;
-
-	unsigned int nBlocks() const;
 	
+	unsigned int getNBlocks();
+
 	/*
 	True if the chunk is dirty and false otherwise.
 	*/
-	bool changed() const;
-	
-	bool hasBlocks() const;
+	bool getIsChanged();
+
+	const atomic<bool>& changedHighPriority() const;
 
 
 	// Modifiers.
@@ -128,16 +116,19 @@ public:
 	Sets the value of a block within the chunk.
 	The chunk is marked as dirty.
 	*/
-	void set(GLbyte x, GLbyte y, GLbyte z, Cube block_id);
+	void setBlock(GLbyte x, GLbyte y, GLbyte z, block block_id);
 
 	glm::vec3& chunkPos();
 
-	unsigned int& nBlocks();
+	void setNBlocks(unsigned int nBlocks);
+
+	shared_mutex& blockDataMutex();
+
 
 	/*
-	Mark chunk as dirty (changed() = true) or as not dirty (change() = false)
+	Mark chunk as dirty (true) or not (false)
 	*/
-	bool& changed();
+	void setIsChanged(bool isChanged);
 
 
 	/*
@@ -147,20 +138,14 @@ public:
 	
 private:
 
-	Cube blocks_[16][16][16];
-	bool changed_;
-	unsigned int nBlocks_;
+	block blocks_[16][16][16];
+	atomic<bool> changed_;
+	atomic<unsigned int> nBlocks_;
 	chunkRenderingData renderingData_;
 	chunkManager& chunkManager_;
+	shared_mutex blocksMutex_;
 
 };
-
-inline Cube chunk::get(GLbyte x, GLbyte y, GLbyte z) const
-{
-
-	return blocks_[x][y][z];
-
-}
 
 inline GLbyte chunk::x() const
 {
@@ -218,41 +203,12 @@ inline const chunkRenderingData& chunk::renderingData() const
 
 }
 
-inline unsigned int chunk::nBlocks() const
+inline shared_mutex& chunk::blockDataMutex()
 {
 
-	return nBlocks_;
+	return blocksMutex_;
 
 }
-
-inline unsigned int& chunk::nBlocks()
-{
-
-	return nBlocks_;
-
-}
-
-inline bool chunk::changed() const
-{
-
-	return changed_;
-
-}
-
-inline bool& chunk::changed()
-{
-
-	return changed_;
-
-}
-
-inline bool chunk::hasBlocks() const 
-{
-
-	return nBlocks_;
-
-}
-
 
 /*
 Used for managing the chunk life cycle.
@@ -278,12 +234,27 @@ public:
 
 	int nChunksToDraw() const;
 
+	block getBlock(const glm::vec3& pos);
+
+	const unordered_set<glm::vec3>& freeableChunks() const;
+
+	const mutex& freeableChunksMutex() const;
+
+	const mutex& managerThreadMutex() const;
+
+	const condition_variable& managerThreadCV() const;
+
 
 	// Modifiers.
 
 	chunk* selectChunk(GLbyte x, GLbyte y, GLbyte z);
 
-	chunk* selectChunk(const glm::vec3& chunkPos);
+	chunk* selectChunkByChunkPos(const glm::vec3& chunkPos);
+
+	/*
+	Uses real float point coordinates.
+	*/
+	chunk* selectChunkByRealPos(const glm::vec3& pos);
 
 	/*
 	WARNING. This operation is not thread-safe.
@@ -294,6 +265,18 @@ public:
 	*/
 	deque<chunkRenderingData>* drawableChunksWrite();
 
+	recursive_mutex& chunksMutex();
+
+	unordered_set<glm::vec3>& freeableChunks();
+
+	mutex& freeableChunksMutex();
+
+	mutex& managerThreadMutex();
+
+	condition_variable& managerThreadCV();
+
+
+	// Other methods.
 
 	/*
 	All neigbor chunks from the one at 'chunkPos' will be marked as changed and will have
@@ -331,13 +314,12 @@ public:
 	void unloadChunk(const glm::vec3& chunkPos);
 
 	/*
-	Function called by meshing threads.
+	Function called by meshing threads to generate
+	meshes for chunks that are close to the player.
 	*/
-	void meshChunks(const atomic<bool>& app_finished, const atomic<int>& chunkRange,
-					int rangeStart, int rangeEnd,
-					unordered_set<glm::vec3>& freeableChunks, mutex& freeableChunksMutex,
-					shared_mutex& syncMutex, condition_variable_any& meshingThreadsCV,
-		            atomic<bool>& meshingTsCVContinue, barrier<>& syncPoint);
+	void meshChunks(const atomic<bool>& appFinished, const atomic<int>& chunkRange,
+				    int rangeStart, int rangeEnd, shared_mutex& syncMutex, condition_variable_any& meshingThreadsCV,
+					atomic<bool>& meshingTsCVFlag, barrier<>& syncPoint);
 
 	/*
 	Function called by the chunk management thread.
@@ -345,8 +327,16 @@ public:
 	in order to prevent any race condition between said threads, among other things
 	such as synchronization and data transfering with the rendering thread.
 	*/
-	void manageChunks(const atomic<bool>& app_finished, unsigned int nMeshingThreads,
-					  mutex& managerThreadMutex, condition_variable& managerThreadCV);
+	void manageChunks(const atomic<bool>& appFinished, unsigned int nMeshingThreads);
+
+	/*
+	Queue a chunk in the high priority update list.
+	Only chunks with high priority for being remeshed
+	(such as chunks modified by the player) should be
+	queued into this list.
+	*/
+	void highPriorityUpdate(const glm::vec3& chunkPos);
+
 
 
 	// Destructors.
@@ -359,15 +349,47 @@ public:
 
 private:
 
+	const camera& playerCamera_;
 	int nChunksToDraw_;
 	unordered_map<glm::vec3, chunk*> chunks_;
 	deque<chunkRenderingData>* drawableChunksWrite_,
 		                     * drawableChunksRead_;
 	deque<chunk*> freeChunks_;
-	const camera& playerCamera_;
+	unordered_set<glm::vec3> freeableChunks_;
+	
+	/* 
+	Chunks with high update priority
+	(for example, chunks modified by the player
+	by removing or adding a block).
+	*/
+	deque<glm::vec3> highPriorityList_;
+
+	// TODO. Convert all mutex into recursive_mutex.
+	mutex freeableChunksMutex_,
+		  managerThreadMutex_;
+
+	/*
+	This mutex's sole purpose is to let us
+	use the highPriorityUpdatesCV_ condition
+	variable.
+	*/
+	shared_mutex highPriorityMutex_;
+
 	recursive_mutex drawableChunksWriteMutex_,
 		            chunksMutex_,
-		            freeChunksMutex_;
+		            freeChunksMutex_,
+		            highPriorityListMutex_;
+	condition_variable managerThreadCV_;
+	condition_variable_any highPriorityUpdatesCV_;
+	atomic<bool> highPriorityCVFlag_; // Delete this unused member.
+
+	/*
+	Used to force all meshing threads to synchronize with
+	the rendering thread when a high priority
+	chunk update is issued and it's imperative than the update
+	made is reflected in the rendering thread as quickly as possible.
+	*/
+	atomic<bool> forceSyncFlag_;
 
 };
 
@@ -396,6 +418,69 @@ inline int chunkManager::nChunksToDraw() const
 {
 
 	return nChunksToDraw_;
+
+}
+
+inline const unordered_set<glm::vec3>& chunkManager::freeableChunks() const
+{
+
+	return freeableChunks_;
+
+}
+
+inline const mutex& chunkManager::freeableChunksMutex() const
+{
+
+	return freeableChunksMutex_;
+
+}
+
+inline const mutex& chunkManager::managerThreadMutex() const
+{
+
+	return managerThreadMutex_;
+
+}
+
+inline const condition_variable& chunkManager::managerThreadCV() const
+{
+
+	return managerThreadCV_;
+
+}
+
+inline recursive_mutex& chunkManager::chunksMutex()
+{
+
+	return chunksMutex_;
+
+}
+
+inline unordered_set<glm::vec3>& chunkManager::freeableChunks()
+{
+
+	return freeableChunks_;
+
+}
+
+inline mutex& chunkManager::freeableChunksMutex()
+{
+
+	return freeableChunksMutex_;
+
+}
+
+inline mutex& chunkManager::managerThreadMutex()
+{
+
+	return managerThreadMutex_;
+
+}
+
+inline condition_variable& chunkManager::managerThreadCV()
+{
+
+	return managerThreadCV_;
 
 }
 

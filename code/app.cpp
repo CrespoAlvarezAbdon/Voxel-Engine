@@ -122,51 +122,62 @@ int main()
     if (glewInit() != GLEW_OK) 
         throw error(error::errorTypes::GLEW_INIT_FAILED);
 
+    glfwSetInputMode(mainWindow, GLFW_STICKY_KEYS, GLFW_TRUE);
+
 
     // Configurable options.
-    int nChunksToDraw = 32; // WARNING. This option is for beefy computers. Average should be between 12 and 20.
+    int nChunksToDraw = 5; // WARNING. This option is for beefy computers. Average should be between 12 and 20.
+    unsigned int blockReachRange = 5;
     texture blockTextureAtlas("Resources/Textures/atlas.png");
-    player player(45.0f, width, height, 0.1f, 500.0f, mainWindow, glm::vec3(128.0f, 145.0f, 128.0f));
+    player player(45.0f, width, height, 0.1f, 500.0f, mainWindow, blockReachRange, glm::vec3(128.0f, 145.0f, 128.0f));
+
+    // Set player input callbacks.
+    // TODO. Abstract this into a input.h or similar.
+    glfwSetWindowUserPointer(mainWindow, &player);
+    glfwSetMouseButtonCallback(mainWindow, player::mouseButtonCallback);
 
     // Rendering related.
-    shader default_shader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
+    shader defaultShader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
     vertexArray va;
     vertexBufferLayout layout;
     vertexBufferProvider vboProvider;
     renderer renderer;
-    glm::mat4 model_matrix, 
+    glm::mat4 modelMatrix, 
               MVPmatrix;
     
     // Chunk management thread related.
-    chunkManager chunkMng(nChunksToDraw, player.getCamera());
-    int nMeshingThreads = 2;
-    atomic<bool> app_finished = false;
+    chunkManager chunkMng(nChunksToDraw, player.mainCamera());
+    int nMeshingThreads = 2; // Number of threads for non-high priority mesh updates.
     deque<chunkRenderingData> const* chunksToDraw = nullptr;
-    mutex managerThreadMutex;
-    condition_variable managerThreadCV;
+    atomic<bool> appFinished = false;
 
-    // Configure some last things before starting to load the terrain.
+    // Finish connecting some objects.
+    player.setChunkManager(&chunkMng);
+    player.mainCamera().setChunkManager(&chunkMng);
+
+    // Configure texture block atlas.
     texture::setBlockAtlas(blockTextureAtlas);
-    texture::setBlockAtlasResolution(512);
+    texture::setBlockAtlasResolution(16);
     
+    // Debug information.
     cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << endl
          << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << endl;
 
-    thread chunk_management(&chunkManager::manageChunks, &chunkMng, ref(app_finished), nMeshingThreads,
-                            ref(managerThreadMutex), ref(managerThreadCV));
+    // Start generating and meshing the terrain.
+    thread chunkManagementThread(&chunkManager::manageChunks, &chunkMng, ref(appFinished), nMeshingThreads);
 
 
-    // The layout at the moment has only two floats that represent the vertex's position. 
-    // If we want more things in the layout, call layout.push() again for each new thing.
+    // Configure the vertex layout.
     layout.push<GLbyte>(3); 
     layout.push<GLbyte>(1);
     layout.push<GLfloat>(2); 
 
+    // Bind the currently used VAO, shaders and atlases.
     va.bind();
-    default_shader.bind();
+    defaultShader.bind();
     blockTextureAtlas.bind();
 
-    // Main game loop.
+    // Main game loop starts here.
     double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
            lastFrameTime = lastSecondTime,
            actualTime,
@@ -194,23 +205,25 @@ int main()
         }
 
         // Coordinate main thread and chunk management thread.
-        if(managerThreadMutex.try_lock())
+        if(chunkMng.managerThreadMutex().try_lock())
         {
 
+            // SI HA OCURRIDO UNA ACTUALIZACION DE ALTA PRIORIDAD NO HAGAS SWAP
             chunkMng.swapDrawableChunksLists();
             chunksToDraw = chunkMng.drawableChunksRead();
 
-            managerThreadMutex.unlock();
-            managerThreadCV.notify_one();
+            chunkMng.managerThreadMutex().unlock();
+            chunkMng.managerThreadCV().notify_one();
 
         }
 
         // Rendering starts here.
         renderer.clear();
 
-        // Update camera.
-        player.setCamera().updatePos(timeStep);
-        player.setCamera().updateView();
+        // Update player view.
+        player.mainCamera().updatePos(timeStep);
+        player.selectBlock();
+        player.mainCamera().updateView();
        
         if (chunksToDraw)
         {
@@ -229,9 +242,9 @@ int main()
 
                     va.addLayout(layout);
 
-                    model_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(chunksToDraw->operator[](i).chunkPos.x * SCX, chunksToDraw->operator[](i).chunkPos.y * SCY, chunksToDraw->operator[](i).chunkPos.z * SCZ));
-                    MVPmatrix = player.getCamera().projectionMatrix() * player.getCamera().viewMatrix() * model_matrix;
-                    default_shader.setUniformMatrix4f("u_MVP", MVPmatrix);
+                    modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(chunksToDraw->operator[](i).chunkPos.x * SCX, chunksToDraw->operator[](i).chunkPos.y * SCY, chunksToDraw->operator[](i).chunkPos.z * SCZ));
+                    MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix() * modelMatrix;
+                    defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
 
                     renderer.draw(nVertices);
 
@@ -251,19 +264,19 @@ int main()
         
     }
 
-    // Notify the chunk management thread that the game is closing.
-    // In case the chunk management thread is locked waiting to sync with the rendering thread, unblock it.
+    // Notify the chunk management and the high priority update threads that the game is closing.
+    // In case a thread is waiting on a corresponding condition variable, send a notification to unblock it.
     {
 
-        unique_lock<mutex> lock(managerThreadMutex);
-        app_finished = true;
+        unique_lock<mutex> lock(chunkMng.managerThreadMutex());
+        appFinished = true;
 
     }
-    managerThreadCV.notify_one();
-    cout << "[DEBUG]: sent" << endl;
+    chunkMng.managerThreadCV().notify_one();
+
 
     // Wait for the chunk management thread to be finished before ending the main/rendering thread.
-    chunk_management.join();
+    chunkManagementThread.join();
 
     // Terminates the GLFW library. Necessary to end the program.
     glfwTerminate();

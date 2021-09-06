@@ -1,10 +1,19 @@
 #ifndef _CAMERA_
 #define _CAMERA_
 
+#include "definitions.h"
+#include "chunk.h"
 #include <GLFW/glfw3.h>
 #include <gtx/quaternion.hpp>
 #include <gtx/rotate_vector.hpp>
 #include <glm.hpp>
+
+
+//////////////////////////////
+//Forward class declarations//
+//////////////////////////////
+class chunk;
+class chunkManager;
 
 
 ///////////
@@ -22,7 +31,7 @@ public:
 
 	// Constructors.
 
-	camera(float FOV, float width, float height, float zNear, float zFar, GLFWwindow* window, 
+	camera(float FOV, float width, float height, float zNear, float zFar, GLFWwindow* window,
 		   const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f), const glm::vec3& direction = glm::vec3(0.0f, 0.0f, 0.0f));
 
 
@@ -39,6 +48,8 @@ public:
 	const glm::mat4& projectionMatrix() const;
 
 	const glm::mat4& viewMatrix() const;
+
+	const glm::vec3& direction() const;
 
 	/*
 	Get the camera's chunk relative position.
@@ -65,12 +76,15 @@ public:
 
 	glm::vec3& chunkPos();
 
+	void setChunkManager(chunkManager* chunkMng);
+
 
 	/*
 	Update the camera's position and the direction it's looking at
 	taking into account the delta time to avoid the FPS from altering the movement speed.
 	NOTE. Once this method is called, the next method you should instantly call is
 	camera::updateView() to reflect the change in the camera's position and view direction.
+	TODO. Update this method to be use GLFW callbacks functions for better input handling.
 	*/
 	void updatePos(float timeStep);
 
@@ -102,15 +116,9 @@ private:
 		      upAxis_, 
 		      chunkRelativePosition_,
 		      oldChunkRelativePos_;
+	chunkManager* chunkMng_;
 
 };
-
-inline void camera::updateView()
-{
-
-	viewMatrix_ = glm::lookAt(position_, position_ + direction_, upAxis_);
-
-}
 
 inline float camera::FOV() const
 {
@@ -133,21 +141,7 @@ inline float camera::mouseSensibility() const
 
 }
 
-inline float& camera::mouseSensibility()
-{
-
-	return mouseSensibility_;
-
-}
-
 inline float camera::movementSpeed() const
-{
-
-	return movementSpeed_;
-
-}
-
-inline float& camera::movementSpeed()
 {
 
 	return movementSpeed_;
@@ -161,21 +155,7 @@ inline const glm::mat4& camera::projectionMatrix() const
 
 }
 
-inline glm::mat4& camera::projectionMatrix()
-{
-
-	return projectionMatrix_;
-
-}
-
 inline const glm::mat4& camera::viewMatrix() const
-{
-
-	return viewMatrix_;
-
-}
-
-inline glm::mat4& camera::viewMatrix()
 {
 
 	return viewMatrix_;
@@ -189,13 +169,6 @@ inline const glm::vec3& camera::pos() const
 
 }
 
-inline glm::vec3& camera::pos()
-{
-
-	return position_;
-
-}
-
 inline const glm::vec3& camera::chunkPos() const
 {
 
@@ -203,10 +176,66 @@ inline const glm::vec3& camera::chunkPos() const
 
 }
 
+inline const glm::vec3& camera::direction() const 
+{
+
+	return direction_;
+
+}
+
+inline float& camera::mouseSensibility()
+{
+
+	return mouseSensibility_;
+
+}
+
+inline float& camera::movementSpeed()
+{
+
+	return movementSpeed_;
+
+}
+
+inline glm::mat4& camera::projectionMatrix()
+{
+
+	return projectionMatrix_;
+
+}
+
+inline glm::mat4& camera::viewMatrix()
+{
+
+	return viewMatrix_;
+
+}
+
+inline glm::vec3& camera::pos()
+{
+
+	return position_;
+
+}
+
 inline glm::vec3& camera::chunkPos()
 {
 
 	return chunkRelativePosition_;
+
+}
+
+inline void camera::setChunkManager(chunkManager* chunkMng)
+{
+
+	chunkMng_ = chunkMng;
+
+}
+
+inline void camera::updateView()
+{
+
+	viewMatrix_ = glm::lookAt(position_, position_ + direction_, upAxis_);
 
 }
 
