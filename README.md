@@ -3,7 +3,7 @@
  Licensed under GNU General Public License Version 3.
  More details on LICENSE file.
 
- //WARRANTIES. VERY IMPORTANT. MUST READ.//
+ WARRANTIES. VERY IMPORTANT. MUST READ.
  Information regarding warranties.
  I do not offer any warranties regarding any code I upload related to this project or any other I have uploaded, I am uploading, and I will upload.
  At the moment, you have to compile the code yourself. I do not take any responsibility regarding anything that could happen related to any code I upload.
