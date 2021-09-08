@@ -126,7 +126,7 @@ int main()
 
 
     // Configurable options.
-    int nChunksToDraw = 5; // WARNING. This option is for beefy computers. Average should be between 12 and 20.
+    int nChunksToDraw = 32; // WARNING. This option is for beefy computers. Average should be between 12 and 20.
     unsigned int blockReachRange = 5;
     texture blockTextureAtlas("Resources/Textures/atlas.png");
     player player(45.0f, width, height, 0.1f, 500.0f, mainWindow, blockReachRange, glm::vec3(128.0f, 145.0f, 128.0f));
@@ -148,7 +148,7 @@ int main()
     // Chunk management thread related.
     chunkManager chunkMng(nChunksToDraw, player.mainCamera());
     int nMeshingThreads = 2; // Number of threads for non-high priority mesh updates.
-    deque<chunkRenderingData> const* chunksToDraw = nullptr;
+    unordered_map<glm::vec3, vector<vertex>> const* chunksToDraw = nullptr;
     atomic<bool> appFinished = false;
 
     // Finish connecting some objects.
@@ -198,7 +198,7 @@ int main()
         if (actualTime - lastSecondTime >= 1.0)
         {
 
-            //cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
+            cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
             nFramesDrawn = 0;
             lastSecondTime = glfwGetTime();
 
@@ -208,9 +208,19 @@ int main()
         if(chunkMng.managerThreadMutex().try_lock())
         {
 
-            // SI HA OCURRIDO UNA ACTUALIZACION DE ALTA PRIORIDAD NO HAGAS SWAP
-            chunkMng.swapDrawableChunksLists();
-            chunksToDraw = chunkMng.drawableChunksRead();
+            if (chunkMng.forceSyncFlag()) 
+            {
+                
+                chunkMng.updatePriorityChunk(chunkMng.priorityChunkPos());
+
+            }
+            else 
+            {
+            
+                chunkMng.swapDrawableChunksLists();
+                chunksToDraw = chunkMng.drawableChunksRead();
+            
+            }
 
             chunkMng.managerThreadMutex().unlock();
             chunkMng.managerThreadCV().notify_one();
@@ -229,20 +239,22 @@ int main()
         {
 
             // Render chunks.
-            for (unsigned int i = 0; i < chunksToDraw->size(); i++)
+            // chunk.first refers to the chunk's postion.
+            // chunk.second refers to the chunk's vertex data.
+            for (auto const& chunk : *chunksToDraw)
             {
 
-                nVertices = chunksToDraw->operator[](i).vertices.size();
+                nVertices = chunk.second.size();
                 if (nVertices)
                 {
 
                     vbo = vboProvider.requestVBO();
                     vbo->bind();
-                    vbo->prepareStatic(chunksToDraw->operator[](i).vertices.data(), sizeof(vertex) * nVertices);
+                    vbo->prepareStatic(chunk.second.data(), sizeof(vertex) * nVertices);
 
                     va.addLayout(layout);
 
-                    modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(chunksToDraw->operator[](i).chunkPos.x * SCX, chunksToDraw->operator[](i).chunkPos.y * SCY, chunksToDraw->operator[](i).chunkPos.z * SCZ));
+                    modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(chunk.first.x * SCX, chunk.first.y * SCY, chunk.first.z * SCZ));
                     MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix() * modelMatrix;
                     defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
 

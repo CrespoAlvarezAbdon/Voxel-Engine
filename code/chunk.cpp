@@ -270,8 +270,9 @@ void chunk::renewMesh()
 
 chunkManager::chunkManager(int nChunksToDraw, const camera& playerCamera)
     : nChunksToDraw_(nChunksToDraw), playerCamera_(playerCamera), 
-      drawableChunksRead_(new deque<chunkRenderingData>), drawableChunksWrite_(new deque<chunkRenderingData>),
-      highPriorityCVFlag_(false), forceSyncFlag_(false)
+      drawableChunksRead_(new unordered_map<glm::vec3, vector<vertex>>),
+      drawableChunksWrite_(new unordered_map<glm::vec3, vector<vertex>>),
+      forceSyncFlag_(false), priorityChunkPos_(0, 0, 0)
 {}
 
 block chunkManager::getBlock(const glm::vec3& pos) 
@@ -390,17 +391,35 @@ void chunkManager::pushDrawableChunks(const chunkRenderingData& renderingData)
 
     unique_lock<recursive_mutex> lock(drawableChunksWriteMutex_);
 
-    drawableChunksWrite_->push_back(renderingData);
+    drawableChunksWrite_->insert_or_assign(renderingData.chunkPos, renderingData.vertices);
 
 }
 
 void chunkManager::swapDrawableChunksLists() 
 {
 
-    deque<chunkRenderingData>* aux = drawableChunksRead_;
+    unordered_map<glm::vec3, vector<vertex>>* aux = drawableChunksRead_;
 
     drawableChunksRead_ = drawableChunksWrite_;
     drawableChunksWrite_ = aux;
+
+}
+
+void chunkManager::updatePriorityChunk(const glm::vec3& chunkPos)
+{
+
+    unordered_map<glm::vec3, vector<vertex>>::iterator readCopyIt = drawableChunksRead_->find(chunkPos),
+                                                       writeCopyIt = drawableChunksWrite_->find(chunkPos);
+
+    if (writeCopyIt != drawableChunksWrite_->end())
+    {
+
+        if (readCopyIt != drawableChunksRead_->end())
+            swap(readCopyIt->second, writeCopyIt->second);
+        else
+            readCopyIt->second = writeCopyIt->second;
+
+    }
 
 }
 
@@ -469,6 +488,7 @@ void chunkManager::unloadChunk(const glm::vec3& chunkPos)
     unordered_map<glm::vec3, chunk*>::iterator it;
 
     
+    // TODO. ERASE ALSO ANOTHER ENTRIES FOR THAT CHUNK POS IN OTHER DICTIONARIES.
     if ((it = chunks_.find(chunkPos)) != chunks_.end())
     {
 
@@ -538,7 +558,6 @@ void chunkManager::meshChunks(const atomic<bool>& appFinished, const atomic<int>
 
                                 selectedChunk = selectChunkByChunkPos(highPriorityList_.front());
                                 highPriorityList_.pop_front();
-                                forceSyncFlag_ = true;
 
                             }
                             else
@@ -567,6 +586,12 @@ void chunkManager::meshChunks(const atomic<bool>& appFinished, const atomic<int>
 
                             }
 
+                            priorityChunkPos_.x = selectedChunk->x();
+                            priorityChunkPos_.y = selectedChunk->y();
+                            priorityChunkPos_.z = selectedChunk->z();
+
+                            forceSyncFlag_ = true;
+
                             // Sync with the other meshing threads and the chunk management thread.
                             syncPoint.arrive_and_wait();
                             meshingTsCVContinue = false;
@@ -578,40 +603,36 @@ void chunkManager::meshChunks(const atomic<bool>& appFinished, const atomic<int>
                         }
 
                         // Now continue processing common chunk updates.
-                        { 
-                        
-                            viewedChunkCoord = playerChunkCoord + offset;
-                            selectedChunk = selectChunkByChunkPos(viewedChunkCoord);
+                        viewedChunkCoord = playerChunkCoord + offset;
+                        selectedChunk = selectChunkByChunkPos(viewedChunkCoord);
 
-                            if (selectedChunk) // If that chunk is loaded.
+                        if (selectedChunk) // If that chunk is loaded.
+                        {
+
+                            // Unmark as freeable.
+                            freeableChunksMutex_.lock();
+                            freeableChunks_.erase(viewedChunkCoord);
+                            freeableChunksMutex_.unlock();
+
+                            // Regenerate mesh and push for rendering if necessary. 
+                            if (selectedChunk->getNBlocks())
                             {
 
-                                // Unmark as freeable.
-                                freeableChunksMutex_.lock();
-                                freeableChunks_.erase(viewedChunkCoord);
-                                freeableChunksMutex_.unlock();
-
-                                // Regenerate mesh and push for rendering if necessary. 
-                                if (selectedChunk->getNBlocks())
+                                if (selectedChunk->getIsChanged())
                                 {
 
-                                    if (selectedChunk->getIsChanged())
-                                    {
-
-                                        selectedChunk->setIsChanged(false);
-                                        selectedChunk->renewMesh();
-
-                                    }
-
-                                    pushDrawableChunks(selectedChunk->renderingData());
+                                    selectedChunk->setIsChanged(false);
+                                    selectedChunk->renewMesh();
 
                                 }
 
+                                pushDrawableChunks(selectedChunk->renderingData());
+
                             }
-                            else
-                                loadChunk(viewedChunkCoord);
-                        
+
                         }
+                        else
+                            loadChunk(viewedChunkCoord);
 
                     }
 
@@ -675,13 +696,19 @@ void chunkManager::manageChunks(const atomic<bool>& app_finished, unsigned int n
         while (!app_finished)
         {
 
-            // Reset the queue from previous iteration.
-            drawableChunksWrite()->clear();
+            // This will only execute when a high priority chunk update
+            // is not issued.
+            if (!forceSyncFlag_)
+            { 
 
-            // Marks all chunks as freeable
-            for (unordered_map<glm::vec3, chunk*>::const_iterator it = chunks().cbegin(); it != chunks().cend(); it++)
-                freeableChunks_.insert(it->first);
+                // Marks all chunks as freeable
+                for (unordered_map<glm::vec3, chunk*>::const_iterator it = chunks().cbegin(); it != chunks().cend(); it++)
+                    freeableChunks_.insert(it->first);
 
+            }
+
+            // Reset the forcible synchronization flag.
+            forceSyncFlag_ = false;
 
             // Signal all meshing threads to begin.
             meshingTsCVContinue = true;
@@ -689,33 +716,36 @@ void chunkManager::manageChunks(const atomic<bool>& app_finished, unsigned int n
 
             // Wait for all meshing threads to finish.
             syncPoint.arrive_and_wait();
+ 
+            // This will only execute when a high priority chunk update
+            // is not issued.
+            // This prevents unloading chunks that are within the player's view range
+            // and that didn't get viewed because search stopped because
+            // a high priority chunk update was issued. It also prevents
+            if (!forceSyncFlag_)
+            {
 
-            // All remaining chunks marked as freeable are freed.
-            // No thread can access the chunks dictionary  
-            // at the same time this is being executed.
-            chunksMutex_.lock();
-            for (unordered_set<glm::vec3>::iterator it = freeableChunks_.begin(); it != freeableChunks_.end(); it++)
-                unloadChunk(*it);
-            chunksMutex_.unlock();
+                // All remaining chunks marked as freeable are freed.
+                // No thread can access the chunks dictionary  
+                // at the same time this is being executed.
+                chunksMutex_.lock();
+                for (unordered_set<glm::vec3>::iterator it = freeableChunks_.begin(); it != freeableChunks_.end(); it++)
+                    unloadChunk(*it);
+                chunksMutex_.unlock();
 
-            // Reset the freeable chunks queue for the next iteration.
-            freeableChunks_.clear();
+                // Reset the freeable chunks queue for the next iteration.
+                freeableChunks_.clear();
+
+                // Increase chunk viewing range for the next
+                // iteration until we reach the limit established
+                // by the player's configuration.
+                if (chunkRange <= nChunksToDraw())
+                    chunkRange++;
+
+            }
 
             // Sync with the rendering thread.
             managerThreadCV_.wait(lock);
-
-
-            // Here we prepare some things for the next iteration.
-
-            // Increase chunk viewing range for the next
-            // iteration until we reach the limit established
-            // by the player's configuration.
-            if (chunkRange <= nChunksToDraw())
-                chunkRange++;
-
-            // If a forcible synchronization was issued, reset
-            // the corresponding flag.
-            forceSyncFlag_ = false;
 
         }
 

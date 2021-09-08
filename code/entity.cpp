@@ -41,8 +41,6 @@ void player::selectBlock()
 
     }
 
-    cout << "\r[DEBUG]: looking at: " << selectedBlock_;
-
 }
 
 void player::mouseButtonHandler(GLFWwindow* window, int button, int action, int mods)

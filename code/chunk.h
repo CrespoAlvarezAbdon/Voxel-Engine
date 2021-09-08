@@ -230,7 +230,7 @@ public:
 
 	const unordered_map<glm::vec3, chunk*>& chunks();
 
-	deque<chunkRenderingData> const* drawableChunksRead() const;
+	unordered_map<glm::vec3, vector<vertex>> const* drawableChunksRead() const;
 
 	int nChunksToDraw() const;
 
@@ -243,6 +243,10 @@ public:
 	const mutex& managerThreadMutex() const;
 
 	const condition_variable& managerThreadCV() const;
+
+	const atomic<bool>& forceSyncFlag() const;
+
+	const glm::vec3& priorityChunkPos() const;
 
 
 	// Modifiers.
@@ -263,7 +267,7 @@ public:
 	race conditions when using multiple threads in the
 	chunk management system.
 	*/
-	deque<chunkRenderingData>* drawableChunksWrite();
+	unordered_map<glm::vec3, vector<vertex>>* drawableChunksWrite();
 
 	recursive_mutex& chunksMutex();
 
@@ -274,6 +278,8 @@ public:
 	mutex& managerThreadMutex();
 
 	condition_variable& managerThreadCV();
+
+	atomic<bool>& forceSyncFlag();
 
 
 	// Other methods.
@@ -298,6 +304,17 @@ public:
 	the one used for writing in the chunk manager thread and vice versa.
 	*/
 	void swapDrawableChunksLists();
+
+	/*
+	WARNING. ONLY CALL THIS METHOD WHEN THE RENDERER THREAD AND THE CHUNK MANAGER THREAD ARE SYNCED.
+	Swap the write-only copy and the read-only copy of a chunk's rendering data
+	with its chunk-relative position equal to 'chunkPos'. This will update said chunk
+	with the newest vertex data available for it. Take into account that this method should only
+	be used when a chunk has been modified and that change must be reflected into the world 
+	almost instantly (for example, if a player removes a block of a certain chunk, that change
+	must be reflected with no apparent latency).
+	*/
+	void updatePriorityChunk(const glm::vec3& chunkPos);
 
 	/*
 	Atomically loads a new chunk at the specified 'chunkPos' chunk position,
@@ -338,7 +355,6 @@ public:
 	void highPriorityUpdate(const glm::vec3& chunkPos);
 
 
-
 	// Destructors.
 
 	/*
@@ -352,8 +368,8 @@ private:
 	const camera& playerCamera_;
 	int nChunksToDraw_;
 	unordered_map<glm::vec3, chunk*> chunks_;
-	deque<chunkRenderingData>* drawableChunksWrite_,
-		                     * drawableChunksRead_;
+	unordered_map<glm::vec3, vector<vertex>>* drawableChunksWrite_,
+										    * drawableChunksRead_;
 	deque<chunk*> freeChunks_;
 	unordered_set<glm::vec3> freeableChunks_;
 	
@@ -381,7 +397,6 @@ private:
 		            highPriorityListMutex_;
 	condition_variable managerThreadCV_;
 	condition_variable_any highPriorityUpdatesCV_;
-	atomic<bool> highPriorityCVFlag_; // Delete this unused member.
 
 	/*
 	Used to force all meshing threads to synchronize with
@@ -390,6 +405,7 @@ private:
 	made is reflected in the rendering thread as quickly as possible.
 	*/
 	atomic<bool> forceSyncFlag_;
+	glm::vec3 priorityChunkPos_;
 
 };
 
@@ -400,14 +416,14 @@ inline const unordered_map<glm::vec3, chunk*>& chunkManager::chunks()
 
 }
 
-inline deque<chunkRenderingData> const * chunkManager::drawableChunksRead() const
+inline unordered_map<glm::vec3, vector<vertex>> const * chunkManager::drawableChunksRead() const
 {
 
 	return drawableChunksRead_;
 
 }
 
-inline deque<chunkRenderingData>* chunkManager::drawableChunksWrite()
+inline unordered_map<glm::vec3, vector<vertex>>* chunkManager::drawableChunksWrite()
 {
 
 	return drawableChunksWrite_;
@@ -449,6 +465,20 @@ inline const condition_variable& chunkManager::managerThreadCV() const
 
 }
 
+inline const atomic<bool>& chunkManager::forceSyncFlag() const
+{
+
+	return forceSyncFlag_;
+
+}
+
+inline const glm::vec3& chunkManager::priorityChunkPos() const
+{
+
+	return priorityChunkPos_;
+
+}
+
 inline recursive_mutex& chunkManager::chunksMutex()
 {
 
@@ -481,6 +511,13 @@ inline condition_variable& chunkManager::managerThreadCV()
 {
 
 	return managerThreadCV_;
+
+}
+
+inline atomic<bool>& chunkManager::forceSyncFlag()
+{
+
+	return forceSyncFlag_;
 
 }
 
