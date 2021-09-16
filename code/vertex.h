@@ -2,10 +2,6 @@
 #define _VERTEX_
 #include <GL/glew.h>
 
-// TODO
-// REMOVE THIS DEFINITION.
-typedef unsigned int Index;
-
 
 ///////////
 //Structs//

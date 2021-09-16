@@ -1,9 +1,12 @@
 #include <cmath>
 #include "chunk.h"
 
-#include <iostream>
-#include <ostream>
-using namespace std;
+
+// 'chunkRelativePos' struct.
+
+chunkRelativePos::chunkRelativePos(int x, int y, int z)
+    : x(x), y(y), z(z)
+{}
 
 // 'chunk' class.
 
@@ -48,7 +51,7 @@ void chunk::setIsChanged(bool isChanged)
 
 }
 
-block chunk::getBlock(GLbyte x, GLbyte y, GLbyte z)
+VoxelEng::block chunk::getBlock(GLbyte x, GLbyte y, GLbyte z)
 {
 
     return blocks_[x][y][z];
@@ -62,7 +65,22 @@ unsigned int chunk::getNBlocks()
 
 }
 
-void chunk::setBlock(GLbyte x, GLbyte y, GLbyte z, block blockID)
+void chunk::setBlock(chunkRelativePos chunkRelPos, VoxelEng::block blockID)
+{
+
+    changed_ = true;
+
+    if (blocks_[chunkRelPos.x][chunkRelPos.y][chunkRelPos.z] == 0 && blockID != 0)
+        nBlocks_++;
+    else
+        if (blocks_[chunkRelPos.x][chunkRelPos.y][chunkRelPos.z] != 0 && blockID == 0 && nBlocks_ != 0)
+            nBlocks_--;
+
+    blocks_[chunkRelPos.x][chunkRelPos.y][chunkRelPos.z] = blockID;
+
+}
+
+void chunk::setBlock(GLbyte x, GLbyte y, GLbyte z, VoxelEng::block blockID)
 {
 
     changed_ = true;
@@ -92,13 +110,13 @@ void chunk::renewMesh()
     {
 
         float atlasWidth = texture::blockTextureAtlas()->width(),
-            atlasHeight = texture::blockTextureAtlas()->height(),
-            textureWidth = texture::blockAtlasResolution(),
-            textureHeight = texture::blockAtlasResolution(),
-            texCoordX,
-            texCoordY,
-            texCoordX2,
-            texCoordY2;
+              atlasHeight = texture::blockTextureAtlas()->height(),
+              textureWidth = texture::blockAtlasResolution(),
+              textureHeight = texture::blockAtlasResolution(),
+              texCoordX,
+              texCoordY,
+              texCoordX2,
+              texCoordY2;
 
         // Get information about neighbor chunks.
         chunk* frontNeighbor = chunkManager_.selectChunk(renderingData_.chunkPos.x, renderingData_.chunkPos.y, renderingData_.chunkPos.z + 1),
@@ -143,8 +161,8 @@ void chunk::renewMesh()
                     {
 
                         GLbyte xPlus1 = x + 1,
-                            yPlus1 = y + 1,
-                            zPlus1 = z + 1;
+                               yPlus1 = y + 1,
+                               zPlus1 = z + 1;
 
                         texCoordX = blocks_[x][y][z] / (atlasWidth / textureWidth);
                         texCoordY = (ceil(blocks_[x][y][z] / (atlasWidth / textureWidth))) / (atlasHeight / textureHeight);
@@ -272,15 +290,15 @@ chunkManager::chunkManager(int nChunksToDraw, const camera& playerCamera)
     : nChunksToDraw_(nChunksToDraw), playerCamera_(playerCamera), 
       drawableChunksRead_(new unordered_map<glm::vec3, vector<vertex>>),
       drawableChunksWrite_(new unordered_map<glm::vec3, vector<vertex>>),
-      forceSyncFlag_(false), priorityChunkPos_(0, 0, 0)
+      forceSyncFlag_(false)
 {}
 
-block chunkManager::getBlock(const glm::vec3& pos) 
+VoxelEng::block chunkManager::getBlock(const glm::vec3& pos)
 {
 
     glm::vec3 chunkPos(trunc(pos.x / SCX), trunc(pos.y / SCY), trunc(pos.z / SCZ));
     chunk* selectedChunk;
-    block selectedBlock;
+    VoxelEng::block selectedBlock;
 
 
     unique_lock<recursive_mutex> lock(chunksMutex_);
@@ -289,9 +307,9 @@ block chunkManager::getBlock(const glm::vec3& pos)
     {
 
         selectedChunk = chunks_.at(chunkPos);
-        selectedBlock = selectedChunk->getBlock(static_cast<int>(pos.x) % SCX, 
-                                                static_cast<int>(pos.y) % SCY, 
-                                                static_cast<int>(pos.z) % SCZ);
+        selectedBlock = selectedChunk->getBlock(static_cast<int>(pos.x > 0 ? pos.x : -pos.x) % SCX, 
+                                                static_cast<int>(pos.y > 0 ? pos.y : -pos.y) % SCY,
+                                                static_cast<int>(pos.z > 0 ? pos.z : -pos.z) % SCZ);
 
     }
     else
@@ -346,43 +364,87 @@ chunk* chunkManager::selectChunkByRealPos(const glm::vec3& pos)
 
 }
 
-// TODO.
-// UPDATE THIS METHOD.
-// ADD MUTUAL EXCLUSION WHEN NECESSARY
-void chunkManager::forceNeighborsToUpdate(const glm::vec3& chunkPos)
+chunk* chunkManager::neighborMinusX(const glm::vec3& chunkPos)
 {
 
-    unordered_map<glm::vec3, chunk*>::iterator it;
+	glm::vec3 neighborChunkPos(chunkPos.x - 1, chunkPos.y, chunkPos.z);
 
-    // +x neighbor.
-    it = chunks_.find(chunkPos + glm::vec3(1, 0, 0));
-    if (it != chunks_.end())
-        it->second->setIsChanged(true);
+	unique_lock<recursive_mutex> lock(chunksMutex_);
 
-    // -x neighbor.
-    it = chunks_.find(chunkPos + glm::vec3(-1, 0, 0));
-    if (it != chunks_.end())
-        it->second->setIsChanged(true);
+	if (chunks_.find(neighborChunkPos) != chunks_.end())
+		return chunks_.at(neighborChunkPos);
+	else
+		return nullptr;
 
-    // +y neighbor.
-    it = chunks_.find(chunkPos + glm::vec3(0, 1, 0));
-    if (it != chunks_.end())
-        it->second->setIsChanged(true);
+}
 
-    // -y neighbor.
-    it = chunks_.find(chunkPos + glm::vec3(0, -1, 0));
-    if (it != chunks_.end())
-        it->second->setIsChanged(true);
+chunk* chunkManager::neighborPlusX(const glm::vec3& chunkPos)
+{
 
-    // +z neighbor.
-    it = chunks_.find(chunkPos + glm::vec3(0, 0, 1));
-    if (it != chunks_.end())
-        it->second->setIsChanged(true);
+	glm::vec3 neighborChunkPos(chunkPos.x + 1, chunkPos.y, chunkPos.z);
 
-    // -z neighbor.
-    it = chunks_.find(chunkPos + glm::vec3(0, 0, -1));
-    if (it != chunks_.end())
-        it->second->setIsChanged(true);
+	unique_lock<recursive_mutex> lock(chunksMutex_);
+
+	if (chunks_.find(neighborChunkPos) != chunks_.end())
+		return chunks_.at(neighborChunkPos);
+	else
+		return nullptr;
+
+}
+
+chunk* chunkManager::neighborMinusY(const glm::vec3& chunkPos)
+{
+
+	glm::vec3 neighborChunkPos(chunkPos.x, chunkPos.y - 1, chunkPos.z);
+
+	unique_lock<recursive_mutex> lock(chunksMutex_);
+
+	if (chunks_.find(neighborChunkPos) != chunks_.end())
+		return chunks_.at(neighborChunkPos);
+	else
+		return nullptr;
+
+}
+
+chunk* chunkManager::neighborPlusY(const glm::vec3& chunkPos)
+{
+
+	glm::vec3 neighborChunkPos(chunkPos.x, chunkPos.y + 1, chunkPos.z);
+
+	unique_lock<recursive_mutex> lock(chunksMutex_);
+
+	if (chunks_.find(neighborChunkPos) != chunks_.end())
+		return chunks_.at(neighborChunkPos);
+	else
+		return nullptr;
+
+}
+
+chunk* chunkManager::neighborMinusZ(const glm::vec3& chunkPos)
+{
+
+	glm::vec3 neighborChunkPos(chunkPos.x, chunkPos.y, chunkPos.z - 1);
+
+	unique_lock<recursive_mutex> lock(chunksMutex_);
+
+	if (chunks_.find(neighborChunkPos) != chunks_.end())
+		return chunks_.at(neighborChunkPos);
+	else
+		return nullptr;
+
+}
+
+chunk* chunkManager::neighborPlusZ(const glm::vec3& chunkPos)
+{
+
+	glm::vec3 neighborChunkPos(chunkPos.x, chunkPos.y, chunkPos.z + 1);
+
+	unique_lock<recursive_mutex> lock(chunksMutex_);
+
+	if (chunks_.find(neighborChunkPos) != chunks_.end())
+		return chunks_.at(neighborChunkPos);
+	else
+		return nullptr;
 
 }
 
@@ -405,19 +467,21 @@ void chunkManager::swapDrawableChunksLists()
 
 }
 
-void chunkManager::updatePriorityChunk(const glm::vec3& chunkPos)
+void chunkManager::updatePriorityChunks()
 {
 
-    unordered_map<glm::vec3, vector<vertex>>::iterator readCopyIt = drawableChunksRead_->find(chunkPos),
-                                                       writeCopyIt = drawableChunksWrite_->find(chunkPos);
+    glm::vec3 chunkPos;
 
-    if (writeCopyIt != drawableChunksWrite_->end())
-    {
 
-        if (readCopyIt != drawableChunksRead_->end())
-            swap(readCopyIt->second, writeCopyIt->second);
-        else
-            readCopyIt->second = writeCopyIt->second;
+    while(!priorityUpdateList_.empty())
+    { 
+
+        chunkPos = priorityUpdateList_.front();
+
+        priorityUpdateList_.pop_front();
+
+        if (drawableChunksWrite_->contains(chunkPos))
+            drawableChunksRead_->insert_or_assign(chunkPos, drawableChunksWrite_->at(chunkPos));
 
     }
 
@@ -426,37 +490,37 @@ void chunkManager::updatePriorityChunk(const glm::vec3& chunkPos)
 void chunkManager::loadChunk(const glm::vec3& chunkPos)
 {
 
-    bool chunkDoesntExist;
+    bool chunkNotLoaded;
+
 
     {
     
         unique_lock<recursive_mutex> lock(chunksMutex_);
 
-        chunkDoesntExist = chunks_.find(chunkPos) == chunks_.end();
+        chunkNotLoaded = chunks_.find(chunkPos) == chunks_.end();
     
     }
 
-    if (chunkDoesntExist)
+    if (chunkNotLoaded)
     {
 
         chunk* chunkPtr = nullptr;
 
-        if (freeChunks_.size())
         {
 
             unique_lock<recursive_mutex> lock(freeChunksMutex_);
 
-            chunkPtr = freeChunks_.front();
-            freeChunks_.pop_front();
+            if (freeChunks_.size())
+            {
+
+                chunkPtr = freeChunks_.front();
+                freeChunks_.pop_front();
+
+            }
+            else
+                chunkPtr = new chunk(*this);
 
         }
-        else
-            chunkPtr = new chunk(*this);
-
-
-        // TODO.
-        // TEST IF THIS IS A CRITICAL SECTION.
-        // Write chunk data section starts???
 
         chunkPtr->setIsChanged(true);
         chunkPtr->chunkPos() = chunkPos;
@@ -466,9 +530,6 @@ void chunkManager::loadChunk(const glm::vec3& chunkPos)
             for (GLbyte y = 0; y < SCY; y++)
                 for (GLbyte z = 0; z < SCZ; z++)
                     chunkPtr->setBlock(x, y, z, (chunkPos.y <= 8) * (rand() % 2 + 1));
-
-        // Write chunk data section ends???
-
 
         {
 
@@ -487,8 +548,7 @@ void chunkManager::unloadChunk(const glm::vec3& chunkPos)
 
     unordered_map<glm::vec3, chunk*>::iterator it;
 
-    
-    // TODO. ERASE ALSO ANOTHER ENTRIES FOR THAT CHUNK POS IN OTHER DICTIONARIES.
+
     if ((it = chunks_.find(chunkPos)) != chunks_.end())
     {
 
@@ -533,64 +593,19 @@ void chunkManager::meshChunks(const atomic<bool>& appFinished, const atomic<int>
                     for (offset.z = -chunkRange; offset.z <= chunkRange; offset.z++)
                     {
 
-                        // If a forcible synchronization was issued.
-                        if (forceSyncFlag_)
-                        {
-
-                            // Sync with the other meshing threads and the chunk management thread.
-                            syncPoint.arrive_and_wait();
-                            meshingTsCVContinue = false;
-
-                            // Wait for the chunk management thread's signal.
-                            while (!meshingTsCVContinue)
-                                meshingThreadsCV.wait(syncLock);
-
-                        }
-
                         // First check if there is any high priority chunk update.
                         // If so, force synchronization with the
                         // rendering thread to reflect the change made.
                         {
 
-                            unique_lock<recursive_mutex> priorityListLock(highPriorityListMutex_);
-                            if (!highPriorityList_.empty())
-                            {
-
-                                selectedChunk = selectChunkByChunkPos(highPriorityList_.front());
-                                highPriorityList_.pop_front();
-
-                            }
-                            else
-                                selectedChunk = nullptr;
-
+                            unique_lock<recursive_mutex> priorityListLock(priorityMeshingListMutex_);
+                            forceSyncFlag_ = !priorityMeshingList_.empty();
+  
                         }
 
-                        // If a high priority update was found, process it and synchronize
-                        // to reflect the change.
-                        if (selectedChunk) 
+                        // If a forcible synchronization was issued.
+                        if (forceSyncFlag_)
                         {
-
-                            // Unmark as freeable.
-                            freeableChunksMutex_.lock();
-                            freeableChunks_.erase(selectedChunk->chunkPos());
-                            freeableChunksMutex_.unlock();
-
-                            // Regenerate mesh and push for rendering if necessary. 
-                            if (selectedChunk->getNBlocks())
-                            {
-
-                                selectedChunk->setIsChanged(false);
-                                selectedChunk->renewMesh();
-
-                                pushDrawableChunks(selectedChunk->renderingData());
-
-                            }
-
-                            priorityChunkPos_.x = selectedChunk->x();
-                            priorityChunkPos_.y = selectedChunk->y();
-                            priorityChunkPos_.z = selectedChunk->z();
-
-                            forceSyncFlag_ = true;
 
                             // Sync with the other meshing threads and the chunk management thread.
                             syncPoint.arrive_and_wait();
@@ -672,6 +687,7 @@ void chunkManager::manageChunks(const atomic<bool>& app_finished, unsigned int n
         shared_mutex syncMutex;
         condition_variable_any meshingThreadsCV;
         barrier syncPoint(nMeshingThreads + 1);
+        chunk* priorityChunk = nullptr;
 
 
         // Initialice meshing threads.
@@ -706,17 +722,17 @@ void chunkManager::manageChunks(const atomic<bool>& app_finished, unsigned int n
                     freeableChunks_.insert(it->first);
 
             }
-
-            // Reset the forcible synchronization flag.
-            forceSyncFlag_ = false;
-
+            else // Reset the forcible synchronization flag.
+                forceSyncFlag_ = false;
+                
             // Signal all meshing threads to begin.
             meshingTsCVContinue = true;
             meshingThreadsCV.notify_all();
 
             // Wait for all meshing threads to finish.
             syncPoint.arrive_and_wait();
- 
+
+
             // This will only execute when a high priority chunk update
             // is not issued.
             // This prevents unloading chunks that are within the player's view range
@@ -733,19 +749,74 @@ void chunkManager::manageChunks(const atomic<bool>& app_finished, unsigned int n
                     unloadChunk(*it);
                 chunksMutex_.unlock();
 
-                // Reset the freeable chunks queue for the next iteration.
-                freeableChunks_.clear();
-
                 // Increase chunk viewing range for the next
                 // iteration until we reach the limit established
                 // by the player's configuration.
                 if (chunkRange <= nChunksToDraw())
                     chunkRange++;
 
-            }
+                // Sync with the rendering thread.
+                managerThreadCV_.wait(lock);
 
-            // Sync with the rendering thread.
-            managerThreadCV_.wait(lock);
+                // Reset some data structures for the next iteration.
+                freeableChunks_.clear();
+                drawableChunksWrite_->clear();
+
+            }
+            else // If there is a high priority chunk update, process it.
+            {
+
+                glm::vec3 priorityChunkPos;
+                bool synchronize = false,
+                     isLockActive = false;
+
+
+                priorityMeshingListMutex_.lock();
+                isLockActive = true;
+
+                while (!priorityMeshingList_.empty())
+                {
+
+                    priorityChunkPos = priorityMeshingList_.front();
+                    priorityMeshingList_.pop_front();
+
+                    priorityMeshingListMutex_.unlock();
+                    isLockActive = false;
+
+                    priorityChunk = selectChunkByChunkPos(priorityChunkPos);
+
+                    if (priorityChunk)
+                    {
+
+                        synchronize = true;
+
+                        // Unmark as freeable.
+                        freeableChunksMutex_.lock();
+                        freeableChunks_.erase(priorityChunk->chunkPos());
+                        freeableChunksMutex_.unlock();
+
+                        // Regenerate mesh and push for rendering if necessary. 
+                        priorityChunk->setIsChanged(false);
+                        priorityChunk->renewMesh();
+
+                        pushDrawableChunks(priorityChunk->renderingData());
+                        priorityUpdateList_.push_back(priorityChunk->chunkPos());
+
+                    }
+
+                    priorityMeshingListMutex_.lock();
+                    isLockActive = true;
+
+                }
+
+                if(isLockActive)
+                    priorityMeshingListMutex_.unlock();
+                
+                // Sync with the rendering thread if necessary.
+                if(synchronize)
+                    managerThreadCV_.wait(lock);
+
+            }
 
         }
 
@@ -768,14 +839,10 @@ void chunkManager::highPriorityUpdate(const glm::vec3& chunkPos)
     chunk* selectedChunk = selectChunkByChunkPos(chunkPos);
 
 
-    unique_lock<recursive_mutex> lock(highPriorityListMutex_);
+    unique_lock<recursive_mutex> lock(priorityMeshingListMutex_);
 
     if (selectedChunk)
-    {
-
-        highPriorityList_.push_back(chunkPos);
-
-    }
+        priorityMeshingList_.push_back(chunkPos);
 
 }
 

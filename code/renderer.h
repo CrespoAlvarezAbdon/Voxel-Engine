@@ -45,14 +45,7 @@ class renderer
 
 public:
 
-	// Constructors.
-
-
-	// Observers.
-
-
-	// Modifiers.
-
+	// Other methods.
 
 	/*
 	Binds to the corresponding OpenGL context of the thread from where this method is being called
@@ -76,9 +69,6 @@ public:
 	WARNING. Must be called in a thread with valid OpenGL context.
 	*/
 	void clear() const;
-
-
-	// Destructors.
 
 private:
 

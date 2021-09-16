@@ -3,11 +3,11 @@
 
 // 'camera' class.
 
-camera::camera(float FOV, float width, float height, float zNear, float zFar, GLFWwindow* window, 
+camera::camera(float FOV, float width, float height, float zNear, float zFar, VoxelEng::window window,
                const glm::vec3& position, const glm::vec3& direction)
     : FOV_(FOV), zFar_(zFar), angleX_(0), angleY_(0), mouseSensibility_(0.25f), movementSpeed_(20.0f),
     mouseX_(0), mouseY_(0), oldMouseX_(0), oldMouseY_(0), projectionMatrix_(glm::perspective(FOV_, width / height, zNear, zFar_)),
-    viewMatrix_(glm::mat4(1.0f)), window_(window), position_(position), direction_(direction),
+    viewMatrix_(glm::mat4(1.0f)), window_(window.windowGLFW()), position_(position), direction_(direction),
     upAxis_(glm::vec3(0.0f, 1.0f, 0.0f)), chunkMng_(nullptr)
 {
 

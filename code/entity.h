@@ -3,6 +3,7 @@
 
 #include "camera.h"
 #include "chunk.h"
+#include "gameWindow.h"
 #include <GLFW/glfw3.h>
 #include <glm.hpp>
 
@@ -25,8 +26,8 @@ public:
 	/*
 	Spawns the player in the world and initialices its corresponding camera.
 	*/
-	player(float FOV, float width, float height, float zNear, float zFar, GLFWwindow* window, 
-		   unsigned int blockReachRange, const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f),
+	player(float FOV, float width, float height, float zNear, float zFar, VoxelEng::window window, 
+		   unsigned int blockReachRange, const glm::vec3& position, atomic<bool>* appFinished,
 		   const glm::vec3& direction = glm::vec3(0.0f, 0.0f, 0.0f));
 
 
@@ -41,6 +42,8 @@ public:
 
 	void setChunkManager(chunkManager* chunkMng);
 
+
+	// Other methods.
 
 	/*
 	Fakes a raycast to select a block in the world that is
@@ -64,6 +67,18 @@ public:
 	*/
 	void destroySelectedBlock();
 
+	/*
+	Places the current selected block in the hotbar (W.I.P) where the player is looking at.
+	Cannot place a block on thin air, must be looking into a solid block to place.
+	*/
+	void placeSelectedBlock();
+
+	/*
+	Function to process player input.
+	WARNING. Must not be called in the rendering thread.
+	*/
+	void processPlayerInput();
+
 private:
 
 	GLFWwindow* window_;
@@ -71,9 +86,18 @@ private:
 	float blockReachRange_,
 		  blockSearchIncrement_;
 	chunkManager* chunkMng_;
-	block selectedBlock_;
+	VoxelEng::block selectedBlock_;
 	glm::vec3 selectedBlockPos_,
 			  oldSelectedBlockPos_;
+
+	/*
+	Flags used to coordinate the callbacks called
+	on the rendering thread with the input processing thread.
+	*/
+	atomic<bool> destroyBlock_,
+			     placeBlock_;
+
+	atomic<bool>* appFinished_;
 
 };
 

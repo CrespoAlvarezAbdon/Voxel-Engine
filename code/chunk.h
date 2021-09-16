@@ -19,6 +19,7 @@
 #include "vertex.h"
 #include "camera.h"
 #include "texture.h"
+#include "definitions.h"
 using namespace std;
 
 
@@ -29,9 +30,8 @@ using namespace std;
 class camera;
 class chunkManager;
 
-
 ///////////
-//Classes//
+//Structs//
 ///////////
 
 /*
@@ -44,6 +44,23 @@ struct chunkRenderingData
 	vector<vertex> vertices;
 
 };
+
+// Position inside a chunk.
+struct chunkRelativePos 
+{
+
+	chunkRelativePos(int x, int y, int z);
+
+	VoxelEng::byte x, 
+				   y, 
+		           z;
+
+};
+
+
+///////////
+//Classes//
+///////////
 
 // TODO. ADD DOCUMENTATION TO THE NEW ADDED METHODS.
 /*
@@ -69,7 +86,7 @@ public:
 	/*
 	Get the ID of the cube at chunk coordinates x y z.
 	*/
-	block getBlock(GLbyte x, GLbyte y, GLbyte z);
+	VoxelEng::block getBlock(GLbyte x, GLbyte y, GLbyte z);
 
 	/*
 	Get chunk's x axis coordinate (chunk relative).
@@ -107,8 +124,6 @@ public:
 	*/
 	bool getIsChanged();
 
-	const atomic<bool>& changedHighPriority() const;
-
 
 	// Modifiers.
 
@@ -116,7 +131,13 @@ public:
 	Sets the value of a block within the chunk.
 	The chunk is marked as dirty.
 	*/
-	void setBlock(GLbyte x, GLbyte y, GLbyte z, block block_id);
+	void setBlock(GLbyte x, GLbyte y, GLbyte z, VoxelEng::block block_id);
+
+	/*
+	Sets the value of a block within the chunk.
+	The chunk is marked as dirty.
+	*/
+	void setBlock(chunkRelativePos chunkRelPos, VoxelEng::block blockID);
 
 	glm::vec3& chunkPos();
 
@@ -124,13 +145,13 @@ public:
 
 	shared_mutex& blockDataMutex();
 
-
 	/*
 	Mark chunk as dirty (true) or not (false)
 	*/
 	void setIsChanged(bool isChanged);
 
 
+	// Other methods.
 	/*
 	Regenerate the chunk's mesh.
 	*/
@@ -138,11 +159,18 @@ public:
 	
 private:
 
-	block blocks_[16][16][16];
+	VoxelEng::block blocks_[16][16][16];
 	atomic<bool> changed_;
 	atomic<unsigned int> nBlocks_;
 	chunkRenderingData renderingData_;
 	chunkManager& chunkManager_;
+
+	/*
+	Used for reading the block data in a chunk.
+	All meshing threads only read this data, so they access it
+	in shared mode, while any thread that can alter this data
+	must access it in exclusive/unique mode.
+	*/
 	shared_mutex blocksMutex_;
 
 };
@@ -234,7 +262,7 @@ public:
 
 	int nChunksToDraw() const;
 
-	block getBlock(const glm::vec3& pos);
+	VoxelEng::block getBlock(const glm::vec3& pos);
 
 	const unordered_set<glm::vec3>& freeableChunks() const;
 
@@ -245,8 +273,6 @@ public:
 	const condition_variable& managerThreadCV() const;
 
 	const atomic<bool>& forceSyncFlag() const;
-
-	const glm::vec3& priorityChunkPos() const;
 
 
 	// Modifiers.
@@ -260,6 +286,18 @@ public:
 	*/
 	chunk* selectChunkByRealPos(const glm::vec3& pos);
 
+	chunk* neighborMinusX(const glm::vec3& chunkPos);
+
+	chunk* neighborPlusX(const glm::vec3& chunkPos);
+
+	chunk* neighborMinusY(const glm::vec3& chunkPos);
+
+	chunk* neighborPlusY(const glm::vec3& chunkPos);
+
+	chunk* neighborMinusZ(const glm::vec3& chunkPos);
+
+	chunk* neighborPlusZ(const glm::vec3& chunkPos);
+
 	/*
 	WARNING. This operation is not thread-safe.
 	To push back a chunk's rendering data into this deque,
@@ -270,6 +308,8 @@ public:
 	unordered_map<glm::vec3, vector<vertex>>* drawableChunksWrite();
 
 	recursive_mutex& chunksMutex();
+
+	recursive_mutex& highPriorityListMutex();
 
 	unordered_set<glm::vec3>& freeableChunks();
 
@@ -285,15 +325,6 @@ public:
 	// Other methods.
 
 	/*
-	All neigbor chunks from the one at 'chunkPos' will be marked as changed and will have
-	their respective meshes regenerated asynchronously.
-	Use this when, for example, a player removes a block at the edge of the chunk at 'chunkPos'.
-	This is requires an access to where the loaded chunks are stored. Therefore, this operation must
-	be done atomically in relation to any other operations that attempt to access to said data.
-	*/
-	void forceNeighborsToUpdate(const glm::vec3& chunkPos);
-
-	/*
 	Atomically pushes back a chunk's rendering data into the write drawable chunks deque.
 	*/
 	void pushDrawableChunks(const chunkRenderingData& renderingData);
@@ -307,14 +338,9 @@ public:
 
 	/*
 	WARNING. ONLY CALL THIS METHOD WHEN THE RENDERER THREAD AND THE CHUNK MANAGER THREAD ARE SYNCED.
-	Swap the write-only copy and the read-only copy of a chunk's rendering data
-	with its chunk-relative position equal to 'chunkPos'. This will update said chunk
-	with the newest vertex data available for it. Take into account that this method should only
-	be used when a chunk has been modified and that change must be reflected into the world 
-	almost instantly (for example, if a player removes a block of a certain chunk, that change
-	must be reflected with no apparent latency).
+	Update vertex data of all chunks that have a pending hign priority update.
 	*/
-	void updatePriorityChunk(const glm::vec3& chunkPos);
+	void updatePriorityChunks();
 
 	/*
 	Atomically loads a new chunk at the specified 'chunkPos' chunk position,
@@ -373,12 +399,8 @@ private:
 	deque<chunk*> freeChunks_;
 	unordered_set<glm::vec3> freeableChunks_;
 	
-	/* 
-	Chunks with high update priority
-	(for example, chunks modified by the player
-	by removing or adding a block).
-	*/
-	deque<glm::vec3> highPriorityList_;
+	deque<glm::vec3> priorityMeshingList_; // Chunks that need a high priority mesh regeneration.
+	deque<glm::vec3> priorityUpdateList_; // Chunks that, once their mesh is updated, need to update their vertex data.
 
 	// TODO. Convert all mutex into recursive_mutex.
 	mutex freeableChunksMutex_,
@@ -394,7 +416,7 @@ private:
 	recursive_mutex drawableChunksWriteMutex_,
 		            chunksMutex_,
 		            freeChunksMutex_,
-		            highPriorityListMutex_;
+		            priorityMeshingListMutex_;
 	condition_variable managerThreadCV_;
 	condition_variable_any highPriorityUpdatesCV_;
 
@@ -405,7 +427,6 @@ private:
 	made is reflected in the rendering thread as quickly as possible.
 	*/
 	atomic<bool> forceSyncFlag_;
-	glm::vec3 priorityChunkPos_;
 
 };
 
@@ -472,17 +493,17 @@ inline const atomic<bool>& chunkManager::forceSyncFlag() const
 
 }
 
-inline const glm::vec3& chunkManager::priorityChunkPos() const
-{
-
-	return priorityChunkPos_;
-
-}
-
 inline recursive_mutex& chunkManager::chunksMutex()
 {
 
 	return chunksMutex_;
+
+}
+
+inline recursive_mutex& chunkManager::highPriorityListMutex()
+{
+
+	return priorityMeshingListMutex_;
 
 }
 

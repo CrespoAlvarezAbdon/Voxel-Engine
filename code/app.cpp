@@ -26,6 +26,7 @@
 #include "camera.h"
 #include "chunk.h"
 #include "entity.h"
+#include "gameWindow.h"
 #include <iostream>
 #include <ostream>
 using namespace std;
@@ -33,10 +34,7 @@ using namespace std;
 
 // THINGS TO DO
 // 1º. ADD SOME CULLING TECHNIQUES.
-// 2º. ADD BLOCK ADDING/REMOVING.
-// 3º. ADD BLOCK ADDING/REMOVING CAPABLE OF UPDATING NEIGHBOR CHUNKS ON LIMIT BLOCK (aka BLOCK IN A CHUNK'S FRONTIER) CHANGED.
-// 4º. INVESTIGATE ADDING MUTEX TO BLOCK ADDING/REMOVING.
-// 5º. VERIFY CUSTOM CHUNK ATLAS SIZE AND RESOLUTION.
+// 2º. VERIFY CUSTOM CHUNK ATLAS SIZE AND RESOLUTION.
 
 /* General OpenGL notes.
 
@@ -69,10 +67,11 @@ int main()
 {
 
 
+    VoxelEng::window mainWindow;
+
     /*
     OpenGL's, GLFW's and GLEW's initialization.
     */
-    GLFWwindow* mainWindow;
     const float width = 960.0f, height = 540.0f;
 
     // Initialize GLFW.
@@ -86,9 +85,9 @@ int main()
    
     // Create a windowed mode window and its OpenGL context.
     // TODO: abstract this and the checking done after this call.
-    mainWindow = glfwCreateWindow((int)width, (int)height, "Voxel Engine", NULL, NULL);
+    mainWindow.windowGLFW() = glfwCreateWindow((int)width, (int)height, "Voxel Engine", NULL, NULL);
 
-    if (!mainWindow)
+    if (!mainWindow.windowGLFW())
     {
         
         glfwTerminate();
@@ -97,10 +96,10 @@ int main()
     }
     
     // Make the window's context current 
-    glfwMakeContextCurrent(mainWindow); 
+    glfwMakeContextCurrent(mainWindow.windowGLFW()); 
 
     // Lock mouse.
-    glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+    glfwSetInputMode(mainWindow.windowGLFW(), GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
 
     // Enable VSync (1). Disable VSync (0).
     glfwSwapInterval(0); 
@@ -122,19 +121,21 @@ int main()
     if (glewInit() != GLEW_OK) 
         throw error(error::errorTypes::GLEW_INIT_FAILED);
 
-    glfwSetInputMode(mainWindow, GLFW_STICKY_KEYS, GLFW_TRUE);
+    glfwSetInputMode(mainWindow.windowGLFW(), GLFW_STICKY_KEYS, GLFW_TRUE);
 
+    // Signal if the game has finished executing or not.
+    atomic<bool> appFinished = false;
 
     // Configurable options.
-    int nChunksToDraw = 32; // WARNING. This option is for beefy computers. Average should be between 12 and 20.
+    int nChunksToDraw = 20; // Controls the maximun render distance in the x and z axis. Average should be between 12 and 20. Max 32 is supported.
     unsigned int blockReachRange = 5;
     texture blockTextureAtlas("Resources/Textures/atlas.png");
-    player player(45.0f, width, height, 0.1f, 500.0f, mainWindow, blockReachRange, glm::vec3(128.0f, 145.0f, 128.0f));
+    player player(45.0f, width, height, 0.1f, 500.0f, mainWindow, blockReachRange, glm::vec3(128.0f, 145.0f, 128.0f), &appFinished);
 
     // Set player input callbacks.
     // TODO. Abstract this into a input.h or similar.
-    glfwSetWindowUserPointer(mainWindow, &player);
-    glfwSetMouseButtonCallback(mainWindow, player::mouseButtonCallback);
+    glfwSetWindowUserPointer(mainWindow.windowGLFW(), &player);
+    glfwSetMouseButtonCallback(mainWindow.windowGLFW(), player::mouseButtonCallback);
 
     // Rendering related.
     shader defaultShader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
@@ -149,7 +150,6 @@ int main()
     chunkManager chunkMng(nChunksToDraw, player.mainCamera());
     int nMeshingThreads = 2; // Number of threads for non-high priority mesh updates.
     unordered_map<glm::vec3, vector<vertex>> const* chunksToDraw = nullptr;
-    atomic<bool> appFinished = false;
 
     // Finish connecting some objects.
     player.setChunkManager(&chunkMng);
@@ -158,14 +158,11 @@ int main()
     // Configure texture block atlas.
     texture::setBlockAtlas(blockTextureAtlas);
     texture::setBlockAtlasResolution(16);
-    
-    // Debug information.
-    cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << endl
-         << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << endl;
 
-    // Start generating and meshing the terrain.
-    thread chunkManagementThread(&chunkManager::manageChunks, &chunkMng, ref(appFinished), nMeshingThreads);
-
+    // Start the terrain management and
+    // the player input processing threads.
+    thread chunkManagementThread(&chunkManager::manageChunks, &chunkMng, ref(appFinished), nMeshingThreads),
+           playerInputThread(&player::processPlayerInput, &player);
 
     // Configure the vertex layout.
     layout.push<GLbyte>(3); 
@@ -177,7 +174,12 @@ int main()
     defaultShader.bind();
     blockTextureAtlas.bind();
 
-    // Main game loop starts here.
+    // Debug information about textures.
+    cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << endl
+         << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << endl;
+
+
+    // Rrendering loop starts here.
     double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
            lastFrameTime = lastSecondTime,
            actualTime,
@@ -185,7 +187,7 @@ int main()
     int nFramesDrawn = 0;
     unsigned int nVertices = 0;
     vertexBuffer* vbo = nullptr;
-    while (!glfwWindowShouldClose(mainWindow))
+    while (!glfwWindowShouldClose(mainWindow.windowGLFW()))
     {
 
         // Times calculation.
@@ -198,7 +200,7 @@ int main()
         if (actualTime - lastSecondTime >= 1.0)
         {
 
-            cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
+            //cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
             nFramesDrawn = 0;
             lastSecondTime = glfwGetTime();
 
@@ -209,11 +211,8 @@ int main()
         {
 
             if (chunkMng.forceSyncFlag()) 
-            {
-                
-                chunkMng.updatePriorityChunk(chunkMng.priorityChunkPos());
+                chunkMng.updatePriorityChunks();
 
-            }
             else 
             {
             
@@ -230,9 +229,8 @@ int main()
         // Rendering starts here.
         renderer.clear();
 
-        // Update player view.
+        // Update player's camera.
         player.mainCamera().updatePos(timeStep);
-        player.selectBlock();
         player.mainCamera().updateView();
        
         if (chunksToDraw)
@@ -269,7 +267,7 @@ int main()
         }
 
         // Swap front and back buffers.
-        glfwSwapBuffers(mainWindow);
+        glfwSwapBuffers(mainWindow.windowGLFW());
 
         // Poll for and process events.
         glfwPollEvents();
@@ -289,6 +287,7 @@ int main()
 
     // Wait for the chunk management thread to be finished before ending the main/rendering thread.
     chunkManagementThread.join();
+    playerInputThread.join();
 
     // Terminates the GLFW library. Necessary to end the program.
     glfwTerminate();

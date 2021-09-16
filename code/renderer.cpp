@@ -6,6 +6,8 @@
 using namespace std;
 
 
+// Used for OpenGL debugging.
+
 void GLEraseErrors()
 {
 

@@ -3,6 +3,7 @@
 
 #include "definitions.h"
 #include "chunk.h"
+#include "gameWindow.h"
 #include <GLFW/glfw3.h>
 #include <gtx/quaternion.hpp>
 #include <gtx/rotate_vector.hpp>
@@ -31,7 +32,7 @@ public:
 
 	// Constructors.
 
-	camera(float FOV, float width, float height, float zNear, float zFar, GLFWwindow* window,
+	camera(float FOV, float width, float height, float zNear, float zFar, VoxelEng::window window,
 		   const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f), const glm::vec3& direction = glm::vec3(0.0f, 0.0f, 0.0f));
 
 
