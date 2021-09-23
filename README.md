@@ -1,5 +1,5 @@
 # Voxel Engine
- Custom voxel engine in C++
+ Custom voxel engine in Unity.
  Licensed under GNU General Public License Version 3.
  More details on LICENSE file.
 
