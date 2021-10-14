@@ -16,6 +16,13 @@
 class chunk;
 class chunkManager;
 
+namespace VoxelEng
+{
+
+	class window;
+
+}
+
 
 ///////////
 //Classes//
@@ -32,7 +39,7 @@ public:
 
 	// Constructors.
 
-	camera(float FOV, float width, float height, float zNear, float zFar, VoxelEng::window window,
+	camera(float FOV, float zNear, float zFar, VoxelEng::window& window,
 		   const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f), const glm::vec3& direction = glm::vec3(0.0f, 0.0f, 0.0f));
 
 
@@ -65,6 +72,10 @@ public:
 
 	// Modifiers.
 
+	void setFOV(float FOV);
+
+	void updateProjectionMatrix();
+
 	float& mouseSensibility();
 
 	float& movementSpeed();
@@ -79,13 +90,11 @@ public:
 
 	void setChunkManager(chunkManager* chunkMng);
 
-
 	/*
 	Update the camera's position and the direction it's looking at
 	taking into account the delta time to avoid the FPS from altering the movement speed.
 	NOTE. Once this method is called, the next method you should instantly call is
 	camera::updateView() to reflect the change in the camera's position and view direction.
-	TODO. Update this method to be use GLFW callbacks functions for better input handling.
 	*/
 	void updatePos(float timeStep);
 
@@ -96,10 +105,11 @@ public:
 	*/
 	void updateView();
 
-
+	VoxelEng::window& window_;
 private:
 
-	float FOV_, 
+	float FOV_,
+		  zNear_,
 		  zFar_, 
 		  angleX_, 
 		  angleY_, 
@@ -111,7 +121,7 @@ private:
 		   oldMouseY_;
 	glm::mat4 projectionMatrix_, 
 		      viewMatrix_;
-	GLFWwindow* window_;
+	
 	glm::vec3 position_,
 		      direction_, 
 		      upAxis_, 

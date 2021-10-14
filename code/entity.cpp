@@ -1,16 +1,14 @@
 #include "entity.h"
 #include <stdexcept>
+#include "graphics.h"
 
-#include <iostream>
-#include <ostream>
-using namespace std;
 
 // 'player' class
 
-player::player(float FOV, float width, float height, float zNear, float zFar, VoxelEng::window window,
-               unsigned int blockReachRange, const glm::vec3& position, atomic<bool>* appFinished,
-               const glm::vec3& direction)
-	: window_(window.windowGLFW()), camera_(FOV, width, height, zNear, zFar, window, position, direction),
+player::player(float FOV, float zNear, float zFar, VoxelEng::window& window,
+               unsigned int blockReachRange, const glm::vec3& position, unsigned int spawnWorldID,
+               atomic<bool>* appFinished, const glm::vec3& direction)
+	: window_(window.windowAPIpointer()), camera_(FOV, zNear, zFar, window, position, direction),
     blockReachRange_(blockReachRange), blockSearchIncrement_(0.10f), chunkMng_(nullptr), selectedBlock_(0),
     selectedBlockPos_(glm::vec3(0, 0, 0)), oldSelectedBlockPos_(glm::vec3(0,0,0)), appFinished_(appFinished),
     destroyBlock_(false), placeBlock_(false)
@@ -46,6 +44,13 @@ void player::selectBlock()
         }
 
     }
+
+}
+
+void player::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+
+    VoxelEng::graphics::getPlayerCallbackPtr()->mouseButtonHandler(window, button, action, mods);
 
 }
 

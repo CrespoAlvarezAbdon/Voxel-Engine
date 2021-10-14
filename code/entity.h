@@ -8,7 +8,6 @@
 #include <glm.hpp>
 
 
-
 ///////////
 //Classes//
 ///////////
@@ -26,9 +25,9 @@ public:
 	/*
 	Spawns the player in the world and initialices its corresponding camera.
 	*/
-	player(float FOV, float width, float height, float zNear, float zFar, VoxelEng::window window, 
-		   unsigned int blockReachRange, const glm::vec3& position, atomic<bool>* appFinished,
-		   const glm::vec3& direction = glm::vec3(0.0f, 0.0f, 0.0f));
+	player(float FOV, float zNear, float zFar, VoxelEng::window& window,
+		   unsigned int blockReachRange, const glm::vec3& position, unsigned int spawnWorldID,
+		   atomic<bool>* appFinished, const glm::vec3& direction = glm::vec3(0.0f, 0.0f, 0.0f));
 
 
 	// Observers.
@@ -119,13 +118,6 @@ inline void player::setChunkManager(chunkManager* chunkMng)
 {
 
 	chunkMng_ = chunkMng;
-
-}
-
-inline void player::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
-{
-
-	static_cast<player*>(glfwGetWindowUserPointer(window))->mouseButtonHandler(window, button, action, mods);
 
 }
 

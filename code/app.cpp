@@ -27,14 +27,20 @@
 #include "chunk.h"
 #include "entity.h"
 #include "gameWindow.h"
+#include "graphics.h"
+#include "world.h"
 #include <iostream>
 #include <ostream>
 using namespace std;
 
 
 // THINGS TO DO
-// 1º. ADD SOME CULLING TECHNIQUES.
-// 2º. VERIFY CUSTOM CHUNK ATLAS SIZE AND RESOLUTION.
+// 2º. ADD SOME CULLING TECHNIQUES.
+// 3º. VERIFY CUSTOM CHUNK ATLAS SIZE AND RESOLUTION.
+// 4º. ABSTRACT GRAPHICS API CALLS IN A 'graphics' CLASS.
+// 5º. ADD A PROPER SKYBOX INSTEAD OF RELYING ON THE GRAPHICS_API BACKGROUND COLOR.
+// 6º. ADD ANY CALLS TO VBO, VAO, RENDERERS THROUGH THE 'graphics' CLASS.
+// 7º. FIX GAME TAKING TOO LONG TO CLOSE (LOOK AT MESHING LOOPS).
 
 /* General OpenGL notes.
 
@@ -66,77 +72,42 @@ using namespace std;
 int main()
 {
 
+    // Create game's main window.
+    VoxelEng::window mainWindow(800, 600, "Voxel engine");
 
-    VoxelEng::window mainWindow;
+    // APIs/libraries initializations.
+    VoxelEng::graphics::initialize(mainWindow);
 
-    /*
-    OpenGL's, GLFW's and GLEW's initialization.
-    */
-    const float width = 960.0f, height = 540.0f;
+    // Configure the graphics API/libraries.
+    VoxelEng::graphics::setVSync(false);
+    VoxelEng::graphics::setDepthTest(true);
+    VoxelEng::graphics::setBasicFaceCulling(true);
+    VoxelEng::graphics::setTransparency(true);
 
-    // Initialize GLFW.
-    if (!glfwInit())
-        return -1;
+    // Configure game window's settings.
+    mainWindow.lockMouse();
 
-    // This tells OpenGL that we are creating the default vertex array manually
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-   
-    // Create a windowed mode window and its OpenGL context.
-    // TODO: abstract this and the checking done after this call.
-    mainWindow.windowGLFW() = glfwCreateWindow((int)width, (int)height, "Voxel Engine", NULL, NULL);
 
-    if (!mainWindow.windowGLFW())
-    {
-        
-        glfwTerminate();
-        return -1;
+    // Game Variables/objects.
+    atomic<bool> appFinished = false; // Signals if the game has finished executing or not.
 
-    }
-    
-    // Make the window's context current 
-    glfwMakeContextCurrent(mainWindow.windowGLFW()); 
+    // Worlds. TODO. ADD CUSTOM SKY COLOR PER WORLD.
 
-    // Lock mouse.
-    glfwSetInputMode(mainWindow.windowGLFW(), GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+    VoxelEng::world spaceWorld(0);
+    VoxelEng::world firstPlanet(1);
 
-    // Enable VSync (1). Disable VSync (0).
-    glfwSwapInterval(0); 
-
-    // Enable depth for proper 3D rendering.
-    glEnable(GL_DEPTH_TEST); 
-
-    // Culling.
-    glEnable(GL_CULL_FACE); 
-
-    // Enable basic blending (transparency).
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Set background color.
-    glClearColor(134.0f / 255.0f, 169.0f / 255.0f, 254.0f / 255.0f, 1.0f);
-
-    // With the previously created context, now initialize GLEW.
-    if (glewInit() != GLEW_OK) 
-        throw error(error::errorTypes::GLEW_INIT_FAILED);
-
-    glfwSetInputMode(mainWindow.windowGLFW(), GLFW_STICKY_KEYS, GLFW_TRUE);
-
-    // Signal if the game has finished executing or not.
-    atomic<bool> appFinished = false;
-
-    // Configurable options.
+    // Configurable.
+    VoxelEng::skybox defaultSkybox(134.0f, 169.0f, 254.0f, 1.0f);
+    glm::vec3 playerSpawnPosition(128.0f, 145.0f, 128.0f);
+    unsigned int blockReachRange = 5,
+                 spawnWorldID = 0;
+    float FOV = 110.0f,
+          zNear = 0.1f,
+          zFar = 500.0f;
+    player player(FOV, zNear, zFar, mainWindow, blockReachRange, playerSpawnPosition, spawnWorldID, &appFinished);
     int nChunksToDraw = 20; // Controls the maximun render distance in the x and z axis. Average should be between 12 and 20. Max 32 is supported.
-    unsigned int blockReachRange = 5;
     texture blockTextureAtlas("Resources/Textures/atlas.png");
-    player player(45.0f, width, height, 0.1f, 500.0f, mainWindow, blockReachRange, glm::vec3(128.0f, 145.0f, 128.0f), &appFinished);
-
-    // Set player input callbacks.
-    // TODO. Abstract this into a input.h or similar.
-    glfwSetWindowUserPointer(mainWindow.windowGLFW(), &player);
-    glfwSetMouseButtonCallback(mainWindow.windowGLFW(), player::mouseButtonCallback);
-
+    
     // Rendering related.
     shader defaultShader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
     vertexArray va;
@@ -151,35 +122,47 @@ int main()
     int nMeshingThreads = 2; // Number of threads for non-high priority mesh updates.
     unordered_map<glm::vec3, vector<vertex>> const* chunksToDraw = nullptr;
 
-    // Finish connecting some objects.
-    player.setChunkManager(&chunkMng);
-    player.mainCamera().setChunkManager(&chunkMng);
-
     // Configure texture block atlas.
     texture::setBlockAtlas(blockTextureAtlas);
     texture::setBlockAtlasResolution(16);
 
-    // Start the terrain management and
-    // the player input processing threads.
-    thread chunkManagementThread(&chunkManager::manageChunks, &chunkMng, ref(appFinished), nMeshingThreads),
-           playerInputThread(&player::processPlayerInput, &player);
+    // Finish connecting some objects.
+    mainWindow.playerCamera() = &player.mainCamera();
+    player.setChunkManager(&chunkMng);
+    player.mainCamera().setChunkManager(&chunkMng);
+
+
+    // Set up callbacks.
+    VoxelEng::graphics::setPlayerCallbackPtr(&player);
+    VoxelEng::graphics::setWindowCallbackPtr(&mainWindow);
+
+    glfwSetMouseButtonCallback(mainWindow.windowAPIpointer(), player::mouseButtonCallback);
+    glfwSetWindowSizeCallback(mainWindow.windowAPIpointer(), VoxelEng::window::windowSizeCallback);
+
 
     // Configure the vertex layout.
-    layout.push<GLbyte>(3); 
+    layout.push<GLbyte>(3);
     layout.push<GLbyte>(1);
-    layout.push<GLfloat>(2); 
+    layout.push<GLfloat>(2);
 
     // Bind the currently used VAO, shaders and atlases.
     va.bind();
     defaultShader.bind();
     blockTextureAtlas.bind();
 
-    // Debug information about textures.
+
+    // Start the terrain management and
+    // the player input processing threads.
+    thread chunkManagementThread(&chunkManager::manageChunks, &chunkMng, ref(appFinished), nMeshingThreads),
+           playerInputThread(&player::processPlayerInput, &player);
+
+
+    // Print some startup debug information.
     cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << endl
          << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << endl;
 
 
-    // Rrendering loop starts here.
+    // Rendering loop starts here.
     double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
            lastFrameTime = lastSecondTime,
            actualTime,
@@ -187,7 +170,7 @@ int main()
     int nFramesDrawn = 0;
     unsigned int nVertices = 0;
     vertexBuffer* vbo = nullptr;
-    while (!glfwWindowShouldClose(mainWindow.windowGLFW()))
+    while (!mainWindow.isClosing())
     {
 
         // Times calculation.
@@ -200,7 +183,7 @@ int main()
         if (actualTime - lastSecondTime >= 1.0)
         {
 
-            //cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
+            cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
             nFramesDrawn = 0;
             lastSecondTime = glfwGetTime();
 
@@ -267,7 +250,7 @@ int main()
         }
 
         // Swap front and back buffers.
-        glfwSwapBuffers(mainWindow.windowGLFW());
+        glfwSwapBuffers(mainWindow.windowAPIpointer());
 
         // Poll for and process events.
         glfwPollEvents();

@@ -1,6 +1,7 @@
 #ifndef _VERTEX_
 #define _VERTEX_
 #include <GL/glew.h>
+#include "definitions.h"
 
 
 ///////////
@@ -13,9 +14,9 @@ Represents a 3D vertex with texture coordinates.
 struct vertex
 {
 
-	GLbyte positions[3];
-	GLbyte dummy;
-	GLfloat textureCoords[2];
+	VoxelEng::byte positions[3];
+	VoxelEng::byte dummy;
+	float textureCoords[2];
 
 };
 

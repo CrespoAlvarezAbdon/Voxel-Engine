@@ -20,6 +20,7 @@
 #include "camera.h"
 #include "texture.h"
 #include "definitions.h"
+#include "model.h"
 using namespace std;
 
 
@@ -41,28 +42,28 @@ struct chunkRenderingData
 {
 
 	glm::vec3 chunkPos;
-	vector<vertex> vertices;
+	VoxelEng::Model::model vertices;
 
 };
 
-// Position inside a chunk.
-struct chunkRelativePos 
-{
+/*
+Position inside a chunk.
+*/
+typedef VoxelEng::vec3<VoxelEng::byte> chunkRelativePos;
 
-	chunkRelativePos(int x, int y, int z);
-
-	VoxelEng::byte x, 
-				   y, 
-		           z;
-
-};
+/* 
+A chunk's position in the world.
+Two chunks in the same world cannot have the same
+chunkPos.
+*/
+typedef VoxelEng::vec3<int> chunkPos;
 
 
 ///////////
 //Classes//
 ///////////
 
-// TODO. ADD DOCUMENTATION TO THE NEW ADDED METHODS.
+
 /*
 Represents a section of the voxel world, with its blocks, mesh, position and other infomation.
 Chunks that are marked as 'dirty' or 'changed' will have their mesh regenerated if they are withing
@@ -140,6 +141,8 @@ public:
 	void setBlock(chunkRelativePos chunkRelPos, VoxelEng::block blockID);
 
 	glm::vec3& chunkPos();
+
+	chunkRenderingData& renderingData();
 
 	void setNBlocks(unsigned int nBlocks);
 
@@ -224,8 +227,13 @@ inline const vector<vertex>& chunk::vertices() const
 
 }
 
-inline const chunkRenderingData& chunk::renderingData() const
-{
+inline const chunkRenderingData& chunk::renderingData() const {
+
+	return renderingData_;
+
+}
+
+inline chunkRenderingData& chunk::renderingData() {
 
 	return renderingData_;
 
