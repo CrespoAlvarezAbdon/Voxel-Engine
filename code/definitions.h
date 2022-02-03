@@ -19,17 +19,57 @@ namespace VoxelEng
 	struct vec3
 	{
 
-		vec3(T x, T y, T z);
+		// Public variables.
 
 		T x,
 		  y,
-		  z;
+	      z;
+
+
+		// Constructors.
+
+		vec3(const T& x, const T& y, const T& z);
+
+		vec3();
 
 	};
 
 	template<typename T>
-	vec3<T>::vec3(T x, T y, T z)
+	vec3<T>::vec3(const T& x, const T& y, const T& z)
 		: x(x), y(y), z(z)
+	{}
+
+	template<typename T>
+	vec3<T>::vec3()
+		: x(0), y(0), z(0)
+	{}
+
+	template <typename T>
+	struct vec2
+	{
+
+		// Public variables.
+
+		T x,
+		  y;
+
+
+		// Constructors.
+
+		vec2(const T& x, const T& y);
+
+		vec2();
+
+	};
+
+	template<typename T>
+	vec2<T>::vec2(const T& x, const T& y)
+		: x(x), y(y)
+	{}
+
+	template<typename T>
+	vec2<T>::vec2()
+		: x(0), y(0)
 	{}
 
 	///////////
@@ -54,6 +94,11 @@ namespace VoxelEng
 
 	typedef unsigned char byte; // Number with values between 0 and 255.
 
+	typedef float vertexCoord;
+
+	typedef float textureCoord;
+
+	// TODO. ADD CONDITIONS TO ALLOW SWITCHING BETWEEN GRAPHIC APIs
 	typedef GLFWwindow GraphicsAPIWindow;
 
 }

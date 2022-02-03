@@ -2,8 +2,9 @@
 #define _VOXELENG_MODEL_
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "vertex.h"
-
+#include "definitions.h"
 
 
 //////////////////////////
@@ -13,43 +14,74 @@ class chunk;
 
 namespace VoxelEng {
 
-	namespace Model {
-	
-		////////////////////
-		//Type definitions//
-		////////////////////
+	////////////////////
+	//Type definitions//
+	////////////////////
 
-		typedef std::vector<vertex> model;
-		typedef std::vector<unsigned short> triangle;
+	typedef std::vector<vertex> model;
 
-
-		//////////////////
-		//Oficial models//
-		//////////////////
-
-		extern model blockVertices;
-		extern std::vector<triangle> blockTriangles;
+	/*
+	A triangle is the collection of vertex indices that form it.
+	*/
+	// TODO. CHANGE NAME TO 'FACE'
+	typedef std::vector<unsigned short> triangle;
+	typedef std::vector<triangle> modelTriangles;
 
 
-		/////////////
-		//Functions//
-		/////////////
+	///////////
+	//Classes//
+	///////////
+
+	class models {
+
+	public:
+
+		static std::unordered_map<block, model*> models_;
+		static std::unordered_map<block, modelTriangles*> triangles_;
 
 		/*
 		Use a custom model ingame, created using a oficial
 		JSON format.
 		NOTE. W.I.P. Placeholder function.
 		*/
-		const model& loadCustomModel(const std::string& filePath) = delete;
+		static void loadCustomModel(const std::string& filePath, block ID);
 
+		/*
+		Get the corresponding model for a certain block ID.
+		If no model exists for such ID, it returns the basic block model.
+		*/
+		static const model& getModel(block ID);
+
+		/*
+		Get the corresponding model triangles indices for a certain block ID.
+		If no model exists for such ID, it returns the basic block model.
+		*/
+		static const modelTriangles& getModelTriangles(block ID);
 
 		/*
 		Add a texture for a face.
 		WARNING. Only call when just all the face's vertices have been added
-		to the model m. That is, in they are the latest vertices added to
-		said model.
+		to the model m.
 		*/
-		void addTexture(VoxelEng::block blockID, unsigned int textureID, model& m);
+		static void addTexture(VoxelEng::block blockID, unsigned int textureID, model& m);
+
+	private:
+
+		
+
+	};
+
+	inline const model& models::getModel(block ID)
+	{
+
+		return *models_[0];
+
+	}
+
+	inline const modelTriangles& models::getModelTriangles(block ID)
+	{
+
+		return *triangles_[0];
 
 	}
 

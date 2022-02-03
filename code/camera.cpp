@@ -9,7 +9,7 @@ using namespace std;
 
 camera::camera(float FOV, float zNear, float zFar, VoxelEng::window& window,
                const glm::vec3& position, const glm::vec3& direction)
-    : FOV_(FOV), zNear_(zNear), zFar_(zFar), angleX_(0), angleY_(0), mouseSensibility_(0.25f), movementSpeed_(20.0f),
+    : FOV_(FOV), zNear_(zNear), zFar_(zFar), angleX_(0), angleY_(0), mouseSensibility_(0.25f), movementSpeed_(5.0f),
     mouseX_(0), mouseY_(0), oldMouseX_(0), oldMouseY_(0), 
     projectionMatrix_(glm::perspective(glm::radians(FOV_), static_cast<float>(window.width()) / window.height(), zNear_, zFar_)),
     viewMatrix_(glm::mat4(1.0f)), window_(window), position_(position), direction_(direction),

@@ -12,8 +12,7 @@ using namespace std;
 /*
 Buffer to store all the vertex's data to send to the GPU for a draw call.
 */
-class vertexBuffer
-{
+class vertexBuffer {
 
 public:
 
@@ -32,16 +31,26 @@ public:
 
 
 	/*
-	Supply the buffer with vertex data (static geometry).
+	Initialize a static geometry buffer with vertex data.
 	WARNING. Must be called in a thread with valid OpenGL context.
 	*/
 	void prepareStatic(const void* data, unsigned int size);
 
 	/*
-	Supply the buffer with vertex data (dynamic geometry).
+	Initialize the vertex buffer empty and prepared for dynamic geometry.
+	This buffer is initialized empty but a size of what it is expected to
+	store is needed.
 	WARNING. Must be called in a thread with valid OpenGL context.
 	*/
 	void prepareDynamic(unsigned int size);
+
+	/*
+	Replaces the
+	WARNING. Must be called in a thread with valid OpenGL context.
+	Also, this vertex buffer must have been initialized as a dynamic geometry
+	vertex buffer for this function to work as expected.
+	*/
+	void replaceDynamicData(const void* data, unsigned int size);
 
 	/*
 	Bind the vertex buffer for the next draw call.
@@ -68,62 +77,5 @@ private:
 	GLuint rendererID_;
 
 };
-
-
-/*
-Provides VBOs for objects that are going to be rendered like
-chunks or entities.
-*/
-class vertexBufferProvider 
-{
-
-public:
-
-	// Constructors.
-
-	vertexBufferProvider();
-
-
-	// Observers.
-
-
-	// Modifiers.
-
-
-	/*
-	Request a VBO (vertex buffer object) from the vertexBuffer class to
-	be used for rendering.
-	Once all VBOs in this vertexBufferProvider have served their purpose, vertexBufferProvider::freeVBOs() should
-	be called to make sure that those VBOs can be reused later.
-	WARNING. Must be called in a thread with valid OpenGL context.
-	*/
-	vertexBuffer* requestVBO();
-
-	/*
-	All VBOs stored in this vertexBufferProvider object are declared as free. Thus they
-	can be reused when a call to vertexBufferProvider::requestVBO() is made.
-	*/
-	void freeVBOs();
-
-
-	// Destructors.
-
-private:
-
-	/*
-	Points to the first available VBO in vbos_.
-	All VBOs that are before vbos_[vboIndex_] in the vector are in use.
-	*/
-	unsigned int vboIndex_; 
-	vector<vertexBuffer*> vbos_;
-
-};
-
-inline void vertexBufferProvider::freeVBOs()
-{
-
-	vboIndex_ = 0;
-
-}
 
 #endif

@@ -51,7 +51,7 @@ public:
 	void addLayout(const vertexBufferLayout& layout);
 
 	/*
-	Submit vertex data to a vertex buffer object which has been prepared for dynamic
+	Submit vertex data from a vertex buffer object to an VAO which has been prepared for dynamic
 	geometry with a call to vertexBuffer::preprareDynamic(...) done before this one.
 	WARNING. Must be called in a thread with valid OpenGL context.
 	*/

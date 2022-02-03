@@ -31,43 +31,16 @@
 #include "world.h"
 #include <iostream>
 #include <ostream>
-using namespace std;
 
 
 // THINGS TO DO
-// 2º. ADD SOME CULLING TECHNIQUES.
-// 3º. VERIFY CUSTOM CHUNK ATLAS SIZE AND RESOLUTION.
-// 4º. ABSTRACT GRAPHICS API CALLS IN A 'graphics' CLASS.
-// 5º. ADD A PROPER SKYBOX INSTEAD OF RELYING ON THE GRAPHICS_API BACKGROUND COLOR.
-// 6º. ADD ANY CALLS TO VBO, VAO, RENDERERS THROUGH THE 'graphics' CLASS.
-// 7º. FIX GAME TAKING TOO LONG TO CLOSE (LOOK AT MESHING LOOPS).
-
-/* General OpenGL notes.
-
-    Attributes and unifroms are ways to obtain data from the CPU to the GPU.
-
-    Unused uniforms will be removed in runtime.
-
-    Binding is necessary in order to draw the object we are planning to show on screen.
-
-    Vertex buffer is a GL_ARRAY_BUFFER.
-
-    Material = Shader + all of it's uniforms.
-
-    View projection matrix is the "view" of the camera (convention).
-
-    Model projection matrices are used for, obviously, render models (convention).
-
-    // Vertices' buffer. We always draw the vertices in anti-clockwise fashion.
-    // Vertices can store positions, colors, texture coordinates, texture indices...
-    // Each line = vertex.
-    // First three floats of a line = positions of the vertex (x, y and z).
-    // Second two floats of a line = texture coordinates (x, y).
-    // The texture coordinates have their origin at the bottom left corner of the texture image with OpenGL.
-    // The width and height of the atlas must match!
-    // Texture's width and texture's height must match and must always be the same for every texture in the same atlas.
-
-*/
+// 1º. ADD SOME CULLING TECHNIQUES.
+// 2º. VERIFY CUSTOM CHUNK ATLAS SIZE AND RESOLUTION.
+// 3º. ABSTRACT GRAPHICS API CALLS IN A 'graphics' CLASS.
+// 4º. ADD A PROPER SKYBOX INSTEAD OF RELYING ON THE GRAPHICS_API BACKGROUND COLOR.
+// 5º. ADD ANY CALLS TO VBO, VAO, RENDERERS THROUGH THE 'graphics' CLASS.
+// 6º. FIX GAME TAKING TOO LONG TO CLOSE (LOOK AT MESHING LOOPS AND ADD ADDITIONAL CONDITION).
+// 7º. FIX BEING UNABLE TO BUILD IF YOU WALK TO FAR (look at raycasting method that we are using to check blocks and do some debug starting from there).
 
 int main()
 {
@@ -91,8 +64,8 @@ int main()
     // Game Variables/objects.
     atomic<bool> appFinished = false; // Signals if the game has finished executing or not.
 
-    // Worlds. TODO. ADD CUSTOM SKY COLOR PER WORLD.
-
+    // TODO. ADD CUSTOM SKY COLOR PER WORLD.
+    // Worlds. 
     VoxelEng::world spaceWorld(0);
     VoxelEng::world firstPlanet(1);
 
@@ -108,11 +81,14 @@ int main()
     int nChunksToDraw = 20; // Controls the maximun render distance in the x and z axis. Average should be between 12 and 20. Max 32 is supported.
     texture blockTextureAtlas("Resources/Textures/atlas.png");
     
+    // Custom model loading.
+    VoxelEng::models::loadCustomModel("Resources/Models/Warden.obj", 14);
+
     // Rendering related.
     shader defaultShader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
+    vertexBuffer vbo = vertexBuffer();
     vertexArray va;
     vertexBufferLayout layout;
-    vertexBufferProvider vboProvider;
     renderer renderer;
     glm::mat4 modelMatrix, 
               MVPmatrix;
@@ -141,12 +117,13 @@ int main()
 
 
     // Configure the vertex layout.
-    layout.push<GLbyte>(3);
-    layout.push<GLbyte>(1);
+    layout.push<GLfloat>(3);
     layout.push<GLfloat>(2);
 
     // Bind the currently used VAO, shaders and atlases.
+    vbo.bind();
     va.bind();
+    va.addLayout(layout);
     defaultShader.bind();
     blockTextureAtlas.bind();
 
@@ -158,10 +135,16 @@ int main()
 
 
     // Print some startup debug information.
-    cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << endl
-         << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << endl;
+    std::cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << std::endl
+         << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << std::endl;
 
 
+    // W.I.P DEBUG MODEL LOADING SETUP.
+    // TODO. ADD 'batch' CLASS. SIMILIAR TO 'chunk' CLASS EXCEPT IT STORES VERTEX DATA FROM
+    // MANY ARBITRARY MODELS TO SAVE DRAW CALLS.
+    // La esfera no se cullea y algunas texturas están donde no deberían estar
+    VoxelEng::model* robotModel = VoxelEng::models::models_[14];
+    
     // Rendering loop starts here.
     double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
            lastFrameTime = lastSecondTime,
@@ -169,7 +152,6 @@ int main()
            timeStep; // How much time has passed since the last frame was drawn.
     int nFramesDrawn = 0;
     unsigned int nVertices = 0;
-    vertexBuffer* vbo = nullptr;
     while (!mainWindow.isClosing())
     {
 
@@ -183,7 +165,7 @@ int main()
         if (actualTime - lastSecondTime >= 1.0)
         {
 
-            cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
+            std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
             nFramesDrawn = 0;
             lastSecondTime = glfwGetTime();
 
@@ -195,7 +177,6 @@ int main()
 
             if (chunkMng.forceSyncFlag()) 
                 chunkMng.updatePriorityChunks();
-
             else 
             {
             
@@ -215,25 +196,22 @@ int main()
         // Update player's camera.
         player.mainCamera().updatePos(timeStep);
         player.mainCamera().updateView();
-       
+
+        // Render chunks.
         if (chunksToDraw)
         {
-
-            // Render chunks.
+            
             // chunk.first refers to the chunk's postion.
             // chunk.second refers to the chunk's vertex data.
             for (auto const& chunk : *chunksToDraw)
             {
 
-                nVertices = chunk.second.size();
+                nVertices = chunk.second.capacity();
+                
                 if (nVertices)
                 {
 
-                    vbo = vboProvider.requestVBO();
-                    vbo->bind();
-                    vbo->prepareStatic(chunk.second.data(), sizeof(vertex) * nVertices);
-
-                    va.addLayout(layout);
+                    vbo.prepareStatic(chunk.second.data(), sizeof(vertex) * nVertices);
 
                     modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(chunk.first.x * SCX, chunk.first.y * SCY, chunk.first.z * SCZ));
                     MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix() * modelMatrix;
@@ -244,8 +222,20 @@ int main()
                 }
 
             }
-            // Free the VBOs that are not currently in use.
-            vboProvider.freeVBOs();
+
+        }
+
+        // Render batches (test W.I.P).
+        if (true) {
+
+            vbo.prepareDynamic(sizeof(vertex) * robotModel->size());
+            vbo.replaceDynamicData(robotModel->data(), sizeof(vertex) * robotModel->size());
+
+            modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(128, 150, 128));
+            MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix() * modelMatrix;
+            defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
+
+            renderer.draw(robotModel->size());
 
         }
 
@@ -275,7 +265,7 @@ int main()
     // Terminates the GLFW library. Necessary to end the program.
     glfwTerminate();
 
-    cout << "[DEBUG]: Rendering thread ended" << endl;
+    std::cout << "[DEBUG]: Rendering thread ended" << std::endl;
 
     return 0;
 }

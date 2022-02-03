@@ -40,12 +40,8 @@ void GLCheckErrors(ostream& os, const char* file, const char* function, unsigned
 
 // 'renderer' class.
 
-void renderer::draw(const vertexArray& va, const indexBuffer& ib, const shader& sh) const
+void renderer::draw(const indexBuffer& ib) const
 {
-
-    sh.bind();
-    va.bind();
-    ib.bind();
 
     // Second parameter = number of indices to draw (not the number of indices that exist). 
     // Fourth parameter = pointer to the index buffer.

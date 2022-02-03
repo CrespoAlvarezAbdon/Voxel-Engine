@@ -42,7 +42,7 @@ struct chunkRenderingData
 {
 
 	glm::vec3 chunkPos;
-	VoxelEng::Model::model vertices;
+	VoxelEng::model vertices;
 
 };
 
@@ -120,10 +120,7 @@ public:
 	
 	unsigned int getNBlocks();
 
-	/*
-	True if the chunk is dirty and false otherwise.
-	*/
-	bool getIsChanged();
+	const std::atomic<bool>& changed() const;
 
 
 	// Modifiers.
@@ -148,10 +145,7 @@ public:
 
 	shared_mutex& blockDataMutex();
 
-	/*
-	Mark chunk as dirty (true) or not (false)
-	*/
-	void setIsChanged(bool isChanged);
+	std::atomic<bool>& changed();
 
 
 	// Other methods.
@@ -177,6 +171,13 @@ private:
 	shared_mutex blocksMutex_;
 
 };
+
+inline VoxelEng::block chunk::getBlock(GLbyte x, GLbyte y, GLbyte z)
+{
+
+	return blocks_[x][y][z];
+
+}
 
 inline GLbyte chunk::x() const
 {
@@ -233,6 +234,13 @@ inline const chunkRenderingData& chunk::renderingData() const {
 
 }
 
+inline const std::atomic<bool>& chunk::changed() const
+{
+
+	return changed_;
+
+}
+
 inline chunkRenderingData& chunk::renderingData() {
 
 	return renderingData_;
@@ -243,6 +251,13 @@ inline shared_mutex& chunk::blockDataMutex()
 {
 
 	return blocksMutex_;
+
+}
+
+inline std::atomic<bool>& chunk::changed()
+{
+
+	return changed_;
 
 }
 

@@ -1,13 +1,7 @@
 #include "chunk.h"
 #include <cmath>
+#include <cstddef>
 #include "model.h"
-
-
-/////////////////////
-//Namespace aliases//
-/////////////////////
-
-namespace Model = VoxelEng::Model;
 
 
 // 'chunk' class.
@@ -24,7 +18,7 @@ chunk::chunk(chunkManager& chunkManager)
 
         shared_lock<shared_mutex> lock(blocksMutex_);
 
-        setIsChanged(true);
+        changed_ = true;
 
         setNBlocks(0);
 
@@ -36,27 +30,6 @@ chunk::chunk(chunkManager& chunkManager)
     }
 
     // Write chunk data section ends.
-
-}
-
-bool chunk::getIsChanged()
-{
-
-    return changed_;
-
-}
-
-void chunk::setIsChanged(bool isChanged)
-{
-
-    changed_ = isChanged;
-
-}
-
-VoxelEng::block chunk::getBlock(GLbyte x, GLbyte y, GLbyte z)
-{
-
-    return blocks_[x][y][z];
 
 }
 
@@ -152,140 +125,141 @@ void chunk::renewMesh()
        
         
         vertex aux;
+        
+        // Determine model from block's ID.
         for (VoxelEng::byte x = 0; x < SCX; x++)
             for (VoxelEng::byte y = 0; y < SCY; y++)
                 for (VoxelEng::byte z = 0; z < SCZ; z++)
                 {
 
                     // Add block's model to the mesh if necessary.
-                    if (blockID = getBlock(x, y, z))
+                    if (blockID = blocks_[x][y][z])
                     {
 
-                        // Determine model from block's ID. USE A DICTIONARY OF <BLOCKID, MODELID>???
-
                         // Front face vertices with culling of non-visible faces.
-                        if ((z < 15 && !getBlock(x, y, z+1)) || (z == 15 && neighborChunks[0] && !neighborChunks[0]->getBlock(x, y, 0)))
+                        if ((z < 15 && !blocks_[x][y][z + 1]) || (z == 15 && neighborChunks[0] && !neighborChunks[0]->blocks_[x][y][0]))
                         {
 
-                            // Create the face's vertices
-                            for (int vertex = 0; vertex < VoxelEng::Model::blockTriangles[0].size(); vertex++)
+                            // Create the face's vertices.
+                            for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + Model::blockVertices[Model::blockTriangles[1][vertex]].positions[0];
-                                aux.positions[1] = y + Model::blockVertices[Model::blockTriangles[1][vertex]].positions[1];
-                                aux.positions[2] = z + Model::blockVertices[Model::blockTriangles[1][vertex]].positions[2];
-                                renderingData().vertices.push_back(aux);
+                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[0];
+                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[1];
+                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[2];
+                                renderingData_.vertices.push_back(aux);
 
                             }
 
                             // Add texture to the face.
-                            Model::addTexture(blockID, blockID, renderingData().vertices);
+                            VoxelEng::models::addTexture(blockID, blockID, renderingData_.vertices);
 
                         }
 
                         // Back face vertices with culling of non-visible faces.
-                        if ((z > 0 && !getBlock(x, y, z-1)) || (z == 0 && neighborChunks[1] && !neighborChunks[1]->getBlock(x, y, 15)))
+                        if ((z > 0 && !blocks_[x][y][z - 1]) || (z == 0 && neighborChunks[1] && !neighborChunks[1]->blocks_[x][y][15]))
                         {
 
                             // Create the face's vertices
-                            for (int vertex = 0; vertex < VoxelEng::Model::blockTriangles[0].size(); vertex++)
+                            for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + Model::blockVertices[Model::blockTriangles[0][vertex]].positions[0];
-                                aux.positions[1] = y + Model::blockVertices[Model::blockTriangles[0][vertex]].positions[1];
-                                aux.positions[2] = z + Model::blockVertices[Model::blockTriangles[0][vertex]].positions[2];
-                                renderingData().vertices.push_back(aux);
+                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[0];
+                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[1];
+                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[2];
+                                renderingData_.vertices.push_back(aux);
 
                             }
 
                             // Add texture to the face.
-                            Model::addTexture(blockID, blockID, renderingData().vertices);
+                            VoxelEng::models::addTexture(blockID, blockID, renderingData_.vertices);
 
                         }
 
                         // Top face vertices with culling of non-visible faces.
-                        if ((y < 15 && !getBlock(x, y+1, z)) || (y == 15 && neighborChunks[2] && !neighborChunks[2]->getBlock(x, 0, z)))
+                        if ((y < 15 && !blocks_[x][y + 1][z]) || (y == 15 && neighborChunks[2] && !neighborChunks[2]->blocks_[x][0][z]))
                         {
 
                             // Create the face's vertices
-                            for (int vertex = 0; vertex < VoxelEng::Model::blockTriangles[0].size(); vertex++)
+                            for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + Model::blockVertices[Model::blockTriangles[2][vertex]].positions[0];
-                                aux.positions[1] = y + Model::blockVertices[Model::blockTriangles[2][vertex]].positions[1];
-                                aux.positions[2] = z + Model::blockVertices[Model::blockTriangles[2][vertex]].positions[2];
-                                renderingData().vertices.push_back(aux);
+                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[0];
+                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[1];
+                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[2];
+                                renderingData_.vertices.push_back(aux);
 
                             }
 
                             // Add texture to the face.
-                            Model::addTexture(blockID, blockID, renderingData().vertices);
+                            VoxelEng::models::addTexture(blockID, blockID, renderingData_.vertices);
 
                         }
 
                         // Bottom face vertices with culling of non-visible faces.
-                        if ((y > 0 && !getBlock(x, y-1, z)) || (y == 0 && neighborChunks[3] && !neighborChunks[3]->getBlock(x, 0, z)))
+                        if ((y > 0 && !blocks_[x][y - 1][z]) || (y == 0 && neighborChunks[3] && !neighborChunks[3]->blocks_[x][0][z]))
                         {
 
                             // Create the face's vertices
-                            for (int vertex = 0; vertex < VoxelEng::Model::blockTriangles[0].size(); vertex++)
+                            for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + Model::blockVertices[Model::blockTriangles[3][vertex]].positions[0];
-                                aux.positions[1] = y + Model::blockVertices[Model::blockTriangles[3][vertex]].positions[1];
-                                aux.positions[2] = z + Model::blockVertices[Model::blockTriangles[3][vertex]].positions[2];
-                                renderingData().vertices.push_back(aux);
+                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[0];
+                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[1];
+                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[2];
+                                renderingData_.vertices.push_back(aux);
 
                             }
 
                             // Add texture to the face.
-                            Model::addTexture(blockID, blockID, renderingData().vertices);
+                            VoxelEng::models::addTexture(blockID, blockID, renderingData_.vertices);
 
                         }
 
                         // Right face vertices with culling of non-visible faces.
-                        if ((x < 15 && !getBlock(x+1, y, z)) || (x == 15 && neighborChunks[4] && !neighborChunks[4]->getBlock(0, y, z)))
+                        if ((x < 15 && !blocks_[x + 1][y][z]) || (x == 15 && neighborChunks[4] && !neighborChunks[4]->blocks_[0][y][z]))
                         {
 
                             // Create the face's vertices
-                            for (int vertex = 0; vertex < VoxelEng::Model::blockTriangles[0].size(); vertex++)
+                            for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + Model::blockVertices[Model::blockTriangles[5][vertex]].positions[0];
-                                aux.positions[1] = y + Model::blockVertices[Model::blockTriangles[5][vertex]].positions[1];
-                                aux.positions[2] = z + Model::blockVertices[Model::blockTriangles[5][vertex]].positions[2];
-                                renderingData().vertices.push_back(aux);
+                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[0];
+                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[1];
+                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[2];
+                                renderingData_.vertices.push_back(aux);
 
                             }
 
                             // Add texture to the face.
-                            Model::addTexture(blockID, blockID, renderingData().vertices);
+                            VoxelEng::models::addTexture(blockID, blockID, renderingData_.vertices);
 
                         }
 
                         // Left face vertices with culling of non-visible faces.
-                        if ((x > 0 && !getBlock(x-1, y, z)) || (x == 0 && neighborChunks[5] && !neighborChunks[5]->getBlock(15, y, z)))
+                        if ((x > 0 && !blocks_[x - 1][y][z]) || (x == 0 && neighborChunks[5] && !neighborChunks[5]->blocks_[15][y][z]))
                         {
 
                             // Create the face's vertices
-                            for (int vertex = 0; vertex < VoxelEng::Model::blockTriangles[0].size(); vertex++)
+                            for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + Model::blockVertices[Model::blockTriangles[4][vertex]].positions[0];
-                                aux.positions[1] = y + Model::blockVertices[Model::blockTriangles[4][vertex]].positions[1];
-                                aux.positions[2] = z + Model::blockVertices[Model::blockTriangles[4][vertex]].positions[2];
-                                renderingData().vertices.push_back(aux);
+                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[0];
+                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[1];
+                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[2];
+                                renderingData_.vertices.push_back(aux);
 
                             }
 
                             // Add texture to the face.
-                            Model::addTexture(blockID, blockID, renderingData().vertices);
+                            VoxelEng::models::addTexture(blockID, blockID, renderingData_.vertices);
 
                         }
 
                     }
 
                 }
+
  
         // Unlock neighbors' data.
         blocksMutex_.unlock_shared();
@@ -550,7 +524,7 @@ void chunkManager::loadChunk(const glm::vec3& chunkPos)
 
         }
 
-        chunkPtr->setIsChanged(true);
+        chunkPtr->changed() = true;
         chunkPtr->chunkPos() = chunkPos;
 
         // Terrain generation/loading.
@@ -661,10 +635,10 @@ void chunkManager::meshChunks(const atomic<bool>& appFinished, const atomic<int>
                             if (selectedChunk->getNBlocks())
                             {
 
-                                if (selectedChunk->getIsChanged())
+                                if (selectedChunk->changed())
                                 {
 
-                                    selectedChunk->setIsChanged(false);
+                                    selectedChunk->changed() = false;
                                     selectedChunk->renewMesh();
 
                                 }
@@ -820,7 +794,7 @@ void chunkManager::manageChunks(const atomic<bool>& app_finished, unsigned int n
                         freeableChunksMutex_.unlock();
 
                         // Update mesh. 
-                        priorityChunk->setIsChanged(false);
+                        priorityChunk->changed() = false;
                         priorityChunk->renewMesh();
 
                         pushDrawableChunks(priorityChunk->renderingData());

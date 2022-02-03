@@ -8,15 +8,16 @@
 //Structs//
 ///////////
 
+
+
 /*
 Represents a 3D vertex with texture coordinates.
 */
 struct vertex
 {
 
-	VoxelEng::byte positions[3];
-	VoxelEng::byte dummy;
-	float textureCoords[2];
+	VoxelEng::vertexCoord positions[3];
+	VoxelEng::textureCoord textureCoords[2];
 
 };
 

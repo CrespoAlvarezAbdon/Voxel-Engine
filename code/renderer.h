@@ -53,7 +53,7 @@ public:
 	and later performs a glDrawElements call using the indexBuffer object.
 	WARNING. Must be called in a thread with valid OpenGL context.
 	*/
-	void draw(const vertexArray& va, const indexBuffer& ib, const shader& sh) const;
+	void draw(const indexBuffer& ib) const;
 
 	/*
 	Draws 'count' triangles (search for GL_TRIANGLES in the official OpenGL documentation)

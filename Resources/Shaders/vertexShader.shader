@@ -1,7 +1,18 @@
 #version 330 core
 
+// Example of use of location
+// If the vertex structure is
+//struct vertex
+//{
+//
+//	float positions[3];
+//	float textureCoords[2];
+//
+//};
+// Then location = 0 refers to float positions[3] and
+// location = 1 refers to float textureCoords[2]
 layout(location = 0) in vec4 position; // Vertices' positions
-layout(location = 2) in vec2 texCoord;
+layout(location = 1) in vec2 texCoord;
 
 out vec2 v_TexCoord; // This is an output varying
 
