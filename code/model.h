@@ -74,14 +74,14 @@ namespace VoxelEng {
 	inline const model& models::getModel(block ID)
 	{
 
-		return *models_[0];
+		return *models_[ID];
 
 	}
 
 	inline const modelTriangles& models::getModelTriangles(block ID)
 	{
 
-		return *triangles_[0];
+		return *triangles_[ID];
 
 	}
 

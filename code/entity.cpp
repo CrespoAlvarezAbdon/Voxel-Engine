@@ -1,6 +1,7 @@
 #include "entity.h"
 #include <stdexcept>
 #include "graphics.h"
+#include "model.h"
 
 
 // 'player' class
@@ -183,6 +184,23 @@ void player::processPlayerInput()
                 placeBlock_ = false;
 
             }
+    
+    }
+
+}
+
+namespace VoxelEng {
+
+    entity::entity(unsigned int modelID, float x, float y, float z) : model_(models::getModel(modelID)), x_(x), y_(y), z_(z) {
+
+        // Translate the model's copy to the entity's position.
+        for (unsigned int i = 0; i < model_.size(); i++) {
+        
+            model_[i].positions[0] += x_;
+            model_[i].positions[1] += y_;
+            model_[i].positions[2] += z_;
+        
+        }
     
     }
 

@@ -121,4 +121,88 @@ inline void player::setChunkManager(chunkManager* chunkMng)
 
 }
 
+namespace VoxelEng {
+
+	class entity {
+
+	public:
+
+		// Constructors.
+
+		entity(unsigned int modelID, float x, float y, float z);
+
+		// Observers.
+
+		// Get entity's postion in X axis.
+		float x() const;
+		// Get entity's postion in Y axis.
+		float y() const;
+		// Get entity's postion in Z axis.
+		float z() const;
+
+		// Get the entity's model.
+		const model& entityModel() const;
+
+		// Modifiers.
+
+		// Set entity's postion in X axis.
+		float& x();
+		// Set entity's postion in Y axis.
+		float& y();
+		// Set entity's postion in Z axis.
+		float& z();
+
+
+	private:
+
+		float x_, y_, z_;
+		model model_;
+
+	};
+
+
+	inline float entity::x() const {
+	
+		return x_;
+	
+	}
+
+	inline float entity::y() const {
+
+		return y_;
+
+	}
+
+	inline float entity::z() const {
+
+		return z_;
+
+	}
+
+	inline const model& entity::entityModel() const {
+
+		return model_;
+
+	}
+
+	inline float& entity::x() {
+
+		return x_;
+
+	}
+
+	inline float& entity::y() {
+
+		return y_;
+
+	}
+
+	inline float& entity::z() {
+
+		return z_;
+
+	}
+
+}
+
 #endif

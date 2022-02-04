@@ -26,6 +26,7 @@
 #include "camera.h"
 #include "chunk.h"
 #include "entity.h"
+#include "batch.h"
 #include "gameWindow.h"
 #include "graphics.h"
 #include "world.h"
@@ -71,7 +72,7 @@ int main()
 
     // Configurable.
     VoxelEng::skybox defaultSkybox(134.0f, 169.0f, 254.0f, 1.0f);
-    glm::vec3 playerSpawnPosition(128.0f, 145.0f, 128.0f);
+    glm::vec3 playerSpawnPosition(0, 145.0f, 0);
     unsigned int blockReachRange = 5,
                  spawnWorldID = 0;
     float FOV = 110.0f,
@@ -81,8 +82,14 @@ int main()
     int nChunksToDraw = 20; // Controls the maximun render distance in the x and z axis. Average should be between 12 and 20. Max 32 is supported.
     texture blockTextureAtlas("Resources/Textures/atlas.png");
     
+
     // Custom model loading.
     VoxelEng::models::loadCustomModel("Resources/Models/Warden.obj", 14);
+
+
+    // (W.I.P). Create batches for the custom models.
+    VoxelEng::batch modelsBatch;
+
 
     // Rendering related.
     shader defaultShader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
@@ -134,11 +141,6 @@ int main()
            playerInputThread(&player::processPlayerInput, &player);
 
 
-    // Print some startup debug information.
-    std::cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << std::endl
-         << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << std::endl;
-
-
     // W.I.P DEBUG MODEL LOADING SETUP.
     // TODO. ADD 'batch' CLASS. SIMILIAR TO 'chunk' CLASS EXCEPT IT STORES VERTEX DATA FROM
     // MANY ARBITRARY MODELS TO SAVE DRAW CALLS.
@@ -152,8 +154,25 @@ int main()
            timeStep; // How much time has passed since the last frame was drawn.
     int nFramesDrawn = 0;
     unsigned int nVertices = 0;
+
+    // W.I.P Entity management.
+    VoxelEng::entity evilRobot = VoxelEng::entity(14, 0, 150, 0);
+    VoxelEng::entity evilRobot2 = VoxelEng::entity(14, 0, 148.5, 0);
+    modelsBatch.appendModel(evilRobot);
+    modelsBatch.appendModel(evilRobot2);
+
+    // Print some startup debug information.
+    std::cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << std::endl
+        << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels"
+        << "EvilRobot vertex count = " << robotModel->size() 
+        << "Batch size: " << evilRobot.entityModel().size() << std::endl;
+
     while (!mainWindow.isClosing())
     {
+
+        modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+        MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix() * modelMatrix;
+        defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
 
         // Times calculation.
         actualTime = glfwGetTime();
@@ -205,17 +224,11 @@ int main()
             // chunk.second refers to the chunk's vertex data.
             for (auto const& chunk : *chunksToDraw)
             {
-
-                nVertices = chunk.second.capacity();
                 
-                if (nVertices)
+                if (nVertices = chunk.second.size())
                 {
 
                     vbo.prepareStatic(chunk.second.data(), sizeof(vertex) * nVertices);
-
-                    modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(chunk.first.x * SCX, chunk.first.y * SCY, chunk.first.z * SCZ));
-                    MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix() * modelMatrix;
-                    defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
 
                     renderer.draw(nVertices);
 
@@ -228,14 +241,10 @@ int main()
         // Render batches (test W.I.P).
         if (true) {
 
-            vbo.prepareDynamic(sizeof(vertex) * robotModel->size());
-            vbo.replaceDynamicData(robotModel->data(), sizeof(vertex) * robotModel->size());
+            vbo.prepareDynamic(sizeof(vertex) * modelsBatch.size());
+            vbo.replaceDynamicData(modelsBatch.data(), sizeof(vertex) * modelsBatch.size());
 
-            modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(128, 150, 128));
-            MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix() * modelMatrix;
-            defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
-
-            renderer.draw(robotModel->size());
+            renderer.draw(modelsBatch.size());
 
         }
 

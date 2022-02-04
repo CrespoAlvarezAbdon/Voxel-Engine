@@ -144,9 +144,9 @@ void chunk::renewMesh()
                             for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[0];
-                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[1];
-                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[2];
+                                aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[0];
+                                aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[1];
+                                aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[2];
                                 renderingData_.vertices.push_back(aux);
 
                             }
@@ -164,9 +164,9 @@ void chunk::renewMesh()
                             for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[0];
-                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[1];
-                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[2];
+                                aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[0];
+                                aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[1];
+                                aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[2];
                                 renderingData_.vertices.push_back(aux);
 
                             }
@@ -184,9 +184,9 @@ void chunk::renewMesh()
                             for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[0];
-                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[1];
-                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[2];
+                                aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[0];
+                                aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[1];
+                                aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[2];
                                 renderingData_.vertices.push_back(aux);
 
                             }
@@ -204,9 +204,9 @@ void chunk::renewMesh()
                             for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[0];
-                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[1];
-                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[2];
+                                aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[0];
+                                aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[1];
+                                aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[2];
                                 renderingData_.vertices.push_back(aux);
 
                             }
@@ -224,9 +224,9 @@ void chunk::renewMesh()
                             for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[0];
-                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[1];
-                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[2];
+                                aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[0];
+                                aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[1];
+                                aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[2];
                                 renderingData_.vertices.push_back(aux);
 
                             }
@@ -244,9 +244,9 @@ void chunk::renewMesh()
                             for (int vertex = 0; vertex < VoxelEng::models::triangles_[0]->operator[](0).size(); vertex++)
                             {
 
-                                aux.positions[0] = x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[0];
-                                aux.positions[1] = y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[1];
-                                aux.positions[2] = z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[2];
+                                aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[0];
+                                aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[1];
+                                aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[2];
                                 renderingData_.vertices.push_back(aux);
 
                             }
