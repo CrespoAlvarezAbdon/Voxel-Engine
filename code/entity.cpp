@@ -2,7 +2,10 @@
 #include <stdexcept>
 #include "graphics.h"
 #include "model.h"
+#include "utilities.h"
 
+#include <iostream>
+#include <ostream>
 
 // 'player' class
 
@@ -32,8 +35,8 @@ void player::selectBlock()
 
         selectedBlockPos_ = camera_.pos() + (camera_.direction() * step);
 
-        // MAKE THIS SEARCH ONLY IN THE 4 POSSIBLE NEIGHBORS, NOT IN THE 8.
-        selectedBlock_ = chunkMng_->getBlock(selectedBlockPos_);
+        // MAKE THIS SEARCH ONLY IN THE 4 POSSIBLE NEIGHBORS, NOT IN THE 8 POSSIBLE ONES.
+        selectedBlock_ = chunkMng_->getBlock(floor(selectedBlockPos_.x), floor(selectedBlockPos_.y), floor(selectedBlockPos_.z));
 
         if (!selectedBlock_)
         {
@@ -76,9 +79,9 @@ void player::destroySelectedBlock()
     if (selectedChunk && selectedBlock_) 
     {
 
-        chunkRelativePos chunkRelPos(static_cast<int>(selectedBlockPos_.x) % SCX,
-                                     static_cast<int>(selectedBlockPos_.y) % SCY,
-                                     static_cast<int>(selectedBlockPos_.z) % SCZ);
+        chunkRelativePos chunkRelPos(VoxelEng::floorMod(floor(selectedBlockPos_.x), SCX),
+                                     VoxelEng::floorMod(floor(selectedBlockPos_.y), SCY),
+                                     VoxelEng::floorMod(floor(selectedBlockPos_.z), SCZ));
 
 
         selectedChunk->blockDataMutex().lock();
@@ -121,14 +124,12 @@ void player::placeSelectedBlock()
 
     chunk* selectedChunk = chunkMng_->selectChunkByRealPos(oldSelectedBlockPos_);
 
-
     if (selectedChunk && selectedBlock_)
     {
 
-
-        chunkRelativePos chunkRelPos(static_cast<int>(oldSelectedBlockPos_.x) % SCX,
+        chunkRelativePos chunkRelPos(VoxelEng::floorMod(floor(oldSelectedBlockPos_.x), SCX),
                                      static_cast<int>(oldSelectedBlockPos_.y) % SCY,
-                                     static_cast<int>(oldSelectedBlockPos_.z) % SCZ);
+                                     VoxelEng::floorMod(floor(oldSelectedBlockPos_.z), SCZ));
 
 
         selectedChunk->blockDataMutex().lock();

@@ -2,7 +2,10 @@
 #include <cmath>
 #include <cstddef>
 #include "model.h"
+#include "utilities.h"
 
+#include <iostream>
+#include <ostream>
 
 // 'chunk' class.
 
@@ -295,31 +298,25 @@ chunkManager::chunkManager(int nChunksToDraw, const camera& playerCamera)
       forceSyncFlag_(false)
 {}
 
-VoxelEng::block chunkManager::getBlock(const glm::vec3& pos)
+VoxelEng::block chunkManager::getBlock(int posX, int posY, int posZ)
 {
 
-    glm::vec3 chunkPos(trunc(pos.x / SCX), trunc(pos.y / SCY), trunc(pos.z / SCZ));
+    glm::vec3 chunkPos((int)floor((double)posX / SCX), (int)floor((double)posY / SCY), (int)floor((double)posZ / SCZ));
     chunk* selectedChunk;
     VoxelEng::block selectedBlock;
-
-
+    
     unique_lock<recursive_mutex> lock(chunksMutex_);
 
     if (chunks_.find(chunkPos) != chunks_.end())
     {
 
         selectedChunk = chunks_.at(chunkPos);
-        selectedBlock = selectedChunk->getBlock(static_cast<int>(pos.x > 0 ? pos.x : -pos.x) % SCX, 
-                                                static_cast<int>(pos.y > 0 ? pos.y : -pos.y) % SCY,
-                                                static_cast<int>(pos.z > 0 ? pos.z : -pos.z) % SCZ);
+        selectedBlock = selectedChunk->getBlock(VoxelEng::floorMod(posX, SCX), (int)floor(posY) % SCY, VoxelEng::floorMod(posZ, SCZ));
+        
 
     }
     else
-    {
-
         selectedBlock = 0;
-
-    }
 
     return selectedBlock;
 
@@ -354,7 +351,7 @@ chunk* chunkManager::selectChunkByChunkPos(const glm::vec3& chunkPos)
 chunk* chunkManager::selectChunkByRealPos(const glm::vec3& pos)
 {
 
-    glm::vec3 chunkPos(trunc(pos.x / SCX), trunc(pos.y / SCY), trunc(pos.z / SCZ));
+    glm::vec3 chunkPos(floor(pos.x / SCX), floor(pos.y / SCY), floor(pos.z / SCZ));
 
 
     unique_lock<recursive_mutex> lock(chunksMutex_);

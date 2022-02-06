@@ -285,7 +285,7 @@ public:
 
 	int nChunksToDraw() const;
 
-	VoxelEng::block getBlock(const glm::vec3& pos);
+	VoxelEng::block getBlock(int posX, int posY, int posZ);
 
 	const unordered_set<glm::vec3>& freeableChunks() const;
 

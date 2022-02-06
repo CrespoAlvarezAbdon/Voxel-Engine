@@ -170,8 +170,8 @@ int main()
     while (!mainWindow.isClosing())
     {
 
-        modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-        MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix() * modelMatrix;
+
+        MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix();
         defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
 
         // Times calculation.
@@ -184,7 +184,7 @@ int main()
         if (actualTime - lastSecondTime >= 1.0)
         {
 
-            std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
+            //std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
             nFramesDrawn = 0;
             lastSecondTime = glfwGetTime();
 
