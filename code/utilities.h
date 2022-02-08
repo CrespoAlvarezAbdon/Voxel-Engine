@@ -1,5 +1,6 @@
 #ifndef _VOXENG_UTILITIES_
 #define _VOXENG_UTILITIES_
+#include <glm.hpp>
 
 namespace VoxelEng {
 
@@ -11,6 +12,16 @@ namespace VoxelEng {
 	q = (int)floor((double)a / b)
 	*/
 	int floorMod(int a, int b);
+
+
+	/*
+	Returns +1 if 'real' >= 0 and -1 otherwise.
+	*/
+	inline int sign(float real) {
+	
+		return real >= 0 ? 1 : -1;
+	
+	};
 
 }
 

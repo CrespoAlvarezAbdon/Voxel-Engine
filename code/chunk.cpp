@@ -348,6 +348,19 @@ chunk* chunkManager::selectChunkByChunkPos(const glm::vec3& chunkPos)
 
 }
 
+chunk* chunkManager::selectChunkByChunkPos(int x, int y, int z)
+{
+
+    glm::vec3 chunkPos(floor((float)x / SCX), floor((float)y / SCY), floor((float)z / SCZ));
+    unique_lock<recursive_mutex> lock(chunksMutex_);
+
+    if (chunks_.find(chunkPos) != chunks_.end())
+        return chunks_.at(chunkPos);
+    else
+        return nullptr;
+
+}
+
 chunk* chunkManager::selectChunkByRealPos(const glm::vec3& pos)
 {
 

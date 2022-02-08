@@ -304,6 +304,8 @@ public:
 
 	chunk* selectChunkByChunkPos(const glm::vec3& chunkPos);
 
+	chunk* selectChunkByChunkPos(int x, int y, int z);
+
 	/*
 	Uses real float point coordinates.
 	*/

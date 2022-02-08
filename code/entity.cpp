@@ -27,18 +27,19 @@ void player::selectBlock()
 {
 
     float step = blockSearchIncrement_;
+    const glm::vec3& dir = camera_.direction(),
+                     pos = camera_.pos();
     selectedBlock_ = 0;
 
 
     while (step < blockReachRange_ && !selectedBlock_)
     {
 
-        selectedBlockPos_ = camera_.pos() + (camera_.direction() * step);
+        selectedBlockPos_ = pos + (dir * step);
 
-        // MAKE THIS SEARCH ONLY IN THE 4 POSSIBLE NEIGHBORS, NOT IN THE 8 POSSIBLE ONES.
         selectedBlock_ = chunkMng_->getBlock(floor(selectedBlockPos_.x), floor(selectedBlockPos_.y), floor(selectedBlockPos_.z));
 
-        if (!selectedBlock_)
+        if (!selectedBlock_) // Continue searching
         {
 
             oldSelectedBlockPos_ = selectedBlockPos_;
@@ -73,7 +74,7 @@ void player::destroySelectedBlock()
 {
 
     unique_lock<recursive_mutex> lock(chunkMng_->chunksMutex());
-
+    
     chunk* selectedChunk = chunkMng_->selectChunkByRealPos(selectedBlockPos_);
 
     if (selectedChunk && selectedBlock_) 
@@ -119,17 +120,37 @@ void player::placeSelectedBlock()
 
     VoxelEng::block blockToPlace = 2;
 
+    int x = floor(selectedBlockPos_.x),
+        y = floor(selectedBlockPos_.y),
+        z = floor(selectedBlockPos_.z),
+        hasXChanged = floor(oldSelectedBlockPos_.x) != x,
+        hasYChanged = floor(oldSelectedBlockPos_.y) != y,
+        hasZChanged = floor(oldSelectedBlockPos_.z) != z;
 
+    // Avoid placing blocks not in the south, north, east, west, up or down directions of the selected block.
+    if (hasXChanged + hasYChanged + hasZChanged > 1)
+        x -= 1 * VoxelEng::sign(camera_.direction().x);
+    else
+        if (hasXChanged)
+            x -= 1 * VoxelEng::sign(camera_.direction().x);
+        else
+            if (hasYChanged)
+                y -= 1 * VoxelEng::sign(camera_.direction().y);
+            else
+                if (hasZChanged)
+                    z -= 1 * VoxelEng::sign(camera_.direction().z);
+
+    // Select appropiate chunk and modify the selected block if possible.
     unique_lock<recursive_mutex> lock(chunkMng_->chunksMutex());
 
-    chunk* selectedChunk = chunkMng_->selectChunkByRealPos(oldSelectedBlockPos_);
+    chunk* selectedChunk = chunkMng_->selectChunkByChunkPos(x, y, z);
 
     if (selectedChunk && selectedBlock_)
     {
 
-        chunkRelativePos chunkRelPos(VoxelEng::floorMod(floor(oldSelectedBlockPos_.x), SCX),
-                                     static_cast<int>(oldSelectedBlockPos_.y) % SCY,
-                                     VoxelEng::floorMod(floor(oldSelectedBlockPos_.z), SCZ));
+        chunkRelativePos chunkRelPos(VoxelEng::floorMod(x, SCX),
+                                     VoxelEng::floorMod(y, SCY),
+                                     VoxelEng::floorMod(z, SCZ));
 
 
         selectedChunk->blockDataMutex().lock();

@@ -85,6 +85,14 @@ namespace VoxelEng
 	#define MIN_WIDTH 800 // Minimum width for a game window.
 	#define MIN_HEIGHT 600 // Minimum height for a game window.
 
+	// Block faces.
+	#define UP 1
+	#define DOWN 2
+	#define NORTH 3
+	#define SOUTH 4
+	#define EAST 5
+	#define WEST 6
+
 
 	////////////
 	//Typedefs//
