@@ -2,18 +2,43 @@
 
 namespace VoxelEng {
 
-	bool batch::appendModel(const entity& entity) {
+	bool batch::addEntity(entity& entity) {
+	
+		if (freeInd_.empty())
+		{
 
-		model model = entity.entityModel();
-
-		if (model.size() + model_.size() <= BATCH_MAX_VERTEX_COUNT) {
-
-			model_.insert(model_.end(), model.begin(), model.end());
-			return true;
-
+			entity.batchID() = entities_.size();
+			entities_.push_back(&entity);
+			
 		}
 		else
-			return false;
+		{
+
+			entities_[freeInd_.front()] = &entity;
+			entity.batchID() = freeInd_.front();
+			freeInd_.pop_front();
+
+		}
+	
+	}
+
+	void batch::deleteEntity(unsigned int ID) {
+	
+		if (ID == entities_.size() - 1)
+			entities_.pop_back();
+		else
+		{
+
+			entities_[ID] = nullptr;
+			freeInd_.push_back(ID);
+
+		}
+	
+	}
+
+	void batch::generateVertices() {
+	
+		
 	
 	}
 

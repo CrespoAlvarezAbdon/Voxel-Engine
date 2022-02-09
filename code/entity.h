@@ -131,6 +131,7 @@ namespace VoxelEng {
 
 		entity(unsigned int modelID, float x, float y, float z);
 
+
 		// Observers.
 
 		// Get entity's postion in X axis.
@@ -140,8 +141,12 @@ namespace VoxelEng {
 		// Get entity's postion in Z axis.
 		float z() const;
 
+		// Get entity's ID inside a batch. An entity can only belong to one batch at a time so there is only one ID.
+		unsigned int batchID() const;
+
 		// Get the entity's model.
 		const model& entityModel() const;
+
 
 		// Modifiers.
 
@@ -152,9 +157,14 @@ namespace VoxelEng {
 		// Set entity's postion in Z axis.
 		float& z();
 
+		// Set entity's ID inside a batch. An entity can only belong to one batch at a time so there is only one ID.
+		unsigned int& batchID();
+		
+
 
 	private:
 
+		unsigned int batchID_;
 		float x_, y_, z_;
 		model model_;
 
@@ -179,6 +189,12 @@ namespace VoxelEng {
 
 	}
 
+	inline unsigned int entity::batchID() const {
+	
+		return batchID_;
+	
+	}
+
 	inline const model& entity::entityModel() const {
 
 		return model_;
@@ -200,6 +216,12 @@ namespace VoxelEng {
 	inline float& entity::z() {
 
 		return z_;
+
+	}
+
+	inline unsigned int& entity::batchID() {
+
+		return batchID_;
 
 	}
 

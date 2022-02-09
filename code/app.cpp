@@ -158,8 +158,8 @@ int main()
     // W.I.P Entity management.
     VoxelEng::entity evilRobot = VoxelEng::entity(14, 0, 150, 0);
     VoxelEng::entity evilRobot2 = VoxelEng::entity(14, 0, 148.5, 0);
-    modelsBatch.appendModel(evilRobot);
-    modelsBatch.appendModel(evilRobot2);
+    modelsBatch.addEntity(evilRobot);
+    modelsBatch.addEntity(evilRobot2);
 
     // Print some startup debug information.
     std::cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << std::endl
