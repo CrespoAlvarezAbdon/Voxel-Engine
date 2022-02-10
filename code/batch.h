@@ -10,9 +10,28 @@
 
 namespace VoxelEng {
 
+	//////////////////////////////
+	//Forward class declarations//
+	//////////////////////////////
+	class entity;
+
+	///////////
+	//Classes//
+	///////////
+
 	class batch {
 
 	public:
+
+		// Constructors.
+
+		/*
+		'batch' object constructor.
+		All 'batch' objets are 'registered' in the entityManager static class by pushing their references back
+		into a list belonging to said class.
+		*/
+		batch();
+
 
 		// Observers.
 
@@ -55,6 +74,7 @@ namespace VoxelEng {
 
 	private:
 
+		unsigned int vertexCount_;
 		std::vector<entity*> entities_;
 		std::deque<unsigned int> freeInd_;
 		model model_;

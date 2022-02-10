@@ -4,9 +4,6 @@
 #include "model.h"
 #include "utilities.h"
 
-#include <iostream>
-#include <ostream>
-
 // 'player' class
 
 player::player(float FOV, float zNear, float zFar, VoxelEng::window& window,
@@ -213,16 +210,11 @@ void player::processPlayerInput()
 
 namespace VoxelEng {
 
-    entity::entity(unsigned int modelID, float x, float y, float z) : model_(models::getModel(modelID)), x_(x), y_(y), z_(z) {
+    entity::entity(unsigned int modelID, float x, float y, float z) : model_(models::getModel(modelID)), x_(x), y_(y), z_(z) {}
 
-        // Translate the model's copy to the entity's position.
-        for (unsigned int i = 0; i < model_.size(); i++) {
-        
-            model_[i].positions[0] += x_;
-            model_[i].positions[1] += y_;
-            model_[i].positions[2] += z_;
-        
-        }
+    void entityManager::registerBatch(batch& batch) {
+    
+        batches_.push_back(batch);
     
     }
 

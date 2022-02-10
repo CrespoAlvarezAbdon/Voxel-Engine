@@ -135,41 +135,33 @@ int main()
     blockTextureAtlas.bind();
 
 
-    // Start the terrain management and
-    // the player input processing threads.
-    thread chunkManagementThread(&chunkManager::manageChunks, &chunkMng, ref(appFinished), nMeshingThreads),
-           playerInputThread(&player::processPlayerInput, &player);
-
-
-    // W.I.P DEBUG MODEL LOADING SETUP.
-    // TODO. ADD 'batch' CLASS. SIMILIAR TO 'chunk' CLASS EXCEPT IT STORES VERTEX DATA FROM
-    // MANY ARBITRARY MODELS TO SAVE DRAW CALLS.
-    // La esfera no se cullea y algunas texturas están donde no deberían estar
-    VoxelEng::model* robotModel = VoxelEng::models::models_[14];
-    
-    // Rendering loop starts here.
-    double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
-           lastFrameTime = lastSecondTime,
-           actualTime,
-           timeStep; // How much time has passed since the last frame was drawn.
-    int nFramesDrawn = 0;
-    unsigned int nVertices = 0;
-
     // W.I.P Entity management.
     VoxelEng::entity evilRobot = VoxelEng::entity(14, 0, 150, 0);
     VoxelEng::entity evilRobot2 = VoxelEng::entity(14, 0, 148.5, 0);
     modelsBatch.addEntity(evilRobot);
     modelsBatch.addEntity(evilRobot2);
 
+
+    // Start the terrain management and
+    // the player input processing threads.
+    thread chunkManagementThread(&chunkManager::manageChunks, &chunkMng, ref(appFinished), nMeshingThreads),
+           playerInputThread(&player::processPlayerInput, &player);
+
+
+    // Rendering loop starts here.
+    double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
+           lastFrameTime = lastSecondTime,
+           actualTime,
+           timeStep; // How much time has passed since the last frame was drawn. Use this to move entities without caring about FPS.
+    int nFramesDrawn = 0;
+    unsigned int nVertices = 0;
+    
+
     // Print some startup debug information.
     std::cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << std::endl
-        << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels"
-        << "EvilRobot vertex count = " << robotModel->size() 
-        << "Batch size: " << evilRobot.entityModel().size() << std::endl;
-
+              << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << std::endl;
     while (!mainWindow.isClosing())
     {
-
 
         MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix();
         defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
@@ -184,7 +176,7 @@ int main()
         if (actualTime - lastSecondTime >= 1.0)
         {
 
-            //std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
+            std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
             nFramesDrawn = 0;
             lastSecondTime = glfwGetTime();
 
@@ -227,7 +219,7 @@ int main()
                 
                 if (nVertices = chunk.second.size())
                 {
-
+                    
                     vbo.prepareStatic(chunk.second.data(), sizeof(vertex) * nVertices);
 
                     renderer.draw(nVertices);
@@ -241,10 +233,11 @@ int main()
         // Render batches (test W.I.P).
         if (true) {
 
-            vbo.prepareDynamic(sizeof(vertex) * modelsBatch.size());
-            vbo.replaceDynamicData(modelsBatch.data(), sizeof(vertex) * modelsBatch.size());
-
+            modelsBatch.generateVertices();
+            vbo.prepareStatic(modelsBatch.data(), sizeof(vertex) * modelsBatch.size());
+            
             renderer.draw(modelsBatch.size());
+            evilRobot.z() -= 0.1f * timeStep;
 
         }
 

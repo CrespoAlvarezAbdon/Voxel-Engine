@@ -4,6 +4,8 @@
 #include "camera.h"
 #include "chunk.h"
 #include "gameWindow.h"
+#include "batch.h"
+#include <vector>
 #include <GLFW/glfw3.h>
 #include <glm.hpp>
 
@@ -123,6 +125,15 @@ inline void player::setChunkManager(chunkManager* chunkMng)
 
 namespace VoxelEng {
 
+	//////////////////////////////
+	//Forward class declarations//
+	//////////////////////////////
+	class batch;
+
+	///////////
+	//Classes//
+	///////////
+
 	class entity {
 
 	public:
@@ -166,10 +177,9 @@ namespace VoxelEng {
 
 		unsigned int batchID_;
 		float x_, y_, z_;
-		model model_;
+		const model& model_;
 
 	};
-
 
 	inline float entity::x() const {
 	
@@ -224,6 +234,30 @@ namespace VoxelEng {
 		return batchID_;
 
 	}
+
+	class entityManager {
+
+	public:
+
+		/*
+		Function used by a worker thread to manage entities in a world/level.
+		Management includes creating, updating and removing entities from the world.
+		*/
+		static void manageEntities();
+
+		/*
+		Method called by a batch automatically while it is being constructed to register itself
+		in the entityManager's batch list. This allows the manager to access to all the entities in the world.
+		Batches are used to save drawing calls, but the game logic for the entities is calculated by the method
+		entityManager::manager.
+		*/
+		static void registerBatch(batch& batch);
+
+	private:
+
+		static std::vector<batch&> batches_;
+
+	};
 
 }
 
