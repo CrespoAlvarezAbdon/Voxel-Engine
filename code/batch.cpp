@@ -1,40 +1,38 @@
 #include "batch.h"
 #include <stdexcept>
+#include <string>
+#include <iterator>
+
 
 namespace VoxelEng {
 
-	batch::batch() {
-	
-		entityManager.
-	
+	batch::batch() : dirty_(false) {}
+
+	const void* batch::data() {
+
+		std::unique_lock<recursive_mutex> lock(mutex_);
+
+		return model_.data();
+
 	}
 
-	bool batch::addEntity(entity& entity) {
-	
-		unsigned int modelSize = entity.entityModel().size();
+	unsigned int batch::size() {
 
-		if (vertexCount_ + modelSize <= BATCH_MAX_VERTEX_COUNT)
+		std::unique_lock<recursive_mutex> lock(mutex_);
+
+		return model_.size();
+
+	}
+
+	bool batch::addEntity(entity& entity, unsigned int ID) {
+
+		std::unique_lock<recursive_mutex> lock(mutex_);
+
+		if (model_.size() + entity.entityModel().size() <= BATCH_MAX_VERTEX_COUNT)
 		{
 
-			if (freeInd_.empty())
-			{
+			entities_[ID] = &entity;
 
-				entity.batchID() = entities_.size();
-				entities_.push_back(&entity);
-
-			}
-			else
-			{
-
-				unsigned int ID = freeInd_.front();
-
-				entities_[ID] = &entity;
-				entity.batchID() = ID;
-				freeInd_.pop_front();
-
-			}
-
-			vertexCount_ += modelSize;
 			return true;
 
 		}
@@ -43,43 +41,68 @@ namespace VoxelEng {
 	
 	}
 
-	void batch::deleteEntity(unsigned int ID) {
+	bool batch::deleteEntity(unsigned int ID) {
 	
-		if (ID == entities_.size() - 1)
-			entities_.pop_back();
-		else
-			if (ID >= entities_.size())
-				throw runtime_error("The specified ID does not exist inside the batch!");
-			else {
-			
-				entities_[ID] = nullptr;
-				freeInd_.push_back(ID);
-			
-			}
+		std::unique_lock<recursive_mutex> lock(mutex_);
+
+		if (entities_.find(ID) == entities_.end())
+			throw runtime_error("No entity with ID: " + std::to_string(ID) + " exists in this batch!");
+		else {
+
+			entities_.erase(ID);
+
+			return !entities_.size();
+
+		}
 	
 	}
 
-	void batch::generateVertices() {
+	const model* batch::generateVertices() {
 	
+		std::unique_lock<recursive_mutex> lock(mutex_);
+
 		model_.clear();
 
-		for (int i = 0; i < entities_.size(); i++) {
+		for (auto it = entities_.cbegin(); it != entities_.cend(); it++) {
 		
-			model entityModel = entities_[i]->entityModel();
+			model entityModel = it->second->entityModel();
 
 			// Translate the model's copy to the entity's position.
 			for (unsigned int j = 0; j < entityModel.size(); j++) {
 
-				entityModel[j].positions[0] += entities_[i]->x();
-				entityModel[j].positions[1] += entities_[i]->y();
-				entityModel[j].positions[2] += entities_[i]->z();
+				entityModel[j].positions[0] += it->second->x();
+				entityModel[j].positions[1] += it->second->y();
+				entityModel[j].positions[2] += it->second->z();
 
 				model_.push_back(entityModel[j]);
 
 			}
 
 		}
+
+		dirty_ = false;
+
+		return &model_;
 	
+	}
+
+    entity* batch::getEntity(unsigned int ID) {
+
+		std::unique_lock<recursive_mutex> lock(mutex_);
+
+		if (entities_.find(ID) == entities_.end())
+			throw runtime_error("No entity with ID: " + std::to_string(ID) + " exists in this batch!");
+		else
+			return entities_[ID];
+
+	}
+
+	unsigned int batch::nEntities() {
+
+		std::unique_lock<recursive_mutex> lock(mutex_);
+
+		return entities_.size();
+
 	}
 
 }

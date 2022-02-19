@@ -1,11 +1,17 @@
-#ifndef _ENTITY_
-#define _ENTITY_
+#ifndef _VOXENG_ENTITY_
+#define _VOXENG_ENTITY_
 
 #include "camera.h"
 #include "chunk.h"
 #include "gameWindow.h"
 #include "batch.h"
+#include "model.h"
 #include <vector>
+#include <deque>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
+#include <unordered_map>
 #include <GLFW/glfw3.h>
 #include <glm.hpp>
 
@@ -15,7 +21,7 @@
 ///////////
 
 /*
-Abstraction that contains everything that defines the player.
+Abstraction that contains everything that defines the player (NOT the player model/entity).
 */
 class player
 {
@@ -152,9 +158,6 @@ namespace VoxelEng {
 		// Get entity's postion in Z axis.
 		float z() const;
 
-		// Get entity's ID inside a batch. An entity can only belong to one batch at a time so there is only one ID.
-		unsigned int batchID() const;
-
 		// Get the entity's model.
 		const model& entityModel() const;
 
@@ -168,15 +171,25 @@ namespace VoxelEng {
 		// Set entity's postion in Z axis.
 		float& z();
 
-		// Set entity's ID inside a batch. An entity can only belong to one batch at a time so there is only one ID.
-		unsigned int& batchID();
+		/*
+		Rotate the entity's model in the X-axis
+		*/
+		void rotateX(float angle);
+
+		/*
+		Rotate the entity's model in the Y-axis
+		*/
+		void rotateY(float angle);
+
+		/*
+		Rotate the entity's model in the Z-axis
+		*/
+		void rotateZ(float angle);
 		
-
-
 	private:
 
-		unsigned int batchID_;
-		float x_, y_, z_;
+		unsigned int axis_; // Te dice en qué eje debes rotar
+		float x_, y_, z_, sinAngle_, cosAngle_;
 		const model& model_;
 
 	};
@@ -197,12 +210,6 @@ namespace VoxelEng {
 
 		return z_;
 
-	}
-
-	inline unsigned int entity::batchID() const {
-	
-		return batchID_;
-	
 	}
 
 	inline const model& entity::entityModel() const {
@@ -229,12 +236,6 @@ namespace VoxelEng {
 
 	}
 
-	inline unsigned int& entity::batchID() {
-
-		return batchID_;
-
-	}
-
 	class entityManager {
 
 	public:
@@ -243,21 +244,99 @@ namespace VoxelEng {
 		Function used by a worker thread to manage entities in a world/level.
 		Management includes creating, updating and removing entities from the world.
 		*/
-		static void manageEntities();
+		static void manageEntities(atomic<double>& timeStep, const atomic<bool>& appFinished);
 
 		/*
 		Method called by a batch automatically while it is being constructed to register itself
 		in the entityManager's batch list. This allows the manager to access to all the entities in the world.
 		Batches are used to save drawing calls, but the game logic for the entities is calculated by the method
 		entityManager::manager.
+		Returns the ID of the registered batch.
 		*/
-		static void registerBatch(batch& batch);
+		static unsigned int registerBatch(batch* batch);
+
+		/*
+		Return the total number of existing entities.
+		*/
+		static unsigned int nEntities();
+
+		/*
+		Registers a new entity in the entity management system.
+		*/
+		static void registerEntity(entity& entity);
+
+		/*
+		Deletes an existing entity from the entity management system.
+		*/
+		static void removeEntity(unsigned int ID);
+
+		/*
+		Swaps read-only and write-only batch rendering data.
+		WARNING. Rendering-thread and entity management thread must be synced when calling this function
+		*/
+		static void swapReadWrite();
+
+		/*
+		Get condition variable used for syncing the rendering and the batching threads.
+		*/
+		static std::condition_variable& entityManagerCV();
+
+		/*
+		Get condition variable flag used for syncing the rendering and the batching threads.
+		*/
+		static bool syncFlag();
+
+		/*
+		Get mutex used for syncing the rendering and the batching threads.
+		*/
+		static std::mutex& syncMutex();
+
+		/*
+		Get the rendering data necessary for the rendering thread to render the batches properly.
+		*/
+		static const std::vector<const model*>* renderingData();
 
 	private:
 
-		static std::vector<batch&> batches_;
+		static std::vector<batch*> batches_;
+		static std::vector<const model*>* renderingDataWrite_,
+								        * renderingDataRead_;
+		static std::deque<unsigned int> freeBatchInd_,
+										freeEntityID_;
+		static std::unordered_map<unsigned int, entity*> entityIDList_;
+		static std::unordered_map<unsigned int, unsigned int> entityBatch_; // Relates entity's ID with the batch it belongs to batch.
+		
+		static std::recursive_mutex entityIDListMutex_,
+			                        batchesMutex_;
+		static std::condition_variable entityManagerCV_;
+		static std::atomic<bool> entityMngCVContinue_;
+		static std::mutex syncMutex_;
 
 	};
+
+	inline std::condition_variable& entityManager::entityManagerCV() {
+	
+		return entityManagerCV_;
+	
+	}
+
+	inline bool entityManager::syncFlag() {
+	
+		return entityMngCVContinue_;
+		
+	}
+
+	inline std::mutex& entityManager::syncMutex() {
+	
+		return syncMutex_;
+	
+	}
+
+	inline const std::vector<const model*>* entityManager::renderingData() {
+	
+		return renderingDataRead_;
+	
+	}
 
 }
 

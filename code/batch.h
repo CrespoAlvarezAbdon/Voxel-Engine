@@ -2,8 +2,8 @@
 #define _VOXENG_BATCH_
 #include "model.h"
 #include "entity.h"
-#include <vector>
-#include <deque>
+#include <unordered_map>
+#include <atomic>
 
 
 #define BATCH_MAX_VERTEX_COUNT 10000
@@ -37,13 +37,26 @@ namespace VoxelEng {
 
 		/*
 		Returns the vertex data stored in the batch.
+		Mutual Exclusive operation.
 		*/
 		const void* data();
 
 		/*
 		Return the number of vertices stored in the batch.
+		Mutual Exclusive operation.
 		*/
 		unsigned int size();
+
+		/*
+		Get whether the batch needs to regenerate the vertices (true) or not (false).
+		*/
+		const std::atomic<bool>& isDirty() const;
+
+		/*
+		Get the number of entities in the batch.
+		Mutual Exclusive operation.
+		*/
+		unsigned int nEntities();
 
 
 		// Modifiers.
@@ -54,43 +67,56 @@ namespace VoxelEng {
 		if the number of vertices of said model added to the actual vertex count
 		in the batch exceeds the maximum number of vertices per batch.
 		*/
-		bool addEntity(entity& entity);
+		bool addEntity(entity& entity, unsigned int ID);
 
+		/*
+		Get an entity from the batch. You are able to call methods that modify said entity.
+		Mutual Exclusive operation.
+		*/
+		entity* getEntity(unsigned int ID);
+
+		/*
+		Set whether the batch needs to regenerate the vertices (true) or not (false).
+		*/
+		std::atomic<bool>& isDirty();
 
 		/*
 		Deletes an entity with the identifier 'ID' inside the batch.
 		If such entity does not exists, it does nothing.
+		Returns true if, after deletion, the batch is empty or false otherwise.
 		*/
-		void deleteEntity(unsigned int ID);
+		bool deleteEntity(unsigned int ID);
 
 		/*
 		Generates new vertices based on the entities that are in the batch and
 		their positions/rotations/states...
+		Automatically sets the batch as not dirty (isDirty() = false).
 		WARNING. It overwrites any other vertex data stored inside the batch.
 		*/
-		void generateVertices();
+		const model* generateVertices();
 
 
 
 	private:
 
-		unsigned int vertexCount_;
-		std::vector<entity*> entities_;
-		std::deque<unsigned int> freeInd_;
+		std::atomic<bool> dirty_;
+		std::unordered_map<unsigned int, entity*> entities_;
 		model model_;
+
+		std::recursive_mutex mutex_;
 
 	};
 
-	inline const void* batch::data() {
-	
-		return model_.data();
-	
+	inline const std::atomic<bool>& batch::isDirty() const {
+
+		return dirty_;
+
 	}
 
-	inline unsigned int batch::size() {
-	
-		return model_.size();
-	
+	inline std::atomic<bool>& batch::isDirty() {
+
+		return dirty_;
+
 	}
 
 }

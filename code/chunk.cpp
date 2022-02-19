@@ -4,8 +4,6 @@
 #include "model.h"
 #include "utilities.h"
 
-#include <iostream>
-#include <ostream>
 
 // 'chunk' class.
 
@@ -676,6 +674,7 @@ void chunkManager::meshChunks(const atomic<bool>& appFinished, const atomic<int>
 
 }
 
+// TODO: If there is time, delete drawablechunksRead and Write
 void chunkManager::manageChunks(const atomic<bool>& app_finished, unsigned int nMeshingThreads)
 {
 

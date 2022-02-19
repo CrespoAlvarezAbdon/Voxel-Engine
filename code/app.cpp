@@ -41,7 +41,6 @@
 // 4º. ADD A PROPER SKYBOX INSTEAD OF RELYING ON THE GRAPHICS_API BACKGROUND COLOR.
 // 5º. ADD ANY CALLS TO VBO, VAO, RENDERERS THROUGH THE 'graphics' CLASS.
 // 6º. FIX GAME TAKING TOO LONG TO CLOSE (LOOK AT MESHING LOOPS AND ADD ADDITIONAL CONDITION).
-// 7º. FIX BEING UNABLE TO BUILD IF YOU WALK TO FAR (look at raycasting method that we are using to check blocks and do some debug starting from there).
 
 int main()
 {
@@ -64,6 +63,7 @@ int main()
 
     // Game Variables/objects.
     atomic<bool> appFinished = false; // Signals if the game has finished executing or not.
+    atomic<double> timeStep = 0.0f; // How much time has passed since the last frame was drawn. Use this to move entities without caring about FPS.
 
     // TODO. ADD CUSTOM SKY COLOR PER WORLD.
     // Worlds. 
@@ -87,10 +87,6 @@ int main()
     VoxelEng::models::loadCustomModel("Resources/Models/Warden.obj", 14);
 
 
-    // (W.I.P). Create batches for the custom models.
-    VoxelEng::batch modelsBatch;
-
-
     // Rendering related.
     shader defaultShader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
     vertexBuffer vbo = vertexBuffer();
@@ -104,6 +100,7 @@ int main()
     chunkManager chunkMng(nChunksToDraw, player.mainCamera());
     int nMeshingThreads = 2; // Number of threads for non-high priority mesh updates.
     unordered_map<glm::vec3, vector<vertex>> const* chunksToDraw = nullptr;
+    const std::vector<const VoxelEng::model*> * batchesToDraw = nullptr;
 
     // Configure texture block atlas.
     texture::setBlockAtlas(blockTextureAtlas);
@@ -135,33 +132,25 @@ int main()
     blockTextureAtlas.bind();
 
 
-    // W.I.P Entity management.
-    VoxelEng::entity evilRobot = VoxelEng::entity(14, 0, 150, 0);
-    VoxelEng::entity evilRobot2 = VoxelEng::entity(14, 0, 148.5, 0);
-    modelsBatch.addEntity(evilRobot);
-    modelsBatch.addEntity(evilRobot2);
-
+    // Time/FPS related stuff.
+    double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
+        lastFrameTime = lastSecondTime,
+        actualTime;
+    int nFramesDrawn = 0;
 
     // Start the terrain management and
     // the player input processing threads.
     thread chunkManagementThread(&chunkManager::manageChunks, &chunkMng, ref(appFinished), nMeshingThreads),
-           playerInputThread(&player::processPlayerInput, &player);
+           playerInputThread(&player::processPlayerInput, &player),
+           entityManagementThread(&VoxelEng::entityManager::manageEntities, ref(timeStep), ref(appFinished));
 
-
-    // Rendering loop starts here.
-    double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
-           lastFrameTime = lastSecondTime,
-           actualTime,
-           timeStep; // How much time has passed since the last frame was drawn. Use this to move entities without caring about FPS.
-    int nFramesDrawn = 0;
-    unsigned int nVertices = 0;
     
-
+    // Rendering loop starts here.
+    unsigned int nVertices = 0;
     // Print some startup debug information.
     std::cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << std::endl
               << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << std::endl;
-    while (!mainWindow.isClosing())
-    {
+    while (!mainWindow.isClosing()) {
 
         MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix();
         defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
@@ -173,8 +162,7 @@ int main()
 
         // ms/frame calculation and display.
         nFramesDrawn++;
-        if (actualTime - lastSecondTime >= 1.0)
-        {
+        if (actualTime - lastSecondTime >= 1.0) {
 
             std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
             nFramesDrawn = 0;
@@ -182,9 +170,8 @@ int main()
 
         }
 
-        // Coordinate main thread and chunk management thread.
-        if(chunkMng.managerThreadMutex().try_lock())
-        {
+        // Coordinate rendering thread and chunk management thread.
+        if(chunkMng.managerThreadMutex().try_lock()) {
 
             if (chunkMng.forceSyncFlag()) 
                 chunkMng.updatePriorityChunks();
@@ -201,7 +188,18 @@ int main()
 
         }
 
-        // Rendering starts here.
+        // Coordinate rendering thread and entity management thread.
+        if (VoxelEng::entityManager::syncMutex().try_lock()) {
+        
+            VoxelEng::entityManager::swapReadWrite();
+            batchesToDraw = VoxelEng::entityManager::renderingData();
+
+            VoxelEng::entityManager::syncMutex().unlock();
+            VoxelEng::entityManager::entityManagerCV().notify_one();
+        
+        }
+
+        // Rendering starts here. Clear the screen to draw the next frame.
         renderer.clear();
 
         // Update player's camera.
@@ -209,16 +207,13 @@ int main()
         player.mainCamera().updateView();
 
         // Render chunks.
-        if (chunksToDraw)
-        {
-            
+        if (chunksToDraw) {
+                   
             // chunk.first refers to the chunk's postion.
             // chunk.second refers to the chunk's vertex data.
-            for (auto const& chunk : *chunksToDraw)
-            {
+            for (auto const& chunk : *chunksToDraw) {
                 
-                if (nVertices = chunk.second.size())
-                {
+                if (nVertices = chunk.second.size()) {
                     
                     vbo.prepareStatic(chunk.second.data(), sizeof(vertex) * nVertices);
 
@@ -230,14 +225,20 @@ int main()
 
         }
 
-        // Render batches (test W.I.P).
-        if (true) {
+        // Render batches.
+        if (batchesToDraw) {
 
-            modelsBatch.generateVertices();
-            vbo.prepareStatic(modelsBatch.data(), sizeof(vertex) * modelsBatch.size());
+            for (auto const& batch : *batchesToDraw) {
             
-            renderer.draw(modelsBatch.size());
-            evilRobot.z() -= 0.1f * timeStep;
+                if (nVertices = batch->size()) {
+                
+                    vbo.prepareStatic(batch->data(), sizeof(vertex) * nVertices);
+
+                    renderer.draw(nVertices);
+                
+                }
+
+            }
 
         }
 
@@ -254,15 +255,18 @@ int main()
     {
 
         unique_lock<mutex> lock(chunkMng.managerThreadMutex());
+        std::unique_lock<std::mutex> syncLock(VoxelEng::entityManager::syncMutex());
         appFinished = true;
 
     }
     chunkMng.managerThreadCV().notify_one();
+    VoxelEng::entityManager::entityManagerCV().notify_one();
 
 
     // Wait for the chunk management thread to be finished before ending the main/rendering thread.
     chunkManagementThread.join();
     playerInputThread.join();
+    entityManagementThread.join();
 
     // Terminates the GLFW library. Necessary to end the program.
     glfwTerminate();

@@ -9,6 +9,7 @@
 #include <atomic>
 #include <mutex>
 #include <shared_mutex>
+#include <condition_variable>
 #include <barrier>
 #include <GL/glew.h>
 #include <glm.hpp>
@@ -333,13 +334,11 @@ public:
 	unordered_map<glm::vec3, vector<vertex>>* drawableChunksWrite();
 
 	recursive_mutex& chunksMutex();
-
 	recursive_mutex& highPriorityListMutex();
 
 	unordered_set<glm::vec3>& freeableChunks();
 
 	mutex& freeableChunksMutex();
-
 	mutex& managerThreadMutex();
 
 	condition_variable& managerThreadCV();

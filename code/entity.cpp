@@ -1,8 +1,10 @@
 #include "entity.h"
-#include <stdexcept>
 #include "graphics.h"
-#include "model.h"
 #include "utilities.h"
+#include <stdexcept>
+#include <string>
+#include <cmath>
+
 
 // 'player' class
 
@@ -210,12 +212,247 @@ void player::processPlayerInput()
 
 namespace VoxelEng {
 
-    entity::entity(unsigned int modelID, float x, float y, float z) : model_(models::getModel(modelID)), x_(x), y_(y), z_(z) {}
+    // 'entity' class
 
-    void entityManager::registerBatch(batch& batch) {
+    entity::entity(unsigned int modelID, float x, float y, float z)
+        : model_(models::getModel(modelID)), x_(x), y_(y), z_(z){}
+
+    void entity::rotateZ(float angle) {
     
+        sinAngle_ = std::sin(angle);
+        consAngle_ = std::cos(angle);
+    
+    }
+
+    // 'entityManager' class
+
+    std::vector<batch*> entityManager::batches_;
+    std::vector<const model*>* entityManager::renderingDataWrite_ = new std::vector<const model*>(),
+                             * entityManager::renderingDataRead_ = new std::vector<const model*>();
+    std::deque<unsigned int> entityManager::freeBatchInd_,
+                             entityManager::freeEntityID_;
+    std::unordered_map<unsigned int, entity*> entityManager::entityIDList_;
+    std::unordered_map<unsigned int, unsigned int> entityManager::entityBatch_;
+    std::recursive_mutex entityManager::entityIDListMutex_,
+                         entityManager::batchesMutex_;
+    std::condition_variable entityManager::entityManagerCV_;
+    std::atomic<bool> entityManager::entityMngCVContinue_ = false;
+    std::mutex entityManager::syncMutex_;
+
+
+    unsigned int entityManager::registerBatch(batch* batch) {
+
+        std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
+
         batches_.push_back(batch);
+
+        return batches_.size() - 1;
     
+    }
+
+    void entityManager::manageEntities(atomic<double>& timeStep, const atomic<bool>& appFinished) {
+    
+        bool once = true,
+             deletedEntity = false;
+
+        {
+
+            std::unique_lock<std::mutex> syncLock(syncMutex_);
+
+            while (!appFinished)
+            {
+
+                // Spawn entities (W.I.P).
+                if (once)
+                {
+
+                    registerEntity(*(new VoxelEng::entity(14, 0, 145, 0)));
+                    registerEntity(*(new VoxelEng::entity(14, 0, 148.5, 0)));
+
+                    once = false;
+
+                }
+
+
+                // Update all existing entities.
+                batches_[0]->getEntity(0)->z() -= 0.1f * timeStep;
+                batches_[0]->getEntity(1)->z() -= 0.05f * timeStep;
+                batches_[0]->isDirty() = true;
+
+
+                if (!deletedEntity)
+                {
+                    // Remove any unnecesary entities.
+                    if (batches_[0]->getEntity(0)->z() <= -1)
+                    {
+
+                        removeEntity(0);
+                        registerEntity(*(new VoxelEng::entity(14, 0, 150, 0)));
+
+                        deletedEntity = true;
+
+                    }
+
+                }
+
+
+                // Regenerate all batches.
+                for (unsigned int i = 0; i < batches_.size(); i++)
+                    if (batches_[i]->isDirty())
+                        renderingDataWrite_->push_back(batches_[i]->generateVertices());
+
+
+                // Sync with rendering thread and reset some structures for next iteration.
+                entityManagerCV_.wait(syncLock);
+
+                renderingDataWrite_->clear();
+
+            }
+
+        }
+
+    }
+
+    unsigned int entityManager::nEntities() {
+    
+        std::unique_lock<recursive_mutex> lock(entityIDListMutex_);
+
+        return entityIDList_.size();
+    
+    }
+
+    void entityManager::registerEntity(entity& entity) {
+    
+        unsigned int entityID,
+                     batchID;
+
+
+        std::unique_lock<recursive_mutex> lockBatches(batchesMutex_);
+        std::unique_lock<recursive_mutex> lockEntities(entityIDListMutex_);
+
+        if (freeEntityID_.empty())
+            entityID = entityIDList_.size();
+        else {
+        
+            entityID = freeEntityID_.front();
+            freeEntityID_.pop_front();
+        
+        }
+
+
+        // Register the entity inside a batch.
+        if (!batches_.empty())
+        {
+
+            if (freeBatchInd_.empty())
+            {
+
+                if (!batches_[batches_.size() - 1]->addEntity(entity, entityID)) { // If last created batch cannot store the entity's model, then create another batch.
+
+                    registerBatch(new batch());
+
+                    if (!batches_[batches_.size() - 1]->addEntity(entity, entityID))
+                        throw runtime_error("Entity with ID: " + std::to_string(entityID) + " has a model too big for a batch!");
+
+                }
+
+                batchID = batches_.size() - 1;
+
+            }
+            else {
+            
+                bool found = false;
+                unsigned int aux,
+                             i;
+                for (i = 0; i < freeBatchInd_.size() && !found; i++) {
+                
+                    found = batches_[freeBatchInd_[i]]->addEntity(entity, entityID);
+
+                    if (!found) { // Put freeBatchind_.front() in the back and try with the next one.
+                    
+                        aux = freeBatchInd_.front();
+
+                        freeBatchInd_.pop_front();
+
+                        freeBatchInd_.push_back(aux);
+                    
+                    }
+                
+                }
+
+                if (!found) {
+
+                    registerBatch(new batch());
+
+                    if (!batches_[batches_.size() - 1]->addEntity(entity, entityID))
+                        throw runtime_error("Entity with ID: " + std::to_string(entityID) + " has a model too big for a batch!");
+
+                    batchID = batches_.size() - 1;
+
+                }
+                else
+                    batchID = freeBatchInd_[i];
+
+            }
+
+        }
+        else { // If no batch is actually registered.
+
+            registerBatch(new batch());
+
+            if (!batches_[batches_.size() - 1]->addEntity(entity, entityID))
+                throw runtime_error("Entity with ID: " + std::to_string(entityID) + " has a model too big for a batch!");
+
+            batchID = batches_.size() - 1;
+
+        }
+
+
+        // Register entity ID in entityManager.
+        if (entityIDList_.find(entityID) == entityIDList_.end()) { // If another entity with the same ID does not exist.
+
+            entityIDList_[entityID] = &entity;
+            entityBatch_[entityID] = batchID;
+
+        }
+        else
+            throw runtime_error("Two entities with ID: " + std::to_string(entityID) + " is not possible!");
+  
+    }
+
+    void entityManager::removeEntity(unsigned int ID) {
+    
+        std::unique_lock<recursive_mutex> lockBatches(batchesMutex_);
+        std::unique_lock<recursive_mutex> lockEntities(entityIDListMutex_);
+
+        if (entityBatch_.find(ID) == entityBatch_.end())
+            throw runtime_error("There is no entity with ID " + std::to_string(ID));
+        else {
+
+            // Free the removed entity's ID.
+            if (ID != entityIDList_.size() - 1)
+                freeEntityID_.push_back(ID);
+
+            // Remove entity from its corresponding batch and
+            // mark batch as free if no more entities are related to it.
+            if (batches_[entityBatch_[ID]]->deleteEntity(ID))
+                freeBatchInd_.push_back(entityBatch_[ID]);
+
+            // Update maps.
+            entityIDList_.erase(ID);
+            entityBatch_.erase(ID);
+
+        }
+
+    }
+
+    void entityManager::swapReadWrite() {
+    
+        std::vector<const model*>* aux = renderingDataRead_;
+
+        renderingDataRead_ = renderingDataWrite_;
+        renderingDataWrite_ = aux;
+
     }
 
 }
