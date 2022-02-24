@@ -61,10 +61,20 @@ public:
 	Everytime an element is pushed into a layout, its the same
 	as saying that the layout now contains the same data as before
 	this push and the new 'count' elements pushed.
-	This is a template function with no implementation, used the specialized methods.
+	This is a template function with no implementation, use the specialized methods.
 	*/
 	template <typename T>
 	void push(unsigned int count);
+
+	/*
+	Pushes 'count' elements into the vertex buffer layout.
+	Everytime an element is pushed into a layout, its the same
+	as saying that the layout now contains the same data as before
+	this push and the new 'count' elements pushed.
+	This is a template function with no implementation, use the specialized methods.
+	*/
+	template <typename T>
+	void push(unsigned int count, bool isNormalVec);
 
 	/*
 	Now the vertex data will have 'count' more floats at the end.
@@ -97,9 +107,11 @@ public:
 	/*
 	Now the vertex data will have 'count' more GLints at the end.
 	Be aware about OpenGL vertex data alignment.
+	If areNormalVec is equal to true, the GLints will be treated
+	as normal vectors (see definition of VoxelEng::normalVec for more information).
 	*/
 	template <>
-	void push<GLint>(unsigned int count);
+	void push<GLint>(unsigned int count, bool areNormalVec);
 
 
 	// Destructors.

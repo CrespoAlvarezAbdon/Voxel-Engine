@@ -1,4 +1,5 @@
 #include "batch.h"
+#include "definitions.h"
 #include <stdexcept>
 #include <string>
 #include <iterator>
@@ -59,20 +60,70 @@ namespace VoxelEng {
 
 	const model* batch::generateVertices() {
 	
+		entity* entity = nullptr;
+		float sinAngle,
+			  cosAngle,
+			  oldFirstCoord,
+			  oldSecondCoord;
+		unsigned int lastModifiedRotAxis;
+		model entityModel;
+
+
 		std::unique_lock<recursive_mutex> lock(mutex_);
 
 		model_.clear();
-
 		for (auto it = entities_.cbegin(); it != entities_.cend(); it++) {
 		
-			model entityModel = it->second->entityModel();
+			entity = it->second;
+			entityModel = entity->entityModel();
+			lastModifiedRotAxis = entity->lastRotAxis();
+			sinAngle = entity->sinAngle();
+			cosAngle = entity->cosAngle();
 
 			// Translate the model's copy to the entity's position.
 			for (unsigned int j = 0; j < entityModel.size(); j++) {
 
-				entityModel[j].positions[0] += it->second->x();
-				entityModel[j].positions[1] += it->second->y();
-				entityModel[j].positions[2] += it->second->z();
+				if (lastModifiedRotAxis) {
+
+					if (lastModifiedRotAxis == X_AXIS) {
+
+						oldFirstCoord = entityModel[j].positions[1];
+						oldSecondCoord = entityModel[j].positions[2];
+
+						entityModel[j].positions[1] = oldFirstCoord * cosAngle -
+													  oldSecondCoord * sinAngle;
+						entityModel[j].positions[2] = oldFirstCoord * sinAngle +
+							                          oldSecondCoord * cosAngle;
+
+					}
+					else if (lastModifiedRotAxis == Y_AXIS) {
+
+						oldFirstCoord = entityModel[j].positions[0];
+						oldSecondCoord = entityModel[j].positions[2];
+
+						entityModel[j].positions[0] = oldFirstCoord * cosAngle +
+													  oldSecondCoord * sinAngle;
+						entityModel[j].positions[2] = oldSecondCoord * cosAngle -
+													  oldFirstCoord * sinAngle;
+
+					}
+					else if (lastModifiedRotAxis == Z_AXIS) {
+
+						oldFirstCoord = entityModel[j].positions[0];
+						oldSecondCoord = entityModel[j].positions[1];
+
+						entityModel[j].positions[0] = oldFirstCoord * cosAngle -
+													  oldSecondCoord * sinAngle;
+						entityModel[j].positions[1] = oldFirstCoord * sinAngle +
+							                          oldSecondCoord * cosAngle;
+
+					}
+
+				}
+
+				entityModel[j].positions[0] += entity->x();
+				entityModel[j].positions[1] += entity->y();
+				entityModel[j].positions[2] += entity->z();
 
 				model_.push_back(entityModel[j]);
 

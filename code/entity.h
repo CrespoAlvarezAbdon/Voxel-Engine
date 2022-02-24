@@ -6,6 +6,7 @@
 #include "gameWindow.h"
 #include "batch.h"
 #include "model.h"
+#include "gameWindow.h"
 #include <vector>
 #include <deque>
 #include <mutex>
@@ -161,6 +162,15 @@ namespace VoxelEng {
 		// Get the entity's model.
 		const model& entityModel() const;
 
+		// Get entity's last modified rotational axis.
+		unsigned int lastRotAxis() const;
+
+		// Get sin(entity's last rotation angle).
+		float sinAngle() const;
+
+		// Get cos(entity's last rotation angle).
+		float cosAngle() const;
+
 
 		// Modifiers.
 
@@ -215,6 +225,24 @@ namespace VoxelEng {
 	inline const model& entity::entityModel() const {
 
 		return model_;
+
+	}
+
+	inline unsigned int entity::lastRotAxis() const {
+	
+		return axis_;
+	
+	}
+
+	inline float entity::sinAngle() const {
+	
+		return sinAngle_;
+	
+	}
+
+	inline float entity::cosAngle() const {
+
+		return cosAngle_;
 
 	}
 

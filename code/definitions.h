@@ -93,6 +93,11 @@ namespace VoxelEng
 	#define EAST 5 // +z
 	#define WEST 6 // -z
 
+	// Axis.
+	#define X_AXIS 1
+	#define Y_AXIS 2
+	#define Z_AXIS 3
+
 
 	////////////
 	//Typedefs//
@@ -105,6 +110,10 @@ namespace VoxelEng
 	typedef float vertexCoord;
 
 	typedef float textureCoord;
+
+	typedef int normalVec;
+
+	typedef float angle;
 
 	// TODO. ADD CONDITIONS TO ALLOW SWITCHING BETWEEN GRAPHIC APIs
 	typedef GLFWwindow GraphicsAPIWindow;

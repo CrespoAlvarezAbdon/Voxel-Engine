@@ -2,6 +2,7 @@
 #define _VOXENG_BATCH_
 #include "model.h"
 #include "entity.h"
+#include "gameWindow.h"
 #include <unordered_map>
 #include <atomic>
 

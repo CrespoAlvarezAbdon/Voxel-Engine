@@ -123,6 +123,7 @@ int main()
     // Configure the vertex layout.
     layout.push<GLfloat>(3);
     layout.push<GLfloat>(2);
+    layout.push<VoxelEng::normalVec>(1);
 
     // Bind the currently used VAO, shaders and atlases.
     vbo.bind();
@@ -149,7 +150,7 @@ int main()
     unsigned int nVertices = 0;
     // Print some startup debug information.
     std::cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << std::endl
-              << "and the block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << std::endl;
+              << "The block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << std::endl;
     while (!mainWindow.isClosing()) {
 
         MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix();
@@ -164,14 +165,14 @@ int main()
         nFramesDrawn++;
         if (actualTime - lastSecondTime >= 1.0) {
 
-            std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
+            std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame" << " and resolution is " << mainWindow.width() << " x " << mainWindow.height();
             nFramesDrawn = 0;
             lastSecondTime = glfwGetTime();
 
         }
 
         // Coordinate rendering thread and chunk management thread.
-        if(chunkMng.managerThreadMutex().try_lock()) {
+        if (chunkMng.managerThreadMutex().try_lock()) {
 
             if (chunkMng.forceSyncFlag()) 
                 chunkMng.updatePriorityChunks();

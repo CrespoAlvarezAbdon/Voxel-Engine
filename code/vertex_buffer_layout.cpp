@@ -1,4 +1,5 @@
 #include "vertex_buffer_layout.h"
+#include "definitions.h"
 
 
 // Non-member functions.
@@ -43,6 +44,16 @@ void vertexBufferLayout::push<unsigned int>(unsigned int count)
 }
 
 template <>
+void vertexBufferLayout::push<VoxelEng::normalVec>(unsigned int count)
+{
+
+	elements_.push_back({ GL_UNSIGNED_INT, count, false });
+
+	stride_ += count * openGLSizeOf(GL_UNSIGNED_INT);
+
+}
+
+template <>
 void vertexBufferLayout::push<unsigned char>(unsigned int count)
 {
 
@@ -63,7 +74,7 @@ void vertexBufferLayout::push<GLbyte>(unsigned int count)
 }
 
 template <>
-void vertexBufferLayout::push<GLint>(unsigned int count)
+void vertexBufferLayout::push<GLint>(unsigned int count, bool areNormalVec)
 {
 
 	elements_.push_back({ GL_INT, count, false });

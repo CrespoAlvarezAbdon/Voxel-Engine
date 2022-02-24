@@ -1,6 +1,7 @@
 #include "entity.h"
 #include "graphics.h"
 #include "utilities.h"
+#include "definitions.h"
 #include <stdexcept>
 #include <string>
 #include <cmath>
@@ -215,14 +216,33 @@ namespace VoxelEng {
     // 'entity' class
 
     entity::entity(unsigned int modelID, float x, float y, float z)
-        : model_(models::getModel(modelID)), x_(x), y_(y), z_(z){}
+        : model_(models::getModel(modelID)), x_(x), y_(y), z_(z), 
+          axis_(0), cosAngle_(0.0f), sinAngle_(0.0f){}
+
+    void entity::rotateX(float angle) {
+
+        sinAngle_ = std::sin(angle * 3.1415926f / 180.0f);
+        cosAngle_ = std::cos(angle * 3.1415926f / 180.0f);
+        axis_ = X_AXIS;
+
+    }
+
+    void entity::rotateY(float angle) {
+
+        sinAngle_ = std::sin(angle * 3.1415926f / 180.0f);
+        cosAngle_ = std::cos(angle * 3.1415926f / 180.0f);
+        axis_ = Y_AXIS;
+
+    }
 
     void entity::rotateZ(float angle) {
     
-        sinAngle_ = std::sin(angle);
-        consAngle_ = std::cos(angle);
+        sinAngle_ = std::sin(angle * 3.1415926f / 180.0f);
+        cosAngle_ = std::cos(angle * 3.1415926f / 180.0f);
+        axis_ = Z_AXIS;
     
     }
+
 
     // 'entityManager' class
 
@@ -254,6 +274,7 @@ namespace VoxelEng {
     
         bool once = true,
              deletedEntity = false;
+        float rotation = 0.0f;
 
         {
 
@@ -268,6 +289,8 @@ namespace VoxelEng {
 
                     registerEntity(*(new VoxelEng::entity(14, 0, 145, 0)));
                     registerEntity(*(new VoxelEng::entity(14, 0, 148.5, 0)));
+                    registerEntity(*(new VoxelEng::entity(14, 3, 150, 0)));
+                    registerEntity(*(new VoxelEng::entity(14, -3.5, 149.2, 0)));
 
                     once = false;
 
@@ -277,8 +300,11 @@ namespace VoxelEng {
                 // Update all existing entities.
                 batches_[0]->getEntity(0)->z() -= 0.1f * timeStep;
                 batches_[0]->getEntity(1)->z() -= 0.05f * timeStep;
+                batches_[0]->getEntity(1)->rotateZ(rotation);
+                batches_[0]->getEntity(2)->rotateX(rotation);
+                batches_[0]->getEntity(3)->rotateY(rotation);
+                rotation += 5 * timeStep;
                 batches_[0]->isDirty() = true;
-
 
                 if (!deletedEntity)
                 {
