@@ -137,7 +137,7 @@ void chunk::renewMesh()
                     if (blockID = blocks_[x][y][z])
                     {
 
-                        // Front face vertices with culling of non-visible faces.
+                        // Front face vertices with culling of non-visible faces. z+
                         if ((z < 15 && !blocks_[x][y][z + 1]) || (z == 15 && neighborChunks[0] && !neighborChunks[0]->blocks_[x][y][0]))
                         {
 
@@ -148,6 +148,12 @@ void chunk::renewMesh()
                                 aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[0];
                                 aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[1];
                                 aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](1)[vertex]).positions[2];
+                                
+                                aux.normals = 0 | (0 << 30);
+                                aux.normals = aux.normals | (1023 << 20);
+                                aux.normals = aux.normals | (512 << 10);
+                                aux.normals = aux.normals | (512 << 0);
+
                                 renderingData_.vertices.push_back(aux);
 
                             }
@@ -157,7 +163,7 @@ void chunk::renewMesh()
 
                         }
 
-                        // Back face vertices with culling of non-visible faces.
+                        // Back face vertices with culling of non-visible faces. z-
                         if ((z > 0 && !blocks_[x][y][z - 1]) || (z == 0 && neighborChunks[1] && !neighborChunks[1]->blocks_[x][y][15]))
                         {
 
@@ -168,6 +174,8 @@ void chunk::renewMesh()
                                 aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[0];
                                 aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[1];
                                 aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[2];
+
+
                                 renderingData_.vertices.push_back(aux);
 
                             }
@@ -177,7 +185,7 @@ void chunk::renewMesh()
 
                         }
 
-                        // Top face vertices with culling of non-visible faces.
+                        // Top face vertices with culling of non-visible faces. y+
                         if ((y < 15 && !blocks_[x][y + 1][z]) || (y == 15 && neighborChunks[2] && !neighborChunks[2]->blocks_[x][0][z]))
                         {
 
@@ -188,6 +196,12 @@ void chunk::renewMesh()
                                 aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[0];
                                 aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[1];
                                 aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](2)[vertex]).positions[2];
+                                
+                                aux.normals = 0 | (0 << 30);
+                                aux.normals = aux.normals | (512 << 20);
+                                aux.normals = aux.normals | (1023 << 10);
+                                aux.normals = aux.normals | (512 << 0);
+
                                 renderingData_.vertices.push_back(aux);
 
                             }
@@ -197,7 +211,7 @@ void chunk::renewMesh()
 
                         }
 
-                        // Bottom face vertices with culling of non-visible faces.
+                        // Bottom face vertices with culling of non-visible faces. y-
                         if ((y > 0 && !blocks_[x][y - 1][z]) || (y == 0 && neighborChunks[3] && !neighborChunks[3]->blocks_[x][0][z]))
                         {
 
@@ -208,6 +222,12 @@ void chunk::renewMesh()
                                 aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[0];
                                 aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[1];
                                 aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](3)[vertex]).positions[2];
+                                
+                                aux.normals = 0 | (0 << 30);
+                                aux.normals = aux.normals | (512 << 20);
+                                aux.normals = aux.normals | (0 << 10);
+                                aux.normals = aux.normals | (512 << 0);
+
                                 renderingData_.vertices.push_back(aux);
 
                             }
@@ -217,7 +237,7 @@ void chunk::renewMesh()
 
                         }
 
-                        // Right face vertices with culling of non-visible faces.
+                        // Right face vertices with culling of non-visible faces. x+
                         if ((x < 15 && !blocks_[x + 1][y][z]) || (x == 15 && neighborChunks[4] && !neighborChunks[4]->blocks_[0][y][z]))
                         {
 
@@ -228,6 +248,12 @@ void chunk::renewMesh()
                                 aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[0];
                                 aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[1];
                                 aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](5)[vertex]).positions[2];
+                                
+                                aux.normals = 0 | (0 << 30);
+                                aux.normals = aux.normals | (512 << 20);
+                                aux.normals = aux.normals | (512 << 10);
+                                aux.normals = aux.normals | (1023 << 0);
+
                                 renderingData_.vertices.push_back(aux);
 
                             }
@@ -237,7 +263,7 @@ void chunk::renewMesh()
 
                         }
 
-                        // Left face vertices with culling of non-visible faces.
+                        // Left face vertices with culling of non-visible faces. x-
                         if ((x > 0 && !blocks_[x - 1][y][z]) || (x == 0 && neighborChunks[5] && !neighborChunks[5]->blocks_[15][y][z]))
                         {
 
@@ -248,6 +274,12 @@ void chunk::renewMesh()
                                 aux.positions[0] = renderingData_.chunkPos.x * SCX + x + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[0];
                                 aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[1];
                                 aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](4)[vertex]).positions[2];
+                                
+                                aux.normals = 0 | (0 << 30);
+                                aux.normals = aux.normals | (512 << 20);
+                                aux.normals = aux.normals | (512 << 10);
+                                aux.normals = aux.normals | (0 << 0);
+
                                 renderingData_.vertices.push_back(aux);
 
                             }

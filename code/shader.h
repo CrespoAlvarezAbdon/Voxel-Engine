@@ -66,6 +66,12 @@ public:
 	void setUniformVec4f(const string& name, float f1, float f2, float f3, float f4);
 
 	/*
+	Sets a vector of 3 floats named 'name' in the GLSL program.
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
+	void setUniformVec3f(const string& name, const glm::vec3& vec);
+
+	/*
 	Sets an uniform matrix named 'name' of 4x4 floats in the GLSL program.
 	WARNING. Must be called in a thread with valid OpenGL context.
 	*/

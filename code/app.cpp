@@ -93,8 +93,7 @@ int main()
     vertexArray va;
     vertexBufferLayout layout;
     renderer renderer;
-    glm::mat4 modelMatrix, 
-              MVPmatrix;
+    glm::mat4 MVPmatrix;
     
     // Chunk management thread related.
     chunkManager chunkMng(nChunksToDraw, player.mainCamera());
@@ -145,6 +144,10 @@ int main()
            playerInputThread(&player::processPlayerInput, &player),
            entityManagementThread(&VoxelEng::entityManager::manageEntities, ref(timeStep), ref(appFinished));
 
+
+    // Set sun light's position.
+    glm::vec3 lightpos(-10.0f, 145.0f, -10.0f);
+    defaultShader.setUniformVec3f("u_sunLightPos", lightpos);
     
     // Rendering loop starts here.
     unsigned int nVertices = 0;

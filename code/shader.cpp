@@ -146,6 +146,13 @@ void shader::setUniformVec4f(const string& name, float f1, float f2, float f3, f
 
 }
 
+void shader::setUniformVec3f(const string& name, const glm::vec3& vec)
+{
+
+    glUniform3f(getUniformLocation(name), vec.x, vec.y, vec.z);
+
+}
+
 void shader::setUniformMatrix4f(const string& name, const glm::mat4& matrix)
 {
 

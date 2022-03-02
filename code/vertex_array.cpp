@@ -39,7 +39,7 @@ void vertexArray::addLayout(const vertexBufferLayout& layout)
         glEnableVertexAttribArray(i);
 
         // First parameter = attribute index.
-        // Second parameter = number of values that represent the attribute.
+        // Second parameter = number of values (bytes) that represent the attribute.
         // Third parameter = the type of what is representing the vertices (in this case float).
         // Fourth parameter = size of a vertex.
         // Fifth parameter = attributes offset (size to go to the second attribute if there is one. If not, simply put 0 in this parameter) (if you have to put a number, use const void * cast).

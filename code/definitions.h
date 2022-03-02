@@ -111,7 +111,7 @@ namespace VoxelEng
 
 	typedef float textureCoord;
 
-	typedef int normalVec;
+	typedef GLint normalVec;
 
 	typedef float angle;
 

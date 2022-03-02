@@ -28,8 +28,7 @@ namespace VoxelEng {
 
 		/*
 		'batch' object constructor.
-		All 'batch' objets are 'registered' in the entityManager static class by pushing their references back
-		into a list belonging to said class.
+		All 'batch' objets are 'registered' in the entityManager static class.
 		*/
 		batch();
 
