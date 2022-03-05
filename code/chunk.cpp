@@ -175,6 +175,10 @@ void chunk::renewMesh()
                                 aux.positions[1] = renderingData_.chunkPos.y * SCY + y + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[1];
                                 aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + VoxelEng::models::models_[0]->operator[](VoxelEng::models::triangles_[0]->operator[](0)[vertex]).positions[2];
 
+                                aux.normals = 0 | (0 << 30);
+                                aux.normals = aux.normals | (0 << 20);
+                                aux.normals = aux.normals | (512 << 10);
+                                aux.normals = aux.normals | (512 << 0);
 
                                 renderingData_.vertices.push_back(aux);
 

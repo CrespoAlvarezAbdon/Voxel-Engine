@@ -31,7 +31,7 @@ void main()
 	v_TexCoord = texCoord;
 	v_fragPos = position.xyz;
 
-	v_normal = normal;
+	v_normal = mat3(transpose(inverse(mat3(1)))) * normal;
 	
 
 	gl_Position = u_MVP * position;

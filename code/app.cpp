@@ -79,6 +79,7 @@ int main()
           zNear = 0.1f,
           zFar = 500.0f;
     player player(FOV, zNear, zFar, mainWindow, blockReachRange, playerSpawnPosition, spawnWorldID, &appFinished);
+    camera& playerCamera = player.mainCamera();
     int nChunksToDraw = 20; // Controls the maximun render distance in the x and z axis. Average should be between 12 and 20. Max 32 is supported.
     texture blockTextureAtlas("Resources/Textures/atlas.png");
     
@@ -96,7 +97,7 @@ int main()
     glm::mat4 MVPmatrix;
     
     // Chunk management thread related.
-    chunkManager chunkMng(nChunksToDraw, player.mainCamera());
+    chunkManager chunkMng(nChunksToDraw, playerCamera);
     int nMeshingThreads = 2; // Number of threads for non-high priority mesh updates.
     unordered_map<glm::vec3, vector<vertex>> const* chunksToDraw = nullptr;
     const std::vector<const VoxelEng::model*> * batchesToDraw = nullptr;
@@ -106,9 +107,9 @@ int main()
     texture::setBlockAtlasResolution(16);
 
     // Finish connecting some objects.
-    mainWindow.playerCamera() = &player.mainCamera();
+    mainWindow.playerCamera() = &playerCamera;
     player.setChunkManager(&chunkMng);
-    player.mainCamera().setChunkManager(&chunkMng);
+    playerCamera.setChunkManager(&chunkMng);
 
 
     // Set up callbacks.
@@ -146,7 +147,7 @@ int main()
 
 
     // Set sun light's position.
-    glm::vec3 lightpos(-10.0f, 145.0f, -10.0f);
+    glm::vec3 lightpos(10.0f, 150.0f, -10.0f);
     defaultShader.setUniformVec3f("u_sunLightPos", lightpos);
     
     // Rendering loop starts here.
@@ -156,8 +157,9 @@ int main()
               << "The block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << std::endl;
     while (!mainWindow.isClosing()) {
 
-        MVPmatrix = player.mainCamera().projectionMatrix() * player.mainCamera().viewMatrix();
+        MVPmatrix = playerCamera.projectionMatrix() * playerCamera.viewMatrix();
         defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
+        defaultShader.setUniformVec3f("u_camPos", playerCamera.pos());
 
         // Times calculation.
         actualTime = glfwGetTime();
@@ -207,8 +209,8 @@ int main()
         renderer.clear();
 
         // Update player's camera.
-        player.mainCamera().updatePos(timeStep);
-        player.mainCamera().updateView();
+        playerCamera.updatePos(timeStep);
+        playerCamera.updateView();
 
         // Render chunks.
         if (chunksToDraw) {
