@@ -21,19 +21,36 @@ out vec3 v_fragPos;
 out vec3 v_normal;
 
 uniform vec3 u_sunLightPos;
+uniform int u_renderMode;
 uniform mat4 u_MVP; // u_MVP stands for u_Model_view_projection_matrix.
+
 
 
 void main()
 {
 
-	// Export variables to fragment shader.
-	v_TexCoord = texCoord;
-	v_fragPos = position.xyz;
+	if (u_renderMode == 0) {
 
-	v_normal = mat3(transpose(inverse(mat3(1)))) * normal;
+		/*
+		3D rendering.
+		*/
+		// Export variables to fragment shader.
+		v_TexCoord = texCoord;
+		v_fragPos = position.xyz;
+
+		v_normal = mat3(transpose(inverse(mat3(1)))) * normal;
 	
 
-	gl_Position = u_MVP * position;
+		gl_Position = u_MVP * position;
+
+	}
+	else {
+	
+		/*
+		2D rendering.
+		*/
+		gl_Position = u_MVP * vec4(position.xy, 0.0, 1.0);
+	
+	}
 
 };

@@ -53,14 +53,21 @@ public:
 	and later performs a glDrawElements call using the indexBuffer object.
 	WARNING. Must be called in a thread with valid OpenGL context.
 	*/
-	void draw(const indexBuffer& ib) const;
+	void draw3D(const indexBuffer& ib) const;
 
 	/*
 	Draws 'count' triangles (search for GL_TRIANGLES in the official OpenGL documentation)
-	using glDrawArrays().
+	using glDrawArrays() in a 3D coordinate space.
 	WARNING. Must be called in a thread with valid OpenGL context.
 	*/
-	void draw(int count) const;
+	void draw3D(int count) const;
+
+	/*
+	Draws 'count' triangles (search for GL_TRIANGLES in the official OpenGL documentation)
+	using glDrawArrays() in a 2D coordinate space.
+	WARNING. Must be called in a thread with valid OpenGL context.
+	*/
+	void draw2D(int count) const;
 
 	/*
 	Clears the renderer to prepare for the next frame .

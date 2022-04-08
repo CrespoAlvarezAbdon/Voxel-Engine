@@ -24,18 +24,4 @@ namespace VoxelEng
 	
 	}
 
-	void world::loadChunk(const chunkPos& pos)
-	{
-	
-		// W.I.P
-	
-	}
-
-	void world::unloadChunk(const chunkPos& pos)
-	{
-
-		// W.I.P
-
-	}
-
 }

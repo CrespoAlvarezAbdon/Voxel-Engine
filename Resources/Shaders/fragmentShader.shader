@@ -11,9 +11,10 @@ in vec3 v_normal;
 uniform vec3 u_sunLightPos;
 uniform vec3 u_camPos;
 uniform sampler2D u_Texture;
+uniform int u_renderMode;
 
 // Local variables.
-vec4 ambient = vec4(0, 0, 0.25, 1);
+vec4 ambient = vec4(0.25, 0.25, 0.25, 1);
 vec3 lightColor = vec3(1, 1, 1);
 float specularStrength = 0.5;
 float distance = length(u_sunLightPos - v_fragPos);
@@ -22,23 +23,39 @@ float distance = length(u_sunLightPos - v_fragPos);
 void main()
 {
 	
-	// Diffuse lighting calculation.
-	vec3 norm = normalize(vec3((v_normal.x - 511) / 511, (v_normal.y - 511) / 511, (v_normal.z - 511) / 511));
-	vec3 lightDir = normalize(u_sunLightPos - v_fragPos);
-	float diff = max(dot(norm, lightDir), 0.0);
-	vec4 diffuseLighting = vec4(diff * lightColor, 1.0) / (distance / 10);
+	if (u_renderMode == 0) {
+	
+		/*
+		3D rendering.
+		*/
 
-	// Specular lighting calculation.
-	vec3 viewDir = normalize(u_camPos - v_fragPos);
-	vec3 reflectLightDir = reflect(-lightDir, norm);
+		// Diffuse lighting calculation.
+		vec3 norm = normalize(vec3((v_normal.x - 511) / 511, (v_normal.y - 511) / 511, (v_normal.z - 511) / 511));
+		vec3 lightDir = normalize(u_sunLightPos - v_fragPos);
+		float diff = max(dot(norm, lightDir), 0.0);
+		vec4 diffuseLighting = vec4(diff * lightColor, 1.0) / (distance / 10);
 
-	float specular = 0;
-	if (diff > 0)
-		specular = pow(max(dot(viewDir, reflectLightDir), 0.0), 32);
+		// Specular lighting calculation.
+		vec3 viewDir = normalize(u_camPos - v_fragPos);
+		vec3 reflectLightDir = reflect(-lightDir, norm);
 
-	vec4 specularLighting = vec4(specular * specularStrength * lightColor, 1.0) / (distance / 10);
+		float specular = 0;
+		if (diff > 0)
+			specular = pow(max(dot(viewDir, reflectLightDir), 0.0), 32);
 
-	// Final color calculation.
-	color = (ambient + diffuseLighting + specularLighting) * texture(u_Texture, v_TexCoord);
+		vec4 specularLighting = vec4(specular * specularStrength * lightColor, 1.0) / (distance / 10);
+
+		// Final color calculation.
+		color = (ambient + diffuseLighting + specularLighting) * texture(u_Texture, v_TexCoord);
+	
+	}
+	else {
+	
+		/*
+		2D rendering
+		*/
+		color = vec4(1.0, 0.0, 0.0, 1.0);
+	
+	}
 
 };

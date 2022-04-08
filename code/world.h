@@ -41,13 +41,6 @@ namespace VoxelEng
 		*/
 		void setBackground(const skybox& skybox);
 
-
-		// Other methods.
-
-		void loadChunk(const chunkPos& pos);
-
-		void unloadChunk(const chunkPos& pos);
-
 	private:
 
 		unsigned int id_;

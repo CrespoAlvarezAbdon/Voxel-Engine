@@ -30,26 +30,22 @@
 #include "gameWindow.h"
 #include "graphics.h"
 #include "world.h"
+#include "gui.h"
 #include <iostream>
 #include <ostream>
 
-
-// THINGS TO DO
-// 1º. ADD SOME CULLING TECHNIQUES.
-// 2º. VERIFY CUSTOM CHUNK ATLAS SIZE AND RESOLUTION.
-// 3º. ABSTRACT GRAPHICS API CALLS IN A 'graphics' CLASS.
-// 4º. ADD A PROPER SKYBOX INSTEAD OF RELYING ON THE GRAPHICS_API BACKGROUND COLOR.
-// 5º. ADD ANY CALLS TO VBO, VAO, RENDERERS THROUGH THE 'graphics' CLASS.
-// 6º. FIX GAME TAKING TOO LONG TO CLOSE (LOOK AT MESHING LOOPS AND ADD ADDITIONAL CONDITION).
 
 int main()
 {
 
     // Create game's main window.
-    VoxelEng::window mainWindow(800, 600, "Voxel engine");
+    float screenWidth = 800.0f,
+          screenHeight = 600.0f;
+    VoxelEng::window mainWindow(screenWidth, screenHeight, "Voxel engine");
 
-    // APIs/libraries initializations.
+    // Initializations.
     VoxelEng::graphics::initialize(mainWindow);
+    VoxelEng::GUIManager::initialize(screenWidth, screenHeight);
 
     // Configure the graphics API/libraries.
     VoxelEng::graphics::setVSync(false);
@@ -65,13 +61,14 @@ int main()
     atomic<bool> appFinished = false; // Signals if the game has finished executing or not.
     atomic<double> timeStep = 0.0f; // How much time has passed since the last frame was drawn. Use this to move entities without caring about FPS.
 
+
     // TODO. ADD CUSTOM SKY COLOR PER WORLD.
     // Worlds. 
-    VoxelEng::world spaceWorld(0);
-    VoxelEng::world firstPlanet(1);
+    VoxelEng::world world(0);
+
 
     // Configurable.
-    VoxelEng::skybox defaultSkybox(134.0f, 169.0f, 254.0f, 1.0f);
+    VoxelEng::skybox defaultSkybox(41, 37, 77.0f, 1.0f);
     glm::vec3 playerSpawnPosition(0, 145.0f, 0);
     unsigned int blockReachRange = 5,
                  spawnWorldID = 0;
@@ -90,21 +87,28 @@ int main()
 
     // Rendering related.
     shader defaultShader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
-    vertexBuffer vbo = vertexBuffer();
-    vertexArray va;
-    vertexBufferLayout layout;
+    vertexBuffer vbo,
+                 GUIvbo;
+    vertexArray va,
+                GUIva;
+    vertexBufferLayout layout,
+                       GUIlayout;
     renderer renderer;
     glm::mat4 MVPmatrix;
+    world.setBackground(defaultSkybox);
     
+
     // Chunk management thread related.
     chunkManager chunkMng(nChunksToDraw, playerCamera);
     int nMeshingThreads = 2; // Number of threads for non-high priority mesh updates.
     unordered_map<glm::vec3, vector<vertex>> const* chunksToDraw = nullptr;
     const std::vector<const VoxelEng::model*> * batchesToDraw = nullptr;
 
+
     // Configure texture block atlas.
     texture::setBlockAtlas(blockTextureAtlas);
     texture::setBlockAtlasResolution(16);
+
 
     // Finish connecting some objects.
     mainWindow.playerCamera() = &playerCamera;
@@ -125,6 +129,8 @@ int main()
     layout.push<GLfloat>(2);
     layout.push<VoxelEng::normalVec>(1);
 
+    GUIlayout.push<GLfloat>(2);
+
     // Bind the currently used VAO, shaders and atlases.
     vbo.bind();
     va.bind();
@@ -132,12 +138,17 @@ int main()
     defaultShader.bind();
     blockTextureAtlas.bind();
 
+    GUIvbo.bind();
+    GUIva.bind();
+    GUIva.addLayout(GUIlayout);
 
+   
     // Time/FPS related stuff.
     double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
-        lastFrameTime = lastSecondTime,
-        actualTime;
+           lastFrameTime = lastSecondTime,
+           actualTime;
     int nFramesDrawn = 0;
+
 
     // Start the terrain management and
     // the player input processing threads.
@@ -150,12 +161,30 @@ int main()
     glm::vec3 lightpos(10.0f, 150.0f, -10.0f);
     defaultShader.setUniformVec3f("u_sunLightPos", lightpos);
     
+
+    /*
+    DEBUG TESTING HOW TO RENDER 2D OVER 3D.
+    */
+    std::vector<vertex2D> hudPositions = {
+    
+        {-500.5f, -500.5f},
+        {500.0f, 500.5f},
+        {500.5f, -500.5f}
+    
+    };
+    bool shouldDraw2D = true;
+    int renderMode = 0; // 0 = 3D for world, 1 = 2D for GUI.
+
+
     // Rendering loop starts here.
     unsigned int nVertices = 0;
     // Print some startup debug information.
     std::cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << std::endl
               << "The block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << std::endl;
     while (!mainWindow.isClosing()) {
+
+        renderMode = 0;
+        defaultShader.setUniform1i("u_renderMode", renderMode);
 
         MVPmatrix = playerCamera.projectionMatrix() * playerCamera.viewMatrix();
         defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
@@ -165,6 +194,10 @@ int main()
         actualTime = glfwGetTime();
         timeStep = actualTime - lastFrameTime;
         lastFrameTime = actualTime;
+
+        // Clear the screen to draw the next frame.
+        renderer.clear();
+
 
         // ms/frame calculation and display.
         nFramesDrawn++;
@@ -205,8 +238,12 @@ int main()
         
         }
 
-        // Rendering starts here. Clear the screen to draw the next frame.
-        renderer.clear();
+
+        /*
+        3D rendering.
+        */
+        vbo.bind();
+        va.bind();
 
         // Update player's camera.
         playerCamera.updatePos(timeStep);
@@ -223,7 +260,7 @@ int main()
                     
                     vbo.prepareStatic(chunk.second.data(), sizeof(vertex) * nVertices);
 
-                    renderer.draw(nVertices);
+                    renderer.draw3D(nVertices);
 
                 }
 
@@ -240,11 +277,34 @@ int main()
                 
                     vbo.prepareStatic(batch->data(), sizeof(vertex) * nVertices);
 
-                    renderer.draw(nVertices);
+                    renderer.draw3D(nVertices);
                 
                 }
 
             }
+
+        }
+
+
+        /*
+        2D rendering.
+        */
+        if (shouldDraw2D) {
+
+            renderMode = 1;
+            defaultShader.setUniform1i("u_renderMode", renderMode);
+            defaultShader.setUniformMatrix4f("u_MVP", VoxelEng::GUIManager::projectionMatrix());
+            VoxelEng::graphics::setDepthTest(false);
+
+
+            GUIvbo.bind();
+            GUIva.bind();
+
+            GUIvbo.prepareStatic(hudPositions.data(), sizeof(vertex2D) * hudPositions.size());
+            renderer.draw2D(sizeof(vertex2D) * hudPositions.size());
+
+            // Undo changes that affect 3D rendering.
+            VoxelEng::graphics::setDepthTest(true);
 
         }
 

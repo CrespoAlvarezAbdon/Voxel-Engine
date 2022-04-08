@@ -28,10 +28,6 @@ namespace VoxelEng
 //Classes//
 ///////////
 
-/*
-Abstaction of a first person camera.
-NOTE. In the future (W.I.P) multiple types of cameras will be added.
-*/
 class camera
 {
 

@@ -6,8 +6,7 @@
 using namespace std;
 
 
-// Used for OpenGL debugging.
-
+// OpenGL debugging.
 void GLEraseErrors()
 {
 
@@ -40,7 +39,7 @@ void GLCheckErrors(ostream& os, const char* file, const char* function, unsigned
 
 // 'renderer' class.
 
-void renderer::draw(const indexBuffer& ib) const
+void renderer::draw3D(const indexBuffer& ib) const
 {
 
     // Second parameter = number of indices to draw (not the number of indices that exist). 
@@ -51,8 +50,14 @@ void renderer::draw(const indexBuffer& ib) const
                                                                 
 }
 
-void renderer::draw(int count) const
+void renderer::draw3D(int count) const
 {
+
+    glDrawArrays(GL_TRIANGLES, 0, count);
+
+}
+
+void renderer::draw2D(int count) const {
 
     glDrawArrays(GL_TRIANGLES, 0, count);
 

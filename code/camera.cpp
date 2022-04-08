@@ -1,9 +1,6 @@
 #include <cmath>
 #include "camera.h"
 
-#include <iostream>
-#include <ostream>
-using namespace std;
 
 // 'camera' class.
 
@@ -35,8 +32,6 @@ void camera::setFOV(float FOV)
 
 void camera::updateProjectionMatrix()
 {
-
-    cout << window_.width() << " " << window_.height() << endl;
 
     projectionMatrix_ = glm::perspective(glm::radians(FOV_), static_cast<float>(window_.width()) / window_.height(), zNear_, zFar_);
 
