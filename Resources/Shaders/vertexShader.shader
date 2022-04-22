@@ -23,6 +23,7 @@ out vec3 v_normal;
 uniform vec3 u_sunLightPos;
 uniform int u_renderMode;
 uniform mat4 u_MVP; // u_MVP stands for u_Model_view_projection_matrix.
+uniform mat4 u_MVPGUI;
 
 
 
@@ -40,7 +41,6 @@ void main()
 
 		v_normal = mat3(transpose(inverse(mat3(1)))) * normal;
 	
-
 		gl_Position = u_MVP * position;
 
 	}
@@ -49,7 +49,9 @@ void main()
 		/*
 		2D rendering.
 		*/
-		gl_Position = u_MVP * vec4(position.xy, 0.0, 1.0);
+		v_TexCoord = texCoord;
+
+		gl_Position = u_MVPGUI * vec4(position.xy, 0.0, 1.0);
 	
 	}
 

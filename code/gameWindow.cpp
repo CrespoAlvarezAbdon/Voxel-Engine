@@ -1,13 +1,17 @@
 #include "gameWindow.h"
 #include <stdexcept>
+#include "gui.h"
 #include "graphics.h"
+
+#include <iostream>
+#include <ostream>
 
 
 namespace VoxelEng
 {
 
 	window::window(unsigned int width, unsigned int height, const std::string& name)
-		: width_(width), height_(height), name_(name), playerCamera_(nullptr)
+		: width_(width), height_(height), name_(name), playerCamera_(nullptr), wasResized_(false)
 	{}
 
 	void window::lockMouse()
@@ -27,13 +31,10 @@ namespace VoxelEng
 	void window::resize(unsigned int width, unsigned int height)
 	{
 
-
 		width_ = width;
 		height_ = height;
 
-		glViewport(0, 0, width_, height_);
-
-		playerCamera_->updateProjectionMatrix();
+		wasResized_ = true;
 
 	}
 

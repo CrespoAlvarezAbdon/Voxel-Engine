@@ -26,11 +26,12 @@ struct vertex
 };
 
 /*
-Represents a 2D vertex (used for drawing HUD).
+Represents a 2D vertex (used for drawing GUI).
 */
 struct vertex2D {
 
 	VoxelEng::vertexCoord positions[2];
+	VoxelEng::textureCoord textureCoords[2];
 
 };
 

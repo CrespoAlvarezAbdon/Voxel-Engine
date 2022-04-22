@@ -69,7 +69,7 @@ namespace VoxelEng
 		Callback used for window resizing using OpenGL and GLFW.
 		*/
 		static void windowSizeCallback(GraphicsAPIWindow* window, int width, int height);
-
+		bool wasResized_;
 	private:
 
 		GraphicsAPIWindow* APIwindow_; // Graphic-API-specific window pointer.
@@ -77,6 +77,7 @@ namespace VoxelEng
 					 height_;
 		std::string name_;
 		camera* playerCamera_;
+		
 
 	};
 

@@ -33,7 +33,7 @@ void camera::setFOV(float FOV)
 void camera::updateProjectionMatrix()
 {
 
-    projectionMatrix_ = glm::perspective(glm::radians(FOV_), static_cast<float>(window_.width()) / window_.height(), zNear_, zFar_);
+     projectionMatrix_ = glm::perspective(glm::radians(FOV_), static_cast<float>(window_.width()) / window_.height(), zNear_, zFar_);
 
 }
 

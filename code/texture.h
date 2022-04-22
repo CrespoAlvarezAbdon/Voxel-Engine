@@ -2,6 +2,8 @@
 #define _TEXTURE_
 
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <GL/glew.h>
 using namespace std;
 
@@ -9,6 +11,7 @@ using namespace std;
 ///////////////
 //Definitions//
 ///////////////
+
 
 ///////////
 //Classes//
@@ -37,6 +40,7 @@ public:
 	GLuint rendererID() const;
 	static const texture* blockTextureAtlas();
 	static int blockAtlasResolution();
+	static const std::unordered_map<unsigned int, std::pair<int, int>>& GUItexturesHW();
 
 
 	// Modifiers.
@@ -81,8 +85,10 @@ public:
 
 private:
 
-	static texture const * blockTextureAtlas_;
+	static texture const* blockTextureAtlas_;
 	static unsigned int blockAtlasResolution_;
+	static std::unordered_map<unsigned int, std::pair<int, int>> GUItexturesHW_;
+
 
 	GLuint rendererID_;
 	string textureFilepath_; 
@@ -140,6 +146,12 @@ inline void texture::setBlockAtlasResolution(int resolution)
 {
 
 	blockAtlasResolution_ = resolution;
+
+}
+
+inline const std::unordered_map<unsigned int, std::pair<int, int>>& texture::GUItexturesHW() {
+
+	return GUItexturesHW_;
 
 }
 

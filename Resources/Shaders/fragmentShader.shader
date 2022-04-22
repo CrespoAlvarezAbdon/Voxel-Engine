@@ -54,7 +54,7 @@ void main()
 		/*
 		2D rendering
 		*/
-		color = vec4(1.0, 0.0, 0.0, 1.0);
+		color = texture(u_Texture, v_TexCoord);
 	
 	}
 

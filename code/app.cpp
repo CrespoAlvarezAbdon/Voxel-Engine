@@ -39,19 +39,16 @@ int main()
 {
 
     // Create game's main window.
-    float screenWidth = 800.0f,
-          screenHeight = 600.0f;
-    VoxelEng::window mainWindow(screenWidth, screenHeight, "Voxel engine");
+    VoxelEng::window mainWindow(800.0f, 600.0f, "Voxel engine");
 
-    // Initializations.
-    VoxelEng::graphics::initialize(mainWindow);
-    VoxelEng::GUIManager::initialize(screenWidth, screenHeight);
 
     // Configure the graphics API/libraries.
+    VoxelEng::graphics::initialize(mainWindow);
     VoxelEng::graphics::setVSync(false);
     VoxelEng::graphics::setDepthTest(true);
     VoxelEng::graphics::setBasicFaceCulling(true);
     VoxelEng::graphics::setTransparency(true);
+
 
     // Configure game window's settings.
     mainWindow.lockMouse();
@@ -87,27 +84,31 @@ int main()
 
     // Rendering related.
     shader defaultShader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
-    vertexBuffer vbo,
-                 GUIvbo;
-    vertexArray va,
-                GUIva;
-    vertexBufferLayout layout,
-                       GUIlayout;
+    vertexBuffer vbo;
+    vertexArray va;
+    vertexBufferLayout layout;
     renderer renderer;
     glm::mat4 MVPmatrix;
     world.setBackground(defaultSkybox);
-    
-
-    // Chunk management thread related.
-    chunkManager chunkMng(nChunksToDraw, playerCamera);
-    int nMeshingThreads = 2; // Number of threads for non-high priority mesh updates.
-    unordered_map<glm::vec3, vector<vertex>> const* chunksToDraw = nullptr;
-    const std::vector<const VoxelEng::model*> * batchesToDraw = nullptr;
 
 
     // Configure texture block atlas.
     texture::setBlockAtlas(blockTextureAtlas);
     texture::setBlockAtlasResolution(16);
+
+
+    // GUI initialization and GUI elements registration.
+    VoxelEng::GUIManager::initialize(mainWindow, defaultShader, renderer);
+    VoxelEng::GUIManager::addGUIBox(0.25, 0.25, 0.5, 0.5, 995);
+    VoxelEng::GUIManager::addGUIBox(0.375, 0.5, 0.25, 0.1, 993);
+    VoxelEng::GUIManager::addGUIBox(0.375, 0.35, 0.25, 0.1, 961);
+
+
+    // Chunk management thread related.
+    chunkManager chunkMng(nChunksToDraw, playerCamera);
+    int nMeshingThreads = 2; // Number of threads for non-high priority mesh updates.
+    unordered_map<glm::vec3, vector<vertex>> const* chunksToDraw = nullptr;
+    const std::vector<const VoxelEng::model*>* batchesToDraw = nullptr;
 
 
     // Finish connecting some objects.
@@ -116,7 +117,7 @@ int main()
     playerCamera.setChunkManager(&chunkMng);
 
 
-    // Set up callbacks.
+    // Set up GLFW callbacks.
     VoxelEng::graphics::setPlayerCallbackPtr(&player);
     VoxelEng::graphics::setWindowCallbackPtr(&mainWindow);
 
@@ -124,30 +125,18 @@ int main()
     glfwSetWindowSizeCallback(mainWindow.windowAPIpointer(), VoxelEng::window::windowSizeCallback);
 
 
-    // Configure the vertex layout.
+    // Configure the vertex layout for 3D rendering.
     layout.push<GLfloat>(3);
     layout.push<GLfloat>(2);
     layout.push<VoxelEng::normalVec>(1);
 
-    GUIlayout.push<GLfloat>(2);
-
-    // Bind the currently used VAO, shaders and atlases.
+    
+    // Bind the currently used VAO, shaders and atlases for 3D rendering.
     vbo.bind();
     va.bind();
     va.addLayout(layout);
     defaultShader.bind();
     blockTextureAtlas.bind();
-
-    GUIvbo.bind();
-    GUIva.bind();
-    GUIva.addLayout(GUIlayout);
-
-   
-    // Time/FPS related stuff.
-    double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
-           lastFrameTime = lastSecondTime,
-           actualTime;
-    int nFramesDrawn = 0;
 
 
     // Start the terrain management and
@@ -160,31 +149,46 @@ int main()
     // Set sun light's position.
     glm::vec3 lightpos(10.0f, 150.0f, -10.0f);
     defaultShader.setUniformVec3f("u_sunLightPos", lightpos);
+
+
+    // Time/FPS related stuff.
+    double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
+           lastFrameTime = lastSecondTime,
+           actualTime;
+    int nFramesDrawn = 0;
     
 
     /*
-    DEBUG TESTING HOW TO RENDER 2D OVER 3D.
+    DEBUG.
     */
-    std::vector<vertex2D> hudPositions = {
-    
-        {-500.5f, -500.5f},
-        {500.0f, 500.5f},
-        {500.5f, -500.5f}
-    
-    };
     bool shouldDraw2D = true;
-    int renderMode = 0; // 0 = 3D for world, 1 = 2D for GUI.
 
-
-    // Rendering loop starts here.
-    unsigned int nVertices = 0;
     // Print some startup debug information.
     std::cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << std::endl
               << "The block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << std::endl;
+
+
+    /*
+    Rendering loop.
+    */
+    unsigned int nVertices = 0;
     while (!mainWindow.isClosing()) {
 
-        renderMode = 0;
-        defaultShader.setUniform1i("u_renderMode", renderMode);
+        // The window size callback by GLFW gets called every time the user is resizing the window so the heavy resize processing is done here
+        // after the player has stopped resizing the window.
+        if (mainWindow.wasResized_) {
+        
+            glViewport(0, 0, mainWindow.width(), mainWindow.height());
+
+            playerCamera.updateProjectionMatrix();
+            VoxelEng::GUIManager::updateAspectRatio();
+
+            mainWindow.wasResized_ = false;
+        
+        }
+
+        // Set 3D rendering mode uniforms.
+        defaultShader.setUniform1i("u_renderMode", 0); // renderMode = 0 stands for 3D rendering mode.
 
         MVPmatrix = playerCamera.projectionMatrix() * playerCamera.viewMatrix();
         defaultShader.setUniformMatrix4f("u_MVP", MVPmatrix);
@@ -290,21 +294,8 @@ int main()
         2D rendering.
         */
         if (shouldDraw2D) {
-
-            renderMode = 1;
-            defaultShader.setUniform1i("u_renderMode", renderMode);
-            defaultShader.setUniformMatrix4f("u_MVP", VoxelEng::GUIManager::projectionMatrix());
-            VoxelEng::graphics::setDepthTest(false);
-
-
-            GUIvbo.bind();
-            GUIva.bind();
-
-            GUIvbo.prepareStatic(hudPositions.data(), sizeof(vertex2D) * hudPositions.size());
-            renderer.draw2D(sizeof(vertex2D) * hudPositions.size());
-
-            // Undo changes that affect 3D rendering.
-            VoxelEng::graphics::setDepthTest(true);
+            
+            VoxelEng::GUIManager::drawGUI();
 
         }
 

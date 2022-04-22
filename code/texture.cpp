@@ -5,6 +5,12 @@ using namespace std;
 
 // 'texture' class.
 
+std::unordered_map<unsigned int, std::pair<int, int>> texture::GUItexturesHW_ = { 
+	{961, {32, 16}},
+	{993, {32, 16}},
+	{995, {64, 64}}
+	};
+
 texture const* texture::blockTextureAtlas_ = nullptr;
 
 unsigned int texture::blockAtlasResolution_ = 0;

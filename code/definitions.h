@@ -76,6 +76,8 @@ namespace VoxelEng
 	//Defines//
 	///////////
 
+	#define MIN_TEX_RES 16
+
 	#define Y_CHUNKS_RANGE 12 // How many chunks to load in the y-axis.
 
 	#define SCX 16 // Chunk size in X axis.

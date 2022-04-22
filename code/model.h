@@ -59,7 +59,7 @@ namespace VoxelEng {
 		static const modelTriangles& getModelTriangles(block ID);
 
 		/*
-		Add a texture for a face.
+		Add a texture for a face of a terrain block.
 		WARNING. Only call when just all the face's vertices have been added
 		to the model m.
 		*/

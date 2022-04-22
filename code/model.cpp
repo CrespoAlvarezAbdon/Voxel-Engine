@@ -34,8 +34,7 @@ namespace VoxelEng {
 
     };
 
-    modelTriangles blockTriangles =
-    {
+    modelTriangles blockTriangles = {
 
         {0, 3, 1, 1, 3, 2}, // Back Face.
         {5, 6, 4, 4, 6, 7}, // Front Face.
@@ -182,7 +181,6 @@ namespace VoxelEng {
 
 	void models::addTexture(VoxelEng::block blockID, unsigned int textureID, model& m) {
 		
-		// TODO. MAKE ALL POSSIBLE OPERATIONS BE COMPUTED OR UPDATED ONLY WHEN NECESSARY.
 		float atlasWidth = texture::blockTextureAtlas()->width(),
 			  atlasHeight = texture::blockTextureAtlas()->height(),
 			  textureWidth = texture::blockAtlasResolution(), // This will depend on blockID in the future.
