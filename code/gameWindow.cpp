@@ -3,16 +3,17 @@
 #include "gui.h"
 #include "graphics.h"
 
-#include <iostream>
-#include <ostream>
-
 
 namespace VoxelEng
 {
 
 	window::window(unsigned int width, unsigned int height, const std::string& name)
 		: width_(width), height_(height), name_(name), playerCamera_(nullptr), wasResized_(false)
-	{}
+	{
+	
+		aspectRatio_ = (float)width / height;
+	
+	}
 
 	void window::lockMouse()
 	{
@@ -34,6 +35,8 @@ namespace VoxelEng
 		width_ = width;
 		height_ = height;
 
+		aspectRatio_ = (float)width_ / height_;
+
 		wasResized_ = true;
 
 	}
@@ -43,6 +46,19 @@ namespace VoxelEng
 
 		graphics::getWindowCallbackPtr()->resize(width, height);
 
+	}
+
+	void window::resizeHeavyProcessing() {
+	
+		width_ += width_ % 2 != 0;
+		height_ += height_ % 2 != 0;
+
+		glViewport(0, 0, width_, height_);
+
+		playerCamera_->updateProjectionMatrix();
+
+		wasResized_ = false;
+	
 	}
 
 }

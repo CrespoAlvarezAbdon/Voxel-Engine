@@ -39,7 +39,7 @@ int main()
 {
 
     // Create game's main window.
-    VoxelEng::window mainWindow(800.0f, 600.0f, "Voxel engine");
+    VoxelEng::window mainWindow(800, 600, "Voxel engine");
 
 
     // Configure the graphics API/libraries.
@@ -59,7 +59,6 @@ int main()
     atomic<double> timeStep = 0.0f; // How much time has passed since the last frame was drawn. Use this to move entities without caring about FPS.
 
 
-    // TODO. ADD CUSTOM SKY COLOR PER WORLD.
     // Worlds. 
     VoxelEng::world world(0);
 
@@ -99,9 +98,14 @@ int main()
 
     // GUI initialization and GUI elements registration.
     VoxelEng::GUIManager::initialize(mainWindow, defaultShader, renderer);
-    VoxelEng::GUIManager::addGUIBox(0.25, 0.25, 0.5, 0.5, 995);
-    VoxelEng::GUIManager::addGUIBox(0.375, 0.5, 0.25, 0.1, 993);
-    VoxelEng::GUIManager::addGUIBox(0.375, 0.35, 0.25, 0.1, 961);
+    unsigned int mainMenuID = VoxelEng::GUIManager::addGUIBox("mainMenu", 0.35, 0.25, 0.3, 0.5, 995);
+    VoxelEng::GUIManager::addGUIBox("mainMenu.button1", 0.425, 0.35, 0.15, 0.10, 993);
+    VoxelEng::GUIManager::addGUIBox("mainMenu.button2", 0.425, 0.5, 0.15, 0.10, 961);
+
+    
+    // Set up GUIElements' keys and key functions.
+    VoxelEng::GUIManager::bindActKey(mainMenuID, VoxelEng::key::e);
+    VoxelEng::GUIManager::bindActKeyFunction(mainMenuID, []() {VoxelEng::GUIManager::changeGUIState(0);});
 
 
     // Chunk management thread related.
@@ -156,16 +160,6 @@ int main()
            lastFrameTime = lastSecondTime,
            actualTime;
     int nFramesDrawn = 0;
-    
-
-    /*
-    DEBUG.
-    */
-    bool shouldDraw2D = true;
-
-    // Print some startup debug information.
-    std::cout << "[DEBUG]: Block texture atlas' size is " << blockTextureAtlas.width() << "x" << blockTextureAtlas.height() << std::endl
-              << "The block texture resolution is " << texture::blockAtlasResolution() << "x" << texture::blockAtlasResolution() << " pixels" << std::endl;
 
 
     /*
@@ -174,16 +168,14 @@ int main()
     unsigned int nVertices = 0;
     while (!mainWindow.isClosing()) {
 
+        // Get key inputs for GUIManager.
+        VoxelEng::GUIManager::processGUIInputs();
+
         // The window size callback by GLFW gets called every time the user is resizing the window so the heavy resize processing is done here
         // after the player has stopped resizing the window.
-        if (mainWindow.wasResized_) {
+        if (mainWindow.wasResized()) {
         
-            glViewport(0, 0, mainWindow.width(), mainWindow.height());
-
-            playerCamera.updateProjectionMatrix();
-            VoxelEng::GUIManager::updateAspectRatio();
-
-            mainWindow.wasResized_ = false;
+            mainWindow.resizeHeavyProcessing();
         
         }
 
@@ -292,12 +284,8 @@ int main()
 
         /*
         2D rendering.
-        */
-        if (shouldDraw2D) {
-            
-            VoxelEng::GUIManager::drawGUI();
-
-        }
+        */ 
+        VoxelEng::GUIManager::drawGUI();
 
         // Swap front and back buffers.
         glfwSwapBuffers(mainWindow.windowAPIpointer());

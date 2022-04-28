@@ -6,7 +6,8 @@
 #include <gtx/rotate_vector.hpp>
 #include <glm.hpp>
 #include <vector>
-#include <mutex>
+#include <unordered_map>
+#include <string>
 #include "vertex_buffer.h"
 #include "vertex_array.h"
 #include "shader.h"
@@ -14,6 +15,7 @@
 #include "renderer.h"
 #include "gameWindow.h"
 #include "definitions.h"
+#include "controls.h"
 
 
 namespace VoxelEng {
@@ -38,19 +40,26 @@ namespace VoxelEng {
 
 	protected:
 
+		// Constructors.
+		GUIElement();
+
+
 		// Attributes.
-		static std::vector<GUIElement*>* activeGUIElements_,
-									   * inactiveGUIElements_;
+		static std::unordered_map<unsigned int, GUIElement*>* activeGUIElements_,
+															* inactiveGUIElements_;
 		static const window* window_;
 
 		vec2<float> position_,
 					size_;
 		unsigned int textureID_;
-		bool enabled_;
+		bool enabled_,
+			 actKeyPressed_;
 		std::vector<vertex2D> vertices_;
+		std::vector<GUIElement>* children_;
+		void (*KeyFuncPtr)();
 
 
-		// Other methods.
+		// Modifiers.
 
 		/*
 		Generate vertex data used to represent this GUI element.
@@ -60,9 +69,9 @@ namespace VoxelEng {
 		virtual void addTextures() = 0;
 
 		/*
-		WARNING. Can only be called when genVertexData has already been called!
+		Function that will be called when the key bound to this GUIElement (if any) is pressed.
 		*/
-		virtual void resizeElement() = 0;
+		void executeKeyAction();
 
 		// Misc
 		friend class GUIManager;
@@ -98,18 +107,35 @@ namespace VoxelEng {
 		/*
 		WARNING. Must be called in a thread with valid OpenGL context.
 		*/
-		static void initialize(const window& window, shader& shader, renderer& renderer);
+		static void initialize(window& window, shader& shader, renderer& renderer);
 
 
 		// Modifiers.
 
-		static void updateAspectRatio();
+		static void updateOrthoMatrix();
+
+		// CHANGE ID TO NAME TO EASY USER PROGRAMMING IN THE FUTURE
+		static void bindActKey(unsigned int ID, key key);
+
+		static void bindActKeyFunction(unsigned int ID, void(*func)());
+
+		static void changeGUIState(unsigned int ID, bool isEnabled);
+
+		static void changeGUIState(unsigned int ID);
 
 		/*
-		Screen coordinates range from 0 to 1 in both edges and start at (0,0) in
-		the lower left corner.
+		Get and process all GUI-related inputs.
+		WARNING. Must be called in a thread with valid OpenGL context.
 		*/
-		static void addGUIBox(float posX, float posY, float sizeX, float sizeY, unsigned int textureID, bool isEnabled = true);
+		static void processGUIInputs();
+
+		/*
+		Screen coordinates range from 0 to 1 in both edges and start at (0, 0) in
+		the lower left corner.
+		Returns the added GUI element's ID.
+		WARNING. GUIElements can only be added when loading the game!
+		*/
+		static unsigned int addGUIBox(const std::string& name, float posX, float posY, float sizeX, float sizeY, unsigned int textureID, bool isEnabled = true);
 
 
 		// Other methods.
@@ -124,16 +150,17 @@ namespace VoxelEng {
 	private:
 
 		static glm::mat4 projectionMatrix_;
-		static std::vector<GUIElement*> activeGUIElements_,
+		static std::unordered_map<unsigned int, GUIElement*> activeGUIElements_,
 										inactiveGUIElements_;
-		static const window* window_;
+		static std::unordered_map<unsigned int, key> boundKey_;
+		static std::unordered_map<std::string, unsigned int> GUIElementID;
+		static window* window_;
 
-		static std::recursive_mutex mutex_;
 		static vertexBuffer* vbo_;
 		static vertexArray* vao_;
 		static shader* shader_;
 		static renderer* renderer_;
-
+		
 	};
 
 }
