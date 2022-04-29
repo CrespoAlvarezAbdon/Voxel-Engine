@@ -20,7 +20,7 @@ namespace VoxelEng {
 	const window* GUIElement::window_ = nullptr;
 
 	GUIElement::GUIElement() 
-		: enabled_(false), textureID_(0), children_(nullptr), KeyFuncPtr(nullptr), actKeyPressed_(false) {}
+		: enabled_(false), textureID_(0), KeyFuncPtr(nullptr), actKeyPressed_(false) {}
 
 	void GUIElement::executeKeyAction() {
 	
@@ -132,6 +132,7 @@ namespace VoxelEng {
 	*/
 
 	// Declarations.
+	unsigned int GUIManager::GUIElementCount_ = 0;
 	glm::mat4 GUIManager::projectionMatrix_;
 	std::unordered_map<unsigned int, GUIElement*> GUIManager::activeGUIElements_,
 												  GUIManager::inactiveGUIElements_;
@@ -209,14 +210,16 @@ namespace VoxelEng {
 
 	}
 
-	void GUIManager::bindActKey(unsigned int ID, key key) {
+	void GUIManager::bindActKey(const std::string& GUIElementName, key key) {
 
-		boundKey_[ID] = key;
+		boundKey_[GUIElementID[GUIElementName]] = key;
 	
 	}
 
-	void GUIManager::bindActKeyFunction(unsigned int ID, void(*func)()) {
+	void GUIManager::bindActKeyFunction(const std::string& GUIElementName, void(*func)()) {
 	
+		unsigned int ID = GUIElementID[GUIElementName];
+
 		if (activeGUIElements_.find(ID) != activeGUIElements_.end())
 			activeGUIElements_[ID]->KeyFuncPtr = func;
 		else if(inactiveGUIElements_.find(ID) != inactiveGUIElements_.end())
@@ -232,8 +235,10 @@ namespace VoxelEng {
 	
 	}
 
-	void GUIManager::changeGUIState(unsigned int ID, bool isEnabled) {
+	void GUIManager::changeGUIState(const std::string& GUIElementName, bool isEnabled) {
 	
+
+		unsigned int ID = GUIElementID[GUIElementName];
 
 		if (activeGUIElements_.find(ID) != activeGUIElements_.end() && !isEnabled) {
 		
@@ -250,7 +255,9 @@ namespace VoxelEng {
 	
 	}
 
-	void GUIManager::changeGUIState(unsigned int ID) {
+	void GUIManager::changeGUIState(const std::string& GUIElementName) {
+
+		unsigned int ID = GUIElementID[GUIElementName];
 
 		if (activeGUIElements_.find(ID) != activeGUIElements_.end()) {
 
@@ -314,22 +321,34 @@ namespace VoxelEng {
 	
 	}
 
-	unsigned int GUIManager::addGUIBox(const string& name, float posX, float posY, float sizeX, float sizeY, unsigned int textureID, bool isEnabled) {
+	void GUIManager::addGUIBox(const string& name, float posX, float posY, float sizeX, float sizeY, unsigned int textureID,
+									   bool isEnabled, const std::string& parentName) {
 
-		unsigned int ID = activeGUIElements_.size();
+		unsigned int ID = GUIElementCount_++;
 
 		// GUI's aren't created or removed ingame so activeGUIElements_.size() can be used to assign a new ID safely.
 		if (GUIElementID.find(name) == GUIElementID.end()) {
 
 			GUIElementID[name] = ID;
-			activeGUIElements_[ID] = new GUIBox(posX, posY, sizeX, sizeY, textureID, isEnabled);
+
+			if (isEnabled)
+				activeGUIElements_[ID] = new GUIBox(posX, posY, sizeX, sizeY, textureID, isEnabled);
+			else
+				inactiveGUIElements_[ID] = new GUIBox(posX, posY, sizeX, sizeY, textureID, isEnabled);
 
 		}
 		else
 			throw std::runtime_error("Duplicated name for GUIElement: " + name);
-		
 
-		return ID;
+		if (parentName != "") {
+
+			if (GUIElementID.find(parentName) != GUIElementID.end())
+				if (isEnabled)
+					activeGUIElements_[GUIElementID[parentName]]->children_.push_back(ID);
+				else
+					inactiveGUIElements_[GUIElementID[parentName]]->children_.push_back(ID);
+
+		}
 	
 	}
 	

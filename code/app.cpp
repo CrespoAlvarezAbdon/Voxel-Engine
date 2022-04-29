@@ -51,7 +51,7 @@ int main()
 
 
     // Configure game window's settings.
-    mainWindow.lockMouse();
+    mainWindow.changeStateMouseLock(false);
 
 
     // Game Variables/objects.
@@ -98,14 +98,21 @@ int main()
 
     // GUI initialization and GUI elements registration.
     VoxelEng::GUIManager::initialize(mainWindow, defaultShader, renderer);
-    unsigned int mainMenuID = VoxelEng::GUIManager::addGUIBox("mainMenu", 0.35, 0.25, 0.3, 0.5, 995);
-    VoxelEng::GUIManager::addGUIBox("mainMenu.button1", 0.425, 0.35, 0.15, 0.10, 993);
-    VoxelEng::GUIManager::addGUIBox("mainMenu.button2", 0.425, 0.5, 0.15, 0.10, 961);
+    VoxelEng::GUIManager::addGUIBox("mainMenu", 0.35, 0.25, 0.3, 0.5, 995, false);
+    VoxelEng::GUIManager::addGUIBox("mainMenu.button1", 0.425, 0.35, 0.15, 0.10, 993, false, "mainMenu");
+    VoxelEng::GUIManager::addGUIBox("mainMenu.button2", 0.425, 0.5, 0.15, 0.10, 961, false, "mainMenu");
 
     
     // Set up GUIElements' keys and key functions.
-    VoxelEng::GUIManager::bindActKey(mainMenuID, VoxelEng::key::e);
-    VoxelEng::GUIManager::bindActKeyFunction(mainMenuID, []() {VoxelEng::GUIManager::changeGUIState(0);});
+    VoxelEng::GUIManager::bindActKey("mainMenu", VoxelEng::key::e);
+    VoxelEng::GUIManager::bindActKeyFunction("mainMenu", []() {
+
+        VoxelEng::GUIManager::changeGUIState("mainMenu");
+        VoxelEng::GUIManager::changeGUIState("mainMenu.button1");
+        VoxelEng::GUIManager::changeGUIState("mainMenu.button2");
+        VoxelEng::graphics::getMainWindow()->changeStateMouseLock();
+
+    });
 
 
     // Chunk management thread related.
@@ -242,7 +249,8 @@ int main()
         va.bind();
 
         // Update player's camera.
-        playerCamera.updatePos(timeStep);
+        if (!mainWindow.isMouseFree())
+            playerCamera.updatePos(timeStep);
         playerCamera.updateView();
 
         // Render chunks.

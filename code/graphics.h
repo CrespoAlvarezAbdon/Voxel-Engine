@@ -55,7 +55,7 @@ namespace VoxelEng
 		to handle the game window's callbacks.
 		WARNING. Must be called in a thread with valid graphic API context.
 		*/
-		static window * getWindowCallbackPtr();
+		static window * getMainWindow();
 
 		/*
 		Gets the pointer to the 'VoxelEng::player' class object that is being used
@@ -121,7 +121,7 @@ namespace VoxelEng
 		
 	};
 
-	inline window * graphics::getWindowCallbackPtr()
+	inline window * graphics::getMainWindow()
 	{
 	
 		return windowCallbackPtr_;

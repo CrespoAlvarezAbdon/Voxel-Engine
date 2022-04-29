@@ -48,6 +48,8 @@ namespace VoxelEng
 
 		float aspectRatio() const;
 
+		bool isMouseFree() const;
+
 
 		// Modifiers.
 
@@ -62,12 +64,11 @@ namespace VoxelEng
 
 		bool& wasResized();
 
+		void changeStateMouseLock(bool isEnabled);
 
-		// Other methods.
+		void changeStateMouseLock();
 
-		void lockMouse();
 
-		void unlockMouse();
 
 		/*
 		Gets the new window's width and height to resize the window.
@@ -91,13 +92,21 @@ namespace VoxelEng
 		
 	private:
 
+		// Attributes.
+
 		GraphicsAPIWindow* APIwindow_; // Graphic-API-specific window pointer.
 		unsigned int width_,
 					 height_;
 		float aspectRatio_;
-		bool wasResized_;
+		bool wasResized_,
+			 isMouseFree_;
 		std::string name_;
 		camera* playerCamera_;
+
+		
+		// Methods.
+
+		void centerMouse();
 		
 	};
 
@@ -165,6 +174,12 @@ namespace VoxelEng
 	inline bool& window::wasResized() {
 	
 		return wasResized_;
+	
+	}
+
+	inline bool window::isMouseFree() const {
+	
+		return isMouseFree_;
 	
 	}
 

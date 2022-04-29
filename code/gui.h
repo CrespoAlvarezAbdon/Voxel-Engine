@@ -55,7 +55,7 @@ namespace VoxelEng {
 		bool enabled_,
 			 actKeyPressed_;
 		std::vector<vertex2D> vertices_;
-		std::vector<GUIElement>* children_;
+		std::vector<unsigned int> children_; // Store children ID.
 		void (*KeyFuncPtr)();
 
 
@@ -114,14 +114,13 @@ namespace VoxelEng {
 
 		static void updateOrthoMatrix();
 
-		// CHANGE ID TO NAME TO EASY USER PROGRAMMING IN THE FUTURE
-		static void bindActKey(unsigned int ID, key key);
+		static void bindActKey(const std::string& GUIElementName, key key);
 
-		static void bindActKeyFunction(unsigned int ID, void(*func)());
+		static void bindActKeyFunction(const std::string& GUIElementName, void(*func)());
 
-		static void changeGUIState(unsigned int ID, bool isEnabled);
+		static void changeGUIState(const std::string& GUIElementName, bool isEnabled);
 
-		static void changeGUIState(unsigned int ID);
+		static void changeGUIState(const std::string& GUIElementName);
 
 		/*
 		Get and process all GUI-related inputs.
@@ -132,10 +131,10 @@ namespace VoxelEng {
 		/*
 		Screen coordinates range from 0 to 1 in both edges and start at (0, 0) in
 		the lower left corner.
-		Returns the added GUI element's ID.
 		WARNING. GUIElements can only be added when loading the game!
 		*/
-		static unsigned int addGUIBox(const std::string& name, float posX, float posY, float sizeX, float sizeY, unsigned int textureID, bool isEnabled = true);
+		static void addGUIBox(const std::string& name, float posX, float posY, float sizeX, float sizeY, unsigned int textureID,
+									  bool isEnabled = true, const std::string& parentName = "");
 
 
 		// Other methods.
@@ -149,9 +148,10 @@ namespace VoxelEng {
 
 	private:
 
+		static unsigned int GUIElementCount_;
 		static glm::mat4 projectionMatrix_;
 		static std::unordered_map<unsigned int, GUIElement*> activeGUIElements_,
-										inactiveGUIElements_;
+															 inactiveGUIElements_;
 		static std::unordered_map<unsigned int, key> boundKey_;
 		static std::unordered_map<std::string, unsigned int> GUIElementID;
 		static window* window_;

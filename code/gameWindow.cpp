@@ -8,24 +8,41 @@ namespace VoxelEng
 {
 
 	window::window(unsigned int width, unsigned int height, const std::string& name)
-		: width_(width), height_(height), name_(name), playerCamera_(nullptr), wasResized_(false)
+		: width_(width), height_(height), name_(name), playerCamera_(nullptr), wasResized_(false), isMouseFree_(false)
 	{
 	
 		aspectRatio_ = (float)width / height;
 	
 	}
 
-	void window::lockMouse()
+	void window::changeStateMouseLock(bool isEnabled)
 	{
 		
-		glfwSetInputMode(APIwindow_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		isMouseFree_ = isEnabled;
+
+		glfwSetInputMode(APIwindow_, GLFW_CURSOR, isMouseFree_ ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+
+		if (isMouseFree_)
+			centerMouse();
+		// restaurar antiguas coordenadas del ratón al volver a lockearlo para que no explote la camara
 	
 	}
 
-	void window::unlockMouse()
+	void window::changeStateMouseLock()
 	{
+
+		isMouseFree_ = !isMouseFree_;
+
+		glfwSetInputMode(APIwindow_, GLFW_CURSOR, isMouseFree_ ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+
+		if (isMouseFree_)
+			centerMouse();
+
+	}
+
+	void window::centerMouse() {
 	
-		glfwSetInputMode(APIwindow_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwSetCursorPos(this->APIwindow_, width_/2.0f, height_ / 2.0f);
 	
 	}
 
@@ -44,7 +61,7 @@ namespace VoxelEng
 	void window::windowSizeCallback(GraphicsAPIWindow* windowPointer, int width, int height)
 	{
 
-		graphics::getWindowCallbackPtr()->resize(width, height);
+		graphics::getMainWindow()->resize(width, height);
 
 	}
 
