@@ -1,74 +1,76 @@
-#ifndef _INDEXBUFFER_
-#define _INDEXBUFFER_
+#ifndef _VOXELENG_INDEXBUFFER_
+#define _VOXELENG_INDEXBUFFER_
 
 
-///////////
-//Classes//
-///////////
+namespace VoxelEng {
 
-/*
-Abstraction of an IBO (index buffer object).
-*/
-class indexBuffer
-{
-
-public:
-
-	// Constructors.
+	////////////
+	//Classes.//
+	////////////
 
 	/*
-	WARNING. Must be called in a thread with valid OpenGL context.
+	Abstraction of an IBO (index buffer object).
 	*/
-	indexBuffer();
+	class indexBuffer {
+
+	public:
+
+		// Constructors.
+
+		/*
+		WARNING. Must be called in a thread with valid OpenGL context.
+		*/
+		indexBuffer();
 
 
-	// Observers.
+		// Observers.
 
-	/*
-	Number of indices.
-	*/
-	unsigned int nIndices() const;
-
-
-	// Modifiers.
+		/*
+		Number of indices.
+		*/
+		unsigned int nIndices() const;
 
 
-	/*
-	Supply the buffer with vertex data (static geometry).
-	WARNING. Must be called in a thread with valid OpenGL context.
-	*/
-	void prepareStatic(const unsigned int* data, unsigned int indicesCount);
-
-	/*
-	Bind the IBO to the corresponding OpenGL context of the thread from
-	which a call to this method was made.
-	WARNING. Must be called in a thread with valid OpenGL context.
-	*/
-	void bind() const;
-
-	/*
-	Unbind the IBO to the corresponding OpenGL context of the thread from
-	which a call to this method was made.
-	WARNING. Must be called in a thread with valid OpenGL context.
-	*/
-	void unbind() const;
+		// Modifiers.
 
 
-	// Destructors.
+		/*
+		Supply the buffer with vertex data (static geometry).
+		WARNING. Must be called in a thread with valid OpenGL context.
+		*/
+		void prepareStatic(const unsigned int* data, unsigned int indicesCount);
 
-	~indexBuffer();
+		/*
+		Bind the IBO to the corresponding OpenGL context of the thread from
+		which a call to this method was made.
+		WARNING. Must be called in a thread with valid OpenGL context.
+		*/
+		void bind() const;
 
-private:
+		/*
+		Unbind the IBO to the corresponding OpenGL context of the thread from
+		which a call to this method was made.
+		WARNING. Must be called in a thread with valid OpenGL context.
+		*/
+		void unbind() const;
 
-	unsigned int rendererID_;
-	unsigned int nIndices_;
 
-};
+		// Destructors.
 
-inline unsigned int indexBuffer::nIndices() const
-{
+		~indexBuffer();
 
-	return nIndices_; 
+	private:
+
+		unsigned int rendererID_;
+		unsigned int nIndices_;
+
+	};
+
+	inline unsigned int indexBuffer::nIndices() const {
+
+		return nIndices_; 
+
+	}
 
 }
 

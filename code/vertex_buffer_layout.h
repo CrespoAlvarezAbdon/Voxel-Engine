@@ -1,130 +1,128 @@
 #ifndef _VERTEXBUFFERLAYOUT_
 #define _VERTEXBUFFERLAYOUT_
-
 #include <vector>
 #include <GL/glew.h>
 #include "definitions.h"
-using namespace std;
 
 
-/////////////
-//Functions//
-/////////////
+namespace VoxelEng {
 
-/* 
-Auxiliary function used to get the size of OpenGL types
-*/
-unsigned int openGLSizeOf(unsigned int type); 
+	//////////////
+	//Functions.//
+	//////////////
 
-
-///////////////////
-//Classes/Structs//
-///////////////////
-
-/*
-Represents an element of a vertex buffer.
-*/
-struct vertexBufferElement
-{
-
-	unsigned int type;
-	unsigned int count;
-	bool is_normalized;
-
-};
-
-/*
-Represents a vertex buffer's layout.
-This layout gives information about
-how the data sent to the GPU is formed.
-For example, it could tell that the first 32bits of
-a vertex's data is a float that represents the position
-of said vertex in the x-axis.
-*/
-class vertexBufferLayout
-{
-
-public:
-
-	// Constructors.
-
-	vertexBufferLayout();
+	/* 
+	Auxiliary function used to get the size of OpenGL types
+	*/
+	unsigned int openGLSizeOf(unsigned int type); 
 
 
-	// Observers.
-
-	const vector<vertexBufferElement>& elements() const noexcept;
-	unsigned int stride() const noexcept;
-
+	////////////////////
+	//Classes/Structs.//
+	////////////////////
 
 	/*
-	Pushes 'count' elements into the vertex buffer layout.
-	Everytime an element is pushed into a layout, its the same
-	as saying that the layout now contains the same data as before
-	this push and the new 'count' elements pushed.
-	This is a template function with no implementation, use the specialized methods.
+	Represents an element of a vertex buffer.
 	*/
-	template <typename T>
-	void push(unsigned int count);
+	struct vertexBufferElement {
+
+		unsigned int type;
+		unsigned int count;
+		bool is_normalized;
+
+	};
 
 	/*
-	Now the vertex data will have 'count' more floats at the end.
-	Be aware about OpenGL vertex data alignment.
+	Represents a vertex buffer's layout.
+	This layout gives information about
+	how the data sent to the GPU is formed.
+	For example, it could tell that the first 32bits of
+	a vertex's data is a float that represents the position
+	of said vertex in the x-axis.
 	*/
-	template <>
-	void push<GLfloat>(unsigned int count);
+	class vertexBufferLayout {
 
-	/*
-	Now the vertex data will have 'count' more unsigned ints at the end.
-	Be aware about OpenGL vertex data alignment.
-	*/
-	template <>
-	void push<unsigned int>(unsigned int count);
+	public:
 
-	/*
-	Now the vertex data will have 'count' more unsigned chars at the end.
-	Be aware about OpenGL vertex data alignment.
-	*/
-	template <>
-	void push<unsigned char>(unsigned int count);
+		// Constructors.
 
-	/*
-	Now the vertex data will have 'count' more GLbytes at the end.
-	Be aware about OpenGL vertex data alignment.
-	*/
-	template <>
-	void push<GLbyte>(unsigned int count);
-
-	/*
-	Now the vertex data will have 'count' more VoxelEng::normalVecs at the end.
-	Be aware about OpenGL vertex data alignment.
-	*/
-	template <>
-	void push<VoxelEng::normalVec>(unsigned int count);
+		vertexBufferLayout();
 
 
-	// Destructors.
+		// Observers.
 
-private:
+		const std::vector<vertexBufferElement>& elements() const;
+		unsigned int stride() const;
 
-	vector<vertexBufferElement> elements_;
-	unsigned int stride_;
 
-};
+		/*
+		Pushes 'count' elements into the vertex buffer layout.
+		Everytime an element is pushed into a layout, its the same
+		as saying that the layout now contains the same data as before
+		this push and the new 'count' elements pushed.
+		This is a template function with no implementation, use the specialized methods.
+		*/
+		template <typename T>
+		void push(unsigned int count);
 
-inline vertexBufferLayout::vertexBufferLayout() : stride_(0) {}
+		/*
+		Now the vertex data will have 'count' more floats at the end.
+		Be aware about OpenGL vertex data alignment.
+		*/
+		template <>
+		void push<GLfloat>(unsigned int count);
 
-inline const vector<vertexBufferElement>& vertexBufferLayout::elements() const noexcept
-{
+		/*
+		Now the vertex data will have 'count' more unsigned ints at the end.
+		Be aware about OpenGL vertex data alignment.
+		*/
+		template <>
+		void push<unsigned int>(unsigned int count);
 
-	return elements_;
+		/*
+		Now the vertex data will have 'count' more unsigned chars at the end.
+		Be aware about OpenGL vertex data alignment.
+		*/
+		template <>
+		void push<unsigned char>(unsigned int count);
 
-}
+		/*
+		Now the vertex data will have 'count' more GLbytes at the end.
+		Be aware about OpenGL vertex data alignment.
+		*/
+		template <>
+		void push<GLbyte>(unsigned int count);
 
-inline unsigned int vertexBufferLayout::stride() const noexcept
-{
+		/*
+		Now the vertex data will have 'count' more VoxelEng::normalVecs at the end.
+		Be aware about OpenGL vertex data alignment.
+		*/
+		template <>
+		void push<normalVec>(unsigned int count);
 
-	return stride_;
+
+		// Destructors.
+
+	private:
+
+		std::vector<vertexBufferElement> elements_;
+		unsigned int stride_;
+
+	};
+
+	inline vertexBufferLayout::vertexBufferLayout() : stride_(0) {}
+
+	inline const std::vector<vertexBufferElement>& vertexBufferLayout::elements() const {
+
+		return elements_;
+
+	}
+
+	inline unsigned int vertexBufferLayout::stride() const {
+
+		return stride_;
+
+	}
 
 }
 

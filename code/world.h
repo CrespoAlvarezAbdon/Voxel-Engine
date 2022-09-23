@@ -1,37 +1,36 @@
 #ifndef _VOXELENGWORLD_
 #define _VOXELENGWORLD_
-
 #include <unordered_set>
 #include "chunk.h"
 #include "graphics.h"
+#include "definitions.h"
 
 
-namespace VoxelEng
-{
+namespace VoxelEng {
 
-	///////////
-	//Classes//
-	///////////
-
-	typedef color skybox; // W.I.P. Will have its own definition.
+	/////////////////////
+	//Type definitions.//
+	/////////////////////
 
 	/*
-	Worlds are the greatest level of organization in the game.
-	A world is defined by its biomes (W.I.P), gravity, global
+	WARNING: W.I.P
+	*/
+	typedef color skybox;
+
+
+	////////////
+	//Classes.//
+	////////////
+
+	/*
+	(W.I.P)
+	Worlds are the greatest level of terraub organization in the engine.
+	A world is defined by its biomes, gravity, global
 	temperature and other physical and maybe magical properties.
 	*/
-	class world
-	{
+	class world {
 	
 	public:
-
-		// Constructors
-
-		/*
-		WARNING. Two worlds cannot share the same ID!
-		*/
-		world(unsigned int id);
-
 
 		// Modifiers.
 
@@ -39,19 +38,25 @@ namespace VoxelEng
 		Red, green and blue channels must be in the range 0-255
 		and alpha must be in the range 0-1.
 		*/
-		void setBackground(const skybox& skybox);
+		static void setSkybox(const skybox& skybox);
 
 	private:
 
-		unsigned int id_;
-		static std::unordered_set<unsigned int> worlds_;
+
 	
 	};
 
-	inline void world::setBackground(const skybox& background)
-	{
+	inline void world::setSkybox(const skybox& background) {
 
-		glClearColor(background.red / 255.0f, background.green / 255.0f, background.blue / 255.0f, background.alpha);
+		#if GRAPHICS_API == OPENGL
+
+			glClearColor(background.red / 255.0f, background.green / 255.0f, background.blue / 255.0f, background.alpha);
+
+		#else
+
+			
+
+		#endif
 	
 	}
 

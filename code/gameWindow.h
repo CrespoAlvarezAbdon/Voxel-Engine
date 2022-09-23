@@ -1,28 +1,28 @@
-#ifndef _GAMEWINDOWS_
-#define _GAMEWINDOWS_
+#ifndef _VOXELENG_GAMEWINDOW_
+#define _VOXELENG_GAMEWINDOW_
 #include <string>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include "definitions.h"
 #include "camera.h"
-#include <GLFW/glfw3.h>
 
 
-//////////////////////////////
-//Forward class declarations//
-//////////////////////////////
-class camera;
+namespace VoxelEng {
 
-namespace VoxelEng
-{
+	/////////////////////////
+	//Forward declarations.//
+	/////////////////////////
+	class camera;
 
-	///////////
-	//Classes//
-	///////////
+
+	////////////
+	//Classes.//
+	////////////
 
 	/*
-	Abstraction of a window.
+	Abstraction of an application window.
 	*/
-	class window 
-	{
+	class window {
 
 	public:
 
@@ -68,8 +68,6 @@ namespace VoxelEng
 
 		void changeStateMouseLock();
 
-
-
 		/*
 		Gets the new window's width and height to resize the window.
 		This functions is used for the GLFW window size callback. Because
@@ -92,47 +90,51 @@ namespace VoxelEng
 		
 	private:
 
-		// Attributes.
+		/*
+		Attributes.
+		*/
 
 		GraphicsAPIWindow* APIwindow_; // Graphic-API-specific window pointer.
 		unsigned int width_,
 					 height_;
 		float aspectRatio_;
+		double oldMouseX_, // Last cursor's X and Y coordinates before it was unlocked.
+			   oldMouseY_;
 		bool wasResized_,
 			 isMouseFree_;
 		std::string name_;
 		camera* playerCamera_;
 
 		
-		// Methods.
+		/*
+		Methods.
+		*/
 
-		void centerMouse();
+		void setMousePos(double x, double y);
+
+		void getMousePos(double& x, double& y);
 		
 	};
 
-	inline unsigned int window::width() const
-	{
+	inline unsigned int window::width() const {
 
 		return width_;
 
 	}
 
-	inline unsigned int window::height() const
-	{
+	inline unsigned int window::height() const {
 
 		return height_;
 
 	}
 
-	inline bool window::isClosing() const
-	{
+	inline bool window::isClosing() const {
 	
 		return glfwWindowShouldClose(APIwindow_);
 	
 	}
 
-	inline const std::string& window::name() const
-	{
+	inline const std::string& window::name() const {
 
 		return name_;
 
@@ -150,22 +152,19 @@ namespace VoxelEng
 
 	}
 
-	inline GraphicsAPIWindow*& window::windowAPIpointer()
-	{
+	inline GraphicsAPIWindow*& window::windowAPIpointer() {
 
 		return APIwindow_;
 
 	}
 
-	inline camera*&  window::playerCamera()
-	{
+	inline camera*& window::playerCamera() {
 	
 		return playerCamera_;
 	
 	}
 
-	inline std::string& window::name()
-	{
+	inline std::string& window::name() {
 	
 		return name_;
 	

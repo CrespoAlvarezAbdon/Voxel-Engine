@@ -7,18 +7,14 @@
 #include "definitions.h"
 
 
-//////////////////////////
-// Forward declarations //
-//////////////////////////
-class chunk;
-
 namespace VoxelEng {
 
-	////////////////////
-	//Type definitions//
-	////////////////////
+	/////////////////////
+	//Type definitions.//
+	/////////////////////
 
 	typedef std::vector<vertex> model;
+
 
 	/*
 	A triangle is the collection of vertex indices that form it.
@@ -36,52 +32,60 @@ namespace VoxelEng {
 
 	public:
 
-		static std::unordered_map<block, model*> models_;
-		static std::unordered_map<block, modelTriangles*> triangles_;
+		// Initialisers.
+
+		static void init();
+
+
+		// Modifiers.
 
 		/*
-		Use a custom model ingame, created using a oficial
+		Use a custom model ingame, created using aa oficial
 		JSON format.
-		NOTE. W.I.P. Placeholder function.
 		*/
-		static void loadCustomModel(const std::string& filePath, block ID);
+		static void loadCustomModel(const std::string& filePath, unsigned int modelID);
 
 		/*
-		Get the corresponding model for a certain block ID.
-		If no model exists for such ID, it returns the basic block model.
+		Get the corresponding model for a certain ID.
+		If no model exists for such ID, it returns the basic empty model with ID 0.
 		*/
-		static const model& getModel(block ID);
+		static const model& getModelAt(unsigned int modelID);
 
 		/*
-		Get the corresponding model triangles indices for a certain block ID.
-		If no model exists for such ID, it returns the basic block model.
+		Get the corresponding model triangles indices for a certain ID.
+		If no model exists for such ID, it returns the basic empty model triangles.
 		*/
-		static const modelTriangles& getModelTriangles(block ID);
+		static const modelTriangles& getModelTrianglesAt(unsigned int modelID);
+
+		/*
+		Get the corresponding model triangles indices for a certain ID.
+		If no model exists for such ID, it returns the basic empty model triangles.
+		*/
+		static const modelTriangles& getModelTriangles(unsigned int modelID);
 
 		/*
 		Add a texture for a face of a terrain block.
 		WARNING. Only call when just all the face's vertices have been added
 		to the model m.
 		*/
-		static void addTexture(VoxelEng::block blockID, unsigned int textureID, model& m);
+		static void addTexture(block blockID, unsigned int textureID, model& m);
+
+
+		// Clean up.
+
+		static void cleanUp();
 
 	private:
 
-		
+		static bool initialised_;
+		static std::unordered_map<unsigned int, model*> models_;
+		static std::unordered_map<unsigned int, modelTriangles*> triangles_;
 
 	};
 
-	inline const model& models::getModel(block ID)
-	{
+	inline const modelTriangles& models::getModelTriangles(unsigned int modelID) {
 
-		return *models_[ID];
-
-	}
-
-	inline const modelTriangles& models::getModelTriangles(block ID)
-	{
-
-		return *triangles_[ID];
+		return *triangles_[modelID];
 
 	}
 

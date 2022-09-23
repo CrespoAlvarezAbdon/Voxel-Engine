@@ -1,19 +1,18 @@
 #include "graphics.h"
-#include <stdexcept>
-#include "gameWindow.h"
-#include "errors.hpp"
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "logger.h"
+#include "definitions.h"
 
-namespace VoxelEng
-{
+
+namespace VoxelEng {
 
 	// 'color' struct.
 
-	color::color(float r, float g, float b, float a)
-	{
+	color::color(float r, float g, float b, float a) {
 	
 		if (r < 0.0f || g < 0.0f || b < 0.0f || a < 0.0f)
-			throw new std::runtime_error("[ERROR]: Atleast one of the channels defined in a 'VoxelEng::color' object is negative!");
+			logger::errorLog("Atleast one of the channels defined in a 'VoxelEng::color' object is negative");
 		else
 		{
 
@@ -28,15 +27,68 @@ namespace VoxelEng
 
 	// 'graphics' class.
 
-	void graphics::setVSync(bool isEnabled)
-	{
+	bool graphics::initialised_ = false;
+	window* graphics::mainWindow_ = nullptr;
+
+
+	void graphics::init(window& mainWindow) {
+
+		if (initialised_)
+			logger::errorLog("Graphics API is already initialised");
+		else {
+
+			#if GRAPHICS_API == OPENGL
+
+				// GLFW initialization.
+				if (!glfwInit())
+					logger::errorLog("Failed to initialize the GLFW library!");
+
+				// Select GLFW version.
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+				glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+				// Create API rendering window.
+				mainWindow.windowAPIpointer() = glfwCreateWindow((int)mainWindow.width(), (int)mainWindow.height(), mainWindow.name().data(), NULL, NULL);
+
+				if (!mainWindow.windowAPIpointer()) {
+
+					glfwTerminate();
+					logger::errorLog("Failed to create window named " + mainWindow.name());
+
+				}
+
+
+				glfwMakeContextCurrent(mainWindow.windowAPIpointer());
+
+				// With the previously created context, now we can initialize the GLEW library.
+				if (glewInit() != GLEW_OK)
+					logger::errorLog("GLEW_INIT_FAILED");
+
+				graphics::setVSync(true);
+				graphics::setDepthTest(true);
+				graphics::setBasicFaceCulling(true);
+				graphics::setTransparency(true);
+
+			#else
+
+				
+
+			#endif
+
+			initialised_ = true;
+		
+		}
+
+	}
+
+	void graphics::setVSync(bool isEnabled) {
 
 		glfwSwapInterval(isEnabled);
 
 	}
 
-	void graphics::setDepthTest(bool isEnabled)
-	{
+	void graphics::setDepthTest(bool isEnabled) {
 
 		if (isEnabled)
 			glEnable(GL_DEPTH_TEST);
@@ -45,8 +97,7 @@ namespace VoxelEng
 
 	}
 
-	void graphics::setBasicFaceCulling(bool isEnabled)
-	{
+	void graphics::setBasicFaceCulling(bool isEnabled) {
 
 		if (isEnabled)
 			glEnable(GL_CULL_FACE);
@@ -55,8 +106,7 @@ namespace VoxelEng
 
 	}
 
-	void graphics::setTransparency(bool isEnabled)
-	{
+	void graphics::setTransparency(bool isEnabled) {
 	
 		if (isEnabled)
 		{
@@ -69,40 +119,21 @@ namespace VoxelEng
 			glDisable(GL_BLEND);
 		
 	}
-
-	void graphics::initialize(window& renderingWindow)
-	{
 	
-		// GLFW initialization.
-		if (!glfwInit())
-			throw new std::runtime_error("[ERROR]: Failed to initialize the GLFW library!");
+	void graphics::cleanUp() {
+	
+		#if GRAPHICS_API == OPENGL
 
-		// Select GLFW version.
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            glfwTerminate();
 
-		// Create API rendering window.
-		renderingWindow.windowAPIpointer() = glfwCreateWindow((int)renderingWindow.width(), (int)renderingWindow.height(), renderingWindow.name().data(), NULL, NULL);
-
-		if (!renderingWindow.windowAPIpointer())
-		{
-
-			glfwTerminate();
-			throw std::runtime_error("[ERROR]: Failed to create window named " + renderingWindow.name());
-
-		}
+        #else
 
 
-		glfwMakeContextCurrent(renderingWindow.windowAPIpointer());
 
-		// With the previously created context, now we can initialize the GLEW library.
-		if (glewInit() != GLEW_OK)
-			throw error(error::errorTypes::GLEW_INIT_FAILED);
+        #endif
+
+		initialised_ = false;
 	
 	}
-
-	window* graphics::windowCallbackPtr_ = nullptr;
-	player* graphics::playerCallbackPtr_ = nullptr;
 
 }

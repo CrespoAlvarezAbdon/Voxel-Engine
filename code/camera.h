@@ -1,248 +1,344 @@
-#ifndef _CAMERA_
-#define _CAMERA_
-
-#include "definitions.h"
-#include "chunk.h"
-#include "gameWindow.h"
+#ifndef _VOXELENG_CAMERA_
+#define _VOXELENG_CAMERA_
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <gtx/quaternion.hpp>
 #include <gtx/rotate_vector.hpp>
 #include <glm.hpp>
+#include "definitions.h"
+#include "chunk.h"
+#include "gameWindow.h"
 
 
-//////////////////////////////
-//Forward class declarations//
-//////////////////////////////
-class chunk;
-class chunkManager;
+namespace VoxelEng {
 
-namespace VoxelEng
-{
 
+	/////////////////////////
+	//Forward declarations.//
+	/////////////////////////
+
+	class chunk;
+	class chunkManager;
 	class window;
 
-}
+
+	////////////
+	//Classes.//
+	////////////
+
+	class camera {
+
+	public:
+
+		// Constructors.
+
+		camera(float FOV, float zNear, float zFar, window& window, bool isPlayerCamera,
+			const vec3& position = vec3(0.0f, 0.0f, 0.0f), const vec3& direction = vec3(0.0f, 0.0f, 0.0f));
 
 
-///////////
-//Classes//
-///////////
+		// Observers.
 
-class camera
-{
+		static const camera* cPlayerCamera();
 
-public:
+		float FOV() const;
 
-	// Constructors.
+		float zFar() const;
 
-	camera(float FOV, float zNear, float zFar, VoxelEng::window& window,
-		   const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f), const glm::vec3& direction = glm::vec3(0.0f, 0.0f, 0.0f));
+		float mouseSensibility() const;
 
+		float movementSpeed() const;
 
-	// Observers.
+		const glm::mat4& projectionMatrix() const;
 
-	float FOV() const;
+		const glm::mat4& viewMatrix() const;
 
-	float zFar() const;
+		const glm::mat4& modelMatrix() const;
 
-	float mouseSensibility() const;
+		const vec3& direction() const;
 
-	float movementSpeed() const;
+		/*
+		Get the camera's chunk relative position.
+		*/
+		const vec3& chunkPos() const;
 
-	const glm::mat4& projectionMatrix() const;
-
-	const glm::mat4& viewMatrix() const;
-
-	const glm::vec3& direction() const;
-
-	/*
-	Get the camera's chunk relative position.
-	*/
-	const glm::vec3& chunkPos() const;
-
-	/*
-	Get the camera's position.
-	*/
-	const glm::vec3& pos() const;
+		/*
+		Get the camera's position.
+		*/
+		const vec3& pos() const;
 
 
-	// Modifiers.
+		// Modifiers.
 
-	void setFOV(float FOV);
+		static camera* playerCamera();
 
-	void updateProjectionMatrix();
+		void setFOV(float FOV);
 
-	float& mouseSensibility();
+		void updateProjectionMatrix();
 
-	float& movementSpeed();
+		float& mouseSensibility();
 
-	glm::mat4& projectionMatrix();
+		float& movementSpeed();
 
-	glm::mat4& viewMatrix();
+		glm::mat4& projectionMatrix();
 
-	glm::vec3& pos();
+		glm::mat4& viewMatrix();
 
-	glm::vec3& chunkPos();
+		glm::mat4& modelMatrix();
 
-	void setChunkManager(chunkManager* chunkMng);
+		void setPos(const vec3& newPos);
 
-	/*
-	Update the camera's position and the direction it's looking at
-	taking into account the delta time to avoid the FPS from altering the movement speed.
-	NOTE. Once this method is called, the next method you should instantly call is
-	camera::updateView() to reflect the change in the camera's position and view direction.
-	*/
-	void updatePos(float timeStep);
+		void setPos(int newX, int newY, int newZ);
 
-	/*
-	Update the camera's vision.
-	NOTE. You should call this method after a call to camera::updatePos(...) was made
-	in order to reflect the change in the camera's position and view direction.
-	*/
-	void updateView();
+		void setChunkPos(const vec3& newChunkPos);
 
-	VoxelEng::window& window_;
-private:
+		void setChunkPos(int newCX, int newCY, int newCZ);
 
-	float FOV_,
-		  zNear_,
-		  zFar_, 
-		  angleX_, 
-		  angleY_, 
-		  mouseSensibility_, 
-		  movementSpeed_;
-	double mouseX_, 
-		   mouseY_, 
-		   oldMouseX_, 
-		   oldMouseY_;
-	glm::mat4 projectionMatrix_, 
-		      viewMatrix_;
+		void setDirection(const vec3& newDir);
+
+		void setDirection(int newDX, int newDY, int newDZ);
+
+		void moveUp();
+
+		void moveDown();
+
+		void moveNorth();
+
+		void moveSouth();
+
+		void moveEast();
+
+		void moveWest();
+
+		/*
+		Update the camera's position and the direction it's looking at
+		taking into account the delta time to avoid the FPS from altering the movement speed.
+		NOTE. Once this method is called, the next method that should be instantly called is
+		camera::updateView() to reflect the change in the camera's position and view direction.
+		*/
+		void updatePos(float timeStep);
+
+		/*
+		Update the camera's vision.
+		NOTE. This method should be called after one to camera::updatePos(...) was made
+		in order to reflect the change in the camera's position and view direction.
+		*/
+		void updateView();
+
+
+		// Destructors.
+
+		~camera();
+
+	private:
+
+		static camera* playerCamera_;
+
+		window& window_;
+		bool moveUp_,
+			 moveDown_,
+			 moveNorth_,
+			 moveSouth_,
+			 moveEast_,
+			 moveWest_;
+		float FOV_,
+			 zNear_,
+			 zFar_,
+			 angleX_,
+			 angleY_,
+			 mouseSensibility_,
+			 movementSpeed_;
+		double mouseX_,
+			   mouseY_,
+			   oldMouseX_,
+			   oldMouseY_;
+		glm::mat4 projectionMatrix_,
+				  viewMatrix_,
+				  modelMatrix_; // All models' vertices will be multiplied with this matrix (so you can, for example, rotate the entire world around the camera).
+
+		vec3 position_,
+		     direction_,
+			 upAxis_,
+			 chunkPosition_,
+			 oldChunkPos_;
+
+	};
+
+	inline const camera* camera::cPlayerCamera() {
+
+		return playerCamera_;
+
+	}
+
+	inline float camera::FOV() const {
+
+		return FOV_;
+
+	}
+
+	inline float camera::zFar() const {
+
+		return zFar_;
+
+	}
+
+	inline float camera::mouseSensibility() const {
+
+		return mouseSensibility_;
+
+	}
+
+	inline float camera::movementSpeed() const {
+
+		return movementSpeed_;
+
+	}
+
+	inline const glm::mat4& camera::projectionMatrix() const {
+
+		return projectionMatrix_;
+
+	}
+
+	inline const glm::mat4& camera::viewMatrix() const {
+
+		return viewMatrix_;
+
+	}
+
+	inline const glm::mat4& camera::modelMatrix() const {
+
+		return modelMatrix_;
+
+	}
+
+	inline const vec3& camera::pos() const {
+
+		return position_;
+
+	}
+
+	inline const vec3& camera::chunkPos() const {
+
+		return chunkPosition_;
+
+	}
+
+	inline const vec3& camera::direction() const {
+
+		return direction_;
+
+	}
+
+	inline camera* camera::playerCamera() {
+
+		return playerCamera_;
+
+	}
+
+	inline float& camera::mouseSensibility() {
+
+		return mouseSensibility_;
+
+	}
+
+	inline float& camera::movementSpeed() {
+
+		return movementSpeed_;
+
+	}
+
+	inline glm::mat4& camera::projectionMatrix() {
+
+		return projectionMatrix_;
+
+	}
+
+	inline glm::mat4& camera::viewMatrix() {
+
+		return viewMatrix_;
+
+	}
+
+	inline glm::mat4& camera::modelMatrix() {
+
+		return modelMatrix_;
+
+	}
+
+	inline void camera::setPos(const vec3& newPos) {
+
+		setPos(newPos.x, newPos.y, newPos.z);
+
+	}
+
+	inline void camera::setChunkPos(const vec3& newChunkPos) {
+
+		setChunkPos(newChunkPos.x, newChunkPos.y, newChunkPos.z);
+
+	}
+
+	inline void camera::setDirection(const vec3& newDir) {
 	
-	glm::vec3 position_,
-		      direction_, 
-		      upAxis_, 
-		      chunkRelativePosition_,
-		      oldChunkRelativePos_;
-	chunkManager* chunkMng_;
+		setDirection(newDir.x, newDir.y, newDir.z);
+	
+	}
 
-};
+	inline void camera::moveUp() {
 
-inline float camera::FOV() const
-{
+		moveUp_ = true;
 
-	return FOV_;
+	}
 
-}
+	inline void camera::moveDown() {
 
-inline float camera::zFar() const
-{
+		moveDown_ = true;
 
-	return zFar_;
+	}
 
-}
+	inline void camera::moveNorth() {
 
-inline float camera::mouseSensibility() const
-{
+		moveNorth_ = true;
 
-	return mouseSensibility_;
+	}
 
-}
+	inline void camera::moveSouth() {
 
-inline float camera::movementSpeed() const
-{
+		moveSouth_ = true;
 
-	return movementSpeed_;
+	}
 
-}
+	inline void camera::moveEast() {
 
-inline const glm::mat4& camera::projectionMatrix() const
-{
+		moveEast_ = true;
 
-	return projectionMatrix_;
+	}
 
-}
+	inline void camera::moveWest() {
 
-inline const glm::mat4& camera::viewMatrix() const
-{
+		moveWest_ = true;
 
-	return viewMatrix_;
+	}
 
-}
+	inline void camera::updateView() {
 
-inline const glm::vec3& camera::pos() const
-{
+		#if GRAPHICS_API == OPENGL
 
-	return position_;
+			viewMatrix_ = glm::lookAt(position_, position_ + direction_, upAxis_);
 
-}
+		#else
 
-inline const glm::vec3& camera::chunkPos() const
-{
+			
 
-	return chunkRelativePosition_;
+		#endif
 
-}
+	}
 
-inline const glm::vec3& camera::direction() const 
-{
-
-	return direction_;
-
-}
-
-inline float& camera::mouseSensibility()
-{
-
-	return mouseSensibility_;
-
-}
-
-inline float& camera::movementSpeed()
-{
-
-	return movementSpeed_;
-
-}
-
-inline glm::mat4& camera::projectionMatrix()
-{
-
-	return projectionMatrix_;
-
-}
-
-inline glm::mat4& camera::viewMatrix()
-{
-
-	return viewMatrix_;
-
-}
-
-inline glm::vec3& camera::pos()
-{
-
-	return position_;
-
-}
-
-inline glm::vec3& camera::chunkPos()
-{
-
-	return chunkRelativePosition_;
-
-}
-
-inline void camera::setChunkManager(chunkManager* chunkMng)
-{
-
-	chunkMng_ = chunkMng;
-
-}
-
-inline void camera::updateView()
-{
-
-	viewMatrix_ = glm::lookAt(position_, position_ + direction_, upAxis_);
+	inline camera::~camera() {
+	
+		if (this == playerCamera_)
+			playerCamera_ = nullptr;
+	
+	}
 
 }
 

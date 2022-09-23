@@ -1,28 +1,15 @@
-#ifndef _GRAPHICS_
-#define _GRAPHICS_
-
-////////////////////////
-//Forward declarations//
-////////////////////////
-
-class player;
+#ifndef _VOXELENG_GRAPHICS_
+#define _VOXELENG_GRAPHICS_
+#include "gameWindow.h"
 
 
-namespace VoxelEng
-{
+namespace VoxelEng {	
 
-	////////////////////////
-	//Forward declarations//
-	////////////////////////
+	////////////
+	//Structs.//
+	////////////
 
-	class window;
-
-	///////////
-	//Structs//
-	///////////
-
-	struct color
-	{
+	struct color {
 	
 		color(float red, float green, float blue, float alpha);
 
@@ -34,19 +21,27 @@ namespace VoxelEng
 	};
 
 
-	///////////
-	//Classes//
-	///////////
+	////////////
+	//Classes.//
+	////////////
 
 	/*
 	Class used to abstract the graphics API's calls independently
 	of the underlying graphics API (directX, OpenGL...) that is
 	being used.
 	*/
-	class graphics
-	{
+	class graphics {
 	
 	public:
+
+		// Initialisers.
+
+		/*
+		Initializes the underlying graphics APIs/libraries.
+		WARNING. Must be called in a thread with valid graphic API context.
+		*/
+		static void init(window& renderingWindow);
+
 
 		// Observers.
 
@@ -55,31 +50,19 @@ namespace VoxelEng
 		to handle the game window's callbacks.
 		WARNING. Must be called in a thread with valid graphic API context.
 		*/
-		static window * getMainWindow();
+		static window* getMainWindow();
 
-		/*
-		Gets the pointer to the 'VoxelEng::player' class object that is being used
-		to handle the player input's callbacks.
-		WARNING. Must be called in a thread with valid graphic API context.
-		*/
-		static player * getPlayerCallbackPtr();
+		static bool initialised();
 
 
 		// Modifiers.
 
 		/*
-		Sets the pointer to the 'VoxelEng::window' class object that is being used
-		to handle the game window's callbacks.
+		Sets the pointer main window in the engine's graphical mode.
+		The main window pointer is used to handle the game's main window callbacks.
 		WARNING. Must be called in a thread with valid graphic API context.
 		*/
-		static void setWindowCallbackPtr(window* windowCallbackPtr);
-
-		/*
-		Sets the pointer to the 'VoxelEng::player' class object that is being used
-		to handle the player input's callbacks.
-		WARNING. Must be called in a thread with valid graphic API context.
-		*/
-		static void setPlayerCallbackPtr(player* playerCallbackPtr);
+		static void setMainWindow(window* windowCallbackPtr);
 
 		/*
 		Set Vertical Synchronization (VSync) on (true) or off (false).
@@ -106,46 +89,32 @@ namespace VoxelEng
 		static void setTransparency(bool isEnabled);
 
 
-		// Other methods.
+		// Clean up.
 
-		/*
-		Initializes the underlying graphics APIs/libraries.
-		WARNING. Must be called in a thread with valid graphic API context.
-		*/
-		static void initialize(window& renderingWindow);
+		static void cleanUp();
 
 	private:
 
-		static window* windowCallbackPtr_;
-		static player* playerCallbackPtr_;
+		static bool initialised_;
+		static window* mainWindow_;
 		
 	};
 
-	inline window * graphics::getMainWindow()
-	{
+	inline window* graphics::getMainWindow() {
 	
-		return windowCallbackPtr_;
+		return mainWindow_;
 	
 	}
 
-	inline player * graphics::getPlayerCallbackPtr()
-	{
-
-		return playerCallbackPtr_;
-
+	inline bool graphics::initialised() {
+	
+		return initialised_;
+	
 	}
 
-	inline void graphics::setWindowCallbackPtr(window* windowCallbackPtr)
-	{
+	inline void graphics::setMainWindow(window* windowPointer) {
 
-		windowCallbackPtr_ = windowCallbackPtr;
-
-	}
-
-	inline void graphics::setPlayerCallbackPtr(player* playerCallbackPtr)
-	{
-
-		playerCallbackPtr_ = playerCallbackPtr;
+		mainWindow_ = windowPointer;
 
 	}
 

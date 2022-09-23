@@ -1,84 +1,28 @@
-#ifndef _DEFINITIONS_
-#define _DEFINITIONS_
+#ifndef _VOXELENG_DEFINITIONS_
+#define _VOXELENG_DEFINITIONS_
+#include <chrono>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm.hpp>
 
 
 /*
 General definitions of auxiliary types, values, structs and classes belong here
 */
 
-namespace VoxelEng 
-{
+namespace VoxelEng {
 
-	///////////
-	//Structs//
-	///////////
+	////////////
+	//Defines.//
+	////////////
 
-	template <typename T>
-	struct vec3
-	{
-
-		// Public variables.
-
-		T x,
-		  y,
-	      z;
-
-
-		// Constructors.
-
-		vec3(const T& x, const T& y, const T& z);
-
-		vec3();
-
-	};
-
-	template<typename T>
-	vec3<T>::vec3(const T& x, const T& y, const T& z)
-		: x(x), y(y), z(z)
-	{}
-
-	template<typename T>
-	vec3<T>::vec3()
-		: x(0), y(0), z(0)
-	{}
-
-	template <typename T>
-	struct vec2
-	{
-
-		// Public variables.
-
-		T x,
-		  y;
-
-
-		// Constructors.
-
-		vec2(const T& x, const T& y);
-
-		vec2();
-
-	};
-
-	template<typename T>
-	vec2<T>::vec2(const T& x, const T& y)
-		: x(x), y(y)
-	{}
-
-	template<typename T>
-	vec2<T>::vec2()
-		: x(0), y(0)
-	{}
-
-	///////////
-	//Defines//
-	///////////
+	// 0 = OPENGL
+	// 1 = DIRECTX
+	#define OPENGL 0
+	#define DIRECTX 1
+	#define GRAPHICS_API OPENGL
 
 	#define MIN_TEX_RES 16
-
-	#define Y_CHUNKS_RANGE 12 // How many chunks to load in the y-axis.
 
 	#define SCX 16 // Chunk size in X axis.
 	#define SCY 16 // Chunk size in Y axis.
@@ -88,22 +32,33 @@ namespace VoxelEng
 	#define MIN_HEIGHT 600 // Minimum height for a game window.
 
 	// Directions.
-	#define UP 1 // +y
-	#define DOWN 2 // -y
-	#define NORTH 3 // +x
-	#define SOUTH 4 // -x
-	#define EAST 5 // +z
-	#define WEST 6 // -z
+	#define PLUSY 1 // +y
+	#define NEGY 2 // -y
+	#define PLUSX 3 // +x
+	#define NEGX 4 // -x
+	#define PLUSZ 5 // +z
+	#define NEGZ 6 // -z
 
-	// Axis.
-	#define X_AXIS 1
-	#define Y_AXIS 2
-	#define Z_AXIS 3
+	// Number of GUI layers
+	#define	N_GUI_LAYERS 3
 
 
-	////////////
-	//Typedefs//
-	////////////
+	/////////////////////
+	//Type definitions.//
+	/////////////////////
+
+	typedef void(*tickFunc)();
+
+	#if GRAPHICS_API == OPENGL
+	
+		typedef glm::vec3 vec3;
+		typedef glm::vec2 vec2;
+
+	#else
+
+	
+
+	#endif
 
 	typedef unsigned short block; // Block's ID.
 
@@ -113,12 +68,35 @@ namespace VoxelEng
 
 	typedef float textureCoord;
 
-	typedef GLint normalVec;
-
 	typedef float angle;
 
-	// TODO. ADD CONDITIONS TO ALLOW SWITCHING BETWEEN GRAPHIC APIs
-	typedef GLFWwindow GraphicsAPIWindow;
+	#if GRAPHICS_API == OPENGL
+
+		typedef GLint normalVec;
+
+		typedef GLFWwindow GraphicsAPIWindow;
+
+	#else
+
+	
+	#endif
+
+	typedef std::chrono::time_point<std::chrono::high_resolution_clock> timePoint;
+	typedef long long duration;
+
+
+	//////////////
+	//Constants.//
+	//////////////
+	const unsigned int yChunksRange = 12; // How many chunks to load in the y-axis.
+	const int totalYChunks = yChunksRange * 2;
+	const vec3 vec3Zero(0, 0, 0);
+	const vec3 vec3FixedUp(0, 1, 0);
+	const vec3 vec3FixedDown(0, -1, 0);
+	const vec3 vec3FixedNorth(1, 0, 0);
+	const vec3 vec3FixedSouth(-1, 0, 0);
+	const vec3 vec3FixedEast(0, 0, 1);
+	const vec3 vec3FixedWest(0, 0, -1);
 
 }
 

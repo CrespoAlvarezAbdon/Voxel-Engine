@@ -2,52 +2,95 @@
 #include <stdexcept>
 #include "gui.h"
 #include "graphics.h"
+#include "definitions.h"
 
 
-namespace VoxelEng
-{
+namespace VoxelEng {
 
 	window::window(unsigned int width, unsigned int height, const std::string& name)
-		: width_(width), height_(height), name_(name), playerCamera_(nullptr), wasResized_(false), isMouseFree_(false)
-	{
+		: width_(width), height_(height), name_(name), playerCamera_(nullptr), wasResized_(false), isMouseFree_(false) {
 	
 		aspectRatio_ = (float)width / height;
 	
 	}
 
-	void window::changeStateMouseLock(bool isEnabled)
-	{
-		
+	void window::changeStateMouseLock(bool isEnabled) {
+
+		if (!isMouseFree_ && isEnabled)
+			getMousePos(oldMouseX_, oldMouseY_);
+		else if (isMouseFree_ && !isEnabled)
+			setMousePos(oldMouseX_, oldMouseY_);
+
 		isMouseFree_ = isEnabled;
 
-		glfwSetInputMode(APIwindow_, GLFW_CURSOR, isMouseFree_ ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+		#if GRAPHICS_API == OPENGL
+
+			glfwSetInputMode(APIwindow_, GLFW_CURSOR, isMouseFree_ ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+
+		#else
+
+
+
+		#endif
 
 		if (isMouseFree_)
-			centerMouse();
-		// restaurar antiguas coordenadas del ratón al volver a lockearlo para que no explote la camara
+			setMousePos(width_ / 2.0f, height_ / 2.0f);
 	
 	}
 
-	void window::changeStateMouseLock()
-	{
+	void window::changeStateMouseLock() {
+
+		if (!isMouseFree_)
+			getMousePos(oldMouseX_, oldMouseY_);
+		else
+			setMousePos(oldMouseX_, oldMouseY_);
 
 		isMouseFree_ = !isMouseFree_;
 
-		glfwSetInputMode(APIwindow_, GLFW_CURSOR, isMouseFree_ ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+		#if GRAPHICS_API == OPENGL
+
+			glfwSetInputMode(APIwindow_, GLFW_CURSOR, isMouseFree_ ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+
+		#else
+
+
+
+		#endif
 
 		if (isMouseFree_)
-			centerMouse();
+			setMousePos(width_ / 2.0f, height_ / 2.0f);
 
 	}
 
-	void window::centerMouse() {
+	void window::setMousePos(double x, double y) {
 	
-		glfwSetCursorPos(this->APIwindow_, width_/2.0f, height_ / 2.0f);
-	
+		#if GRAPHICS_API == OPENGL
+
+			glfwSetCursorPos(this->APIwindow_, x, y);
+
+		#else
+
+
+
+		#endif
+
 	}
 
-	void window::resize(unsigned int width, unsigned int height)
-	{
+	void window::getMousePos(double& x, double& y) {
+	
+		#if GRAPHICS_API == OPENGL
+
+			glfwGetCursorPos(this->APIwindow_, &x, &y);
+
+		#else
+
+
+
+		#endif
+
+	}
+
+	void window::resize(unsigned int width, unsigned int height) {
 
 		width_ = width;
 		height_ = height;
@@ -58,8 +101,7 @@ namespace VoxelEng
 
 	}
 
-	void window::windowSizeCallback(GraphicsAPIWindow* windowPointer, int width, int height)
-	{
+	void window::windowSizeCallback(GraphicsAPIWindow* windowPointer, int width, int height) {
 
 		graphics::getMainWindow()->resize(width, height);
 
@@ -70,9 +112,19 @@ namespace VoxelEng
 		width_ += width_ % 2 != 0;
 		height_ += height_ % 2 != 0;
 
-		glViewport(0, 0, width_, height_);
+		#if GRAPHICS_API == OPENGL
+
+			glViewport(0, 0, width_, height_);
+
+		#else
+
+
+
+		#endif
 
 		playerCamera_->updateProjectionMatrix();
+
+		GUIManager::updateOrthoMatrix();
 
 		wasResized_ = false;
 	

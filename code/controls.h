@@ -7,7 +7,11 @@
 
 namespace VoxelEng {
 
-	enum class key {
+	////////////////////
+	//Classes & enums.//
+	////////////////////
+
+	enum class controlCode {
 
 		noKey,
 		alpha1,
@@ -64,9 +68,13 @@ namespace VoxelEng {
 		upArrow,
 		downArrow,
 		leftArrow,
-		rightArrow
+		rightArrow,
+		leftButton,
+		rightButton,
+		middleButton
 
 	};
+
 
 	class controls {
 
@@ -75,13 +83,13 @@ namespace VoxelEng {
 		// Observers.
 
 		/*
-		Returns the equivalent key from VoxelEngine's API in GLFW.
+		Returns the equivalent control code from VoxelEngine's API in GLFW.
 		*/
-		static unsigned int getGLFWKey(key key);
+		static unsigned int getGLFWControlCode(controlCode keyCode);
 
 	private:
 
-		static std::unordered_map<key, unsigned int> GLFWkeys_;
+		static std::unordered_map<controlCode, unsigned int> GLFWcontrolCodes_;
 
 	};
 
