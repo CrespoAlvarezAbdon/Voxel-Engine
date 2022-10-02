@@ -88,7 +88,7 @@ namespace VoxelEng {
 	//////////////
 	//Constants.//
 	//////////////
-	const unsigned int yChunksRange = 12; // How many chunks to load in the y-axis.
+	const int yChunksRange = 12; // How many chunks to load in the y-axis.
 	const int totalYChunks = yChunksRange * 2;
 	const vec3 vec3Zero(0, 0, 0);
 	const vec3 vec3FixedUp(0, 1, 0);

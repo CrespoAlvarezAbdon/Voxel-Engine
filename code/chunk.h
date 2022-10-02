@@ -36,6 +36,12 @@ namespace VoxelEng {
 	class chunkManager;
 	class worldGen;
 
+	/////////////////
+	//Enum classes.//
+	/////////////////
+
+	enum class chunkLoadLevel { NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2 };
+
 
 	////////////
 	//Classes.//
@@ -123,6 +129,8 @@ namespace VoxelEng {
 
 		const std::atomic<bool>& changed() const;
 
+		chunkLoadLevel loadLevel() const;
+
 
 		// Modifiers.
 
@@ -167,6 +175,8 @@ namespace VoxelEng {
 		*/
 		void makeEmpty();
 
+		void setLoadLevel(chunkLoadLevel level);
+
 
 		// Clean up.
 		static void cleanUp();
@@ -180,6 +190,7 @@ namespace VoxelEng {
 		block blocks_[SCX][SCY][SCZ];
 		std::atomic<bool> changed_;
 		std::atomic<unsigned int> nBlocks_;
+		std::atomic<chunkLoadLevel> loadLevel_;
 		chunkRenderingData renderingData_;
 
 		/*
@@ -252,6 +263,12 @@ namespace VoxelEng {
 
 	}
 
+	inline chunkLoadLevel chunk::loadLevel() const {
+
+		return loadLevel_;
+
+	}
+
 	inline chunkRenderingData& chunk::renderingData() {
 
 		return renderingData_;
@@ -275,6 +292,13 @@ namespace VoxelEng {
 		return changed_;
 
 	}
+
+	inline void chunk::setLoadLevel(chunkLoadLevel level) {
+
+		loadLevel_ = level;
+
+	}
+
 	
 
 	/*
@@ -360,9 +384,13 @@ namespace VoxelEng {
 		*/
 		static bool isInWorld(int x, int y, int z);
 
-		static bool isChunkLoaded(int chunkX, int chunkY, int chunkZ);
+		static bool isChunkInWorld(const vec3& chunkPos);
 
-		static bool isChunkLoaded(const vec3& chunkPos);
+		static bool isChunkInWorld(int chunkX, int chunkY, int chunkZ);
+
+		static chunkLoadLevel getChunkLoadLevel(const vec3& chunkPos);
+
+		static chunkLoadLevel getChunkLoadLevel(int chunkX, int chunkY, int chunkZ);
 
 		static const std::string& openedTerrainFileName();
 
@@ -383,6 +411,28 @@ namespace VoxelEng {
 		static block setBlock(const vec3& pos, block blockID);
 
 		static block setBlock(int x, int y, int z, block blockID);
+
+		/*
+		Returns pointer to the created chunk.
+		*/
+		static chunk* createChunkAt(bool empty, const vec3& chunkPos);
+
+		/*
+		Returns pointer to the created chunk.
+		*/
+		static chunk* createChunkAt(bool empty, int chunkX, int chunkY, int chunkZ);
+
+		/*
+		Same as createChunkAt() but with no bounds checking.
+		Returns pointer to the created chunk.
+		*/
+		static chunk* createChunk(bool empty, const vec3& chunkPos);
+
+		/*
+		Same as createChunkAt() but with no bounds checking.
+		Returns pointer to the created chunk.
+		*/
+		static chunk* createChunk(bool empty, int chunkX, int chunkY, int chunkZ);
 
 		static chunk* selectChunk(GLbyte x, GLbyte y, GLbyte z);
 
@@ -735,21 +785,35 @@ namespace VoxelEng {
 	inline bool chunkManager::isInWorld(int x, int y, int z) {
 
 		return x >= -nChunksToCompute_ * SCX && x < (nChunksToCompute_ - 1) * SCX &&
-			   y >= totalYChunks * SCY && y < (totalYChunks - 1) * SCY &&
+			   y >= yChunksRange * SCY && y < (yChunksRange - 1) * SCY &&
 			   z >= -nChunksToCompute_ * SCZ && x < (nChunksToCompute_ - 1) * SCZ;
 	
 	}
 
-	inline bool chunkManager::isChunkLoaded(int chunkX, int chunkY, int chunkZ) {
-	
-		return isChunkLoaded({chunkX, chunkY, chunkZ});
-	
+	inline bool chunkManager::isChunkInWorld(const vec3& chunkPos) {
+
+		return isChunkInWorld(chunkPos.x, chunkPos.y, chunkPos.z);
+
+	}
+
+	inline bool chunkManager::isChunkInWorld(int chunkX, int chunkY, int chunkZ) {
+
+		return  chunkX >= -nChunksToCompute_ && chunkX < nChunksToCompute_&&
+				chunkY >= -yChunksRange && chunkY < yChunksRange &&
+				chunkZ >= -nChunksToCompute_ && chunkZ < nChunksToCompute_;
+
+	}
+
+	inline chunkLoadLevel chunkManager::getChunkLoadLevel(int chunkX, int chunkY, int chunkZ) {
+
+		return getChunkLoadLevel({ chunkX, chunkY, chunkZ });
+
 	}
 
 	inline const std::string& chunkManager::openedTerrainFileName() {
-	
+
 		return openedTerrainFileName_;
-	
+
 	}
 
 	inline bool chunkManager::infiniteWorld() {
@@ -761,6 +825,18 @@ namespace VoxelEng {
 	inline block chunkManager::setBlock(const vec3& pos, block blockID) {
 
 		return setBlock(pos.x, pos.y, pos.z, blockID);
+
+	}
+
+	inline chunk* chunkManager::createChunkAt(bool empty, int chunkX, int chunkY, int chunkZ) {
+
+		return createChunkAt(empty, vec3(chunkX, chunkY, chunkZ));
+
+	}
+
+	inline chunk* chunkManager::createChunk(bool empty, int chunkX, int chunkY, int chunkZ) {
+
+		return createChunk(empty, vec3(chunkX, chunkY, chunkZ));
 
 	}
 

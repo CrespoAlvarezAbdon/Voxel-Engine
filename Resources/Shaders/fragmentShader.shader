@@ -21,8 +21,7 @@ float specularStrength = 1;
 float distance = length(u_sunLightPos - v_fragPos);
 
 // Main.
-void main()
-{
+void main() {
 	
 	if (u_renderMode == 0) {
 	

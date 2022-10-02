@@ -561,11 +561,11 @@ namespace VoxelEng {
 
     }
 
-    bool chunkManager::isChunkLoaded(const vec3& chunkPos) {
+    chunkLoadLevel chunkManager::getChunkLoadLevel(const vec3& chunkPos) {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        return chunks_.find(chunkPos) != chunks_.cend();
+        return (chunks_.find(chunkPos) != chunks_.cend() ? chunks_[chunkPos]->loadLevel() : chunkLoadLevel::NOTLOADED);
 
     }
 
@@ -625,6 +625,27 @@ namespace VoxelEng {
                 return chunks_[chunkPos]->setBlock(getChunkRelCoords(x, y, z), blockID);
                 
         }
+
+    }
+
+    chunk* chunkManager::createChunkAt(bool empty, const vec3& chunkPos) {
+
+        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+
+        if (chunks_.find(chunkPos) == chunks_.end())
+            return createChunk(empty, chunkPos);
+        else
+            logger::errorLog("Chunk at " + std::to_string(chunkPos.x) + '|' + std::to_string(chunkPos.y) + '|' + std::to_string(chunkPos.z) + " already exists");
+
+    }
+
+    chunk* chunkManager::createChunk(bool empty, const vec3& chunkPos) {
+
+        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+
+        chunk* selectedChunk = new chunk(false, chunkPos);
+        chunks_.insert_or_assign(chunkPos, selectedChunk);
+        return selectedChunk;
 
     }
 
@@ -1165,7 +1186,7 @@ namespace VoxelEng {
 
                     worldGen::prepareGen();
 
-                    for (chunkPos.y = -totalYChunks; chunkPos.y < totalYChunks; chunkPos.y++)
+                    for (chunkPos.y = -yChunksRange; chunkPos.y < yChunksRange; chunkPos.y++)
                         for (chunkPos.x = -nChunksToCompute_; chunkPos.x < nChunksToCompute_; chunkPos.x++)
                             for (chunkPos.z = -nChunksToCompute_; chunkPos.z < nChunksToCompute_; chunkPos.z++) {
 
@@ -1184,7 +1205,7 @@ namespace VoxelEng {
 
             // Once chunk data has been loaded, generate the meshes. All chunk data must be loaded first before generating any mesh to
             // compute block face culling optimizations.
-            for (chunkPos.y = -totalYChunks; chunkPos.y < totalYChunks; chunkPos.y++)
+            for (chunkPos.y = -yChunksRange; chunkPos.y < yChunksRange; chunkPos.y++)
                 for (chunkPos.x = -nChunksToCompute_; chunkPos.x < nChunksToCompute_; chunkPos.x++)
                     for (chunkPos.z = -nChunksToCompute_; chunkPos.z < nChunksToCompute_; chunkPos.z++) {
 
@@ -1277,7 +1298,7 @@ namespace VoxelEng {
 
                 std::srand(std::time(nullptr)); // Initalize random generator for creating new level.
 
-                for (chunkPos.y = -totalYChunks; chunkPos.y < totalYChunks; chunkPos.y++)
+                for (chunkPos.y = -yChunksRange; chunkPos.y < yChunksRange; chunkPos.y++)
                     for (chunkPos.x = -nChunksToCompute_; chunkPos.x < nChunksToCompute_; chunkPos.x++)
                         for (chunkPos.z = -nChunksToCompute_; chunkPos.z < nChunksToCompute_; chunkPos.z++) {
 
@@ -1391,7 +1412,7 @@ namespace VoxelEng {
                             nChunksToCompute_ = number;
 
                             // Load chunk structures.
-                            for (chunkPos.y = -totalYChunks; chunkPos.y < totalYChunks; chunkPos.y++)
+                            for (chunkPos.y = -yChunksRange; chunkPos.y < yChunksRange; chunkPos.y++)
                                 for (chunkPos.x = -nChunksToCompute_; chunkPos.x < nChunksToCompute_; chunkPos.x++)
                                     for (chunkPos.z = -nChunksToCompute_; chunkPos.z < nChunksToCompute_; chunkPos.z++) {
 

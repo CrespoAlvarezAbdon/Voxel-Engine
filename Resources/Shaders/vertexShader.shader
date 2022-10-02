@@ -27,8 +27,7 @@ uniform mat4 u_MVPGUI;
 
 
 
-void main()
-{
+void main() {
 
 	if (u_renderMode == 0) {
 

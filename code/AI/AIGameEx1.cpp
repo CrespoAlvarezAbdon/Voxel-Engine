@@ -275,11 +275,13 @@ namespace AIExample {
 
 	// 'miningWorldGen' class.
 
-	std::uniform_int_distribution<unsigned int> miningWorldGen::dice_(1, 100);
+	const std::uniform_int_distribution<unsigned int> miningWorldGen::int6Dice_(1, 6);
+	std::uniform_int_distribution<unsigned int> miningWorldGen::intDice_(1, 100);
+	std::uniform_real_distribution<float> miningWorldGen::floatDice_(1.0f, 100.f);
 
 
 	void miningWorldGen::prepareGen_() {
-	
+
 		chunkColHeight_.clear();
 
 		playerSpawnPos_.x = 0;
@@ -289,50 +291,54 @@ namespace AIExample {
 		AISpawnPos_.x = 0;
 		AISpawnPos_.y = chunkHeightMap_({ 0, 0 })[0][0];
 		AISpawnPos_.z = 0;
-	
+
+		coalSpreadRange_ = std::uniform_int_distribution<unsigned int>::param_type(1, 8);
+		ironSpreadRange_ = std::uniform_int_distribution<unsigned int>::param_type(1, 7);
+		goldSpreadRange_ = std::uniform_int_distribution<unsigned int>::param_type(1, 5);
+		diamondSpreadRange_ = std::uniform_int_distribution<unsigned int>::param_type(1, 3);
+
 	}
+
 
 	void miningWorldGen::generate_(VoxelEng::chunk& chunk) {
 
 		VoxelEng::vec3 chunkPos = chunk.chunkPos(),
-					   inChunkPos,
-					   blockGlobalPos;
+				       blockPos;
+		VoxelEng::vec3 inChunkPos;
 		const chunkHeightMap& heightMap = chunkHeightMap_(chunkPos.x, chunkPos.z);
 
-		// Generate terrain.
-		unsigned int oreSpread;
 		for (inChunkPos.x = 0; inChunkPos.x < SCX; inChunkPos.x++)
 			for (inChunkPos.z = 0; inChunkPos.z < SCZ; inChunkPos.z++)
 				for (inChunkPos.y = 0; inChunkPos.y < SCY; inChunkPos.y++) {
 
-					blockGlobalPos = VoxelEng::chunkManager::getGlobalPos(chunkPos, inChunkPos);
+					if (!chunk.getBlock(inChunkPos)) {
 
-					if (blockGlobalPos.y < 60) // Generate coal ore
-					{
+						blockPos = VoxelEng::chunkManager::getGlobalPos(chunkPos, inChunkPos);
 
-						if (dice_(generator_) <= 30) {
-						
-							oreSpread = dice_(generator_, std::uniform_int_distribution<unsigned int>::param_type(1, 8));
+						if (blockPos.y < heightMap[inChunkPos.x][inChunkPos.z] - 3) {
 
-							// TODO: SPREAD A BIG CUBE USING GAME::ISINWORLD TO CHECK BOUNDARIES.
-							if (VoxelEng::AIAPI::aiGame::isInWorld(0, 0, 0))
-						
+							if (blockPos.y > 30 && floatDice_(generator_) <= 1.05f)
+								generateOre_(inChunkPos, chunk, ore::COAL);
+							else if (blockPos.y <= 35 && blockPos.y > 10 && floatDice_(generator_) <= 1.05f)
+								generateOre_(inChunkPos, chunk, ore::IRON);
+							else if (blockPos.y <= 15 && blockPos.y > -10 && floatDice_(generator_) <= 1.01f)
+								generateOre_(inChunkPos, chunk, ore::GOLD);
+							else if (blockPos.y <= -5 & blockPos.y > -20 && floatDice_(generator_) <= 1.005f)
+								generateOre_(inChunkPos, chunk, ore::DIAMOND);
+							else
+								chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 2);
+
 						}
-							chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 7);
+						else if (blockPos.y >= heightMap[inChunkPos.x][inChunkPos.z] - 3 && blockPos.y < heightMap[inChunkPos.x][inChunkPos.z])
+							chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 6);
+						else if (blockPos.y == heightMap[inChunkPos.x][inChunkPos.z])
+							chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 1);
 
 					}
-					else if (blockGlobalPos.y < 40) // Generate iron ore
-						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 8);
-					else if (blockGlobalPos.y < 30) // Generate gold ore
-						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 9);
-					else if (blockGlobalPos.y < 20) // Generate diamond ore
-						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 8);
-					else if (blockGlobalPos.y < heightMap[inChunkPos.x][inChunkPos.z])
-						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 2);
-					else if (blockGlobalPos.y == heightMap[inChunkPos.x][inChunkPos.z])
-						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 1);
 
 				}
+
+		chunk.setLoadLevel(VoxelEng::chunkLoadLevel::DECORATED);
 
 	}
 
@@ -380,6 +386,230 @@ namespace AIExample {
 
 			}
 	
+	}
+
+	void miningWorldGen::generateOre_(VoxelEng::vec3 inChunkPos, VoxelEng::chunk& chunk, ore ore) {
+
+		std::uniform_int_distribution<unsigned int>::param_type* oreSpread = nullptr;
+		VoxelEng::block oreID = 0;
+
+		switch (ore) {
+
+		case ore::COAL:
+
+			oreSpread = &coalSpreadRange_;
+			oreID = 7;
+
+			break;
+
+		case ore::IRON:
+
+			oreSpread = &ironSpreadRange_;
+			oreID = 8;
+
+			break;
+
+		case ore::GOLD:
+
+			oreSpread = &goldSpreadRange_;
+			oreID = 9;
+
+			break;
+
+		case ore::DIAMOND:
+
+			oreSpread = &diamondSpreadRange_;
+			oreID = 10;
+
+			break;
+
+		}
+
+		unsigned int nBlocks = intDice_(generator_, *oreSpread);
+		VoxelEng::vec3 cPos;
+		for (unsigned int i = 0; i < nBlocks; i++) {
+
+			if (true) {
+
+				chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, oreID);
+
+				switch (int6Dice_(generator_)) {
+
+				case 1:
+
+					if (inChunkPos.x + 1 >= SCX) {
+
+						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedNorth))
+							cascadeOreGen_(cPos, i, nBlocks, 0, inChunkPos.y, inChunkPos.z, oreID);
+						
+						i = nBlocks;
+
+					}
+					else
+						inChunkPos.x++;
+
+					break;
+
+				case 2:
+
+					if (inChunkPos.x == 0) {
+
+						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedSouth))
+							cascadeOreGen_(cPos, i, nBlocks, SCX - 1, inChunkPos.y, inChunkPos.z, oreID);
+						
+						i = nBlocks;
+
+					}
+					else
+						inChunkPos.x--;
+
+					break;
+
+				case 3:
+
+					if (inChunkPos.y + 1 >= SCY) {
+
+						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedUp))
+							cascadeOreGen_(cPos, i, nBlocks, inChunkPos.x, 0, inChunkPos.z, oreID);
+						
+						i = nBlocks;
+
+					}
+					else
+						inChunkPos.y++;
+
+					break;
+
+				case 4:
+
+					if (inChunkPos.y == 0) {
+
+						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedDown))
+							cascadeOreGen_(cPos, i, nBlocks, inChunkPos.x, SCY - 1, inChunkPos.z, oreID);
+						
+						i = nBlocks;
+
+					}
+					else
+						inChunkPos.y--;
+
+					break;
+
+				case 5:
+
+					if (inChunkPos.z + 1 >= SCZ) {
+
+						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedEast))
+							cascadeOreGen_(cPos, i, nBlocks, inChunkPos.x, inChunkPos.y, 0, oreID);
+
+						i = nBlocks;
+
+					}
+					else
+						inChunkPos.z++;
+
+					break;
+
+				case 6:
+
+					if (inChunkPos.z == 0) {
+
+						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedWest))
+							cascadeOreGen_(cPos, i, nBlocks, inChunkPos.x, inChunkPos.y, SCZ - 1, oreID);
+						else
+							i = nBlocks;
+
+					}
+					else
+						inChunkPos.z--;
+
+					break;
+
+				}
+
+			}
+
+		}
+
+	}
+
+	void miningWorldGen::cascadeOreGen_(const VoxelEng::vec3 chunkPos, unsigned int& nBlocksCounter, unsigned int nBlocks,
+		unsigned int inChunkX, unsigned int inChunkY, unsigned int inChunkZ, VoxelEng::block oreID) {
+
+		VoxelEng::chunk* cascadeChunk = nullptr;
+		if (VoxelEng::chunkManager::getChunkLoadLevel(chunkPos) == VoxelEng::chunkLoadLevel::NOTLOADED)
+			cascadeChunk = VoxelEng::chunkManager::createChunk(true, chunkPos);
+		else
+			cascadeChunk = VoxelEng::chunkManager::selectChunkByChunkPos(chunkPos);
+		unsigned int spreadDirection = 0;
+		for (nBlocksCounter; nBlocksCounter < nBlocks; nBlocksCounter++) {
+
+			if (!cascadeChunk->getBlock(inChunkX, inChunkY, inChunkZ)) {
+
+				cascadeChunk->setBlock(inChunkX, inChunkY, inChunkZ, oreID);
+
+				switch (spreadDirection = int6Dice_(generator_)) {
+
+					case 1:
+
+						if (inChunkX + 1 >= SCX)
+							nBlocksCounter = nBlocks; // Stop generating because we do not want ore clusters					 
+						else						  // that expand to 3 chunks or that form a '<' or '>' shape between 2 chunks.
+							inChunkX++;
+
+						break;
+
+					case 2:
+
+						if (inChunkX == 0)
+							nBlocksCounter = nBlocks;
+						else
+							inChunkX--;
+
+							break;
+
+					case 3:
+
+						if (inChunkY + 1 >= SCY)
+							nBlocksCounter = nBlocks;
+						else
+							inChunkY++;
+
+							break;
+
+					case 4:
+
+						if (inChunkY == 0)
+							nBlocksCounter = nBlocks;
+						else
+							inChunkY--;
+
+							break;
+
+					case 5:
+
+						if (inChunkZ + 1 >= SCZ)
+							nBlocksCounter = nBlocks;
+						else
+							inChunkZ++;
+
+							break;
+
+					case 6:
+
+						if (inChunkZ == 0)
+							nBlocksCounter = nBlocks;
+						else
+							inChunkZ--;
+
+							break;
+
+					}
+
+			}
+
+		}
+
 	}
 
 

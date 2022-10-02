@@ -65,7 +65,7 @@ namespace VoxelEng {
             blockPos.y = floor(selectedBlockPos_.y);
             blockPos.z = floor(selectedBlockPos_.z);
 
-            selectedBlock_ = (chunkManager::isChunkLoaded(chunkManager::getChunkCoords(blockPos))) ? chunkManager::getBlock(blockPos) : 0;
+            selectedBlock_ = (chunkManager::getChunkLoadLevel(chunkManager::getChunkCoords(blockPos)) == VoxelEng::chunkLoadLevel::DECORATED) ? chunkManager::getBlock(blockPos) : 0;
 
             if (!selectedBlock_) { // No non-null block found. Continue searching.
             

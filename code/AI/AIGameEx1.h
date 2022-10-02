@@ -53,18 +53,31 @@ namespace AIExample {
 
 		void generate_(VoxelEng::chunk& chunk);
 
+		void cascadeOreGen_(const VoxelEng::vec3 chunkPos, unsigned int& nBlocksCounter, unsigned int nBlocks,
+			unsigned int inChunkX, unsigned int inChunkY, unsigned int inChunkZ, VoxelEng::block oreID);
+
+
 	private:
 
 		/*
 		Attributes.
 		*/
 
-		static std::uniform_int_distribution<unsigned int> dice_;
+		static const std::uniform_int_distribution<unsigned int> int6Dice_;
+		static std::uniform_int_distribution<unsigned int> intDice_;
+		static std::uniform_real_distribution<float> floatDice_;
 
 		bool spawnSet_;
 		int maxBlockYCoord_;
 		VoxelEng::vec3 AISpawnPos_; // Same spawn position for every AI agent.
 		std::unordered_map<VoxelEng::vec2, chunkHeightMap> chunkColHeight_;
+		std::uniform_int_distribution<unsigned int>::param_type coalSpreadRange_,
+			ironSpreadRange_,
+			goldSpreadRange_,
+			diamondSpreadRange_;
+		VoxelEng::vec2 oreInChunkPos_;
+
+		enum class ore { COAL, IRON, GOLD, DIAMOND };
 
 		/*
 		Methods.
@@ -89,6 +102,11 @@ namespace AIExample {
 		const chunkHeightMap& chunkHeightMap_(const VoxelEng::vec2& blockXZPos);
 
 		void generateChunkHeightMap_(const VoxelEng::vec2& chunkXZPos);
+
+		/*
+		'inChunkX', 'inChunkY' and 'inChunkZ' serve as the starting point to generate the ore.
+		*/
+		void generateOre_(VoxelEng::vec3 inChunkPos, VoxelEng::chunk& chunk, ore ore);
 
 	};
 
