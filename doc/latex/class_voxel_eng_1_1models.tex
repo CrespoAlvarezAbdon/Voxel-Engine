@@ -1,0 +1,44 @@
+\hypertarget{class_voxel_eng_1_1models}{}\doxysection{Voxel\+Eng\+::models Class Reference}
+\label{class_voxel_eng_1_1models}\index{VoxelEng::models@{VoxelEng::models}}
+
+
+Provides all utilities required for managing the models that represent the entities inside a level.  
+
+
+
+
+{\ttfamily \#include $<$model.\+h$>$}
+
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1models_a0e46c6e35aa7052622a5d7d43f3c6783}\label{class_voxel_eng_1_1models_a0e46c6e35aa7052622a5d7d43f3c6783}} 
+static void {\bfseries init} ()
+\begin{DoxyCompactList}\small\item\em Initialise the static members of this class and allocate any resources that are needed on initialisation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1models_a39b6e8ad77091efe5d59d9270b497539}\label{class_voxel_eng_1_1models_a39b6e8ad77091efe5d59d9270b497539}} 
+static void {\bfseries load\+Custom\+Model} (const std\+::string \&file\+Path, unsigned int model\+ID)
+\begin{DoxyCompactList}\small\item\em Use a custom model ingame, created using the .OBJ format. Two models cannot have the same model ID. Using an already used ID will replace the old model with the new one. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1models_a697dddd92b62c2180c6407adb0ac122b}\label{class_voxel_eng_1_1models_a697dddd92b62c2180c6407adb0ac122b}} 
+static const \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}} \& {\bfseries get\+Model\+At} (unsigned int model\+ID)
+\begin{DoxyCompactList}\small\item\em Get the corresponding model for a certain ID. If no model exists for such ID, it returns the basic empty model with ID 0. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1models_a7c14a41ac13afba3dbb06af775fcd556}\label{class_voxel_eng_1_1models_a7c14a41ac13afba3dbb06af775fcd556}} 
+static const \mbox{\hyperlink{model_8h_afdcf9098e108168832a050a8bcba12db}{model\+Triangles}} \& {\bfseries get\+Model\+Triangles\+At} (unsigned int model\+ID)
+\begin{DoxyCompactList}\small\item\em Get the corresponding model triangles indices for a certain ID. If no model exists for such ID, it returns the basic empty model triangles. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1models_a875b89d5076af4098794acd88ded748d}\label{class_voxel_eng_1_1models_a875b89d5076af4098794acd88ded748d}} 
+static const \mbox{\hyperlink{model_8h_afdcf9098e108168832a050a8bcba12db}{model\+Triangles}} \& {\bfseries get\+Model\+Triangles} (unsigned int model\+ID)
+\begin{DoxyCompactList}\small\item\em Get the corresponding model triangles indices for a certain ID. If no model exists for such ID, it returns the basic empty model triangles. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1models_a963924bad7005a3af0e16a60c4dd05a8}\label{class_voxel_eng_1_1models_a963924bad7005a3af0e16a60c4dd05a8}} 
+static void {\bfseries add\+Texture} (block block\+ID, unsigned int texture\+ID, \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}} \&m)
+\begin{DoxyCompactList}\small\item\em Add a texture for a face of a terrain block. WARNING. Only call when just all the face\textquotesingle{}s vertices have been added to the model m. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1models_ade108805568629f9e915664aae8a939a}\label{class_voxel_eng_1_1models_ade108805568629f9e915664aae8a939a}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em Free any resources allocated to the static members of this class and deinitialise it. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Provides all utilities required for managing the models that represent the entities inside a level. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{model_8h}{model.\+h}}\item 
+code/model.\+cpp\end{DoxyCompactItemize}

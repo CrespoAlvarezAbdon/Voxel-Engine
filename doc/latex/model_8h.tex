@@ -1,0 +1,43 @@
+\hypertarget{model_8h}{}\doxysection{code/model.h File Reference}
+\label{model_8h}\index{code/model.h@{code/model.h}}
+
+
+Contains the definition of entity model as well as the declaration of the \char`\"{}models\char`\"{} class, used to provide all utilities required for managing the models that represent the entities inside a level.  
+
+
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include \char`\"{}vertex.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}definitions.\+h\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1models}{Voxel\+Eng\+::models}}
+\begin{DoxyCompactList}\small\item\em Provides all utilities required for managing the models that represent the entities inside a level. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{model_8h_aafab33c84de18d9caa6981b47086a2da}\label{model_8h_aafab33c84de18d9caa6981b47086a2da}} 
+typedef std\+::vector$<$ vertex $>$ {\bfseries Voxel\+Eng\+::model}
+\begin{DoxyCompactList}\small\item\em An entity\textquotesingle{}s model is simply a ordered collection of vertices, so that the first one connects with the next, and that one with the next one, etc... in order for the engine to properly draw it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{model_8h_a58c826751230d1f562a527403b64e3b4}\label{model_8h_a58c826751230d1f562a527403b64e3b4}} 
+typedef std\+::vector$<$ unsigned short $>$ {\bfseries Voxel\+Eng\+::triangle}
+\begin{DoxyCompactList}\small\item\em A triangle is a collection of three vertex indices that correspond to the ones that form it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{model_8h_afdcf9098e108168832a050a8bcba12db}\label{model_8h_afdcf9098e108168832a050a8bcba12db}} 
+typedef std\+::vector$<$ triangle $>$ {\bfseries Voxel\+Eng\+::model\+Triangles}
+\begin{DoxyCompactList}\small\item\em Representation of the collection of triangles that forms up an entity\textquotesingle{}s model. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the definition of entity model as well as the declaration of the \char`\"{}models\char`\"{} class, used to provide all utilities required for managing the models that represent the entities inside a level. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+25/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title Entity models. 
+\end{DoxyAuthor}

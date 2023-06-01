@@ -1,0 +1,32 @@
+\hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action}{}\doxysection{Voxel\+Eng\+::AIAPI\+::AIagent\+Action Class Reference}
+\label{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action}\index{VoxelEng::AIAPI::AIagentAction@{VoxelEng::AIAPI::AIagentAction}}
+
+
+An AI agent action is what an AI agent can perform when in an AI game match in its level. It may affect the level, the AI agent itself, other entities or agents or other things defined in the AI game.  
+
+
+
+
+{\ttfamily \#include $<$AIAPI.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action_ad6b49f8b806b4741ec7daff526f52efc}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action_ad6b49f8b806b4741ec7daff526f52efc}} 
+{\bfseries AIagent\+Action} (void($\ast$action)(), std\+::initializer\+\_\+list$<$ \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1agent_action_arg_af43e02e9cb657831ae34c4a8794af19e}{agent\+Action\+Arg\+::type}} $>$ param\+Types)
+\begin{DoxyCompactList}\small\item\em Provide the created AI action with its function and argument types. \textquotesingle{}action\textquotesingle{} should be a pointer to a void function that needs an \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{ai\+Game}}\textquotesingle{} object as parameter and that it calls to ai\+Game\+::record\+Action(actionstring) on said object. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action_a90226bd90b38985839c7e4e9efbeee4e}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action_a90226bd90b38985839c7e4e9efbeee4e}} 
+\mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1agent_action_arg_af43e02e9cb657831ae34c4a8794af19e}{agent\+Action\+Arg\+::type}} {\bfseries param\+Type} (unsigned int index) const
+\begin{DoxyCompactList}\small\item\em Get the type of one of the AI action\textquotesingle{}s parameters. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action_a3f73fd818553df179fe4bc6bebf3b910}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action_a3f73fd818553df179fe4bc6bebf3b910}} 
+void {\bfseries play\+Recorded\+Action} ()
+\begin{DoxyCompactList}\small\item\em Execute the AI action with the parameters that have been read from the recording file previously. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+An AI agent action is what an AI agent can perform when in an AI game match in its level. It may affect the level, the AI agent itself, other entities or agents or other things defined in the AI game. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{_a_i_a_p_i_8h}{AIAPI.\+h}}\item 
+code/AIAPI.\+cpp\end{DoxyCompactItemize}

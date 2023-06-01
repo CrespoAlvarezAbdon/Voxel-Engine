@@ -1,0 +1,113 @@
+\hypertarget{class_voxel_eng_1_1chunk}{}\doxysection{Voxel\+Eng\+::chunk Class Reference}
+\label{class_voxel_eng_1_1chunk}\index{VoxelEng::chunk@{VoxelEng::chunk}}
+
+
+Represents a section of the voxel world, with its blocks, mesh, position and other infomation. Chunks that are marked as \textquotesingle{}dirty\textquotesingle{} or \textquotesingle{}changed\textquotesingle{} will have their mesh regenerated.  
+
+
+
+
+{\ttfamily \#include $<$chunk.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a4274f8bbd5e03139f75ee90080389e7e}\label{class_voxel_eng_1_1chunk_a4274f8bbd5e03139f75ee90080389e7e}} 
+{\bfseries chunk} (bool empty, const vec3 \&\mbox{\hyperlink{class_voxel_eng_1_1chunk_a32d88be52f3327693ea5f325a8cdf3b5}{chunk\+Pos}}=\mbox{\hyperlink{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}{vec3\+Zero}})
+\begin{DoxyCompactList}\small\item\em Construct an empty dirty chunk. If \textquotesingle{}empty\textquotesingle{} is true then the chunk block data will be filled with null block IDs (block ID 0). If \textquotesingle{}empty\textquotesingle{} is false then the chunk block data will be filled with the selected world generator. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a57e21fb9bb3050d4bfbf52164478fa63}\label{class_voxel_eng_1_1chunk_a57e21fb9bb3050d4bfbf52164478fa63}} 
+{\bfseries chunk} (const \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} \&source)
+\begin{DoxyCompactList}\small\item\em Copy constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_ad4e3058d3804d740e86e068eceddcd3c}\label{class_voxel_eng_1_1chunk_ad4e3058d3804d740e86e068eceddcd3c}} 
+block {\bfseries get\+Block} (GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ad3b81662997152ed8683eff7c5157e18}{x}}, GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_a95e7d07d8be650d931da8c475c654c9b}{y}}, GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ae4336641543713331d7828775acc88a8}{z}})
+\begin{DoxyCompactList}\small\item\em Get the ID of the cube at the specifeid chunk-\/local coordinates. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a41594227f7ff506490df0e18eccc7d7a}\label{class_voxel_eng_1_1chunk_a41594227f7ff506490df0e18eccc7d7a}} 
+block {\bfseries get\+Block} (const vec3 \&in\+Chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Get the ID of the cube at the specifeid chunk-\/local coordinates. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_ad3b81662997152ed8683eff7c5157e18}\label{class_voxel_eng_1_1chunk_ad3b81662997152ed8683eff7c5157e18}} 
+GLbyte {\bfseries x} () const
+\begin{DoxyCompactList}\small\item\em Get chunk\textquotesingle{}s x axis coordinate (chunk-\/grid coordinate system). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a95e7d07d8be650d931da8c475c654c9b}\label{class_voxel_eng_1_1chunk_a95e7d07d8be650d931da8c475c654c9b}} 
+GLbyte {\bfseries y} () const
+\begin{DoxyCompactList}\small\item\em Get chunk\textquotesingle{}s y axis coordinate (chunk-\/grid coordinate system). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_ae4336641543713331d7828775acc88a8}\label{class_voxel_eng_1_1chunk_ae4336641543713331d7828775acc88a8}} 
+GLbyte {\bfseries z} () const
+\begin{DoxyCompactList}\small\item\em Get chunk\textquotesingle{}s z axis coordinate (chunk-\/grid coordinate system). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a32d88be52f3327693ea5f325a8cdf3b5}\label{class_voxel_eng_1_1chunk_a32d88be52f3327693ea5f325a8cdf3b5}} 
+const vec3 \& {\bfseries chunk\+Pos} () const
+\begin{DoxyCompactList}\small\item\em Get chunk\textquotesingle{}s coordinate (chunk-\/grid coordinate systems). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a58bc47cb95dd5be685d4097ee9544c41}\label{class_voxel_eng_1_1chunk_a58bc47cb95dd5be685d4097ee9544c41}} 
+const vec3 \& {\bfseries pos} () const
+\begin{DoxyCompactList}\small\item\em Get this chunk\textquotesingle{}s global position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a7b5463168ea992f94ba11d5a91c0ef97}\label{class_voxel_eng_1_1chunk_a7b5463168ea992f94ba11d5a91c0ef97}} 
+const std\+::vector$<$ \mbox{\hyperlink{struct_voxel_eng_1_1vertex}{vertex}} $>$ \& {\bfseries vertices} () const
+\begin{DoxyCompactList}\small\item\em Get this chunk\textquotesingle{}s vertex data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_ae24b754ceb2ac7a4ec430000bd16463f}\label{class_voxel_eng_1_1chunk_ae24b754ceb2ac7a4ec430000bd16463f}} 
+const \mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{chunk\+Rendering\+Data}} \& {\bfseries rendering\+Data} () const
+\begin{DoxyCompactList}\small\item\em Get this chunk\textquotesingle{}s rendering data object. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a862afb36daf6bbdc96c10d7554213e09}\label{class_voxel_eng_1_1chunk_a862afb36daf6bbdc96c10d7554213e09}} 
+unsigned int {\bfseries get\+NBlocks} ()
+\begin{DoxyCompactList}\small\item\em Get the number of non-\/null blocks (blocks with ID != 0) that exist in the chunk. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_abe62286c8ebf38be16e567fe9e1f4e34}\label{class_voxel_eng_1_1chunk_abe62286c8ebf38be16e567fe9e1f4e34}} 
+const std\+::atomic$<$ bool $>$ \& {\bfseries changed} () const
+\begin{DoxyCompactList}\small\item\em Returns true if this chunk\textquotesingle{}s terrain has been modified and it\textquotesingle{}s mesh needs to be regenerated or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a27f484b2799b9f61a28e2703923d01a3}\label{class_voxel_eng_1_1chunk_a27f484b2799b9f61a28e2703923d01a3}} 
+\mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunk\+Load\+Level}} {\bfseries load\+Level} () const
+\begin{DoxyCompactList}\small\item\em Returns the chunk\textquotesingle{}s load level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a919accbd6f45eadec872326b4c09f617}\label{class_voxel_eng_1_1chunk_a919accbd6f45eadec872326b4c09f617}} 
+block {\bfseries set\+Block} (GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ad3b81662997152ed8683eff7c5157e18}{x}}, GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_a95e7d07d8be650d931da8c475c654c9b}{y}}, GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ae4336641543713331d7828775acc88a8}{z}}, block block\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Sets the value of a block within the chunk. The chunk is marked as dirty. Returns the old ID of the modified block. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a2e3fd7f21775f6cced58c55c8127f0c1}\label{class_voxel_eng_1_1chunk_a2e3fd7f21775f6cced58c55c8127f0c1}} 
+block {\bfseries set\+Block} (const vec3 \&chunk\+Rel\+Pos, block block\+ID)
+\begin{DoxyCompactList}\small\item\em Sets the value of a block within the chunk. The chunk is marked as dirty. Returns the old ID of the modified block. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_acc3c3be1bc3cd250d8285bc5089a7810}\label{class_voxel_eng_1_1chunk_acc3c3be1bc3cd250d8285bc5089a7810}} 
+block {\bfseries set\+Block} (unsigned int linear\+Index, block block\+ID)
+\begin{DoxyCompactList}\small\item\em Sets the value of a block within the chunk. The chunk is marked as dirty. Returns the old ID of the modified block. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a2d35066388e14407b0c285db920dec8c}\label{class_voxel_eng_1_1chunk_a2d35066388e14407b0c285db920dec8c}} 
+vec3 \& {\bfseries chunk\+Pos} ()
+\begin{DoxyCompactList}\small\item\em Returns the chunk\textquotesingle{}s chunk position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a99b628de9fc67507d4f709ffdf97a15a}\label{class_voxel_eng_1_1chunk_a99b628de9fc67507d4f709ffdf97a15a}} 
+\mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{chunk\+Rendering\+Data}} \& {\bfseries rendering\+Data} ()
+\begin{DoxyCompactList}\small\item\em Returns the chunk\textquotesingle{}s rendering data object. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a176c87c2749b70066304df0390b969a4}\label{class_voxel_eng_1_1chunk_a176c87c2749b70066304df0390b969a4}} 
+void {\bfseries set\+NBlocks} (unsigned int n\+Blocks)
+\begin{DoxyCompactList}\small\item\em Set the number of non-\/null blocks in the chunk. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a3fa0c9fbcacdafd3cdab55f641cc4ee3}\label{class_voxel_eng_1_1chunk_a3fa0c9fbcacdafd3cdab55f641cc4ee3}} 
+std\+::shared\+\_\+mutex \& {\bfseries block\+Data\+Mutex} ()
+\begin{DoxyCompactList}\small\item\em Returns the chunk\textquotesingle{}s mutex that guards its block data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a00ea4fd676797c56a5dfff48e46566be}\label{class_voxel_eng_1_1chunk_a00ea4fd676797c56a5dfff48e46566be}} 
+std\+::atomic$<$ bool $>$ \& {\bfseries changed} ()
+\begin{DoxyCompactList}\small\item\em Returns true if this chunk\textquotesingle{}s terrain has been modified and it\textquotesingle{}s mesh needs to be regenerated or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_ab8ed26495e430a4aade2c3060ded0563}\label{class_voxel_eng_1_1chunk_ab8ed26495e430a4aade2c3060ded0563}} 
+void {\bfseries renew\+Mesh} ()
+\begin{DoxyCompactList}\small\item\em Regenerate the chunk\textquotesingle{}s mesh. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_aee9ec1887d171cb930306ecea627e8fc}\label{class_voxel_eng_1_1chunk_aee9ec1887d171cb930306ecea627e8fc}} 
+void {\bfseries make\+Empty} ()
+\begin{DoxyCompactList}\small\item\em The chunk\textquotesingle{}s block data will be filled with null blocks, leaving the chunk \char`\"{}empty of blocks\char`\"{}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a615b3151ccdbc2347c7aeee7f89f3d6a}\label{class_voxel_eng_1_1chunk_a615b3151ccdbc2347c7aeee7f89f3d6a}} 
+void {\bfseries set\+Load\+Level} (\mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunk\+Load\+Level}} level)
+\begin{DoxyCompactList}\small\item\em Set the chunk\textquotesingle{}s load level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_ae0d6b9e3c8d13bc5a7eecf92503e6200}\label{class_voxel_eng_1_1chunk_ae0d6b9e3c8d13bc5a7eecf92503e6200}} 
+void {\bfseries regen\+Chunk} (bool empty, const vec3 \&\mbox{\hyperlink{class_voxel_eng_1_1chunk_a32d88be52f3327693ea5f325a8cdf3b5}{chunk\+Pos}})
+\begin{DoxyCompactList}\small\item\em Reuse a chunk object by assigning it a new chunk position and generating/loading new terrain on it by previously cleaning any previous data. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a6d88f19a2eb9d8061b0bb697c04b0db0}\label{class_voxel_eng_1_1chunk_a6d88f19a2eb9d8061b0bb697c04b0db0}} 
+static void {\bfseries init} ()
+\begin{DoxyCompactList}\small\item\em Initialise static members of the chunk class. Allocate any resources that are needed on initialisation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_a65f0a9bb5c42cdaec62165d596a4450a}\label{class_voxel_eng_1_1chunk_a65f0a9bb5c42cdaec62165d596a4450a}} 
+static bool {\bfseries initialised} ()
+\begin{DoxyCompactList}\small\item\em Returns true if the static members of this class are initialised or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_ac010c0ca5e3a7d4bcc75d586e5f65520}\label{class_voxel_eng_1_1chunk_ac010c0ca5e3a7d4bcc75d586e5f65520}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em Clean up any resources allocated for the class\textquotesingle{} static methods. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Represents a section of the voxel world, with its blocks, mesh, position and other infomation. Chunks that are marked as \textquotesingle{}dirty\textquotesingle{} or \textquotesingle{}changed\textquotesingle{} will have their mesh regenerated. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{chunk_8h}{chunk.\+h}}\item 
+code/chunk.\+cpp\end{DoxyCompactItemize}

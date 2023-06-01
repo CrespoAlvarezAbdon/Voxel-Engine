@@ -1,0 +1,38 @@
+\hypertarget{batch_8h}{}\doxysection{code/batch.h File Reference}
+\label{batch_8h}\index{code/batch.h@{code/batch.h}}
+
+
+Contains the definition of the batch class, which is used to group the vertex data of one or more entities in order to optimise the draw calls performed by the engine.  
+
+
+{\ttfamily \#include $<$unordered\+\_\+set$>$}\newline
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$cstddef$>$}\newline
+{\ttfamily \#include \char`\"{}model.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}entity.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}game\+Window.\+h\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1batch}{Voxel\+Eng\+::batch}}
+\begin{DoxyCompactList}\small\item\em Collection of vertex data from the models of many entities. All the models which have their vertices in the same batch will be rendered in one draw call. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{batch_8h_a8a8cc162f6b60de951f8c5c52ded94a8}\label{batch_8h_a8a8cc162f6b60de951f8c5c52ded94a8}} 
+const unsigned int {\bfseries Voxel\+Eng\+::\+BATCH\+\_\+\+MAX\+\_\+\+VERTEX\+\_\+\+COUNT} = 10000
+\begin{DoxyCompactList}\small\item\em The maximum number of vertices a batch can hold. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the definition of the batch class, which is used to group the vertex data of one or more entities in order to optimise the draw calls performed by the engine. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+20/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title Batch. 
+\end{DoxyAuthor}

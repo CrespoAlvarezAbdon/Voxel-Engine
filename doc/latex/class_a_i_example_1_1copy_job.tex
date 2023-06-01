@@ -1,0 +1,81 @@
+\hypertarget{class_a_i_example_1_1copy_job}{}\doxysection{AIExample\+::copy\+Job Class Reference}
+\label{class_a_i_example_1_1copy_job}\index{AIExample::copyJob@{AIExample::copyJob}}
+
+
+Derives from \textquotesingle{}job\textquotesingle{} class at \mbox{\hyperlink{thread_pool_8h}{thread\+Pool.\+h}}. Used to represent jobs related to the heavy processing parts of the training process that will be completed by worker threads. In this particular case, this class is created for processing the copy of individuals.  
+
+
+
+
+{\ttfamily \#include $<$genetic.\+h$>$}
+
+Inheritance diagram for AIExample\+::copy\+Job\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_a_i_example_1_1copy_job}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_a_i_example_1_1copy_job_ac12bbef34e6329b8d5196338136c0290}{copy\+Job}} (std\+::size\+\_\+t range\+Start, std\+::size\+\_\+t range\+End, const \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}} $\ast$parent, std\+::vector$<$ \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}} $>$ $\ast$individuals, unsigned int $\ast$newborn\+Inds)
+\begin{DoxyCompactList}\small\item\em Class constructor. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_a_i_example_1_1copy_job_aedbcee32a78378d6ac9835068714341a}{set\+Attributes}} (std\+::size\+\_\+t range\+Start, std\+::size\+\_\+t range\+End, const \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}} $\ast$parent, std\+::vector$<$ \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}} $>$ $\ast$individuals, unsigned int $\ast$newborn\+Inds)
+\begin{DoxyCompactList}\small\item\em Instead of creating and deleting \mbox{\hyperlink{class_a_i_example_1_1copy_job}{copy\+Job}} objects, this method allows to reassing the object\textquotesingle{}s attributes in order to reuse objects. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Derives from \textquotesingle{}job\textquotesingle{} class at \mbox{\hyperlink{thread_pool_8h}{thread\+Pool.\+h}}. Used to represent jobs related to the heavy processing parts of the training process that will be completed by worker threads. In this particular case, this class is created for processing the copy of individuals. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{class_a_i_example_1_1copy_job_ac12bbef34e6329b8d5196338136c0290}\label{class_a_i_example_1_1copy_job_ac12bbef34e6329b8d5196338136c0290}} 
+\index{AIExample::copyJob@{AIExample::copyJob}!copyJob@{copyJob}}
+\index{copyJob@{copyJob}!AIExample::copyJob@{AIExample::copyJob}}
+\doxysubsubsection{\texorpdfstring{copyJob()}{copyJob()}}
+{\footnotesize\ttfamily AIExample\+::copy\+Job\+::copy\+Job (\begin{DoxyParamCaption}\item[{std\+::size\+\_\+t}]{range\+Start,  }\item[{std\+::size\+\_\+t}]{range\+End,  }\item[{const \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}} $\ast$}]{parent,  }\item[{std\+::vector$<$ \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}} $>$ $\ast$}]{individuals,  }\item[{unsigned int $\ast$}]{newborn\+Inds }\end{DoxyParamCaption})}
+
+
+
+Class constructor. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em The} & beginning of the range of individuals to process. \\
+\hline
+{\em The} & end of the range of individuals to process. \\
+\hline
+{\em The} & start of the array that holds the fitness value of the individuals. \\
+\hline
+{\em The} & start of the array that holds the individuals indices for accessing their neural networks. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_a_i_example_1_1copy_job_aedbcee32a78378d6ac9835068714341a}\label{class_a_i_example_1_1copy_job_aedbcee32a78378d6ac9835068714341a}} 
+\index{AIExample::copyJob@{AIExample::copyJob}!setAttributes@{setAttributes}}
+\index{setAttributes@{setAttributes}!AIExample::copyJob@{AIExample::copyJob}}
+\doxysubsubsection{\texorpdfstring{setAttributes()}{setAttributes()}}
+{\footnotesize\ttfamily void AIExample\+::copy\+Job\+::set\+Attributes (\begin{DoxyParamCaption}\item[{std\+::size\+\_\+t}]{range\+Start,  }\item[{std\+::size\+\_\+t}]{range\+End,  }\item[{const \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}} $\ast$}]{parent,  }\item[{std\+::vector$<$ \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}} $>$ $\ast$}]{individuals,  }\item[{unsigned int $\ast$}]{newborn\+Inds }\end{DoxyParamCaption})}
+
+
+
+Instead of creating and deleting \mbox{\hyperlink{class_a_i_example_1_1copy_job}{copy\+Job}} objects, this method allows to reassing the object\textquotesingle{}s attributes in order to reuse objects. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em The} & beginning of the range of individuals to process. \\
+\hline
+{\em The} & end of the range of individuals to process. \\
+\hline
+{\em The} & start of the array that holds the fitness value of the individuals. \\
+\hline
+{\em The} & start of the array that holds the individuals indices for accessing their neural networks. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\+AI/\mbox{\hyperlink{genetic_8h}{genetic.\+h}}\item 
+code/\+AI/genetic.\+cpp\end{DoxyCompactItemize}

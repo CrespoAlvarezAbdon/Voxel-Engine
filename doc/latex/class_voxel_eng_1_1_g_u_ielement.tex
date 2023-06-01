@@ -1,0 +1,152 @@
+\hypertarget{class_voxel_eng_1_1_g_u_ielement}{}\doxysection{Voxel\+Eng\+::GUIelement Class Reference}
+\label{class_voxel_eng_1_1_g_u_ielement}\index{VoxelEng::GUIelement@{VoxelEng::GUIelement}}
+
+
+Base class that defines everything that a GUI element should at least have.  
+
+
+
+
+{\ttfamily \#include $<$gui.\+h$>$}
+
+Inheritance diagram for Voxel\+Eng\+::GUIelement\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_voxel_eng_1_1_g_u_ielement}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a8bfe8a491be4d88cdb28cdd807dcce9f}\label{class_voxel_eng_1_1_g_u_ielement_a8bfe8a491be4d88cdb28cdd807dcce9f}} 
+const void $\ast$ {\bfseries vertex\+Data} () const
+\begin{DoxyCompactList}\small\item\em Get the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}\textquotesingle{}s vertex data. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a9db697151ac4f41c1fcd5c512ba84839}\label{class_voxel_eng_1_1_g_u_ielement_a9db697151ac4f41c1fcd5c512ba84839}} 
+size\+\_\+t {\bfseries n\+Vertices} () const
+\begin{DoxyCompactList}\small\item\em Get the number of vertices of the element\textquotesingle{}s mesh. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a1092e002309e4443d88af1f55b35a7d5}\label{class_voxel_eng_1_1_g_u_ielement_a1092e002309e4443d88af1f55b35a7d5}} 
+bool {\bfseries is\+Enabled} () const
+\begin{DoxyCompactList}\small\item\em Returns true if the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} is enabled (can be displayed and can receive input from other sources such as user input) or false otherwise. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_abf984e82ff9ced5a6a6a5d9e145004e1}\label{class_voxel_eng_1_1_g_u_ielement_abf984e82ff9ced5a6a6a5d9e145004e1}} 
+const std\+::string \& {\bfseries name} () const
+\begin{DoxyCompactList}\small\item\em Get the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}\textquotesingle{}s unique name. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a818c8b607a844054b32dea64ac676672}\label{class_voxel_eng_1_1_g_u_ielement_a818c8b607a844054b32dea64ac676672}} 
+const \mbox{\hyperlink{gui_8h_add5159333ccf3fc175fbf39b02502127}{GUIcontainer}} \& {\bfseries get\+GUIContainer} () const
+\begin{DoxyCompactList}\small\item\em Get the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}\textquotesingle{}s GUIcontainer that is associated with. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a42654ffed596c755c3bc84209969004b}\label{class_voxel_eng_1_1_g_u_ielement_a42654ffed596c755c3bc84209969004b}} 
+const unsigned int \& {\bfseries texture\+ID} () const
+\begin{DoxyCompactList}\small\item\em Get the texture ID of the mesh used by the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a132e36375062e85bd40abd0038b6babc}\label{class_voxel_eng_1_1_g_u_ielement_a132e36375062e85bd40abd0038b6babc}} 
+const std\+::unordered\+\_\+set$<$ unsigned int $>$ {\bfseries children} () const
+\begin{DoxyCompactList}\small\item\em Contains the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} IDs of the children of this \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a3b10cbfef6c2961671640569a6432c02}\label{class_voxel_eng_1_1_g_u_ielement_a3b10cbfef6c2961671640569a6432c02}} 
+const vec2 \& {\bfseries original\+Pos} () const
+\begin{DoxyCompactList}\small\item\em Returns the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}\textquotesingle{}s original position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a7689cc63c0218972d8dabb127ca971ad}\label{class_voxel_eng_1_1_g_u_ielement_a7689cc63c0218972d8dabb127ca971ad}} 
+const vec2 \& {\bfseries original\+Size} () const
+\begin{DoxyCompactList}\small\item\em Returns the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}\textquotesingle{}s original size. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_abd2c40481b2a4ca6804816dc7bb9c256}\label{class_voxel_eng_1_1_g_u_ielement_abd2c40481b2a4ca6804816dc7bb9c256}} 
+const vec2 \& {\bfseries true\+Pos} () const
+\begin{DoxyCompactList}\small\item\em Returns the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}\textquotesingle{}s position taking into account things like the graphics API\textquotesingle{}s aspect ratio. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a815a6004e0200f906c9927c0429272d6}\label{class_voxel_eng_1_1_g_u_ielement_a815a6004e0200f906c9927c0429272d6}} 
+void {\bfseries change\+Texture\+ID} (unsigned int new\+Texture\+ID)
+\begin{DoxyCompactList}\small\item\em Changes the texture being used by the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a8ca21dddb22b518856e3a593991bf40f}\label{class_voxel_eng_1_1_g_u_ielement_a8ca21dddb22b518856e3a593991bf40f}} 
+void {\bfseries lock\+Mutex} ()
+\begin{DoxyCompactList}\small\item\em Locks the mutex associated with the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. WARNING. Will throw exception if the mutex is already locked. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_ac0999f69a6055651892f43a620ef2844}\label{class_voxel_eng_1_1_g_u_ielement_ac0999f69a6055651892f43a620ef2844}} 
+void {\bfseries unlock\+Mutex} ()
+\begin{DoxyCompactList}\small\item\em Unlocks the mutex associated with the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. WARNING. Undefined behaviour if called before a corresponding call to \textquotesingle{}lock\+Mutex\textquotesingle{} on the same object. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_ad73c078046b50470428f035b385cb54f}\label{class_voxel_eng_1_1_g_u_ielement_ad73c078046b50470428f035b385cb54f}} 
+void {\bfseries apply\+Aspect\+Ratio} (float aspect\+Ratio)
+\begin{DoxyCompactList}\small\item\em Apply the current aspect ratio to the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a10736501f66eef11e1685cd7cc5c7141}\label{class_voxel_eng_1_1_g_u_ielement_a10736501f66eef11e1685cd7cc5c7141}} 
+virtual bool {\bfseries gets\+Input\+From\+Touch} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_aaafea8acbed57c2dc3cf9d5a386ef434}\label{class_voxel_eng_1_1_g_u_ielement_aaafea8acbed57c2dc3cf9d5a386ef434}} 
+virtual void {\bfseries gen\+Vertex\+Data} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a8eea90d75250344cb0ec6c3e068f7810}\label{class_voxel_eng_1_1_g_u_ielement_a8eea90d75250344cb0ec6c3e068f7810}} 
+virtual void {\bfseries add\+Textures} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a63ebe31ebd7cc70f8b5ec6dafe54e295}\label{class_voxel_eng_1_1_g_u_ielement_a63ebe31ebd7cc70f8b5ec6dafe54e295}} 
+void {\bfseries execute\+Key\+Action} ()
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a7402d8b7546aada362342ada16bb362d}\label{class_voxel_eng_1_1_g_u_ielement_a7402d8b7546aada362342ada16bb362d}} 
+void {\bfseries execute\+Mouse\+Button\+Action} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a14757159ee08d639ea23c40d3e88e88c}\label{class_voxel_eng_1_1_g_u_ielement_a14757159ee08d639ea23c40d3e88e88c}} 
+std\+::string {\bfseries name\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a77a48ee1da84585f9fd9310f8396acb7}\label{class_voxel_eng_1_1_g_u_ielement_a77a48ee1da84585f9fd9310f8396acb7}} 
+vec2 {\bfseries original\+Pos\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_ac83068f8cd285ed260744324289e6cf9}\label{class_voxel_eng_1_1_g_u_ielement_ac83068f8cd285ed260744324289e6cf9}} 
+vec2 {\bfseries original\+Size\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a727dc9490935f18754e4fc53f90c6194}\label{class_voxel_eng_1_1_g_u_ielement_a727dc9490935f18754e4fc53f90c6194}} 
+vec2 {\bfseries true\+Pos\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_ab933713b32e0a3ddcae13aa24c07ea6b}\label{class_voxel_eng_1_1_g_u_ielement_ab933713b32e0a3ddcae13aa24c07ea6b}} 
+vec2 {\bfseries translated\+Pos\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a959109cc910f4dbef8ac8f2acd882213}\label{class_voxel_eng_1_1_g_u_ielement_a959109cc910f4dbef8ac8f2acd882213}} 
+unsigned int {\bfseries texture\+ID\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a1f86bb36bc9396ed7715ceb7882c29dc}\label{class_voxel_eng_1_1_g_u_ielement_a1f86bb36bc9396ed7715ceb7882c29dc}} 
+unsigned int {\bfseries GUILayer\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a89bf4256e6d4dd8acf7a78d5a53f8382}\label{class_voxel_eng_1_1_g_u_ielement_a89bf4256e6d4dd8acf7a78d5a53f8382}} 
+bool {\bfseries enabled\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_ae359097acc56731ac12e18a96f60ad26}\label{class_voxel_eng_1_1_g_u_ielement_ae359097acc56731ac12e18a96f60ad26}} 
+bool {\bfseries old\+Activation\+Event\+Received\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a8bc5c9b5c5babf267530a4063431a9a7}\label{class_voxel_eng_1_1_g_u_ielement_a8bc5c9b5c5babf267530a4063431a9a7}} 
+std\+::vector$<$ \mbox{\hyperlink{struct_voxel_eng_1_1vertex2_d}{vertex2D}} $>$ {\bfseries vertices\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a0d10d3c476ee5dae4c6bc8f34860eb13}\label{class_voxel_eng_1_1_g_u_ielement_a0d10d3c476ee5dae4c6bc8f34860eb13}} 
+std\+::unordered\+\_\+set$<$ unsigned int $>$ {\bfseries children\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a878b83b9eb51385318d9f67735eadcae}\label{class_voxel_eng_1_1_g_u_ielement_a878b83b9eb51385318d9f67735eadcae}} 
+\mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} $\ast$ {\bfseries parent\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_aced59a5e74fc38243a820e51a2532378}\label{class_voxel_eng_1_1_g_u_ielement_aced59a5e74fc38243a820e51a2532378}} 
+void($\ast$ {\bfseries Key\+Func\+Ptr\+\_\+} )()
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a1b558d6375afb90db05a9871d1e02d0a}\label{class_voxel_eng_1_1_g_u_ielement_a1b558d6375afb90db05a9871d1e02d0a}} 
+void($\ast$ {\bfseries Mouse\+Button\+Func\+Ptr\+\_\+} )()
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_ae5479c0684b351f0c8c9bc6845db818c}\label{class_voxel_eng_1_1_g_u_ielement_ae5479c0684b351f0c8c9bc6845db818c}} 
+\mbox{\hyperlink{gui_8h_add5159333ccf3fc175fbf39b02502127}{GUIcontainer}} {\bfseries GUIContainer\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a9c4a71586527df3a4e3977ba78ce05c0}\label{class_voxel_eng_1_1_g_u_ielement_a9c4a71586527df3a4e3977ba78ce05c0}} 
+std\+::mutex {\bfseries GUIElement\+Mutex\+\_\+}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a1c877ac0f746a3e616edd2c32a81d332}\label{class_voxel_eng_1_1_g_u_ielement_a1c877ac0f746a3e616edd2c32a81d332}} 
+static const \mbox{\hyperlink{class_voxel_eng_1_1window}{window}} $\ast$ {\bfseries window\+\_\+} = nullptr
+\end{DoxyCompactItemize}
+\doxysubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_ielement_a8277ed6e5d8da2c9e0b075e0f918132f}\label{class_voxel_eng_1_1_g_u_ielement_a8277ed6e5d8da2c9e0b075e0f918132f}} 
+class {\bfseries GUImanager}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Base class that defines everything that a GUI element should at least have. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{gui_8h}{gui.\+h}}\item 
+code/gui.\+cpp\end{DoxyCompactItemize}

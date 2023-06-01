@@ -1,0 +1,49 @@
+\hypertarget{_g_u_ifunctions_8h}{}\doxysection{code/\+GUIfunctions.h File Reference}
+\label{_g_u_ifunctions_8h}\index{code/GUIfunctions.h@{code/GUIfunctions.h}}
+
+
+Contains the declaration of the GUIfunctions, which are functions that are related to altering or accesing any aspect of the engine\textquotesingle{}s GUI.  
+
+
+{\ttfamily \#include \char`\"{}game.\+h\char`\"{}}\newline
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{_g_u_ifunctions_8cpp_aa511d6927a7152b50d37770171cb015d}\label{_g_u_ifunctions_8cpp_aa511d6927a7152b50d37770171cb015d}} 
+void {\bfseries Voxel\+Eng\+::\+GUIfunctions\+::change\+State\+Level\+Menu} ()
+\begin{DoxyCompactList}\small\item\em Change the active state of the in-\/level menu. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_g_u_ifunctions_8cpp_aa0f406d95093548f05e2b866a077657a}\label{_g_u_ifunctions_8cpp_aa0f406d95093548f05e2b866a077657a}} 
+void {\bfseries Voxel\+Eng\+::\+GUIfunctions\+::show\+Load\+Menu} ()
+\begin{DoxyCompactList}\small\item\em Show the level slot load menu. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_g_u_ifunctions_8cpp_ab7bcec59858150a51a8c7cc1c1676e7e}\label{_g_u_ifunctions_8cpp_ab7bcec59858150a51a8c7cc1c1676e7e}} 
+void {\bfseries Voxel\+Eng\+::\+GUIfunctions\+::hide\+Load\+Menu} ()
+\begin{DoxyCompactList}\small\item\em Hide the level slot load menu. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_g_u_ifunctions_8cpp_a626b4aeda6cb5bad40389a23da0e47b8}\label{_g_u_ifunctions_8cpp_a626b4aeda6cb5bad40389a23da0e47b8}} 
+void {\bfseries Voxel\+Eng\+::\+GUIfunctions\+::show\+Save\+Menu} ()
+\begin{DoxyCompactList}\small\item\em Show the level slot save menu. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_g_u_ifunctions_8cpp_a99f4816836b14b99423a411d6fb9161d}\label{_g_u_ifunctions_8cpp_a99f4816836b14b99423a411d6fb9161d}} 
+void {\bfseries Voxel\+Eng\+::\+GUIfunctions\+::hide\+Save\+Menu} ()
+\begin{DoxyCompactList}\small\item\em Hide the level slot save menu. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_g_u_ifunctions_8cpp_a7a7016d5227b10efc48e52d9f5037f7f}\label{_g_u_ifunctions_8cpp_a7a7016d5227b10efc48e52d9f5037f7f}} 
+void {\bfseries Voxel\+Eng\+::\+GUIfunctions\+::enter\+New\+Level} ()
+\begin{DoxyCompactList}\small\item\em Proceed to generate a new level and load it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_g_u_ifunctions_8cpp_a9a610e7630f75ddf23b735f2d629e505}\label{_g_u_ifunctions_8cpp_a9a610e7630f75ddf23b735f2d629e505}} 
+void {\bfseries Voxel\+Eng\+::\+GUIfunctions\+::access\+Save\+Slot} ()
+\begin{DoxyCompactList}\small\item\em Access the corresponding save slot associated with the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ibutton}{GUIbutton}} that called this function with the set slot access type specified in the \textquotesingle{}game\textquotesingle{} class. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_g_u_ifunctions_8cpp_acc9a49e331d0e6e099013c1c28a53adf}\label{_g_u_ifunctions_8cpp_acc9a49e331d0e6e099013c1c28a53adf}} 
+void {\bfseries Voxel\+Eng\+::\+GUIfunctions\+::exit} ()
+\begin{DoxyCompactList}\small\item\em Exit into the upper level of execution of the engine. For example, if the engine is currently with the graphical part turned ON and with a level loaded and rendered with the user editing it and this function is called, then the engine will return to the graphical main menu. If the function is called again, the engine will turn off its graphical part and display the console menu. Finally, if the function is executed another time, then the engine will end its execution. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the declaration of the GUIfunctions, which are functions that are related to altering or accesing any aspect of the engine\textquotesingle{}s GUI. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+25/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title GUIfunctions. 
+\end{DoxyAuthor}

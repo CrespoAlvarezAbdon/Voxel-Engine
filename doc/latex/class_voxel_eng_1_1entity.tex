@@ -1,0 +1,116 @@
+\hypertarget{class_voxel_eng_1_1entity}{}\doxysection{Voxel\+Eng\+::entity Class Reference}
+\label{class_voxel_eng_1_1entity}\index{VoxelEng::entity@{VoxelEng::entity}}
+
+
+An entity possess a custom 3D model as its representation inside a level and is capable of being associated with actions that affect other entities or the level itself.  
+
+
+
+
+{\ttfamily \#include $<$entity.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_aa9615778957e20a8dc9576e9dc2790a9}\label{class_voxel_eng_1_1entity_aa9615778957e20a8dc9576e9dc2790a9}} 
+{\bfseries entity} (unsigned int model\+ID, const vec3 \&\mbox{\hyperlink{class_voxel_eng_1_1entity_a1285af7d130fd850d7805ff8a5422ec1}{pos}}, const vec3 \&\mbox{\hyperlink{class_voxel_eng_1_1entity_a2214619bb7ff55f033bb1ff37dc2833d}{rot}}, tick\+Func func=nullptr)
+\begin{DoxyCompactList}\small\item\em Class constructor. WARNING. To create an entity use \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_aa7853f264e6d6dd2d878cb4da6918cb5}{entity\+Manager\+::register\+Entity()}}. Otherwise the created entity will not be registered in the entity management system. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a1285af7d130fd850d7805ff8a5422ec1}\label{class_voxel_eng_1_1entity_a1285af7d130fd850d7805ff8a5422ec1}} 
+const vec3 \& {\bfseries pos} () const
+\begin{DoxyCompactList}\small\item\em Get the entity\textquotesingle{}s position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_afd47c6e14c066021e632d7580d933306}\label{class_voxel_eng_1_1entity_afd47c6e14c066021e632d7580d933306}} 
+float {\bfseries x} () const
+\begin{DoxyCompactList}\small\item\em Get entity\textquotesingle{}s postion in X axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_ab2683b8974ab427956fdc3b4c1104e47}\label{class_voxel_eng_1_1entity_ab2683b8974ab427956fdc3b4c1104e47}} 
+float {\bfseries y} () const
+\begin{DoxyCompactList}\small\item\em Get entity\textquotesingle{}s postion in Y axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_aafcab1ad679953bfe604ebe7ef839cd0}\label{class_voxel_eng_1_1entity_aafcab1ad679953bfe604ebe7ef839cd0}} 
+float {\bfseries z} () const
+\begin{DoxyCompactList}\small\item\em Get entity\textquotesingle{}s postion in Z axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a2214619bb7ff55f033bb1ff37dc2833d}\label{class_voxel_eng_1_1entity_a2214619bb7ff55f033bb1ff37dc2833d}} 
+const vec3 \& {\bfseries rot} () const
+\begin{DoxyCompactList}\small\item\em Get the entity\textquotesingle{}s rotation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_ad1ed40f5fb7328107d6c404939dcdaa4}\label{class_voxel_eng_1_1entity_ad1ed40f5fb7328107d6c404939dcdaa4}} 
+const \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}} \& {\bfseries entity\+Model} () const
+\begin{DoxyCompactList}\small\item\em Get the entity\textquotesingle{}s model. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a005e5c333d44a9ff291e2a874f8edf7c}\label{class_voxel_eng_1_1entity_a005e5c333d44a9ff291e2a874f8edf7c}} 
+bool {\bfseries update\+XRotation} () const
+\begin{DoxyCompactList}\small\item\em Flag to check if model X rotation needs to be updated in the model\textquotesingle{}s vertices. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_aa1069a57d69797b0707c8759d71f5669}\label{class_voxel_eng_1_1entity_aa1069a57d69797b0707c8759d71f5669}} 
+bool {\bfseries update\+YRotation} () const
+\begin{DoxyCompactList}\small\item\em Flag to check if model Y rotation needs to be updated in the model\textquotesingle{}s vertices. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a0e881ed5053d6172fd32834dc163ffeb}\label{class_voxel_eng_1_1entity_a0e881ed5053d6172fd32834dc163ffeb}} 
+bool {\bfseries update\+ZRotation} () const
+\begin{DoxyCompactList}\small\item\em Flag to check if model Z rotation needs to be updated in the model\textquotesingle{}s vertices. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_abeec3dc36ea01e45efba55a058009ab2}\label{class_voxel_eng_1_1entity_abeec3dc36ea01e45efba55a058009ab2}} 
+float {\bfseries sin\+AngleX} () const
+\begin{DoxyCompactList}\small\item\em Get sin(entity\textquotesingle{}s last rotation angle) in X-\/axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a73cfffadb1adf87769ed5541dc7d2b50}\label{class_voxel_eng_1_1entity_a73cfffadb1adf87769ed5541dc7d2b50}} 
+float {\bfseries cos\+AngleX} () const
+\begin{DoxyCompactList}\small\item\em Get cos(entity\textquotesingle{}s last rotation angle) in X-\/axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_ae9ee7aaa49c95251e96b6d6648ca73c6}\label{class_voxel_eng_1_1entity_ae9ee7aaa49c95251e96b6d6648ca73c6}} 
+float {\bfseries sin\+AngleY} () const
+\begin{DoxyCompactList}\small\item\em Get sin(entity\textquotesingle{}s last rotation angle) in Y-\/axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a31e6f504576112c7909ca3300a3718a2}\label{class_voxel_eng_1_1entity_a31e6f504576112c7909ca3300a3718a2}} 
+float {\bfseries cos\+AngleY} () const
+\begin{DoxyCompactList}\small\item\em Get cos(entity\textquotesingle{}s last rotation angle) in Y-\/axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_ab8322ddd77fa244c8738971bae4573c2}\label{class_voxel_eng_1_1entity_ab8322ddd77fa244c8738971bae4573c2}} 
+float {\bfseries sin\+AngleZ} () const
+\begin{DoxyCompactList}\small\item\em Get sin(entity\textquotesingle{}s last rotation angle) in Z-\/axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a1ee1634aa0845f729b4271ef9a6c232b}\label{class_voxel_eng_1_1entity_a1ee1634aa0845f729b4271ef9a6c232b}} 
+float {\bfseries cos\+AngleZ} () const
+\begin{DoxyCompactList}\small\item\em Get cos(entity\textquotesingle{}s last rotation angle) in Z-\/axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_ac6cd183cbb42b90c0ad8d97022a754eb}\label{class_voxel_eng_1_1entity_ac6cd183cbb42b90c0ad8d97022a754eb}} 
+vec3 \& {\bfseries pos} ()
+\begin{DoxyCompactList}\small\item\em Get the entity\textquotesingle{}s position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a7f16f26afd73ac403731014d18fdefc6}\label{class_voxel_eng_1_1entity_a7f16f26afd73ac403731014d18fdefc6}} 
+float \& {\bfseries x} ()
+\begin{DoxyCompactList}\small\item\em Set entity\textquotesingle{}s postion in X axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_ae7dfcd4c47c03a32f9b2074c2691d320}\label{class_voxel_eng_1_1entity_ae7dfcd4c47c03a32f9b2074c2691d320}} 
+float \& {\bfseries y} ()
+\begin{DoxyCompactList}\small\item\em Set entity\textquotesingle{}s postion in Y axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a2d0fb22d3b126bb57d93b71ea37c6f32}\label{class_voxel_eng_1_1entity_a2d0fb22d3b126bb57d93b71ea37c6f32}} 
+float \& {\bfseries z} ()
+\begin{DoxyCompactList}\small\item\em Set entity\textquotesingle{}s postion in Z axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a4eabd3324ea51f78d31f92a8075f38b3}\label{class_voxel_eng_1_1entity_a4eabd3324ea51f78d31f92a8075f38b3}} 
+void {\bfseries set\+Model\+ID} (unsigned int model\+ID)
+\begin{DoxyCompactList}\small\item\em Change the entity\textquotesingle{}s model. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a848f9cde6416ee615777959963d0377c}\label{class_voxel_eng_1_1entity_a848f9cde6416ee615777959963d0377c}} 
+void {\bfseries rotate} (const vec3 \&rotation)
+\begin{DoxyCompactList}\small\item\em Rotate the entity. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_aa95ee73d580a626a84f187b598b5fa34}\label{class_voxel_eng_1_1entity_aa95ee73d580a626a84f187b598b5fa34}} 
+void {\bfseries rotate} (float \mbox{\hyperlink{class_voxel_eng_1_1entity_afd47c6e14c066021e632d7580d933306}{x}}, float \mbox{\hyperlink{class_voxel_eng_1_1entity_ab2683b8974ab427956fdc3b4c1104e47}{y}}, float \mbox{\hyperlink{class_voxel_eng_1_1entity_aafcab1ad679953bfe604ebe7ef839cd0}{z}})
+\begin{DoxyCompactList}\small\item\em Rotate the entity. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_ad71a4f3666befa0913a796e459d4ef20}\label{class_voxel_eng_1_1entity_ad71a4f3666befa0913a796e459d4ef20}} 
+void {\bfseries rotateX} (float angle)
+\begin{DoxyCompactList}\small\item\em Rotate the entity\textquotesingle{}s model in the X-\/axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a2b79320ecc788e22a4fcbc2b33844be4}\label{class_voxel_eng_1_1entity_a2b79320ecc788e22a4fcbc2b33844be4}} 
+void {\bfseries rotateY} (float angle)
+\begin{DoxyCompactList}\small\item\em Rotate the entity\textquotesingle{}s model in the Y-\/axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_af9a1548997ce9989f908a9360c7b5684}\label{class_voxel_eng_1_1entity_af9a1548997ce9989f908a9360c7b5684}} 
+void {\bfseries rotateZ} (float angle)
+\begin{DoxyCompactList}\small\item\em Rotate the entity\textquotesingle{}s model in the Z-\/axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a15a54c6ff0ca4d38db306f61e24c993f}\label{class_voxel_eng_1_1entity_a15a54c6ff0ca4d38db306f61e24c993f}} 
+void {\bfseries rotate\+View} (const vec3 \&rotation)
+\begin{DoxyCompactList}\small\item\em Rotates the entity\textquotesingle{}s view direction, considered as a vector with direction towards the front of the model, and consequently rotates the entity\textquotesingle{}s model so that said view direction vector still points to the model\textquotesingle{}s front. The vec3 direction is considered to contain the roll, pitch and yaw angles in said order, with the roll angle being the first element. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a92e0b002db8f1e754274fd4fe7435083}\label{class_voxel_eng_1_1entity_a92e0b002db8f1e754274fd4fe7435083}} 
+void {\bfseries rotate\+View} (float roll, float pitch, float yaw)
+\begin{DoxyCompactList}\small\item\em Rotates the entity\textquotesingle{}s view direction, considered as a vector with direction towards the front of the model, and consequently rotates the entity\textquotesingle{}s model so that said view direction vector still points to the model\textquotesingle{}s front. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_af211e45a00eadc7f5415d2d3d5bcf253}\label{class_voxel_eng_1_1entity_af211e45a00eadc7f5415d2d3d5bcf253}} 
+void {\bfseries rotate\+View\+Roll} (float angle)
+\begin{DoxyCompactList}\small\item\em Rotates the entity\textquotesingle{}s view direction (only the roll angle), considered as a vector with direction towards the front of the model, and consequently rotates the entity\textquotesingle{}s model so that said view direction vector still points to the model\textquotesingle{}s front. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_ab2532e2bdcdf75c6278d42b1d2c0b064}\label{class_voxel_eng_1_1entity_ab2532e2bdcdf75c6278d42b1d2c0b064}} 
+void {\bfseries rotate\+View\+Pitch} (float angle)
+\begin{DoxyCompactList}\small\item\em Rotates the entity\textquotesingle{}s view direction (only the pitch angle), considered as a vector with direction towards the front of the model, and consequently rotates the entity\textquotesingle{}s model so that said view direction vector still points to the model\textquotesingle{}s front. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_a40f213fad022f82892e573413d84824d}\label{class_voxel_eng_1_1entity_a40f213fad022f82892e573413d84824d}} 
+void {\bfseries rotate\+View\+Yaw} (float angle)
+\begin{DoxyCompactList}\small\item\em Rotates the entity\textquotesingle{}s view direction (only the yaw angle), considered as a vector with direction towards the front of the model, and consequently rotates the entity\textquotesingle{}s model so that said view direction vector still points to the model\textquotesingle{}s front. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+An entity possess a custom 3D model as its representation inside a level and is capable of being associated with actions that affect other entities or the level itself. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{entity_8h}{entity.\+h}}\item 
+code/entity.\+cpp\end{DoxyCompactItemize}

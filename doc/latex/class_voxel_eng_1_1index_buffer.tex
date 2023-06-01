@@ -1,0 +1,41 @@
+\hypertarget{class_voxel_eng_1_1index_buffer}{}\doxysection{Voxel\+Eng\+::index\+Buffer Class Reference}
+\label{class_voxel_eng_1_1index_buffer}\index{VoxelEng::indexBuffer@{VoxelEng::indexBuffer}}
+
+
+Abstraction of an IBO (index buffer object) that holds indices to vertices.  
+
+
+
+
+{\ttfamily \#include $<$index\+Buffer.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1index_buffer_a231aff76eb3ff4ca00a27868de80e8fb}\label{class_voxel_eng_1_1index_buffer_a231aff76eb3ff4ca00a27868de80e8fb}} 
+{\bfseries index\+Buffer} ()
+\begin{DoxyCompactList}\small\item\em Class constructor. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1index_buffer_ae7ced995798ccd9bb6618614c087f407}\label{class_voxel_eng_1_1index_buffer_ae7ced995798ccd9bb6618614c087f407}} 
+unsigned int {\bfseries n\+Indices} () const
+\begin{DoxyCompactList}\small\item\em Returns the number of indices stored. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1index_buffer_aeceb0f593a84f0f9699dd12fccbf57fa}\label{class_voxel_eng_1_1index_buffer_aeceb0f593a84f0f9699dd12fccbf57fa}} 
+void {\bfseries prepare\+Static} (const unsigned int $\ast$data, unsigned int indices\+Count)
+\begin{DoxyCompactList}\small\item\em Supply the buffer with vertex data (static geometry). WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1index_buffer_ae6cb26d2bd5bc10ad696d8c05ec46769}\label{class_voxel_eng_1_1index_buffer_ae6cb26d2bd5bc10ad696d8c05ec46769}} 
+void {\bfseries bind} () const
+\begin{DoxyCompactList}\small\item\em Bind the IBO to the corresponding graphics API context of the thread from which a call to this method was made. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1index_buffer_a6b8cd2ba2e49ff95ed61420466475693}\label{class_voxel_eng_1_1index_buffer_a6b8cd2ba2e49ff95ed61420466475693}} 
+void {\bfseries unbind} () const
+\begin{DoxyCompactList}\small\item\em Unbind the IBO to the corresponding graphics API context of the thread from which a call to this method was made. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1index_buffer_a52c1a6357415e3cdea6cd0454df2d37d}\label{class_voxel_eng_1_1index_buffer_a52c1a6357415e3cdea6cd0454df2d37d}} 
+{\bfseries $\sim$index\+Buffer} ()
+\begin{DoxyCompactList}\small\item\em Class destructor. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Abstraction of an IBO (index buffer object) that holds indices to vertices. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{index_buffer_8h}{index\+Buffer.\+h}}\item 
+code/index\+Buffer.\+cpp\end{DoxyCompactItemize}

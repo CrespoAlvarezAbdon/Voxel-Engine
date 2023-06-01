@@ -1,0 +1,36 @@
+\hypertarget{genetic_8h}{}\doxysection{code/\+AI/genetic.h File Reference}
+\label{genetic_8h}\index{code/AI/genetic.h@{code/AI/genetic.h}}
+
+
+Contains the implementation of the genetic algorithms used in the example AI game along with the training, testing and recording processes and auxiliary data structures and functions.  
+
+
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$cstddef$>$}\newline
+{\ttfamily \#include $<$arrayfire.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}NN.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}../thread\+Pool.\+h\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_a_i_example_1_1genetic_job}{AIExample\+::genetic\+Job}}
+\begin{DoxyCompactList}\small\item\em Derives from \textquotesingle{}job\textquotesingle{} class at \mbox{\hyperlink{thread_pool_8h}{thread\+Pool.\+h}}. Used to represent jobs related to the heavy processing parts of the training process that will be completed by worker threads. In this particular case, this class is created for processing a fitness function applied to the individuals. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_a_i_example_1_1copy_job}{AIExample\+::copy\+Job}}
+\begin{DoxyCompactList}\small\item\em Derives from \textquotesingle{}job\textquotesingle{} class at \mbox{\hyperlink{thread_pool_8h}{thread\+Pool.\+h}}. Used to represent jobs related to the heavy processing parts of the training process that will be completed by worker threads. In this particular case, this class is created for processing the copy of individuals. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_a_i_example_1_1genetic}{AIExample\+::genetic}}
+\begin{DoxyCompactList}\small\item\em Manages everything related to the genetic algorithms part of the example AI game, including the training, testing and record generation processes as well as the implementation of the genetic operators and the modification of the neural networks that are associated with the individuals. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the implementation of the genetic algorithms used in the example AI game along with the training, testing and recording processes and auxiliary data structures and functions. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+20/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title Genetic algorithms. 
+\end{DoxyAuthor}

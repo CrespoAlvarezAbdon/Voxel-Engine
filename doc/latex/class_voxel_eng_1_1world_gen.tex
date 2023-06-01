@@ -1,0 +1,109 @@
+\hypertarget{class_voxel_eng_1_1world_gen}{}\doxysection{Voxel\+Eng\+::world\+Gen Class Reference}
+\label{class_voxel_eng_1_1world_gen}\index{VoxelEng::worldGen@{VoxelEng::worldGen}}
+
+
+Provides a basic API for defining custom world generator to create new levels. In order to create one, create a class derived from this one or from another that ultimately has this class as a super class. WARNING. Calling \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{}s constructor or the constructor of any class that derives from \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}} results in undefined behaviour. Use \mbox{\hyperlink{class_voxel_eng_1_1world_gen_abb56ec96cff364a36b739debcde05599}{world\+Gen\+::register\+Gen}} to create a new world generator object from any derived class. The \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{} class auto registers itself into the world generator system, providing a default world generator for performance-\/testing purposes.  
+
+
+
+
+{\ttfamily \#include $<$world\+Gen.\+h$>$}
+
+Inheritance diagram for Voxel\+Eng\+::world\+Gen\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_voxel_eng_1_1world_gen}
+\end{center}
+\end{figure}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_aef7e4885305c104cec64af1e6fc9457a}\label{class_voxel_eng_1_1world_gen_aef7e4885305c104cec64af1e6fc9457a}} 
+static void {\bfseries init} ()
+\begin{DoxyCompactList}\small\item\em Initialise the class\textquotesingle{}s static members and allocated any resources that are required on initialisation. The default world generator is registered. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a3bbc739768f31f6e7583b41c60a30120}\label{class_voxel_eng_1_1world_gen_a3bbc739768f31f6e7583b41c60a30120}} 
+static const \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}} \& {\bfseries c\+Selected\+Gen} ()
+\begin{DoxyCompactList}\small\item\em Returns the currently loaded and selected world generator. Usage notes. Use std\+::dynamic\+\_\+cast$<$$>$ to check if the loaded \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}} corresponds to the subclass that is being used in the loaded AI game. By default the returned pointer points to an existing built-\/in \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{} object so no need to check if it is returning null. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_ae7e30680c9ae04f0de882efb79fe8ad6}\label{class_voxel_eng_1_1world_gen_ae7e30680c9ae04f0de882efb79fe8ad6}} 
+static const vec3 \& {\bfseries player\+Spawn\+Pos} ()
+\begin{DoxyCompactList}\small\item\em Returns the current user spawn position into the world. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a1c73e68c2c37f5d679f3232d939be15a}\label{class_voxel_eng_1_1world_gen_a1c73e68c2c37f5d679f3232d939be15a}} 
+static bool {\bfseries is\+Gen\+Registered} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Returns true if the specified world generator is registered or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a7299675c0fbaa7413b15ae80214b3a01}\label{class_voxel_eng_1_1world_gen_a7299675c0fbaa7413b15ae80214b3a01}} 
+static unsigned int {\bfseries get\+Seed} ()
+\begin{DoxyCompactList}\small\item\em Returns the current level\textquotesingle{}s seed. Used for adding a controlled randomness factor to world generation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_abeac9eb26673274e44ee0d1bf6b0b1c4}\label{class_voxel_eng_1_1world_gen_abeac9eb26673274e44ee0d1bf6b0b1c4}} 
+{\footnotesize template$<$class T $>$ \newline
+requires std\+::derived\+\_\+from$<$T, \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}$>$}\\static void {\bfseries register\+Gen\+At} (const std\+::string \&gen\+Name)
+\begin{DoxyCompactList}\small\item\em Register an instance of a \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{} object (or an object from a class that derives from \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{}) to use it when generating new chunks in levels. \textquotesingle{}T\textquotesingle{} is the class that either is \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{} or a class that derives from \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_abb56ec96cff364a36b739debcde05599}\label{class_voxel_eng_1_1world_gen_abb56ec96cff364a36b739debcde05599}} 
+{\footnotesize template$<$class T $>$ \newline
+requires std\+::derived\+\_\+from$<$T, \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}$>$}\\static void {\bfseries register\+Gen} (const std\+::string \&gen\+Name)
+\begin{DoxyCompactList}\small\item\em Same as \mbox{\hyperlink{class_voxel_eng_1_1world_gen_abeac9eb26673274e44ee0d1bf6b0b1c4}{world\+Gen\+::register\+Gen\+At()}} but makes no boundary checks. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_aa49f4c7a8049ea127a96f5607afe0199}\label{class_voxel_eng_1_1world_gen_aa49f4c7a8049ea127a96f5607afe0199}} 
+static void {\bfseries select\+Gen\+At} (const std\+::string \&gen\+Name)
+\begin{DoxyCompactList}\small\item\em Sets the specified world generator as current loaded and selected world generator. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a0b62eaec33296539302628f75cdc0065}\label{class_voxel_eng_1_1world_gen_a0b62eaec33296539302628f75cdc0065}} 
+static void {\bfseries select\+Gen} (const std\+::string \&gen\+Name)
+\begin{DoxyCompactList}\small\item\em Same as \mbox{\hyperlink{class_voxel_eng_1_1world_gen_aa49f4c7a8049ea127a96f5607afe0199}{world\+Gen\+::select\+Gen\+At()}} but makes no boundary checks. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_afcf60df6e073e839aff225df8bdf9228}\label{class_voxel_eng_1_1world_gen_afcf60df6e073e839aff225df8bdf9228}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}} \& {\bfseries selected\+Gen} ()
+\begin{DoxyCompactList}\small\item\em Sets the specified world generator as current loaded and selected world generator. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_ab46f460e25933a8b87f6b8553bbb7aad}\label{class_voxel_eng_1_1world_gen_ab46f460e25933a8b87f6b8553bbb7aad}} 
+static void {\bfseries unregister\+Gen} (const std\+::string \&gen\+Name)
+\begin{DoxyCompactList}\small\item\em Deletes and unregisters the specified world generator. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a0d99e7c52d0cec28965380f5af68dcd0}\label{class_voxel_eng_1_1world_gen_a0d99e7c52d0cec28965380f5af68dcd0}} 
+static void {\bfseries set\+Seed} ()
+\begin{DoxyCompactList}\small\item\em Sets a random seed for the selected world generator to use. Cannot be changed while in a level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a8e15f4b697974185dfa2f41ebb6025f3}\label{class_voxel_eng_1_1world_gen_a8e15f4b697974185dfa2f41ebb6025f3}} 
+static void {\bfseries set\+Seed} (unsigned int seed)
+\begin{DoxyCompactList}\small\item\em Sets the specified seed for the selected world generator to use. Cannot be changed while in a level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a78467f629f56c80946f8e01a48bc76ef}\label{class_voxel_eng_1_1world_gen_a78467f629f56c80946f8e01a48bc76ef}} 
+static void {\bfseries prepare\+Gen} ()
+\begin{DoxyCompactList}\small\item\em Prepare the selected world generator to generate a new level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a586602cffa3f2ef08740e4a912e9e3a7}\label{class_voxel_eng_1_1world_gen_a586602cffa3f2ef08740e4a912e9e3a7}} 
+static void {\bfseries generate} (\mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} \&\mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}})
+\begin{DoxyCompactList}\small\item\em Fill a chunk\textquotesingle{}s block data according to the selected world generator. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_ae1e9c6065debbb74a2f0a9235a0674b1}\label{class_voxel_eng_1_1world_gen_ae1e9c6065debbb74a2f0a9235a0674b1}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em Clean up heap memory allocated for this system and deinitialise it. Note, any extra heap memory allocated by any user-\/implemented generator will have to be handled by the user\textquotesingle{}s code. WARNING. The built-\/in generator is also deleted. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_aeaae29eea328ed003046f52fb8875332}\label{class_voxel_eng_1_1world_gen_aeaae29eea328ed003046f52fb8875332}} 
+virtual void {\bfseries prepare\+Gen\+\_\+} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a7d3113f9abc3a7b01fc1526bf7857ea9}\label{class_voxel_eng_1_1world_gen_a7d3113f9abc3a7b01fc1526bf7857ea9}} 
+virtual void {\bfseries generate\+\_\+} (\mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} \&\mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}})=0
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a978a47ea5fd2dbdf1cb128e6dddde846}\label{class_voxel_eng_1_1world_gen_a978a47ea5fd2dbdf1cb128e6dddde846}} 
+static vec3 {\bfseries player\+Spawn\+Pos\+\_\+} = \mbox{\hyperlink{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}{vec3\+Zero}}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a21476835c8a3ac9525f1513fab8d437d}\label{class_voxel_eng_1_1world_gen_a21476835c8a3ac9525f1513fab8d437d}} 
+static unsigned int {\bfseries seed\+\_\+} = 0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a90ff552eea0a8455f0e88ddaf888bdc5}\label{class_voxel_eng_1_1world_gen_a90ff552eea0a8455f0e88ddaf888bdc5}} 
+static std\+::random\+\_\+device {\bfseries RD\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a8254a16eb253679ccee8af93d0201c31}\label{class_voxel_eng_1_1world_gen_a8254a16eb253679ccee8af93d0201c31}} 
+static std\+::mt19937 {\bfseries generator\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a8ffb54cdcf109b1faee718c3a2a8d838}\label{class_voxel_eng_1_1world_gen_a8ffb54cdcf109b1faee718c3a2a8d838}} 
+static std\+::uniform\+\_\+int\+\_\+distribution$<$ unsigned int $>$ {\bfseries u\+Distribution\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_gen_a15992d5465797617d481e1a3bdf57da3}\label{class_voxel_eng_1_1world_gen_a15992d5465797617d481e1a3bdf57da3}} 
+static std\+::uniform\+\_\+int\+\_\+distribution$<$ unsignedint $>$\+::param\+\_\+type {\bfseries flat\+World\+Block\+Distribution\+\_\+}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Provides a basic API for defining custom world generator to create new levels. In order to create one, create a class derived from this one or from another that ultimately has this class as a super class. WARNING. Calling \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{}s constructor or the constructor of any class that derives from \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}} results in undefined behaviour. Use \mbox{\hyperlink{class_voxel_eng_1_1world_gen_abb56ec96cff364a36b739debcde05599}{world\+Gen\+::register\+Gen}} to create a new world generator object from any derived class. The \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{} class auto registers itself into the world generator system, providing a default world generator for performance-\/testing purposes. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{world_gen_8h}{world\+Gen.\+h}}\item 
+code/world\+Gen.\+cpp\end{DoxyCompactItemize}

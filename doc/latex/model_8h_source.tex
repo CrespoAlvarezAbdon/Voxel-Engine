@@ -1,0 +1,72 @@
+\hypertarget{model_8h_source}{}\doxysection{model.\+h}
+\label{model_8h_source}\index{code/model.h@{code/model.h}}
+\mbox{\hyperlink{model_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_MODEL\_}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#define \_VOXELENG\_MODEL\_}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <unordered\_map>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{vertex_8h}{vertex.h}}"{}}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 }
+\DoxyCodeLine{21 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{24     \textcolor{comment}{//Type definitions.//}}
+\DoxyCodeLine{26 \textcolor{comment}{}}
+\DoxyCodeLine{33     \textcolor{keyword}{typedef} std::vector<vertex> \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}};}
+\DoxyCodeLine{34 }
+\DoxyCodeLine{35 }
+\DoxyCodeLine{40     \textcolor{keyword}{typedef} std::vector<unsigned short> \mbox{\hyperlink{model_8h_a58c826751230d1f562a527403b64e3b4}{triangle}};}
+\DoxyCodeLine{45     \textcolor{keyword}{typedef} std::vector<triangle> \mbox{\hyperlink{model_8h_afdcf9098e108168832a050a8bcba12db}{modelTriangles}};}
+\DoxyCodeLine{46 }
+\DoxyCodeLine{47 }
+\DoxyCodeLine{49     \textcolor{comment}{//Classes//}}
+\DoxyCodeLine{51 \textcolor{comment}{}}
+\DoxyCodeLine{56     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1models}{models}} \{}
+\DoxyCodeLine{57 }
+\DoxyCodeLine{58     \textcolor{keyword}{public}:}
+\DoxyCodeLine{59 }
+\DoxyCodeLine{60         \textcolor{comment}{// Initialisers.}}
+\DoxyCodeLine{61 }
+\DoxyCodeLine{66         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1models_a0e46c6e35aa7052622a5d7d43f3c6783}{init}}();}
+\DoxyCodeLine{67 }
+\DoxyCodeLine{68 }
+\DoxyCodeLine{69         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{70 }
+\DoxyCodeLine{76         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1models_a39b6e8ad77091efe5d59d9270b497539}{loadCustomModel}}(\textcolor{keyword}{const} std::string\& filePath, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID);}
+\DoxyCodeLine{77 }
+\DoxyCodeLine{82         \textcolor{keyword}{static} \textcolor{keyword}{const} \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}}\& \mbox{\hyperlink{class_voxel_eng_1_1models_a697dddd92b62c2180c6407adb0ac122b}{getModelAt}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID);}
+\DoxyCodeLine{83 }
+\DoxyCodeLine{88         \textcolor{keyword}{static} \textcolor{keyword}{const} \mbox{\hyperlink{model_8h_afdcf9098e108168832a050a8bcba12db}{modelTriangles}}\& \mbox{\hyperlink{class_voxel_eng_1_1models_a7c14a41ac13afba3dbb06af775fcd556}{getModelTrianglesAt}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID);}
+\DoxyCodeLine{89 }
+\DoxyCodeLine{94         \textcolor{keyword}{static} \textcolor{keyword}{const} \mbox{\hyperlink{model_8h_afdcf9098e108168832a050a8bcba12db}{modelTriangles}}\& \mbox{\hyperlink{class_voxel_eng_1_1models_a875b89d5076af4098794acd88ded748d}{getModelTriangles}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID);}
+\DoxyCodeLine{95 }
+\DoxyCodeLine{101         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1models_a963924bad7005a3af0e16a60c4dd05a8}{addTexture}}(block blockID, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} textureID, \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}}\& m);}
+\DoxyCodeLine{102 }
+\DoxyCodeLine{103 }
+\DoxyCodeLine{104         \textcolor{comment}{// Clean up.}}
+\DoxyCodeLine{105 }
+\DoxyCodeLine{110         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1models_ade108805568629f9e915664aae8a939a}{cleanUp}}();}
+\DoxyCodeLine{111 }
+\DoxyCodeLine{112     \textcolor{keyword}{private}:}
+\DoxyCodeLine{113 }
+\DoxyCodeLine{114         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialised\_;}
+\DoxyCodeLine{115         \textcolor{keyword}{static} std::unordered\_map<unsigned int, model*> models\_;}
+\DoxyCodeLine{116         \textcolor{keyword}{static} std::unordered\_map<unsigned int, modelTriangles*> triangles\_;}
+\DoxyCodeLine{117 }
+\DoxyCodeLine{118     \};}
+\DoxyCodeLine{119 }
+\DoxyCodeLine{120     \textcolor{keyword}{inline} \textcolor{keyword}{const} \mbox{\hyperlink{model_8h_afdcf9098e108168832a050a8bcba12db}{modelTriangles}}\& \mbox{\hyperlink{class_voxel_eng_1_1models_a875b89d5076af4098794acd88ded748d}{models::getModelTriangles}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID) \{}
+\DoxyCodeLine{121 }
+\DoxyCodeLine{122         \textcolor{keywordflow}{return} *triangles\_[modelID];}
+\DoxyCodeLine{123 }
+\DoxyCodeLine{124     \}}
+\DoxyCodeLine{125 }
+\DoxyCodeLine{126 \}}
+\DoxyCodeLine{127 }
+\DoxyCodeLine{128 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

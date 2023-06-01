@@ -1,0 +1,44 @@
+\hypertarget{class_voxel_eng_1_1vertex_buffer}{}\doxysection{Voxel\+Eng\+::vertex\+Buffer Class Reference}
+\label{class_voxel_eng_1_1vertex_buffer}\index{VoxelEng::vertexBuffer@{VoxelEng::vertexBuffer}}
+
+
+Buffer to store vertex\textquotesingle{}s data to send to the GPU.  
+
+
+
+
+{\ttfamily \#include $<$vertex\+Buffer.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_ae62e69b0cab1d35017e7dab4e1a7c976}\label{class_voxel_eng_1_1vertex_buffer_ae62e69b0cab1d35017e7dab4e1a7c976}} 
+{\bfseries vertex\+Buffer} ()
+\begin{DoxyCompactList}\small\item\em Class constructor. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_a0dbd7a110c4181c1673cf40d132a99a0}\label{class_voxel_eng_1_1vertex_buffer_a0dbd7a110c4181c1673cf40d132a99a0}} 
+void {\bfseries prepare\+Static} (const void $\ast$data, unsigned int size)
+\begin{DoxyCompactList}\small\item\em Initialize a static geometry buffer with vertex data. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_a74f8aec3e5e16297c860eb7399f7b110}\label{class_voxel_eng_1_1vertex_buffer_a74f8aec3e5e16297c860eb7399f7b110}} 
+void {\bfseries prepare\+Dynamic} (unsigned int size)
+\begin{DoxyCompactList}\small\item\em Initialize the vertex buffer empty and prepared for dynamic geometry. This buffer is initialized empty but a size of what it is expected to store is needed. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_a826419c09d344d9c49de48b4fc87ee7d}\label{class_voxel_eng_1_1vertex_buffer_a826419c09d344d9c49de48b4fc87ee7d}} 
+void {\bfseries replace\+Dynamic\+Data} (const void $\ast$data, unsigned int size)
+\begin{DoxyCompactList}\small\item\em Replaces the vertex\textquotesingle{}s data with new one. WARNING. Must be called in a thread with valid graphics API context. This vertex buffer must have been initialized as a dynamic geometry vertex buffer for this function to work as expected. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_af644f72eebb3cf9d3424bb32898db8bf}\label{class_voxel_eng_1_1vertex_buffer_af644f72eebb3cf9d3424bb32898db8bf}} 
+void {\bfseries bind} () const
+\begin{DoxyCompactList}\small\item\em Bind the vertex buffer for the next draw call. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_ac8eebf565aa44951a8f2ce0eb9389dbe}\label{class_voxel_eng_1_1vertex_buffer_ac8eebf565aa44951a8f2ce0eb9389dbe}} 
+void {\bfseries unbind} () const
+\begin{DoxyCompactList}\small\item\em Unbind the vertex buffer. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_a0135752c3898a9eca37fa5558fd248fa}\label{class_voxel_eng_1_1vertex_buffer_a0135752c3898a9eca37fa5558fd248fa}} 
+{\bfseries $\sim$vertex\+Buffer} ()
+\begin{DoxyCompactList}\small\item\em Class destructor. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Buffer to store vertex\textquotesingle{}s data to send to the GPU. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{vertex_buffer_8h}{vertex\+Buffer.\+h}}\item 
+code/vertex\+Buffer.\+cpp\end{DoxyCompactItemize}

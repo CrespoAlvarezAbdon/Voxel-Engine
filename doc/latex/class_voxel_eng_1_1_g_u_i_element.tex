@@ -1,0 +1,119 @@
+\hypertarget{class_voxel_eng_1_1_g_u_i_element}{}\doxysection{Voxel\+Eng\+::GUIElement Class Reference}
+\label{class_voxel_eng_1_1_g_u_i_element}\index{VoxelEng::GUIElement@{VoxelEng::GUIElement}}
+Inheritance diagram for Voxel\+Eng\+::GUIElement\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_voxel_eng_1_1_g_u_i_element}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a74b02cd5360d9e0e19536ed7e33d66e6}\label{class_voxel_eng_1_1_g_u_i_element_a74b02cd5360d9e0e19536ed7e33d66e6}} 
+const void $\ast$ {\bfseries vertex\+Data} () const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_af51607c4d655c37ebd5d7c5b2273dd93}\label{class_voxel_eng_1_1_g_u_i_element_af51607c4d655c37ebd5d7c5b2273dd93}} 
+size\+\_\+t {\bfseries n\+Vertices} () const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a7bf19eb0a9a4bc2d88a13c23f77d2a76}\label{class_voxel_eng_1_1_g_u_i_element_a7bf19eb0a9a4bc2d88a13c23f77d2a76}} 
+bool {\bfseries is\+Enabled} () const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_ae2ddae6434f4f78ca124b6bb4f14b979}\label{class_voxel_eng_1_1_g_u_i_element_ae2ddae6434f4f78ca124b6bb4f14b979}} 
+const std\+::string \& {\bfseries name} () const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a3d7fe8a32e9b34bc45b9afb3e1bb8f54}\label{class_voxel_eng_1_1_g_u_i_element_a3d7fe8a32e9b34bc45b9afb3e1bb8f54}} 
+const GUIContainer \& {\bfseries get\+GUIContainer} () const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_acdcfb433df511cfea9b64454e0dd1853}\label{class_voxel_eng_1_1_g_u_i_element_acdcfb433df511cfea9b64454e0dd1853}} 
+const unsigned int \& {\bfseries texture\+ID} () const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a830de5fda006f3780f626aab6e99b3d1}\label{class_voxel_eng_1_1_g_u_i_element_a830de5fda006f3780f626aab6e99b3d1}} 
+const std\+::unordered\+\_\+set$<$ unsigned int $>$ {\bfseries children} () const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_af084beff431004a160f55a81cc84a8ac}\label{class_voxel_eng_1_1_g_u_i_element_af084beff431004a160f55a81cc84a8ac}} 
+void {\bfseries change\+Texture\+ID} (unsigned int new\+Texture\+ID)
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a991e5adb65cee3838ef04cb18f65a57c}\label{class_voxel_eng_1_1_g_u_i_element_a991e5adb65cee3838ef04cb18f65a57c}} 
+void {\bfseries lock\+Mutex} ()
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_ad98a3691168f0c5e9892270887b62a57}\label{class_voxel_eng_1_1_g_u_i_element_ad98a3691168f0c5e9892270887b62a57}} 
+void {\bfseries unlock\+Mutex} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a859b7daf34c61c5a3bc2f74280cb6e1d}\label{class_voxel_eng_1_1_g_u_i_element_a859b7daf34c61c5a3bc2f74280cb6e1d}} 
+virtual bool {\bfseries gets\+Input\+From\+Touch} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a2c35cd111dd2c1e2874d31bc7a30bec4}\label{class_voxel_eng_1_1_g_u_i_element_a2c35cd111dd2c1e2874d31bc7a30bec4}} 
+virtual void {\bfseries gen\+Vertex\+Data} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a14ee86fd926bf771d646b25a034cc1f0}\label{class_voxel_eng_1_1_g_u_i_element_a14ee86fd926bf771d646b25a034cc1f0}} 
+virtual void {\bfseries add\+Textures} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_ad0f6cdeb1de4dc93ca655cdeee504990}\label{class_voxel_eng_1_1_g_u_i_element_ad0f6cdeb1de4dc93ca655cdeee504990}} 
+void {\bfseries execute\+Key\+Action} ()
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_aad58c7f7eaac6fc1b21c1855ff700fc4}\label{class_voxel_eng_1_1_g_u_i_element_aad58c7f7eaac6fc1b21c1855ff700fc4}} 
+void {\bfseries execute\+Mouse\+Button\+Action} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_adc418cff7b9dece9a1231a1e8e68251c}\label{class_voxel_eng_1_1_g_u_i_element_adc418cff7b9dece9a1231a1e8e68251c}} 
+std\+::string {\bfseries name\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_ae317fce7e819658140e0e4923beeb740}\label{class_voxel_eng_1_1_g_u_i_element_ae317fce7e819658140e0e4923beeb740}} 
+vec2 {\bfseries position\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a7975239130be8c156db5683c16946756}\label{class_voxel_eng_1_1_g_u_i_element_a7975239130be8c156db5683c16946756}} 
+vec2 {\bfseries size\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a5cced10bb59b920ca60d294993266cd2}\label{class_voxel_eng_1_1_g_u_i_element_a5cced10bb59b920ca60d294993266cd2}} 
+unsigned int {\bfseries texture\+ID\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_af01e9c4be9f031ba8cc40f5a0289c76a}\label{class_voxel_eng_1_1_g_u_i_element_af01e9c4be9f031ba8cc40f5a0289c76a}} 
+unsigned int {\bfseries GUILayer\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a192a346d11c979612366418a3baa3814}\label{class_voxel_eng_1_1_g_u_i_element_a192a346d11c979612366418a3baa3814}} 
+bool {\bfseries enabled\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_ad3cf1da52e1a6c94d828495c924b04eb}\label{class_voxel_eng_1_1_g_u_i_element_ad3cf1da52e1a6c94d828495c924b04eb}} 
+bool {\bfseries old\+Activation\+Event\+Received\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_ad77e92d495cb67d24c70963cac86834a}\label{class_voxel_eng_1_1_g_u_i_element_ad77e92d495cb67d24c70963cac86834a}} 
+std\+::vector$<$ \mbox{\hyperlink{struct_voxel_eng_1_1vertex2_d}{vertex2D}} $>$ {\bfseries vertices\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a39b97e07e7539b45bca7ed381b771792}\label{class_voxel_eng_1_1_g_u_i_element_a39b97e07e7539b45bca7ed381b771792}} 
+std\+::unordered\+\_\+set$<$ unsigned int $>$ {\bfseries children\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a5ad21a79dec8edb26e0ae2264432ab35}\label{class_voxel_eng_1_1_g_u_i_element_a5ad21a79dec8edb26e0ae2264432ab35}} 
+void($\ast$ {\bfseries Key\+Func\+Ptr\+\_\+} )()
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a9b458ec2aea4f1bf9e954f34610b62bb}\label{class_voxel_eng_1_1_g_u_i_element_a9b458ec2aea4f1bf9e954f34610b62bb}} 
+void($\ast$ {\bfseries Mouse\+Button\+Func\+Ptr\+\_\+} )()
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a65f4c862275fb0223edf180e62bef0db}\label{class_voxel_eng_1_1_g_u_i_element_a65f4c862275fb0223edf180e62bef0db}} 
+GUIContainer {\bfseries GUIContainer\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a82dbe61bf93849dfaa07ef91a9775d11}\label{class_voxel_eng_1_1_g_u_i_element_a82dbe61bf93849dfaa07ef91a9775d11}} 
+std\+::mutex {\bfseries GUIElement\+Mutex\+\_\+}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_a876e6c19b1453214741d72d55e4d89d4}\label{class_voxel_eng_1_1_g_u_i_element_a876e6c19b1453214741d72d55e4d89d4}} 
+static const \mbox{\hyperlink{class_voxel_eng_1_1window}{window}} $\ast$ {\bfseries window\+\_\+} = nullptr
+\end{DoxyCompactItemize}
+\doxysubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_i_element_ac7d342f1425fabbc0b81e470e6c52d77}\label{class_voxel_eng_1_1_g_u_i_element_ac7d342f1425fabbc0b81e470e6c52d77}} 
+class {\bfseries GUIManager}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/gui.\+h\item 
+code/gui.\+cpp\end{DoxyCompactItemize}

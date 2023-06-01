@@ -1,0 +1,63 @@
+\hypertarget{chunk_8h}{}\doxysection{code/chunk.h File Reference}
+\label{chunk_8h}\index{code/chunk.h@{code/chunk.h}}
+
+
+Contains the chunk and chunk\+Manager classes as well as some auxiliary data structures and types used with them.  
+
+
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$barrier$>$}\newline
+{\ttfamily \#include $<$condition\+\_\+variable$>$}\newline
+{\ttfamily \#include $<$deque$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+set$>$}\newline
+{\ttfamily \#include $<$thread$>$}\newline
+{\ttfamily \#include $<$mutex$>$}\newline
+{\ttfamily \#include $<$shared\+\_\+mutex$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$hash.\+hpp$>$}\newline
+{\ttfamily \#include $<$GL/glew.\+h$>$}\newline
+{\ttfamily \#include $<$glm.\+hpp$>$}\newline
+{\ttfamily \#include \char`\"{}vertex\+Buffer.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}vertex\+Buffer\+Layout.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}shader.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}vertex.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}camera.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}texture.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}model.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}world\+Gen.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}definitions.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}utilities.\+h\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{Voxel\+Eng\+::chunk\+Rendering\+Data}}
+\begin{DoxyCompactList}\small\item\em Wraps up data used to render a chunk. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1chunk}{Voxel\+Eng\+::chunk}}
+\begin{DoxyCompactList}\small\item\em Represents a section of the voxel world, with its blocks, mesh, position and other infomation. Chunks that are marked as \textquotesingle{}dirty\textquotesingle{} or \textquotesingle{}changed\textquotesingle{} will have their mesh regenerated. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager}{Voxel\+Eng\+::chunk\+Manager}}
+\begin{DoxyCompactList}\small\item\em Used for managing the chunks\textquotesingle{} life cycle, level loading... \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}\label{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}} 
+enum class \mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{Voxel\+Eng\+::chunk\+Load\+Level}} \{ {\bfseries NOTLOADED} = 0
+, {\bfseries BASICTERRAIN} = 1
+, {\bfseries DECORATED} = 2
+ \}
+\begin{DoxyCompactList}\small\item\em The different stages of the chunk\textquotesingle{}s loading process. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the chunk and chunk\+Manager classes as well as some auxiliary data structures and types used with them. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+20/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title Chunk. 
+\end{DoxyAuthor}

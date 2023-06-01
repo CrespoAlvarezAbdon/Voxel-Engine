@@ -1,0 +1,718 @@
+\hypertarget{chunk_8h_source}{}\doxysection{chunk.\+h}
+\label{chunk_8h_source}\index{code/chunk.h@{code/chunk.h}}
+\mbox{\hyperlink{chunk_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_CHUNK\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#define \_VOXELENG\_CHUNK\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <atomic>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <barrier>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <condition\_variable>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <deque>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <unordered\_map>}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include <unordered\_set>}}
+\DoxyCodeLine{19 \textcolor{preprocessor}{\#include <thread>}}
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#include <mutex>}}
+\DoxyCodeLine{21 \textcolor{preprocessor}{\#include <shared\_mutex>}}
+\DoxyCodeLine{22 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#include <hash.hpp>}}
+\DoxyCodeLine{24 }
+\DoxyCodeLine{25 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{26 }
+\DoxyCodeLine{27 \textcolor{preprocessor}{\#include <GL/glew.h>}}
+\DoxyCodeLine{28 \textcolor{preprocessor}{\#include <glm.hpp>}}
+\DoxyCodeLine{29 }
+\DoxyCodeLine{30 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{31 }
+\DoxyCodeLine{32 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{vertex_buffer_8h}{vertexBuffer.h}}"{}}}
+\DoxyCodeLine{33 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{vertex_buffer_layout_8h}{vertexBufferLayout.h}}"{}}}
+\DoxyCodeLine{34 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{shader_8h}{shader.h}}"{}}}
+\DoxyCodeLine{35 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{vertex_8h}{vertex.h}}"{}}}
+\DoxyCodeLine{36 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{camera_8h}{camera.h}}"{}}}
+\DoxyCodeLine{37 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{texture_8h}{texture.h}}"{}}}
+\DoxyCodeLine{38 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{model_8h}{model.h}}"{}}}
+\DoxyCodeLine{39 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{world_gen_8h}{worldGen.h}}"{}}}
+\DoxyCodeLine{40 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{41 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{utilities_8h}{utilities.h}}"{}}}
+\DoxyCodeLine{42 }
+\DoxyCodeLine{43 }
+\DoxyCodeLine{44 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{45 }
+\DoxyCodeLine{47     \textcolor{comment}{//Forward declarations.//}}
+\DoxyCodeLine{49 \textcolor{comment}{}}
+\DoxyCodeLine{50     \textcolor{keyword}{class }camera;}
+\DoxyCodeLine{51     \textcolor{keyword}{class }chunkManager;}
+\DoxyCodeLine{52     \textcolor{keyword}{class }worldGen;}
+\DoxyCodeLine{53 }
+\DoxyCodeLine{54 }
+\DoxyCodeLine{56     \textcolor{comment}{//Enum classes.//}}
+\DoxyCodeLine{58 \textcolor{comment}{}}
+\DoxyCodeLine{62     \textcolor{keyword}{enum class} \mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunkLoadLevel}} \{ NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2 \};}
+\DoxyCodeLine{63 }
+\DoxyCodeLine{64 }
+\DoxyCodeLine{66     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{68 \textcolor{comment}{}}
+\DoxyCodeLine{72     \textcolor{keyword}{struct }\mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{chunkRenderingData}} \{}
+\DoxyCodeLine{73 }
+\DoxyCodeLine{74         vec3 chunkPos;}
+\DoxyCodeLine{75         \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}} vertices;}
+\DoxyCodeLine{76 }
+\DoxyCodeLine{77     \};}
+\DoxyCodeLine{78 }
+\DoxyCodeLine{79 }
+\DoxyCodeLine{84     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} \{}
+\DoxyCodeLine{85 }
+\DoxyCodeLine{86     \textcolor{keyword}{public}:}
+\DoxyCodeLine{87 }
+\DoxyCodeLine{88         \textcolor{comment}{// Initialisers.}}
+\DoxyCodeLine{89 }
+\DoxyCodeLine{94         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_a6d88f19a2eb9d8061b0bb697c04b0db0}{init}}();}
+\DoxyCodeLine{95 }
+\DoxyCodeLine{96 }
+\DoxyCodeLine{97         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{98 }
+\DoxyCodeLine{104         \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}(\textcolor{keywordtype}{bool} empty, \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a32d88be52f3327693ea5f325a8cdf3b5}{chunkPos}} = \mbox{\hyperlink{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}{vec3Zero}});}
+\DoxyCodeLine{105 }
+\DoxyCodeLine{109         \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}(\textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}\& source);}
+\DoxyCodeLine{110 }
+\DoxyCodeLine{111 }
+\DoxyCodeLine{112         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{113 }
+\DoxyCodeLine{118         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_a65f0a9bb5c42cdaec62165d596a4450a}{initialised}}();}
+\DoxyCodeLine{119 }
+\DoxyCodeLine{123         block \mbox{\hyperlink{class_voxel_eng_1_1chunk_ad4e3058d3804d740e86e068eceddcd3c}{getBlock}}(GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ad3b81662997152ed8683eff7c5157e18}{x}}, GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_a95e7d07d8be650d931da8c475c654c9b}{y}}, GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ae4336641543713331d7828775acc88a8}{z}});}
+\DoxyCodeLine{124 }
+\DoxyCodeLine{128         block \mbox{\hyperlink{class_voxel_eng_1_1chunk_ad4e3058d3804d740e86e068eceddcd3c}{getBlock}}(\textcolor{keyword}{const} vec3\& inChunkPos);}
+\DoxyCodeLine{129 }
+\DoxyCodeLine{133         GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ad3b81662997152ed8683eff7c5157e18}{x}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{134 }
+\DoxyCodeLine{138         GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_a95e7d07d8be650d931da8c475c654c9b}{y}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{139 }
+\DoxyCodeLine{143         GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ae4336641543713331d7828775acc88a8}{z}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{144 }
+\DoxyCodeLine{148         \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a32d88be52f3327693ea5f325a8cdf3b5}{chunkPos}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{149 }
+\DoxyCodeLine{153         \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a58bc47cb95dd5be685d4097ee9544c41}{pos}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{154 }
+\DoxyCodeLine{158         \textcolor{keyword}{const} std::vector<vertex>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a7b5463168ea992f94ba11d5a91c0ef97}{vertices}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{159 }
+\DoxyCodeLine{163         \textcolor{keyword}{const} \mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{chunkRenderingData}}\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_ae24b754ceb2ac7a4ec430000bd16463f}{renderingData}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{164     }
+\DoxyCodeLine{168         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1chunk_a862afb36daf6bbdc96c10d7554213e09}{getNBlocks}}();}
+\DoxyCodeLine{169 }
+\DoxyCodeLine{174         \textcolor{keyword}{const} std::atomic<bool>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_abe62286c8ebf38be16e567fe9e1f4e34}{changed}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{175 }
+\DoxyCodeLine{179         \mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunkLoadLevel}} \mbox{\hyperlink{class_voxel_eng_1_1chunk_a27f484b2799b9f61a28e2703923d01a3}{loadLevel}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{180 }
+\DoxyCodeLine{181 }
+\DoxyCodeLine{182         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{183 }
+\DoxyCodeLine{189         block \mbox{\hyperlink{class_voxel_eng_1_1chunk_a919accbd6f45eadec872326b4c09f617}{setBlock}}(GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ad3b81662997152ed8683eff7c5157e18}{x}}, GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_a95e7d07d8be650d931da8c475c654c9b}{y}}, GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ae4336641543713331d7828775acc88a8}{z}}, block block\_id);}
+\DoxyCodeLine{190 }
+\DoxyCodeLine{196         block \mbox{\hyperlink{class_voxel_eng_1_1chunk_a919accbd6f45eadec872326b4c09f617}{setBlock}}(\textcolor{keyword}{const} vec3\& chunkRelPos, block blockID);}
+\DoxyCodeLine{197 }
+\DoxyCodeLine{203         block \mbox{\hyperlink{class_voxel_eng_1_1chunk_a919accbd6f45eadec872326b4c09f617}{setBlock}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} linearIndex, block blockID);}
+\DoxyCodeLine{204 }
+\DoxyCodeLine{208         vec3\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a32d88be52f3327693ea5f325a8cdf3b5}{chunkPos}}();}
+\DoxyCodeLine{209 }
+\DoxyCodeLine{213         \mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{chunkRenderingData}}\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_ae24b754ceb2ac7a4ec430000bd16463f}{renderingData}}();}
+\DoxyCodeLine{214 }
+\DoxyCodeLine{218         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_a176c87c2749b70066304df0390b969a4}{setNBlocks}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nBlocks);}
+\DoxyCodeLine{219 }
+\DoxyCodeLine{223         std::shared\_mutex\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a3fa0c9fbcacdafd3cdab55f641cc4ee3}{blockDataMutex}}();}
+\DoxyCodeLine{224 }
+\DoxyCodeLine{229         std::atomic<bool>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_abe62286c8ebf38be16e567fe9e1f4e34}{changed}}();}
+\DoxyCodeLine{230 }
+\DoxyCodeLine{234         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_ab8ed26495e430a4aade2c3060ded0563}{renewMesh}}();}
+\DoxyCodeLine{235 }
+\DoxyCodeLine{239         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_aee9ec1887d171cb930306ecea627e8fc}{makeEmpty}}();}
+\DoxyCodeLine{240 }
+\DoxyCodeLine{244         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_a615b3151ccdbc2347c7aeee7f89f3d6a}{setLoadLevel}}(\mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunkLoadLevel}} level);}
+\DoxyCodeLine{245 }
+\DoxyCodeLine{250         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_ae0d6b9e3c8d13bc5a7eecf92503e6200}{regenChunk}}(\textcolor{keywordtype}{bool} empty, \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a32d88be52f3327693ea5f325a8cdf3b5}{chunkPos}});}
+\DoxyCodeLine{251 }
+\DoxyCodeLine{252 }
+\DoxyCodeLine{253         \textcolor{comment}{/*}}
+\DoxyCodeLine{254 \textcolor{comment}{        Clean up.}}
+\DoxyCodeLine{255 \textcolor{comment}{        */}}
+\DoxyCodeLine{256 }
+\DoxyCodeLine{260         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_ac010c0ca5e3a7d4bcc75d586e5f65520}{cleanUp}}();}
+\DoxyCodeLine{261     }
+\DoxyCodeLine{262     \textcolor{keyword}{private}:}
+\DoxyCodeLine{263 }
+\DoxyCodeLine{264         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialised\_;}
+\DoxyCodeLine{265         \textcolor{keyword}{static} \textcolor{keyword}{const} \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}}* blockVertices\_;}
+\DoxyCodeLine{266         \textcolor{keyword}{static} \textcolor{keyword}{const} \mbox{\hyperlink{model_8h_afdcf9098e108168832a050a8bcba12db}{modelTriangles}}* blockTriangles\_;}
+\DoxyCodeLine{267 }
+\DoxyCodeLine{268         block blocks\_[\mbox{\hyperlink{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}{SCX}}][\mbox{\hyperlink{definitions_8h_ada54a66531ebf97036138412933b093a}{SCY}}][\mbox{\hyperlink{definitions_8h_ac6b1ebceb207d8869690065097b574c6}{SCZ}}];}
+\DoxyCodeLine{269         std::atomic<bool> changed\_;}
+\DoxyCodeLine{270         std::atomic<unsigned int> nBlocks\_;}
+\DoxyCodeLine{271         std::atomic<chunkLoadLevel> loadLevel\_;}
+\DoxyCodeLine{272         \mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{chunkRenderingData}} renderingData\_;}
+\DoxyCodeLine{273 }
+\DoxyCodeLine{274         \textcolor{comment}{/*}}
+\DoxyCodeLine{275 \textcolor{comment}{        Used for reading the block data in a chunk.}}
+\DoxyCodeLine{276 \textcolor{comment}{        All meshing threads only read this data, so they access it}}
+\DoxyCodeLine{277 \textcolor{comment}{        in shared mode, while any thread that can alter this data}}
+\DoxyCodeLine{278 \textcolor{comment}{        must access it in exclusive/unique mode.}}
+\DoxyCodeLine{279 \textcolor{comment}{        */}}
+\DoxyCodeLine{280         std::shared\_mutex blocksMutex\_;}
+\DoxyCodeLine{281 }
+\DoxyCodeLine{282     \};}
+\DoxyCodeLine{283 }
+\DoxyCodeLine{284     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_a65f0a9bb5c42cdaec62165d596a4450a}{chunk::initialised}}() \{}
+\DoxyCodeLine{285     }
+\DoxyCodeLine{286         \textcolor{keywordflow}{return} initialised\_;}
+\DoxyCodeLine{287     }
+\DoxyCodeLine{288     \}}
+\DoxyCodeLine{289 }
+\DoxyCodeLine{290     \textcolor{keyword}{inline} GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ad3b81662997152ed8683eff7c5157e18}{chunk::x}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{291 }
+\DoxyCodeLine{292         \textcolor{keywordflow}{return} renderingData\_.chunkPos.x;}
+\DoxyCodeLine{293 }
+\DoxyCodeLine{294     \}}
+\DoxyCodeLine{295 }
+\DoxyCodeLine{296     \textcolor{keyword}{inline} GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_a95e7d07d8be650d931da8c475c654c9b}{chunk::y}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{297 }
+\DoxyCodeLine{298         \textcolor{keywordflow}{return} renderingData\_.chunkPos.y;}
+\DoxyCodeLine{299 }
+\DoxyCodeLine{300     \}}
+\DoxyCodeLine{301 }
+\DoxyCodeLine{302     \textcolor{keyword}{inline} GLbyte \mbox{\hyperlink{class_voxel_eng_1_1chunk_ae4336641543713331d7828775acc88a8}{chunk::z}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{303 }
+\DoxyCodeLine{304         \textcolor{keywordflow}{return} renderingData\_.chunkPos.z;}
+\DoxyCodeLine{305 }
+\DoxyCodeLine{306     \}}
+\DoxyCodeLine{307 }
+\DoxyCodeLine{308     \textcolor{keyword}{inline} \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a32d88be52f3327693ea5f325a8cdf3b5}{chunk::chunkPos}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{309 }
+\DoxyCodeLine{310         \textcolor{keywordflow}{return} renderingData\_.chunkPos;}
+\DoxyCodeLine{311 }
+\DoxyCodeLine{312     \}}
+\DoxyCodeLine{313 }
+\DoxyCodeLine{314     \textcolor{keyword}{inline} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a32d88be52f3327693ea5f325a8cdf3b5}{chunk::chunkPos}}() \{}
+\DoxyCodeLine{315 }
+\DoxyCodeLine{316         \textcolor{keywordflow}{return} renderingData\_.chunkPos;}
+\DoxyCodeLine{317     }
+\DoxyCodeLine{318     \}}
+\DoxyCodeLine{319 }
+\DoxyCodeLine{320     \textcolor{keyword}{inline} \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a58bc47cb95dd5be685d4097ee9544c41}{chunk::pos}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{321 }
+\DoxyCodeLine{322         \textcolor{keywordflow}{return} vec3(renderingData\_.chunkPos.x * \mbox{\hyperlink{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}{SCX}}, renderingData\_.chunkPos.y * \mbox{\hyperlink{definitions_8h_ada54a66531ebf97036138412933b093a}{SCY}}, renderingData\_.chunkPos.z * \mbox{\hyperlink{definitions_8h_ac6b1ebceb207d8869690065097b574c6}{SCZ}});}
+\DoxyCodeLine{323 }
+\DoxyCodeLine{324     \}}
+\DoxyCodeLine{325 }
+\DoxyCodeLine{326     \textcolor{keyword}{inline} \textcolor{keyword}{const} std::vector<vertex>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a7b5463168ea992f94ba11d5a91c0ef97}{chunk::vertices}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{327 }
+\DoxyCodeLine{328         \textcolor{keywordflow}{return} renderingData\_.vertices;}
+\DoxyCodeLine{329 }
+\DoxyCodeLine{330     \}}
+\DoxyCodeLine{331 }
+\DoxyCodeLine{332     \textcolor{keyword}{inline} \textcolor{keyword}{const} \mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{chunkRenderingData}}\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_ae24b754ceb2ac7a4ec430000bd16463f}{chunk::renderingData}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{333 }
+\DoxyCodeLine{334         \textcolor{keywordflow}{return} renderingData\_;}
+\DoxyCodeLine{335 }
+\DoxyCodeLine{336     \}}
+\DoxyCodeLine{337 }
+\DoxyCodeLine{338     \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1chunk_a862afb36daf6bbdc96c10d7554213e09}{chunk::getNBlocks}}() \{}
+\DoxyCodeLine{339 }
+\DoxyCodeLine{340         \textcolor{keywordflow}{return} nBlocks\_;}
+\DoxyCodeLine{341 }
+\DoxyCodeLine{342     \}}
+\DoxyCodeLine{343 }
+\DoxyCodeLine{344     \textcolor{keyword}{inline} \textcolor{keyword}{const} std::atomic<bool>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_abe62286c8ebf38be16e567fe9e1f4e34}{chunk::changed}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{345 }
+\DoxyCodeLine{346         \textcolor{keywordflow}{return} changed\_;}
+\DoxyCodeLine{347 }
+\DoxyCodeLine{348     \}}
+\DoxyCodeLine{349 }
+\DoxyCodeLine{350     \textcolor{keyword}{inline} \mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunkLoadLevel}} \mbox{\hyperlink{class_voxel_eng_1_1chunk_a27f484b2799b9f61a28e2703923d01a3}{chunk::loadLevel}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{351 }
+\DoxyCodeLine{352         \textcolor{keywordflow}{return} loadLevel\_;}
+\DoxyCodeLine{353 }
+\DoxyCodeLine{354     \}}
+\DoxyCodeLine{355 }
+\DoxyCodeLine{356     \textcolor{keyword}{inline} \mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{chunkRenderingData}}\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_ae24b754ceb2ac7a4ec430000bd16463f}{chunk::renderingData}}() \{}
+\DoxyCodeLine{357 }
+\DoxyCodeLine{358         \textcolor{keywordflow}{return} renderingData\_;}
+\DoxyCodeLine{359 }
+\DoxyCodeLine{360     \}}
+\DoxyCodeLine{361 }
+\DoxyCodeLine{362     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_a176c87c2749b70066304df0390b969a4}{chunk::setNBlocks}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nBlocks) \{}
+\DoxyCodeLine{363 }
+\DoxyCodeLine{364         nBlocks\_ = nBlocks;}
+\DoxyCodeLine{365 }
+\DoxyCodeLine{366     \}}
+\DoxyCodeLine{367 }
+\DoxyCodeLine{368     \textcolor{keyword}{inline} std::shared\_mutex\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_a3fa0c9fbcacdafd3cdab55f641cc4ee3}{chunk::blockDataMutex}}() \{}
+\DoxyCodeLine{369 }
+\DoxyCodeLine{370         \textcolor{keywordflow}{return} blocksMutex\_;}
+\DoxyCodeLine{371 }
+\DoxyCodeLine{372     \}}
+\DoxyCodeLine{373 }
+\DoxyCodeLine{374     \textcolor{keyword}{inline} std::atomic<bool>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_abe62286c8ebf38be16e567fe9e1f4e34}{chunk::changed}}() \{}
+\DoxyCodeLine{375 }
+\DoxyCodeLine{376         \textcolor{keywordflow}{return} changed\_;}
+\DoxyCodeLine{377 }
+\DoxyCodeLine{378     \}}
+\DoxyCodeLine{379 }
+\DoxyCodeLine{380     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_a615b3151ccdbc2347c7aeee7f89f3d6a}{chunk::setLoadLevel}}(\mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunkLoadLevel}} level) \{}
+\DoxyCodeLine{381 }
+\DoxyCodeLine{382         loadLevel\_ = level;}
+\DoxyCodeLine{383 }
+\DoxyCodeLine{384     \}}
+\DoxyCodeLine{385 }
+\DoxyCodeLine{386     }
+\DoxyCodeLine{387 }
+\DoxyCodeLine{391     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1chunk_manager}{chunkManager}} \{}
+\DoxyCodeLine{392 }
+\DoxyCodeLine{393     \textcolor{keyword}{public}:}
+\DoxyCodeLine{394 }
+\DoxyCodeLine{395         \textcolor{comment}{// Initializers.}}
+\DoxyCodeLine{396 }
+\DoxyCodeLine{400         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af08c574bd30f2fbe9a3058c7acdf7855}{init}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nChunksToCompute = \mbox{\hyperlink{definitions_8h_afe7a66d1b2b8f3ba46acc2bd275c8796}{DEF\_N\_CHUNKS\_TO\_COMPUTE}});}
+\DoxyCodeLine{401 }
+\DoxyCodeLine{402 }
+\DoxyCodeLine{403         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{404 }
+\DoxyCodeLine{408         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a7f264ae01f826c35e3bd32edc5a7137b}{initialised}}();}
+\DoxyCodeLine{409 }
+\DoxyCodeLine{413         \textcolor{keyword}{static} vec3 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a7005925eede113047d475d675333600f}{getChunkRelCoords}}(\textcolor{keyword}{const} vec3\& blockPos);}
+\DoxyCodeLine{414 }
+\DoxyCodeLine{418         \textcolor{keyword}{static} vec3 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a7005925eede113047d475d675333600f}{getChunkRelCoords}}(\textcolor{keywordtype}{float} globalX, \textcolor{keywordtype}{float} globalY, \textcolor{keywordtype}{float} globalZ);}
+\DoxyCodeLine{419 }
+\DoxyCodeLine{423         \textcolor{keyword}{static} vec3 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af6b0e23a8370d80966ebadcb64b39d93}{getChunkCoords}}(\textcolor{keyword}{const} vec3\& blockPos);}
+\DoxyCodeLine{424 }
+\DoxyCodeLine{428         \textcolor{keyword}{static} vec3 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af6b0e23a8370d80966ebadcb64b39d93}{getChunkCoords}}(\textcolor{keywordtype}{float} globalX, \textcolor{keywordtype}{float} globalY, \textcolor{keywordtype}{float} globalZ);}
+\DoxyCodeLine{429 }
+\DoxyCodeLine{433         \textcolor{keyword}{static} vec2 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aceb5f28a61b7f1c16c3d4beccc6d9122}{getChunkXZCoords}}(\textcolor{keyword}{const} vec2\& blockXZPos);}
+\DoxyCodeLine{434 }
+\DoxyCodeLine{438         \textcolor{keyword}{static} vec2 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aceb5f28a61b7f1c16c3d4beccc6d9122}{getChunkXZCoords}}(\textcolor{keywordtype}{int} blockX, \textcolor{keywordtype}{int} blockZ);}
+\DoxyCodeLine{439 }
+\DoxyCodeLine{443         \textcolor{keyword}{static} vec3 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a69bec92ab94599cd134249a375ee6442}{getGlobalPos}}(\textcolor{keyword}{const} vec3\& chunkPos, \textcolor{keyword}{const} vec3\& inChunkPos);}
+\DoxyCodeLine{444 }
+\DoxyCodeLine{448         \textcolor{keyword}{static} vec3 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a69bec92ab94599cd134249a375ee6442}{getGlobalPos}}(\textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkY, \textcolor{keywordtype}{int} chunkZ, \textcolor{keywordtype}{int} inChunkX, \textcolor{keywordtype}{int} inChunkY, \textcolor{keywordtype}{int} inChunkZ);}
+\DoxyCodeLine{449 }
+\DoxyCodeLine{454         \textcolor{keyword}{static} vec2 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ad961611f26197e052391f45fd0c3017a}{getXZGlobalPos}}(\textcolor{keyword}{const} vec2\& chunkPos, \textcolor{keyword}{const} vec2\& inChunkPos);}
+\DoxyCodeLine{455 }
+\DoxyCodeLine{460         \textcolor{keyword}{static} vec2 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ad961611f26197e052391f45fd0c3017a}{getXZGlobalPos}}(\textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkZ, \textcolor{keywordtype}{int} inChunkX, \textcolor{keywordtype}{int} inChunkZ);}
+\DoxyCodeLine{461 }
+\DoxyCodeLine{465         \textcolor{keyword}{static} \textcolor{keyword}{const} std::unordered\_map<vec3, chunk*>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a6ad5d9251599567cff64c1b92665d273}{chunks}}();}
+\DoxyCodeLine{466 }
+\DoxyCodeLine{471         \textcolor{keyword}{static} std::unordered\_map<vec3, std::vector<vertex>> \textcolor{keyword}{const}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a1ede70b62c9ceb9f4752650678280c3d}{drawableChunksRead}}();}
+\DoxyCodeLine{472 }
+\DoxyCodeLine{473         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nChunksToCompute();}
+\DoxyCodeLine{474 }
+\DoxyCodeLine{478         \textcolor{keyword}{static} block \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ae072a840144f18966e779dbfc880a126}{getBlock}}(\textcolor{keywordtype}{int} posX, \textcolor{keywordtype}{int} posY, \textcolor{keywordtype}{int} posZ);}
+\DoxyCodeLine{479 }
+\DoxyCodeLine{483         \textcolor{keyword}{static} block \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ae072a840144f18966e779dbfc880a126}{getBlock}}(\textcolor{keyword}{const} vec3\& pos);}
+\DoxyCodeLine{484 }
+\DoxyCodeLine{488         \textcolor{keyword}{static} std::vector<block> \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af990d211978fa0e1fcf934b7bde38aa3}{getBlocksBox}}(\textcolor{keyword}{const} vec3\& pos1, \textcolor{keyword}{const} vec3\& pos2);}
+\DoxyCodeLine{489 }
+\DoxyCodeLine{493         \textcolor{keyword}{static} std::vector<block> \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af990d211978fa0e1fcf934b7bde38aa3}{getBlocksBox}}(\textcolor{keywordtype}{int} x1, \textcolor{keywordtype}{int} y1, \textcolor{keywordtype}{int} z1, \textcolor{keywordtype}{int} x2, \textcolor{keywordtype}{int} y2, \textcolor{keywordtype}{int} z2);}
+\DoxyCodeLine{494 }
+\DoxyCodeLine{498         \textcolor{keyword}{static} \textcolor{keyword}{const} std::unordered\_set<vec3>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a0e59b369990113a95dc2fc3495eb233f}{cFreeableChunks}}();}
+\DoxyCodeLine{499 }
+\DoxyCodeLine{504         \textcolor{keyword}{static} \textcolor{keyword}{const} std::atomic<bool>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aaf21a3b78ba3970cefcaf19f4dfcecbd}{cForceSyncFlag}}();}
+\DoxyCodeLine{505 }
+\DoxyCodeLine{510         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a71fb73063c26710221bed9ba0a687c86}{isInWorld}}(\textcolor{keyword}{const} vec3\& pos);}
+\DoxyCodeLine{511 }
+\DoxyCodeLine{516         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a71fb73063c26710221bed9ba0a687c86}{isInWorld}}(\textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} y, \textcolor{keywordtype}{int} z);}
+\DoxyCodeLine{517 }
+\DoxyCodeLine{521         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a98644191ccd1aba4156066a2c2177046}{isChunkInWorld}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{522 }
+\DoxyCodeLine{526         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a98644191ccd1aba4156066a2c2177046}{isChunkInWorld}}(\textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkY, \textcolor{keywordtype}{int} chunkZ);}
+\DoxyCodeLine{527 }
+\DoxyCodeLine{531         \textcolor{keyword}{static} \mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunkLoadLevel}} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a75e079ae2322953eb507d36a43a8074f}{getChunkLoadLevel}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{532 }
+\DoxyCodeLine{536         \textcolor{keyword}{static} \mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunkLoadLevel}} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a75e079ae2322953eb507d36a43a8074f}{getChunkLoadLevel}}(\textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkY, \textcolor{keywordtype}{int} chunkZ);}
+\DoxyCodeLine{537 }
+\DoxyCodeLine{541         \textcolor{keyword}{static} \textcolor{keyword}{const} std::string\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_adbb043896c963a970576500da79e5c5f}{openedTerrainFileName}}();}
+\DoxyCodeLine{542 }
+\DoxyCodeLine{547         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aa3d136070567589c30c211beca50b41a}{infiniteWorld}}();}
+\DoxyCodeLine{548 }
+\DoxyCodeLine{549 }
+\DoxyCodeLine{550         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{551 }
+\DoxyCodeLine{555         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a190df29880cb7d99444cf97d342bc658}{setAImode}}(\textcolor{keywordtype}{bool} on);}
+\DoxyCodeLine{556 }
+\DoxyCodeLine{560         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a2140d7564b0c4685f94ae8f67c916df2}{setNChunksToCompute}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nChunksToCompute);}
+\DoxyCodeLine{561 }
+\DoxyCodeLine{565         \textcolor{keyword}{static} block \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a1f4d81212bc88f5fbb2d5f57c75a4c4a}{setBlock}}(\textcolor{keyword}{const} vec3\& pos, block blockID);}
+\DoxyCodeLine{566 }
+\DoxyCodeLine{570         \textcolor{keyword}{static} block \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a1f4d81212bc88f5fbb2d5f57c75a4c4a}{setBlock}}(\textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} y, \textcolor{keywordtype}{int} z, block blockID);}
+\DoxyCodeLine{571 }
+\DoxyCodeLine{575         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_afc15038ff6938e3ff80f62902c730d84}{createChunkAt}}(\textcolor{keywordtype}{bool} empty, \textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{576 }
+\DoxyCodeLine{580         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_afc15038ff6938e3ff80f62902c730d84}{createChunkAt}}(\textcolor{keywordtype}{bool} empty, \textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkY, \textcolor{keywordtype}{int} chunkZ);}
+\DoxyCodeLine{581 }
+\DoxyCodeLine{586         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ac4f2cb05cbb047dda35cde8d3fa2afc3}{createChunk}}(\textcolor{keywordtype}{bool} empty, \textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{587 }
+\DoxyCodeLine{592         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ac4f2cb05cbb047dda35cde8d3fa2afc3}{createChunk}}(\textcolor{keywordtype}{bool} empty, \textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkY, \textcolor{keywordtype}{int} chunkZ);}
+\DoxyCodeLine{593 }
+\DoxyCodeLine{598         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a8f8ec75522ab9281303c79ca8e922242}{selectChunk}}(\textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} y, \textcolor{keywordtype}{int} z);}
+\DoxyCodeLine{599 }
+\DoxyCodeLine{604         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a49123ea0c8fb060a9bae2a4a722ce091}{selectChunkByChunkPos}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{605 }
+\DoxyCodeLine{610         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a49123ea0c8fb060a9bae2a4a722ce091}{selectChunkByChunkPos}}(\textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} y, \textcolor{keywordtype}{int} z);}
+\DoxyCodeLine{611 }
+\DoxyCodeLine{616         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a301214283671fa2f976404d89f9d6b8a}{selectChunkByRealPos}}(\textcolor{keyword}{const} vec3\& pos);}
+\DoxyCodeLine{617 }
+\DoxyCodeLine{622         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a23c2a6f5a6e5af91fbb590cf5d21c8ca}{neighborMinusX}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{623 }
+\DoxyCodeLine{628         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a73b9fd0bb90c807f2e31b8db10688832}{neighborPlusX}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{629 }
+\DoxyCodeLine{634         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a7f98ad7e4a12139769bc74b1434fac7e}{neighborMinusY}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{635 }
+\DoxyCodeLine{640         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aa3aa02a6f8038ff348d2efdc5701857e}{neighborPlusY}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{641 }
+\DoxyCodeLine{646         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aa764bda98c3cfeffd491879c84b4e273}{neighborMinusZ}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{647 }
+\DoxyCodeLine{652         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a6789494f394841dc4f16c343f601a47c}{neighborPlusZ}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{653 }
+\DoxyCodeLine{665         \textcolor{keyword}{static} std::unordered\_map<vec3, std::vector<vertex>>* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a3679f1b3ccaabad1a99fb638a65a114d}{drawableChunksWrite}}();}
+\DoxyCodeLine{666 }
+\DoxyCodeLine{671         \textcolor{keyword}{static} std::recursive\_mutex\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aa28c5bfee04124d86e3c004ed1ff5dec}{chunksMutex}}();}
+\DoxyCodeLine{672 }
+\DoxyCodeLine{677         \textcolor{keyword}{static} std::recursive\_mutex\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ae5901942923d66bf8c3b327d78ca6dd6}{highPriorityListMutex}}();}
+\DoxyCodeLine{678 }
+\DoxyCodeLine{683         \textcolor{keyword}{static} std::unordered\_set<vec3>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_abdbda6caf954384ac87604dce2735073}{freeableChunks}}();}
+\DoxyCodeLine{684 }
+\DoxyCodeLine{689         \textcolor{keyword}{static} std::mutex\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a2ca1aea53d49d99c8a831717ffdffa70}{freeableChunksMutex}}();}
+\DoxyCodeLine{690 }
+\DoxyCodeLine{695         \textcolor{keyword}{static} std::mutex\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_abb2aab50cda6f0b81311977dcd459a28}{managerThreadMutex}}();}
+\DoxyCodeLine{696 }
+\DoxyCodeLine{701         \textcolor{keyword}{static} std::condition\_variable\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_abf48cf73b511377bc0bbab1c0f665d6a}{managerThreadCV}}();}
+\DoxyCodeLine{702         }
+\DoxyCodeLine{708         \textcolor{keyword}{static} std::atomic<bool>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a93649c9bbd26e20e7269c8eb952f99d9}{forceSyncFlag}}();}
+\DoxyCodeLine{709 }
+\DoxyCodeLine{715         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a56d265acb6be3e11d5e3d97ddaa7707c}{waitTerrainLoaded}}();}
+\DoxyCodeLine{716 }
+\DoxyCodeLine{720         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a4be90fe9601f9418b8bf04eae3b9343c}{pushDrawableChunks}}(\textcolor{keyword}{const} \mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{chunkRenderingData}}\& renderingData);}
+\DoxyCodeLine{721 }
+\DoxyCodeLine{729         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ae4db6dff9f4bd67da998280921901aea}{swapDrawableChunksLists}}();}
+\DoxyCodeLine{730 }
+\DoxyCodeLine{735         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_adab6404c348c813b542eb1f5ae1788ca}{updatePriorityChunks}}();}
+\DoxyCodeLine{736 }
+\DoxyCodeLine{742         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ada4d7ba7eb8aba561e009370c9d3bbe9}{loadChunk}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{743 }
+\DoxyCodeLine{751         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a84e1af15ec8f8e31cb2bece4f2654098}{unloadChunk}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{752 }
+\DoxyCodeLine{757         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a6d35b99295204c64a2b7c7ff8e132b3b}{meshChunks}}(\textcolor{keyword}{const} std::atomic<int>\& chunkRange, \textcolor{keywordtype}{int} rangeStart, \textcolor{keywordtype}{int} rangeEnd,}
+\DoxyCodeLine{758                                std::shared\_mutex\& syncMutex, std::condition\_variable\_any\& meshingThreadsCV,}
+\DoxyCodeLine{759                                std::atomic<bool>\& meshingTsCVFlag, std::barrier<>\& syncPoint);}
+\DoxyCodeLine{760 }
+\DoxyCodeLine{768         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a66281b126d74f9612127a9dd48cae0ee}{manageChunks}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nMeshingThreads);}
+\DoxyCodeLine{769 }
+\DoxyCodeLine{776         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a731f558102aeb3a64726affbdc93f7a5}{finiteWorldLoading}}(\textcolor{keyword}{const} std::string\& terrainFile = \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{777 }
+\DoxyCodeLine{790         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ae51dc8e3f96ffb3b466dfebcc8e0541e}{generateAIWorld}}(\textcolor{keyword}{const} std::string\& path = \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{791 }
+\DoxyCodeLine{797         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a9a56df726d1236704c90b975446b5647}{saveAllChunks}}(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{798 }
+\DoxyCodeLine{804         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a9d0926daf50e5a4dc304ae62c784e0c1}{loadAllChunks}}(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{805 }
+\DoxyCodeLine{812         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ac3e71f30460f5f8e5906e2e6d3456cc0}{highPriorityUpdate}}(\textcolor{keyword}{const} vec3\& chunkPos);}
+\DoxyCodeLine{813 }
+\DoxyCodeLine{820         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a2c81fd377975d8d4b6268a744cd2c607}{selectAIworld}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID);}
+\DoxyCodeLine{821 }
+\DoxyCodeLine{830         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a04c1f10f13aab327b7a7a888be4015ad}{selectOriginalWorld}}();}
+\DoxyCodeLine{831 }
+\DoxyCodeLine{835         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af84d72859051399781be8212a5e75e75}{resetAIChunks}}();}
+\DoxyCodeLine{836 }
+\DoxyCodeLine{840         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_adbb043896c963a970576500da79e5c5f}{openedTerrainFileName}}(\textcolor{keyword}{const} std::string\& newName);}
+\DoxyCodeLine{841 }
+\DoxyCodeLine{842 }
+\DoxyCodeLine{843         \textcolor{comment}{/*}}
+\DoxyCodeLine{844 \textcolor{comment}{        Clean Up.}}
+\DoxyCodeLine{845 \textcolor{comment}{        */}}
+\DoxyCodeLine{846 }
+\DoxyCodeLine{851         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aba752b163801ff360a94bf1325302bc0}{clean}}();}
+\DoxyCodeLine{852 }
+\DoxyCodeLine{857         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_abaca4db6065dc98343fc50f3a333e248}{cleanUp}}();}
+\DoxyCodeLine{858 }
+\DoxyCodeLine{859     \textcolor{keyword}{private}:}
+\DoxyCodeLine{860 }
+\DoxyCodeLine{861         \textcolor{comment}{/*}}
+\DoxyCodeLine{862 \textcolor{comment}{        Attributes.}}
+\DoxyCodeLine{863 \textcolor{comment}{        */}}
+\DoxyCodeLine{864 }
+\DoxyCodeLine{865         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialised\_,}
+\DoxyCodeLine{866                     infiniteWorld\_;}
+\DoxyCodeLine{867         \textcolor{keyword}{static} \textcolor{keywordtype}{int} nChunksToCompute\_;}
+\DoxyCodeLine{868         \textcolor{keyword}{static} std::unordered\_map<vec3, chunk*> chunks\_;}
+\DoxyCodeLine{869         \textcolor{keyword}{static} std::unordered\_map<vec3, model>* drawableChunksWrite\_,}
+\DoxyCodeLine{870                                                             * drawableChunksRead\_;}
+\DoxyCodeLine{871         \textcolor{keyword}{static} std::deque<chunk*> freeChunks\_;}
+\DoxyCodeLine{872         \textcolor{keyword}{static} std::unordered\_set<vec3> freeableChunks\_;}
+\DoxyCodeLine{873     }
+\DoxyCodeLine{874         \textcolor{keyword}{static} std::deque<vec3> priorityMeshingList\_; \textcolor{comment}{// Chunks that need a high priority mesh regeneration.}}
+\DoxyCodeLine{875         \textcolor{keyword}{static} std::deque<vec3> priorityUpdateList\_; \textcolor{comment}{// Chunks that, once their mesh is updated, need to update their vertex data.}}
+\DoxyCodeLine{876 }
+\DoxyCodeLine{877         \textcolor{keyword}{static} std::mutex freeableChunksMutex\_,}
+\DoxyCodeLine{878                           managerThreadMutex\_,}
+\DoxyCodeLine{879                           loadingTerrainMutex\_;}
+\DoxyCodeLine{880 }
+\DoxyCodeLine{881         \textcolor{comment}{/*}}
+\DoxyCodeLine{882 \textcolor{comment}{        This mutex's sole purpose is to let us}}
+\DoxyCodeLine{883 \textcolor{comment}{        use the highPriorityUpdatesCV\_ condition}}
+\DoxyCodeLine{884 \textcolor{comment}{        variable.}}
+\DoxyCodeLine{885 \textcolor{comment}{        */}}
+\DoxyCodeLine{886         \textcolor{keyword}{static} std::shared\_mutex highPriorityMutex\_;}
+\DoxyCodeLine{887 }
+\DoxyCodeLine{888         \textcolor{keyword}{static} std::recursive\_mutex drawableChunksWriteMutex\_,}
+\DoxyCodeLine{889                                     chunksMutex\_,}
+\DoxyCodeLine{890                                     freeChunksMutex\_,}
+\DoxyCodeLine{891                                     priorityMeshingListMutex\_;}
+\DoxyCodeLine{892         \textcolor{keyword}{static} std::condition\_variable managerThreadCV\_,}
+\DoxyCodeLine{893                                        loadingTerrainCV\_;}
+\DoxyCodeLine{894         \textcolor{keyword}{static} std::condition\_variable\_any highPriorityUpdatesCV\_;}
+\DoxyCodeLine{895 }
+\DoxyCodeLine{896         \textcolor{comment}{/*}}
+\DoxyCodeLine{897 \textcolor{comment}{        Used to force all meshing threads to synchronize with}}
+\DoxyCodeLine{898 \textcolor{comment}{        the rendering thread when a high priority}}
+\DoxyCodeLine{899 \textcolor{comment}{        chunk update is issued and it's imperative than the update}}
+\DoxyCodeLine{900 \textcolor{comment}{        made is reflected in the rendering thread as quickly as possible.}}
+\DoxyCodeLine{901 \textcolor{comment}{        */}}
+\DoxyCodeLine{902         \textcolor{keyword}{static} std::atomic<bool> forceSyncFlag\_,}
+\DoxyCodeLine{903                                  waitTerrainLoaded\_;}
+\DoxyCodeLine{904 }
+\DoxyCodeLine{905         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} parseChunkPosState\_; \textcolor{comment}{// 0 = parsing x coord, 1 = parsing y coord, 2 = parsing z coord.}}
+\DoxyCodeLine{906         \textcolor{keyword}{static} \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} parseChunkPosStates\_;}
+\DoxyCodeLine{907         \textcolor{keyword}{static} std::string openedTerrainFileName\_;}
+\DoxyCodeLine{908 }
+\DoxyCodeLine{909         \textcolor{keyword}{static} std::unordered\_map<unsigned int, std::unordered\_map<vec3, bool>> AIChunkAvailable\_;}
+\DoxyCodeLine{910         \textcolor{keyword}{static} std::unordered\_map<unsigned int, std::unordered\_map<vec3, chunk*>> AIagentChunks\_;}
+\DoxyCodeLine{911         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} selectedAIWorld\_;}
+\DoxyCodeLine{912 }
+\DoxyCodeLine{913         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} originalWorldAccess\_;}
+\DoxyCodeLine{914 }
+\DoxyCodeLine{915 }
+\DoxyCodeLine{916         \textcolor{comment}{/*}}
+\DoxyCodeLine{917 \textcolor{comment}{        Methods.}}
+\DoxyCodeLine{918 \textcolor{comment}{        */}}
+\DoxyCodeLine{919         \textcolor{keyword}{static} block getBlockOGWorld\_(\textcolor{keywordtype}{int} posX, \textcolor{keywordtype}{int} posY, \textcolor{keywordtype}{int} posZ);}
+\DoxyCodeLine{920 }
+\DoxyCodeLine{921     \};}
+\DoxyCodeLine{922 }
+\DoxyCodeLine{923     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a7f264ae01f826c35e3bd32edc5a7137b}{chunkManager::initialised}}() \{}
+\DoxyCodeLine{924     }
+\DoxyCodeLine{925         \textcolor{keywordflow}{return} initialised\_;}
+\DoxyCodeLine{926     }
+\DoxyCodeLine{927     \}}
+\DoxyCodeLine{928 }
+\DoxyCodeLine{929     \textcolor{keyword}{inline} vec3 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a7005925eede113047d475d675333600f}{chunkManager::getChunkRelCoords}}(\textcolor{keyword}{const} vec3\& blockPos) \{}
+\DoxyCodeLine{930     }
+\DoxyCodeLine{931         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a7005925eede113047d475d675333600f}{getChunkRelCoords}}(blockPos.x, blockPos.y, blockPos.z);}
+\DoxyCodeLine{932     }
+\DoxyCodeLine{933     \}}
+\DoxyCodeLine{934 }
+\DoxyCodeLine{935     \textcolor{keyword}{inline} vec3 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af6b0e23a8370d80966ebadcb64b39d93}{chunkManager::getChunkCoords}}(\textcolor{keyword}{const} vec3\& blockPos) \{}
+\DoxyCodeLine{936     }
+\DoxyCodeLine{937         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af6b0e23a8370d80966ebadcb64b39d93}{getChunkCoords}}(blockPos.x, blockPos.y, blockPos.z);}
+\DoxyCodeLine{938     }
+\DoxyCodeLine{939     \}}
+\DoxyCodeLine{940 }
+\DoxyCodeLine{941     \textcolor{keyword}{inline} vec3 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af6b0e23a8370d80966ebadcb64b39d93}{chunkManager::getChunkCoords}}(\textcolor{keywordtype}{float} globalX, \textcolor{keywordtype}{float} globalY, \textcolor{keywordtype}{float} globalZ) \{}
+\DoxyCodeLine{942 }
+\DoxyCodeLine{943         \textcolor{keywordflow}{return} vec3(floor(globalX / \mbox{\hyperlink{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}{SCX}}), floor(globalY / \mbox{\hyperlink{definitions_8h_ada54a66531ebf97036138412933b093a}{SCY}}), floor(globalZ / \mbox{\hyperlink{definitions_8h_ac6b1ebceb207d8869690065097b574c6}{SCZ}}));}
+\DoxyCodeLine{944 }
+\DoxyCodeLine{945     \}}
+\DoxyCodeLine{946 }
+\DoxyCodeLine{947     \textcolor{keyword}{inline} vec2 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aceb5f28a61b7f1c16c3d4beccc6d9122}{chunkManager::getChunkXZCoords}}(\textcolor{keyword}{const} vec2\& blockXZPos) \{}
+\DoxyCodeLine{948     }
+\DoxyCodeLine{949         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aceb5f28a61b7f1c16c3d4beccc6d9122}{getChunkXZCoords}}(blockXZPos.x, blockXZPos.y);}
+\DoxyCodeLine{950     }
+\DoxyCodeLine{951     \}}
+\DoxyCodeLine{952 }
+\DoxyCodeLine{953     \textcolor{keyword}{inline} vec2 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aceb5f28a61b7f1c16c3d4beccc6d9122}{chunkManager::getChunkXZCoords}}(\textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} z) \{}
+\DoxyCodeLine{954 }
+\DoxyCodeLine{955         \textcolor{keywordflow}{return} vec2((\textcolor{keywordtype}{int})floor((\textcolor{keywordtype}{double})x / \mbox{\hyperlink{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}{SCX}}), (\textcolor{keywordtype}{int})floor((\textcolor{keywordtype}{double})z / \mbox{\hyperlink{definitions_8h_ada54a66531ebf97036138412933b093a}{SCY}}));}
+\DoxyCodeLine{956 }
+\DoxyCodeLine{957     \}}
+\DoxyCodeLine{958 }
+\DoxyCodeLine{959     \textcolor{keyword}{inline} vec3 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a69bec92ab94599cd134249a375ee6442}{chunkManager::getGlobalPos}}(\textcolor{keyword}{const} vec3\& chunkPos, \textcolor{keyword}{const} vec3\& inChunkPos) \{}
+\DoxyCodeLine{960     }
+\DoxyCodeLine{961         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a69bec92ab94599cd134249a375ee6442}{getGlobalPos}}(chunkPos.x, chunkPos.y, chunkPos.z, inChunkPos.x, inChunkPos.y, inChunkPos.z);}
+\DoxyCodeLine{962     }
+\DoxyCodeLine{963     \}}
+\DoxyCodeLine{964     }
+\DoxyCodeLine{965     \textcolor{keyword}{inline} vec3 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a69bec92ab94599cd134249a375ee6442}{chunkManager::getGlobalPos}}(\textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkY, \textcolor{keywordtype}{int} chunkZ, \textcolor{keywordtype}{int} inChunkX, \textcolor{keywordtype}{int} inChunkY, \textcolor{keywordtype}{int} inChunkZ) \{}
+\DoxyCodeLine{966 }
+\DoxyCodeLine{967         \textcolor{keywordflow}{return} vec3(chunkX * \mbox{\hyperlink{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}{SCX}} + inChunkX, chunkY * \mbox{\hyperlink{definitions_8h_ada54a66531ebf97036138412933b093a}{SCY}} + inChunkY, chunkZ * \mbox{\hyperlink{definitions_8h_ac6b1ebceb207d8869690065097b574c6}{SCZ}} + inChunkZ);}
+\DoxyCodeLine{968 }
+\DoxyCodeLine{969     \}}
+\DoxyCodeLine{970 }
+\DoxyCodeLine{971     \textcolor{keyword}{inline} vec2 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ad961611f26197e052391f45fd0c3017a}{chunkManager::getXZGlobalPos}}(\textcolor{keyword}{const} vec2\& chunkPos, \textcolor{keyword}{const} vec2\& inChunkPos) \{}
+\DoxyCodeLine{972 }
+\DoxyCodeLine{973         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ad961611f26197e052391f45fd0c3017a}{getXZGlobalPos}}(chunkPos.x, chunkPos.y, inChunkPos.x, inChunkPos.y);}
+\DoxyCodeLine{974 }
+\DoxyCodeLine{975     \}}
+\DoxyCodeLine{976 }
+\DoxyCodeLine{977     \textcolor{keyword}{inline} vec2 \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ad961611f26197e052391f45fd0c3017a}{chunkManager::getXZGlobalPos}}(\textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkZ, \textcolor{keywordtype}{int} inChunkX, \textcolor{keywordtype}{int} inChunkZ) \{}
+\DoxyCodeLine{978 }
+\DoxyCodeLine{979         \textcolor{keywordflow}{return} vec2(chunkX * \mbox{\hyperlink{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}{SCX}} + inChunkX, chunkZ * \mbox{\hyperlink{definitions_8h_ac6b1ebceb207d8869690065097b574c6}{SCZ}} + inChunkZ);}
+\DoxyCodeLine{980 }
+\DoxyCodeLine{981     \}}
+\DoxyCodeLine{982 }
+\DoxyCodeLine{983     \textcolor{keyword}{inline} \textcolor{keyword}{const} std::unordered\_map<vec3, chunk*>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a6ad5d9251599567cff64c1b92665d273}{chunkManager::chunks}}() \{}
+\DoxyCodeLine{984 }
+\DoxyCodeLine{985         \textcolor{keywordflow}{return} chunks\_;}
+\DoxyCodeLine{986 }
+\DoxyCodeLine{987     \}}
+\DoxyCodeLine{988 }
+\DoxyCodeLine{989     \textcolor{keyword}{inline} std::unordered\_map<vec3, std::vector<vertex>> \textcolor{keyword}{const} * \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a1ede70b62c9ceb9f4752650678280c3d}{chunkManager::drawableChunksRead}}() \{}
+\DoxyCodeLine{990 }
+\DoxyCodeLine{991         \textcolor{keywordflow}{return} drawableChunksRead\_;}
+\DoxyCodeLine{992 }
+\DoxyCodeLine{993     \}}
+\DoxyCodeLine{994 }
+\DoxyCodeLine{995     \textcolor{keyword}{inline} std::unordered\_map<vec3, std::vector<vertex>>* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a3679f1b3ccaabad1a99fb638a65a114d}{chunkManager::drawableChunksWrite}}() \{}
+\DoxyCodeLine{996 }
+\DoxyCodeLine{997         \textcolor{keywordflow}{return} drawableChunksWrite\_;}
+\DoxyCodeLine{998 }
+\DoxyCodeLine{999     \}}
+\DoxyCodeLine{1000 }
+\DoxyCodeLine{1001     \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} chunkManager::nChunksToCompute() \{}
+\DoxyCodeLine{1002 }
+\DoxyCodeLine{1003         \textcolor{keywordflow}{return} nChunksToCompute\_;}
+\DoxyCodeLine{1004 }
+\DoxyCodeLine{1005     \}}
+\DoxyCodeLine{1006 }
+\DoxyCodeLine{1007     \textcolor{keyword}{inline} block \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ae072a840144f18966e779dbfc880a126}{chunkManager::getBlock}}(\textcolor{keyword}{const} vec3\& pos) \{}
+\DoxyCodeLine{1008 }
+\DoxyCodeLine{1009         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ae072a840144f18966e779dbfc880a126}{getBlock}}(pos.x, pos.y, pos.z);}
+\DoxyCodeLine{1010 }
+\DoxyCodeLine{1011     \}}
+\DoxyCodeLine{1012 }
+\DoxyCodeLine{1013     \textcolor{keyword}{inline} std::vector<block> \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af990d211978fa0e1fcf934b7bde38aa3}{chunkManager::getBlocksBox}}(\textcolor{keyword}{const} vec3\& pos1, \textcolor{keyword}{const} vec3\& pos2) \{}
+\DoxyCodeLine{1014 }
+\DoxyCodeLine{1015         \textcolor{comment}{// std::vector has move semantics. This allows us to avoid the unnecessary copies that would otherwise be made here.}}
+\DoxyCodeLine{1016         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af990d211978fa0e1fcf934b7bde38aa3}{getBlocksBox}}(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z); }
+\DoxyCodeLine{1017 }
+\DoxyCodeLine{1018     \}}
+\DoxyCodeLine{1019 }
+\DoxyCodeLine{1020     \textcolor{keyword}{inline} \textcolor{keyword}{const} std::unordered\_set<vec3>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a0e59b369990113a95dc2fc3495eb233f}{chunkManager::cFreeableChunks}}()\{}
+\DoxyCodeLine{1021 }
+\DoxyCodeLine{1022         \textcolor{keywordflow}{return} freeableChunks\_;}
+\DoxyCodeLine{1023 }
+\DoxyCodeLine{1024     \}}
+\DoxyCodeLine{1025 }
+\DoxyCodeLine{1026     \textcolor{keyword}{inline} \textcolor{keyword}{const} std::atomic<bool>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aaf21a3b78ba3970cefcaf19f4dfcecbd}{chunkManager::cForceSyncFlag}}() \{}
+\DoxyCodeLine{1027 }
+\DoxyCodeLine{1028         \textcolor{keywordflow}{return} forceSyncFlag\_;}
+\DoxyCodeLine{1029 }
+\DoxyCodeLine{1030     \}}
+\DoxyCodeLine{1031 }
+\DoxyCodeLine{1032     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a71fb73063c26710221bed9ba0a687c86}{chunkManager::isInWorld}}(\textcolor{keyword}{const} vec3\& pos) \{}
+\DoxyCodeLine{1033     }
+\DoxyCodeLine{1034         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a71fb73063c26710221bed9ba0a687c86}{isInWorld}}(pos.x, pos.y, pos.z);}
+\DoxyCodeLine{1035     }
+\DoxyCodeLine{1036     \}}
+\DoxyCodeLine{1037 }
+\DoxyCodeLine{1038     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a71fb73063c26710221bed9ba0a687c86}{chunkManager::isInWorld}}(\textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} y, \textcolor{keywordtype}{int} z) \{}
+\DoxyCodeLine{1039 }
+\DoxyCodeLine{1040         \textcolor{keywordflow}{return} x >= -\/nChunksToCompute\_ * \mbox{\hyperlink{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}{VoxelEng::SCX}} \&\& x < (nChunksToCompute\_ -\/ 1) * \mbox{\hyperlink{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}{VoxelEng::SCX}} \&\&}
+\DoxyCodeLine{1041                y >= -\/\mbox{\hyperlink{definitions_8h_a4c7407b1517302cc403a931427aab650}{yChunksRange}} * \mbox{\hyperlink{definitions_8h_ada54a66531ebf97036138412933b093a}{VoxelEng::SCY}} \&\& y < (\mbox{\hyperlink{definitions_8h_a4c7407b1517302cc403a931427aab650}{yChunksRange}} -\/ 1) * \mbox{\hyperlink{definitions_8h_ada54a66531ebf97036138412933b093a}{VoxelEng::SCY}} \&\&}
+\DoxyCodeLine{1042                z >= -\/nChunksToCompute\_ * \mbox{\hyperlink{definitions_8h_ac6b1ebceb207d8869690065097b574c6}{VoxelEng::SCZ}} \&\& z < (nChunksToCompute\_ -\/ 1) * \mbox{\hyperlink{definitions_8h_ac6b1ebceb207d8869690065097b574c6}{VoxelEng::SCZ}};}
+\DoxyCodeLine{1043     }
+\DoxyCodeLine{1044     \}}
+\DoxyCodeLine{1045 }
+\DoxyCodeLine{1046     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a98644191ccd1aba4156066a2c2177046}{chunkManager::isChunkInWorld}}(\textcolor{keyword}{const} vec3\& chunkPos) \{}
+\DoxyCodeLine{1047 }
+\DoxyCodeLine{1048         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a98644191ccd1aba4156066a2c2177046}{isChunkInWorld}}(chunkPos.x, chunkPos.y, chunkPos.z);}
+\DoxyCodeLine{1049 }
+\DoxyCodeLine{1050     \}}
+\DoxyCodeLine{1051 }
+\DoxyCodeLine{1052     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a98644191ccd1aba4156066a2c2177046}{chunkManager::isChunkInWorld}}(\textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkY, \textcolor{keywordtype}{int} chunkZ) \{}
+\DoxyCodeLine{1053 }
+\DoxyCodeLine{1054         \textcolor{keywordflow}{return}  chunkX >= -\/nChunksToCompute\_ \&\& chunkX < nChunksToCompute\_\&\&}
+\DoxyCodeLine{1055                 chunkY >= -\/\mbox{\hyperlink{definitions_8h_a4c7407b1517302cc403a931427aab650}{yChunksRange}} \&\& chunkY < \mbox{\hyperlink{definitions_8h_a4c7407b1517302cc403a931427aab650}{yChunksRange}} \&\&}
+\DoxyCodeLine{1056                 chunkZ >= -\/nChunksToCompute\_ \&\& chunkZ < nChunksToCompute\_;}
+\DoxyCodeLine{1057 }
+\DoxyCodeLine{1058     \}}
+\DoxyCodeLine{1059 }
+\DoxyCodeLine{1060     \textcolor{keyword}{inline} \mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunkLoadLevel}} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a75e079ae2322953eb507d36a43a8074f}{chunkManager::getChunkLoadLevel}}(\textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkY, \textcolor{keywordtype}{int} chunkZ) \{}
+\DoxyCodeLine{1061 }
+\DoxyCodeLine{1062         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a75e079ae2322953eb507d36a43a8074f}{getChunkLoadLevel}}(\{ chunkX, chunkY, chunkZ \});}
+\DoxyCodeLine{1063 }
+\DoxyCodeLine{1064     \}}
+\DoxyCodeLine{1065 }
+\DoxyCodeLine{1066     \textcolor{keyword}{inline} \textcolor{keyword}{const} std::string\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_adbb043896c963a970576500da79e5c5f}{chunkManager::openedTerrainFileName}}() \{}
+\DoxyCodeLine{1067 }
+\DoxyCodeLine{1068         \textcolor{keywordflow}{return} openedTerrainFileName\_;}
+\DoxyCodeLine{1069 }
+\DoxyCodeLine{1070     \}}
+\DoxyCodeLine{1071 }
+\DoxyCodeLine{1072     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aa3d136070567589c30c211beca50b41a}{chunkManager::infiniteWorld}}() \{}
+\DoxyCodeLine{1073     }
+\DoxyCodeLine{1074         \textcolor{keywordflow}{return} infiniteWorld\_;}
+\DoxyCodeLine{1075     }
+\DoxyCodeLine{1076     \}}
+\DoxyCodeLine{1077     }
+\DoxyCodeLine{1078     \textcolor{keyword}{inline} block \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a1f4d81212bc88f5fbb2d5f57c75a4c4a}{chunkManager::setBlock}}(\textcolor{keyword}{const} vec3\& pos, block blockID) \{}
+\DoxyCodeLine{1079 }
+\DoxyCodeLine{1080         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a1f4d81212bc88f5fbb2d5f57c75a4c4a}{setBlock}}(pos.x, pos.y, pos.z, blockID);}
+\DoxyCodeLine{1081 }
+\DoxyCodeLine{1082     \}}
+\DoxyCodeLine{1083 }
+\DoxyCodeLine{1084     \textcolor{keyword}{inline} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_afc15038ff6938e3ff80f62902c730d84}{chunkManager::createChunkAt}}(\textcolor{keywordtype}{bool} empty, \textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkY, \textcolor{keywordtype}{int} chunkZ) \{}
+\DoxyCodeLine{1085 }
+\DoxyCodeLine{1086         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_afc15038ff6938e3ff80f62902c730d84}{createChunkAt}}(empty, vec3(chunkX, chunkY, chunkZ));}
+\DoxyCodeLine{1087 }
+\DoxyCodeLine{1088     \}}
+\DoxyCodeLine{1089 }
+\DoxyCodeLine{1090     \textcolor{keyword}{inline} \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}* \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ac4f2cb05cbb047dda35cde8d3fa2afc3}{chunkManager::createChunk}}(\textcolor{keywordtype}{bool} empty, \textcolor{keywordtype}{int} chunkX, \textcolor{keywordtype}{int} chunkY, \textcolor{keywordtype}{int} chunkZ) \{}
+\DoxyCodeLine{1091 }
+\DoxyCodeLine{1092         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ac4f2cb05cbb047dda35cde8d3fa2afc3}{createChunk}}(empty, vec3(chunkX, chunkY, chunkZ));}
+\DoxyCodeLine{1093 }
+\DoxyCodeLine{1094     \}}
+\DoxyCodeLine{1095 }
+\DoxyCodeLine{1096     \textcolor{keyword}{inline} std::recursive\_mutex\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_aa28c5bfee04124d86e3c004ed1ff5dec}{chunkManager::chunksMutex}}() \{}
+\DoxyCodeLine{1097 }
+\DoxyCodeLine{1098         \textcolor{keywordflow}{return} chunksMutex\_;}
+\DoxyCodeLine{1099 }
+\DoxyCodeLine{1100     \}}
+\DoxyCodeLine{1101 }
+\DoxyCodeLine{1102     \textcolor{keyword}{inline} std::recursive\_mutex\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_ae5901942923d66bf8c3b327d78ca6dd6}{chunkManager::highPriorityListMutex}}() \{}
+\DoxyCodeLine{1103 }
+\DoxyCodeLine{1104         \textcolor{keywordflow}{return} priorityMeshingListMutex\_;}
+\DoxyCodeLine{1105 }
+\DoxyCodeLine{1106     \}}
+\DoxyCodeLine{1107 }
+\DoxyCodeLine{1108     \textcolor{keyword}{inline} std::unordered\_set<vec3>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_abdbda6caf954384ac87604dce2735073}{chunkManager::freeableChunks}}() \{}
+\DoxyCodeLine{1109 }
+\DoxyCodeLine{1110         \textcolor{keywordflow}{return} freeableChunks\_;}
+\DoxyCodeLine{1111 }
+\DoxyCodeLine{1112     \}}
+\DoxyCodeLine{1113 }
+\DoxyCodeLine{1114     \textcolor{keyword}{inline} std::mutex\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a2ca1aea53d49d99c8a831717ffdffa70}{chunkManager::freeableChunksMutex}}() \{}
+\DoxyCodeLine{1115 }
+\DoxyCodeLine{1116         \textcolor{keywordflow}{return} freeableChunksMutex\_;}
+\DoxyCodeLine{1117 }
+\DoxyCodeLine{1118     \}}
+\DoxyCodeLine{1119 }
+\DoxyCodeLine{1120     \textcolor{keyword}{inline} std::mutex\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_abb2aab50cda6f0b81311977dcd459a28}{chunkManager::managerThreadMutex}}() \{}
+\DoxyCodeLine{1121 }
+\DoxyCodeLine{1122         \textcolor{keywordflow}{return} managerThreadMutex\_;}
+\DoxyCodeLine{1123 }
+\DoxyCodeLine{1124     \}}
+\DoxyCodeLine{1125 }
+\DoxyCodeLine{1126     \textcolor{keyword}{inline} std::condition\_variable\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_abf48cf73b511377bc0bbab1c0f665d6a}{chunkManager::managerThreadCV}}() \{}
+\DoxyCodeLine{1127 }
+\DoxyCodeLine{1128         \textcolor{keywordflow}{return} managerThreadCV\_;}
+\DoxyCodeLine{1129 }
+\DoxyCodeLine{1130     \}}
+\DoxyCodeLine{1131 }
+\DoxyCodeLine{1132     \textcolor{keyword}{inline} std::atomic<bool>\& \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a93649c9bbd26e20e7269c8eb952f99d9}{chunkManager::forceSyncFlag}}() \{}
+\DoxyCodeLine{1133 }
+\DoxyCodeLine{1134         \textcolor{keywordflow}{return} forceSyncFlag\_;}
+\DoxyCodeLine{1135 }
+\DoxyCodeLine{1136     \}}
+\DoxyCodeLine{1137 }
+\DoxyCodeLine{1138 \}}
+\DoxyCodeLine{1139 }
+\DoxyCodeLine{1140 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

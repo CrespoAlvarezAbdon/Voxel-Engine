@@ -1,0 +1,254 @@
+\hypertarget{genetic_8h_source}{}\doxysection{genetic.\+h}
+\label{genetic_8h_source}\index{code/AI/genetic.h@{code/AI/genetic.h}}
+\mbox{\hyperlink{genetic_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#ifndef \_AIEXAMPLE\_GENETIC\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#define \_AIEXAMPLE\_GENETIC\_}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <cstddef>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <arrayfire.h>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{_n_n_8h}{NN.h}}"{}}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include "{}../threadPool.h"{}}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 }
+\DoxyCodeLine{21 \textcolor{keyword}{namespace }AIExample \{}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{24     \textcolor{comment}{//Forward declarations.//}}
+\DoxyCodeLine{26 \textcolor{comment}{}}
+\DoxyCodeLine{27     \textcolor{keyword}{class }miningAIGame;}
+\DoxyCodeLine{28 }
+\DoxyCodeLine{29 }
+\DoxyCodeLine{37     \textcolor{keyword}{class }\mbox{\hyperlink{class_a_i_example_1_1genetic_job}{geneticJob}} : \textcolor{keyword}{public} \mbox{\hyperlink{class_voxel_eng_1_1job}{VoxelEng::job}} \{}
+\DoxyCodeLine{38 }
+\DoxyCodeLine{39     \textcolor{keyword}{public}:}
+\DoxyCodeLine{40 }
+\DoxyCodeLine{48         \mbox{\hyperlink{class_a_i_example_1_1genetic_job}{geneticJob}}(std::size\_t rangeStart, std::size\_t rangeEnd, \textcolor{keywordtype}{float}* fitness, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int}* indices,}
+\DoxyCodeLine{49                    \textcolor{keywordtype}{float} (*evaluationFunction)(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID));}
+\DoxyCodeLine{50 }
+\DoxyCodeLine{60         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_job_a481ee31c16d629cd9c40b480b618c399}{setAttributes}}(std::size\_t rangeStart, std::size\_t rangeEnd, \textcolor{keywordtype}{float}* fitness, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int}* indices,}
+\DoxyCodeLine{61                            \textcolor{keywordtype}{float} (*evaluationFunction)(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID));}
+\DoxyCodeLine{62 }
+\DoxyCodeLine{63     \textcolor{keyword}{private}:}
+\DoxyCodeLine{64 }
+\DoxyCodeLine{65         \textcolor{comment}{/*}}
+\DoxyCodeLine{66 \textcolor{comment}{        Attributes.}}
+\DoxyCodeLine{67 \textcolor{comment}{        */}}
+\DoxyCodeLine{68 }
+\DoxyCodeLine{69         std::size\_t rangeStart\_,}
+\DoxyCodeLine{70                     rangeEnd\_;}
+\DoxyCodeLine{71         \textcolor{keywordtype}{float}* fitness\_;}
+\DoxyCodeLine{72         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} * indices\_;}
+\DoxyCodeLine{73         float (*evaluationFunction\_)(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID);}
+\DoxyCodeLine{74 }
+\DoxyCodeLine{75 }
+\DoxyCodeLine{76         \textcolor{comment}{/*}}
+\DoxyCodeLine{77 \textcolor{comment}{        Methods.}}
+\DoxyCodeLine{78 \textcolor{comment}{        */}}
+\DoxyCodeLine{79 }
+\DoxyCodeLine{80         \textcolor{comment}{/*}}
+\DoxyCodeLine{81 \textcolor{comment}{        Evaluate the fitness of the assigned individuals executing}}
+\DoxyCodeLine{82 \textcolor{comment}{        the provided evaluation function and corresponding parameters.}}
+\DoxyCodeLine{83 \textcolor{comment}{        */}}
+\DoxyCodeLine{84         \textcolor{keywordtype}{void} process();}
+\DoxyCodeLine{85 }
+\DoxyCodeLine{86 }
+\DoxyCodeLine{87     \};}
+\DoxyCodeLine{88 }
+\DoxyCodeLine{89 }
+\DoxyCodeLine{97     \textcolor{keyword}{class }\mbox{\hyperlink{class_a_i_example_1_1copy_job}{copyJob}} : \textcolor{keyword}{public} \mbox{\hyperlink{class_voxel_eng_1_1job}{VoxelEng::job}} \{}
+\DoxyCodeLine{98 }
+\DoxyCodeLine{99     \textcolor{keyword}{public}:}
+\DoxyCodeLine{100 }
+\DoxyCodeLine{108         \mbox{\hyperlink{class_a_i_example_1_1copy_job}{copyJob}}(std::size\_t rangeStart, std::size\_t rangeEnd, \textcolor{keyword}{const} \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{GeneticNeuralNetwork}}* parent,}
+\DoxyCodeLine{109                 std::vector<GeneticNeuralNetwork>* individuals, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int}* newbornInds);}
+\DoxyCodeLine{110 }
+\DoxyCodeLine{119         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1copy_job_aedbcee32a78378d6ac9835068714341a}{setAttributes}}(std::size\_t rangeStart, std::size\_t rangeEnd, \textcolor{keyword}{const} \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{GeneticNeuralNetwork}}* parent,}
+\DoxyCodeLine{120                            std::vector<GeneticNeuralNetwork>* individuals, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int}* newbornInds);}
+\DoxyCodeLine{121 }
+\DoxyCodeLine{122     \textcolor{keyword}{private}:}
+\DoxyCodeLine{123 }
+\DoxyCodeLine{124         \textcolor{comment}{/*}}
+\DoxyCodeLine{125 \textcolor{comment}{        Attributes.}}
+\DoxyCodeLine{126 \textcolor{comment}{        */}}
+\DoxyCodeLine{127 }
+\DoxyCodeLine{128         std::size\_t rangeStart\_,}
+\DoxyCodeLine{129                     rangeEnd\_;}
+\DoxyCodeLine{130         \textcolor{keyword}{const} \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{GeneticNeuralNetwork}}* parent\_;}
+\DoxyCodeLine{131         std::vector<GeneticNeuralNetwork>* individuals\_;}
+\DoxyCodeLine{132         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int}* newbornInds\_;}
+\DoxyCodeLine{133 }
+\DoxyCodeLine{134 }
+\DoxyCodeLine{135         \textcolor{comment}{/*}}
+\DoxyCodeLine{136 \textcolor{comment}{        Methods.}}
+\DoxyCodeLine{137 \textcolor{comment}{        */}}
+\DoxyCodeLine{138 }
+\DoxyCodeLine{139         \textcolor{keywordtype}{void} process();}
+\DoxyCodeLine{140 }
+\DoxyCodeLine{141     \};}
+\DoxyCodeLine{142 }
+\DoxyCodeLine{143 }
+\DoxyCodeLine{150     \textcolor{keyword}{class }\mbox{\hyperlink{class_a_i_example_1_1genetic}{genetic}} \{}
+\DoxyCodeLine{151 }
+\DoxyCodeLine{152     \textcolor{keyword}{public}:}
+\DoxyCodeLine{153 }
+\DoxyCodeLine{154         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{155 }
+\DoxyCodeLine{159         \mbox{\hyperlink{class_a_i_example_1_1genetic_a544b05132c0363d9c297c3bde62b1df5}{genetic}}();}
+\DoxyCodeLine{160 }
+\DoxyCodeLine{161 }
+\DoxyCodeLine{162         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{163 }
+\DoxyCodeLine{169         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_a_i_example_1_1genetic_a3ec064f5bc327a45ef3d69f3c55fa74f}{simInProgress}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{170 }
+\DoxyCodeLine{175         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1genetic_a1aeff9ac8eb612b45f1016b82b4a9f2d}{nIndividuals}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{176 }
+\DoxyCodeLine{177 }
+\DoxyCodeLine{178         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{179 }
+\DoxyCodeLine{186         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_a6393aaaddf5fc4293d8e7c4d5a333796}{genInitPop}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1genetic_a1aeff9ac8eb612b45f1016b82b4a9f2d}{nIndividuals}}, \textcolor{keywordtype}{float} rangeMin, \textcolor{keywordtype}{float} rangeMax, \textcolor{keywordtype}{bool} training);}
+\DoxyCodeLine{187 }
+\DoxyCodeLine{193         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_aaf5dc934614c66cd22f76b3e650d82ce}{setGame}}();}
+\DoxyCodeLine{194 }
+\DoxyCodeLine{199         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_a0d6cbecb13f2deec34340aa9d7cbdf31}{setNetworkTaxonomy}}(\textcolor{keyword}{const} std::initializer\_list<unsigned int>\& sizeLayer);}
+\DoxyCodeLine{200 }
+\DoxyCodeLine{204         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_ad378b8850767df08d971e098b5d4dd8e}{setFitnessFunction}}(\textcolor{keywordtype}{float} (*fitnessFunction)(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID));}
+\DoxyCodeLine{205 }
+\DoxyCodeLine{214         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_a0f7d57540bca4a076f13945b0a964564}{setCrossoverSplitPoint}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} point);}
+\DoxyCodeLine{215 }
+\DoxyCodeLine{220         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_ac473bf6e1ce21393ac904d3f5c05adf9}{setMutationParameters}}(\textcolor{keywordtype}{float} rate, \textcolor{keywordtype}{float} mutationVariationMin, \textcolor{keywordtype}{float} mutationVariationMax);}
+\DoxyCodeLine{221 }
+\DoxyCodeLine{228         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_a9e9fcf6d5953b7e127bc2e53c9202c1d}{setNThreads}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nJobs = 0);}
+\DoxyCodeLine{229 }
+\DoxyCodeLine{236         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_ace4af62bee747c8d1b08ded2a1655ce9}{train}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochs);}
+\DoxyCodeLine{237 }
+\DoxyCodeLine{245         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_ace4af62bee747c8d1b08ded2a1655ce9}{train}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochs, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochsPerSave = 0, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochsForNewWorld = 0);}
+\DoxyCodeLine{246 }
+\DoxyCodeLine{254         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_ab795a241c3ad327fb8cabe49827eb759}{test}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochs, \textcolor{keywordtype}{float}*\& output, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int}\& outputSize, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochsForNewWorld = 0);}
+\DoxyCodeLine{255 }
+\DoxyCodeLine{261         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_ab795a241c3ad327fb8cabe49827eb759}{test}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochs);}
+\DoxyCodeLine{262 }
+\DoxyCodeLine{268         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_a9a18dc0254e93a9b8858277fe109ddd9}{record}}(\textcolor{keyword}{const} std::string\& recordName);}
+\DoxyCodeLine{269 }
+\DoxyCodeLine{274         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1genetic_a471129d5835464ad13279ac38a458e2a}{saveIndividualsData}}(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{275 }
+\DoxyCodeLine{286         \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1genetic_afcce5cc614c220f5ea972ff3864fc9af}{loadIndividualsData}}(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{287 }
+\DoxyCodeLine{288         \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{GeneticNeuralNetwork}}\& individual(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID);}
+\DoxyCodeLine{289 }
+\DoxyCodeLine{290 }
+\DoxyCodeLine{291         \textcolor{comment}{// Destructors.}}
+\DoxyCodeLine{292 }
+\DoxyCodeLine{296         \mbox{\hyperlink{class_a_i_example_1_1genetic_aff859c236b366cd92b456f719eb2ee92}{\string~genetic}}();}
+\DoxyCodeLine{297 }
+\DoxyCodeLine{298     \textcolor{keyword}{private}:}
+\DoxyCodeLine{299 }
+\DoxyCodeLine{300         \textcolor{comment}{/*}}
+\DoxyCodeLine{301 \textcolor{comment}{        Attributes.}}
+\DoxyCodeLine{302 \textcolor{comment}{        */}}
+\DoxyCodeLine{303 }
+\DoxyCodeLine{304         \textcolor{keywordtype}{bool} simInProgress\_,}
+\DoxyCodeLine{305              saveIndsData\_;}
+\DoxyCodeLine{306         \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game}{miningAIGame}}* aiGame\_;}
+\DoxyCodeLine{307         float (*evaluationFunction\_)(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID);}
+\DoxyCodeLine{308         std::vector<unsigned int> sizeLayer\_;}
+\DoxyCodeLine{309         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nIndividuals\_,}
+\DoxyCodeLine{310                      crossoverSplitPoint\_,}
+\DoxyCodeLine{311                      nJobs\_;}
+\DoxyCodeLine{312         \textcolor{keywordtype}{float} mutationRate\_, \textcolor{comment}{// Probability for a single gene (weight) to mutate.}}
+\DoxyCodeLine{313               mutationVariationMin\_,}
+\DoxyCodeLine{314               mutationVariationMax\_;}
+\DoxyCodeLine{315 }
+\DoxyCodeLine{316         std::vector<GeneticNeuralNetwork> individuals\_;}
+\DoxyCodeLine{317         af::array fitness\_,}
+\DoxyCodeLine{318                   selected\_,}
+\DoxyCodeLine{319                  * popInds\_,}
+\DoxyCodeLine{320                  * newbornInds\_;}
+\DoxyCodeLine{321         \textcolor{keywordtype}{float}* hostFitness\_;}
+\DoxyCodeLine{322         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int}* hostSelected\_,}
+\DoxyCodeLine{323                     * hostPopInds\_,}
+\DoxyCodeLine{324                     * hostNewbornInds\_;}
+\DoxyCodeLine{325 }
+\DoxyCodeLine{326         \mbox{\hyperlink{class_voxel_eng_1_1thread_pool}{VoxelEng::threadPool}}* threadPool\_;}
+\DoxyCodeLine{327         std::vector<geneticJob> geneticJobs\_;}
+\DoxyCodeLine{328         std::vector<copyJob> copyJobs\_;}
+\DoxyCodeLine{329 }
+\DoxyCodeLine{330 }
+\DoxyCodeLine{331         \textcolor{comment}{/*}}
+\DoxyCodeLine{332 \textcolor{comment}{        Methods.}}
+\DoxyCodeLine{333 \textcolor{comment}{        */}}
+\DoxyCodeLine{334 }
+\DoxyCodeLine{335         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{336 }
+\DoxyCodeLine{337         \textcolor{comment}{/*}}
+\DoxyCodeLine{338 \textcolor{comment}{        WARNING. Throws an exception if at least one of the conditions that signals that a training/testing}}
+\DoxyCodeLine{339 \textcolor{comment}{        session cannot be started safetly is met. Otherwise it does nothing.}}
+\DoxyCodeLine{340 \textcolor{comment}{        */}}
+\DoxyCodeLine{341         \textcolor{keywordtype}{void} checkFlagsTrainOrTest();}
+\DoxyCodeLine{342 }
+\DoxyCodeLine{343 }
+\DoxyCodeLine{344         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{345 }
+\DoxyCodeLine{346         \textcolor{comment}{/*}}
+\DoxyCodeLine{347 \textcolor{comment}{        Calculate the fitness function assigned to this 'genetic' object}}
+\DoxyCodeLine{348 \textcolor{comment}{        to all the individuals in the population and store the values.}}
+\DoxyCodeLine{349 \textcolor{comment}{        It uses the evaluation function provided in genInitPop().}}
+\DoxyCodeLine{350 \textcolor{comment}{        If useNewborn is equal to true, then the individuals that belong to the last}}
+\DoxyCodeLine{351 \textcolor{comment}{        generated offspring will be the ones that will have their fitness calculated.}}
+\DoxyCodeLine{352 \textcolor{comment}{}}
+\DoxyCodeLine{353 \textcolor{comment}{        NOTES ON USAGE.}}
+\DoxyCodeLine{354 \textcolor{comment}{        hostFitness\_ will have the correct fitness of the actual or the newborn population}}
+\DoxyCodeLine{355 \textcolor{comment}{        (depending on the value of the parameter 'useNewborn'}}
+\DoxyCodeLine{356 \textcolor{comment}{}}
+\DoxyCodeLine{357 \textcolor{comment}{        */}}
+\DoxyCodeLine{358         \textcolor{keywordtype}{void} calculateFitness(\textcolor{keywordtype}{bool} useNewborn = \textcolor{keyword}{false});}
+\DoxyCodeLine{359 }
+\DoxyCodeLine{360         \textcolor{comment}{/*}}
+\DoxyCodeLine{361 \textcolor{comment}{        0 = Roulette -\/ wheel implementation. }}
+\DoxyCodeLine{362 \textcolor{comment}{        1 = Select the fittest in the population.}}
+\DoxyCodeLine{363 \textcolor{comment}{        */}}
+\DoxyCodeLine{364         \textcolor{keywordtype}{void} selectionOperator(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} implementation);}
+\DoxyCodeLine{365 }
+\DoxyCodeLine{366         \textcolor{comment}{/*}}
+\DoxyCodeLine{367 \textcolor{comment}{        0 = 1-\/point crossover implementation.}}
+\DoxyCodeLine{368 \textcolor{comment}{        1 = copy the selected individual in the population.}}
+\DoxyCodeLine{369 \textcolor{comment}{        */}}
+\DoxyCodeLine{370         \textcolor{keywordtype}{void} crossoverOperator(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} implementation);}
+\DoxyCodeLine{371 }
+\DoxyCodeLine{372         \textcolor{comment}{/*}}
+\DoxyCodeLine{373 \textcolor{comment}{        0 = Random implementation. Each gene can be altered slightly independently.}}
+\DoxyCodeLine{374 \textcolor{comment}{        */}}
+\DoxyCodeLine{375         \textcolor{keywordtype}{void} mutationOperator(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} implementation);}
+\DoxyCodeLine{376 }
+\DoxyCodeLine{377         \textcolor{comment}{/*}}
+\DoxyCodeLine{378 \textcolor{comment}{        0 = generational implementation. }}
+\DoxyCodeLine{379 \textcolor{comment}{        1 = elitist implementation.}}
+\DoxyCodeLine{380 \textcolor{comment}{        */}}
+\DoxyCodeLine{381         \textcolor{keywordtype}{void} replacementOperator(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} implementation);}
+\DoxyCodeLine{382 }
+\DoxyCodeLine{383         \textcolor{comment}{/*}}
+\DoxyCodeLine{384 \textcolor{comment}{        If 'nEpochsPerSave' is 0, the individuals' data will be saved once all the epochs have been processed.}}
+\DoxyCodeLine{385 \textcolor{comment}{        If 'nEpochsForNewWorld' is 0, a new world will be generated per epoch.}}
+\DoxyCodeLine{386 \textcolor{comment}{        */}}
+\DoxyCodeLine{387         \textcolor{keywordtype}{void} trainAgents(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochs, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochsPerSave = 0, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochsForNewWorld = 0);}
+\DoxyCodeLine{388 }
+\DoxyCodeLine{389     \};}
+\DoxyCodeLine{390 }
+\DoxyCodeLine{391     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_a_i_example_1_1genetic_a3ec064f5bc327a45ef3d69f3c55fa74f}{genetic::simInProgress}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{392     }
+\DoxyCodeLine{393         \textcolor{keywordflow}{return} simInProgress\_;}
+\DoxyCodeLine{394     }
+\DoxyCodeLine{395     \}}
+\DoxyCodeLine{396 }
+\DoxyCodeLine{397     \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1genetic_a1aeff9ac8eb612b45f1016b82b4a9f2d}{genetic::nIndividuals}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{398     }
+\DoxyCodeLine{399         \textcolor{keywordflow}{return} nIndividuals\_;}
+\DoxyCodeLine{400     }
+\DoxyCodeLine{401     \}}
+\DoxyCodeLine{402 }
+\DoxyCodeLine{403 \}}
+\DoxyCodeLine{404 }
+\DoxyCodeLine{405 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

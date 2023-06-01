@@ -1,0 +1,261 @@
+\hypertarget{class_voxel_eng_1_1chunk_manager}{}\doxysection{Voxel\+Eng\+::chunk\+Manager Class Reference}
+\label{class_voxel_eng_1_1chunk_manager}\index{VoxelEng::chunkManager@{VoxelEng::chunkManager}}
+
+
+Used for managing the chunks\textquotesingle{} life cycle, level loading...  
+
+
+
+
+{\ttfamily \#include $<$chunk.\+h$>$}
+
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_af08c574bd30f2fbe9a3058c7acdf7855}\label{class_voxel_eng_1_1chunk_manager_af08c574bd30f2fbe9a3058c7acdf7855}} 
+static void {\bfseries init} (unsigned int n\+Chunks\+To\+Compute=\mbox{\hyperlink{definitions_8h_afe7a66d1b2b8f3ba46acc2bd275c8796}{DEF\+\_\+\+N\+\_\+\+CHUNKS\+\_\+\+TO\+\_\+\+COMPUTE}})
+\begin{DoxyCompactList}\small\item\em Initialise the chunk management system. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a7f264ae01f826c35e3bd32edc5a7137b}\label{class_voxel_eng_1_1chunk_manager_a7f264ae01f826c35e3bd32edc5a7137b}} 
+static bool {\bfseries initialised} ()
+\begin{DoxyCompactList}\small\item\em Returns true if the system is initialised or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a7005925eede113047d475d675333600f}\label{class_voxel_eng_1_1chunk_manager_a7005925eede113047d475d675333600f}} 
+static vec3 {\bfseries get\+Chunk\+Rel\+Coords} (const vec3 \&block\+Pos)
+\begin{DoxyCompactList}\small\item\em Returns chunk local coordinates of a global position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_afdb670633a47195cd5237134a598f0ca}\label{class_voxel_eng_1_1chunk_manager_afdb670633a47195cd5237134a598f0ca}} 
+static vec3 {\bfseries get\+Chunk\+Rel\+Coords} (float globalX, float globalY, float globalZ)
+\begin{DoxyCompactList}\small\item\em Returns chunk local coordinates of a global position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_af6b0e23a8370d80966ebadcb64b39d93}\label{class_voxel_eng_1_1chunk_manager_af6b0e23a8370d80966ebadcb64b39d93}} 
+static vec3 {\bfseries get\+Chunk\+Coords} (const vec3 \&block\+Pos)
+\begin{DoxyCompactList}\small\item\em Returns chunk grid coordinates of a global position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_afdad4cfec5e0071f48ca2ff19935efba}\label{class_voxel_eng_1_1chunk_manager_afdad4cfec5e0071f48ca2ff19935efba}} 
+static vec3 {\bfseries get\+Chunk\+Coords} (float globalX, float globalY, float globalZ)
+\begin{DoxyCompactList}\small\item\em Returns chunk local coordinates of a global position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_aceb5f28a61b7f1c16c3d4beccc6d9122}\label{class_voxel_eng_1_1chunk_manager_aceb5f28a61b7f1c16c3d4beccc6d9122}} 
+static vec2 {\bfseries get\+Chunk\+XZCoords} (const vec2 \&block\+XZPos)
+\begin{DoxyCompactList}\small\item\em Returns chunk coordinates in the X and Z axes of a global position in the X and Z axes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_add5ed05c8daccf3d0c12fecb54606cd3}\label{class_voxel_eng_1_1chunk_manager_add5ed05c8daccf3d0c12fecb54606cd3}} 
+static vec2 {\bfseries get\+Chunk\+XZCoords} (int blockX, int blockZ)
+\begin{DoxyCompactList}\small\item\em Returns chunk coordinates in the X and Z axes of a global position in the X and Z axes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a69bec92ab94599cd134249a375ee6442}\label{class_voxel_eng_1_1chunk_manager_a69bec92ab94599cd134249a375ee6442}} 
+static vec3 {\bfseries get\+Global\+Pos} (const vec3 \&chunk\+Pos, const vec3 \&in\+Chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Returns global coordinates of a local chunk coordinate from a certain chunk position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a82642757f468ef25b66c0c73bb9fef4c}\label{class_voxel_eng_1_1chunk_manager_a82642757f468ef25b66c0c73bb9fef4c}} 
+static vec3 {\bfseries get\+Global\+Pos} (int chunkX, int chunkY, int chunkZ, int in\+ChunkX, int in\+ChunkY, int in\+ChunkZ)
+\begin{DoxyCompactList}\small\item\em Returns global coordinates of a local chunk coordinate from a certain chunk position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_ad961611f26197e052391f45fd0c3017a}\label{class_voxel_eng_1_1chunk_manager_ad961611f26197e052391f45fd0c3017a}} 
+static vec2 {\bfseries get\+XZGlobal\+Pos} (const vec2 \&chunk\+Pos, const vec2 \&in\+Chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Returns global coordinates in the X and Z axes of a local chunk coordinate from a certain chunk position, both in the X and Z axes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a42b9ddd87b560e6fe0b1039e1dadd8df}\label{class_voxel_eng_1_1chunk_manager_a42b9ddd87b560e6fe0b1039e1dadd8df}} 
+static vec2 {\bfseries get\+XZGlobal\+Pos} (int chunkX, int chunkZ, int in\+ChunkX, int in\+ChunkZ)
+\begin{DoxyCompactList}\small\item\em Returns global coordinates in the X and Z axes of a local chunk coordinate from a certain chunk position, both in the X and Z axes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a6ad5d9251599567cff64c1b92665d273}\label{class_voxel_eng_1_1chunk_manager_a6ad5d9251599567cff64c1b92665d273}} 
+static const std\+::unordered\+\_\+map$<$ vec3, \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ $>$ \& {\bfseries chunks} ()
+\begin{DoxyCompactList}\small\item\em Returns the system\textquotesingle{}s dictionary of registered chunks. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a1ede70b62c9ceb9f4752650678280c3d}\label{class_voxel_eng_1_1chunk_manager_a1ede70b62c9ceb9f4752650678280c3d}} 
+static std\+::unordered\+\_\+map$<$ vec3, std\+::vector$<$ \mbox{\hyperlink{struct_voxel_eng_1_1vertex}{vertex}} $>$ $>$ const $\ast$ {\bfseries drawable\+Chunks\+Read} ()
+\begin{DoxyCompactList}\small\item\em Returns the system\textquotesingle{}s readable chunk vertex data. That is, it returns the system\textquotesingle{}s chunk vertex data that is safe to read for the rendering thread in order to render them. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_ad8f6ca1e0dd400e131c811354f3d5529}\label{class_voxel_eng_1_1chunk_manager_ad8f6ca1e0dd400e131c811354f3d5529}} 
+static unsigned int {\bfseries n\+Chunks\+To\+Compute} ()
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_ae072a840144f18966e779dbfc880a126}\label{class_voxel_eng_1_1chunk_manager_ae072a840144f18966e779dbfc880a126}} 
+static block {\bfseries get\+Block} (int posX, int posY, int posZ)
+\begin{DoxyCompactList}\small\item\em Get the block ID of a specified global position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a7cba90bb372b161c80b7bd9626087219}\label{class_voxel_eng_1_1chunk_manager_a7cba90bb372b161c80b7bd9626087219}} 
+static block {\bfseries get\+Block} (const vec3 \&pos)
+\begin{DoxyCompactList}\small\item\em Get the block ID of a specified global position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_af990d211978fa0e1fcf934b7bde38aa3}\label{class_voxel_eng_1_1chunk_manager_af990d211978fa0e1fcf934b7bde38aa3}} 
+static std\+::vector$<$ block $>$ {\bfseries get\+Blocks\+Box} (const vec3 \&pos1, const vec3 \&pos2)
+\begin{DoxyCompactList}\small\item\em Get all blocks in the world that are in the box defined with the positions pos1 and pos2. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a64fd5263fff316c18ad2899f0649b5c5}\label{class_voxel_eng_1_1chunk_manager_a64fd5263fff316c18ad2899f0649b5c5}} 
+static std\+::vector$<$ block $>$ {\bfseries get\+Blocks\+Box} (int x1, int y1, int z1, int x2, int y2, int z2)
+\begin{DoxyCompactList}\small\item\em Get all blocks in the world that are in the box defined with the positions pos1 and pos2. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a0e59b369990113a95dc2fc3495eb233f}\label{class_voxel_eng_1_1chunk_manager_a0e59b369990113a95dc2fc3495eb233f}} 
+static const std\+::unordered\+\_\+set$<$ vec3 $>$ \& {\bfseries c\+Freeable\+Chunks} ()
+\begin{DoxyCompactList}\small\item\em Returns the chunk position of the system\textquotesingle{}s freeable chunks. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_aaf21a3b78ba3970cefcaf19f4dfcecbd}\label{class_voxel_eng_1_1chunk_manager_aaf21a3b78ba3970cefcaf19f4dfcecbd}} 
+static const std\+::atomic$<$ bool $>$ \& {\bfseries c\+Force\+Sync\+Flag} ()
+\begin{DoxyCompactList}\small\item\em Returns the flag that is used to force synchronisation between the chunk management and the rendering thread. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a71fb73063c26710221bed9ba0a687c86}\label{class_voxel_eng_1_1chunk_manager_a71fb73063c26710221bed9ba0a687c86}} 
+static bool {\bfseries is\+In\+World} (const vec3 \&pos)
+\begin{DoxyCompactList}\small\item\em Returns true if the given block position is currently inside the loaded area around the player or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a75405c28fcab3a8a37a0ed889a136d6e}\label{class_voxel_eng_1_1chunk_manager_a75405c28fcab3a8a37a0ed889a136d6e}} 
+static bool {\bfseries is\+In\+World} (int x, int y, int z)
+\begin{DoxyCompactList}\small\item\em Returns true if the given block position is currently inside the loaded area around the player or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a98644191ccd1aba4156066a2c2177046}\label{class_voxel_eng_1_1chunk_manager_a98644191ccd1aba4156066a2c2177046}} 
+static bool {\bfseries is\+Chunk\+In\+World} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Returns true if the given chunk position is inside the level\textquotesingle{}s boundaries or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_ac69d6a685fcd305d1f3978e6bc60cb47}\label{class_voxel_eng_1_1chunk_manager_ac69d6a685fcd305d1f3978e6bc60cb47}} 
+static bool {\bfseries is\+Chunk\+In\+World} (int chunkX, int chunkY, int chunkZ)
+\begin{DoxyCompactList}\small\item\em Returns true if the given chunk position is inside the level\textquotesingle{}s boundaries or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a75e079ae2322953eb507d36a43a8074f}\label{class_voxel_eng_1_1chunk_manager_a75e079ae2322953eb507d36a43a8074f}} 
+static \mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunk\+Load\+Level}} {\bfseries get\+Chunk\+Load\+Level} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Returns the chunk\textquotesingle{}s load level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_aa56db80a736a3e03795fd85d04cc66c1}\label{class_voxel_eng_1_1chunk_manager_aa56db80a736a3e03795fd85d04cc66c1}} 
+static \mbox{\hyperlink{chunk_8h_a4a390346ea4255bb4664ccdad7a31457}{chunk\+Load\+Level}} {\bfseries get\+Chunk\+Load\+Level} (int chunkX, int chunkY, int chunkZ)
+\begin{DoxyCompactList}\small\item\em Returns the chunk\textquotesingle{}s load level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_adbb043896c963a970576500da79e5c5f}\label{class_voxel_eng_1_1chunk_manager_adbb043896c963a970576500da79e5c5f}} 
+static const std\+::string \& {\bfseries opened\+Terrain\+File\+Name} ()
+\begin{DoxyCompactList}\small\item\em Returns the currently opened terrain file. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_aa3d136070567589c30c211beca50b41a}\label{class_voxel_eng_1_1chunk_manager_aa3d136070567589c30c211beca50b41a}} 
+static bool {\bfseries infinite\+World} ()
+\begin{DoxyCompactList}\small\item\em Returns true if the system is currently using the infinite world type or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a190df29880cb7d99444cf97d342bc658}\label{class_voxel_eng_1_1chunk_manager_a190df29880cb7d99444cf97d342bc658}} 
+static void {\bfseries set\+AImode} (bool on)
+\begin{DoxyCompactList}\small\item\em Turns the system\textquotesingle{}s AI mode on or off. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a2140d7564b0c4685f94ae8f67c916df2}\label{class_voxel_eng_1_1chunk_manager_a2140d7564b0c4685f94ae8f67c916df2}} 
+static void {\bfseries set\+NChunks\+To\+Compute} (unsigned int n\+Chunks\+To\+Compute)
+\begin{DoxyCompactList}\small\item\em Set the number of chunks to compute in the X and Z axes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a1f4d81212bc88f5fbb2d5f57c75a4c4a}\label{class_voxel_eng_1_1chunk_manager_a1f4d81212bc88f5fbb2d5f57c75a4c4a}} 
+static block {\bfseries set\+Block} (const vec3 \&pos, block block\+ID)
+\begin{DoxyCompactList}\small\item\em Set the block ID of a specfied block position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a9eb99047b06052e916f8d4f512a4a5df}\label{class_voxel_eng_1_1chunk_manager_a9eb99047b06052e916f8d4f512a4a5df}} 
+static block {\bfseries set\+Block} (int x, int y, int z, block block\+ID)
+\begin{DoxyCompactList}\small\item\em Set the block ID of a specfied block position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_afc15038ff6938e3ff80f62902c730d84}\label{class_voxel_eng_1_1chunk_manager_afc15038ff6938e3ff80f62902c730d84}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries create\+Chunk\+At} (bool empty, const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Returns pointer to the created chunk. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_afdc08c1ea4c133ba107e105ea2b00253}\label{class_voxel_eng_1_1chunk_manager_afdc08c1ea4c133ba107e105ea2b00253}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries create\+Chunk\+At} (bool empty, int chunkX, int chunkY, int chunkZ)
+\begin{DoxyCompactList}\small\item\em Returns pointer to the created chunk. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_ac4f2cb05cbb047dda35cde8d3fa2afc3}\label{class_voxel_eng_1_1chunk_manager_ac4f2cb05cbb047dda35cde8d3fa2afc3}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries create\+Chunk} (bool empty, const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Same as \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_afc15038ff6938e3ff80f62902c730d84}{chunk\+Manager\+::create\+Chunk\+At()}} but with no bounds checking. Returns pointer to the created chunk. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_ac9945c611810dc230813f4d63fb15976}\label{class_voxel_eng_1_1chunk_manager_ac9945c611810dc230813f4d63fb15976}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries create\+Chunk} (bool empty, int chunkX, int chunkY, int chunkZ)
+\begin{DoxyCompactList}\small\item\em Same as \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_afc15038ff6938e3ff80f62902c730d84}{chunk\+Manager\+::create\+Chunk\+At()}} but with no bounds checking. Returns pointer to the created chunk. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a8f8ec75522ab9281303c79ca8e922242}\label{class_voxel_eng_1_1chunk_manager_a8f8ec75522ab9281303c79ca8e922242}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries select\+Chunk} (int x, int y, int z)
+\begin{DoxyCompactList}\small\item\em Select a chunk with the specified chunk position. WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a49123ea0c8fb060a9bae2a4a722ce091}\label{class_voxel_eng_1_1chunk_manager_a49123ea0c8fb060a9bae2a4a722ce091}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries select\+Chunk\+By\+Chunk\+Pos} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Select a chunk with the specified chunk position. WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_af576f822aea5a1510a159eeaa88dfd2a}\label{class_voxel_eng_1_1chunk_manager_af576f822aea5a1510a159eeaa88dfd2a}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries select\+Chunk\+By\+Chunk\+Pos} (int x, int y, int z)
+\begin{DoxyCompactList}\small\item\em Select a chunk with the specified block position. WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a301214283671fa2f976404d89f9d6b8a}\label{class_voxel_eng_1_1chunk_manager_a301214283671fa2f976404d89f9d6b8a}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries select\+Chunk\+By\+Real\+Pos} (const vec3 \&pos)
+\begin{DoxyCompactList}\small\item\em Select a chunk with the specified global position. WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a23c2a6f5a6e5af91fbb590cf5d21c8ca}\label{class_voxel_eng_1_1chunk_manager_a23c2a6f5a6e5af91fbb590cf5d21c8ca}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries neighbor\+MinusX} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Select the neighbor -\/X chunk for the chunk with the specified chunk position WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a73b9fd0bb90c807f2e31b8db10688832}\label{class_voxel_eng_1_1chunk_manager_a73b9fd0bb90c807f2e31b8db10688832}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries neighbor\+PlusX} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Select the neighbor +X chunk for the chunk with the specified chunk position WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a7f98ad7e4a12139769bc74b1434fac7e}\label{class_voxel_eng_1_1chunk_manager_a7f98ad7e4a12139769bc74b1434fac7e}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries neighbor\+MinusY} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Select the neighbor -\/Y chunk for the chunk with the specified chunk position WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_aa3aa02a6f8038ff348d2efdc5701857e}\label{class_voxel_eng_1_1chunk_manager_aa3aa02a6f8038ff348d2efdc5701857e}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries neighbor\+PlusY} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Select the neighbor +Y chunk for the chunk with the specified chunk position WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_aa764bda98c3cfeffd491879c84b4e273}\label{class_voxel_eng_1_1chunk_manager_aa764bda98c3cfeffd491879c84b4e273}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries neighbor\+MinusZ} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Select the neighbor -\/Z chunk for the chunk with the specified chunk position WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a6789494f394841dc4f16c343f601a47c}\label{class_voxel_eng_1_1chunk_manager_a6789494f394841dc4f16c343f601a47c}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}} $\ast$ {\bfseries neighbor\+PlusZ} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Select the neighbor +Z chunk for the chunk with the specified chunk position WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a3679f1b3ccaabad1a99fb638a65a114d}\label{class_voxel_eng_1_1chunk_manager_a3679f1b3ccaabad1a99fb638a65a114d}} 
+static std\+::unordered\+\_\+map$<$ vec3, std\+::vector$<$ \mbox{\hyperlink{struct_voxel_eng_1_1vertex}{vertex}} $>$ $>$ $\ast$ {\bfseries drawable\+Chunks\+Write} ()
+\begin{DoxyCompactList}\small\item\em Returns the system\textquotesingle{}s writeable chunk vertex data. That is, it returns the system\textquotesingle{}s chunk vertex data that can be modified by the chunk management thread and chunk meshing threads and that it is not safe for reading. WARNING. This operation is not thread-\/safe. To push back a chunk\textquotesingle{}s rendering data into this deque, use chunk\+Manager\+::push\+Drawable\+Chunks(...) method to prevent race conditions when using multiple threads in the chunk management system. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_aa28c5bfee04124d86e3c004ed1ff5dec}\label{class_voxel_eng_1_1chunk_manager_aa28c5bfee04124d86e3c004ed1ff5dec}} 
+static std\+::recursive\+\_\+mutex \& {\bfseries chunks\+Mutex} ()
+\begin{DoxyCompactList}\small\item\em Returns the mutex that guards the registered chunks dictionary. WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_ae5901942923d66bf8c3b327d78ca6dd6}\label{class_voxel_eng_1_1chunk_manager_ae5901942923d66bf8c3b327d78ca6dd6}} 
+static std\+::recursive\+\_\+mutex \& {\bfseries high\+Priority\+List\+Mutex} ()
+\begin{DoxyCompactList}\small\item\em Returns the mutex that guards the chunk high priority update list. WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_abdbda6caf954384ac87604dce2735073}\label{class_voxel_eng_1_1chunk_manager_abdbda6caf954384ac87604dce2735073}} 
+static std\+::unordered\+\_\+set$<$ vec3 $>$ \& {\bfseries freeable\+Chunks} ()
+\begin{DoxyCompactList}\small\item\em Returns the list of freeable chunks. WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a2ca1aea53d49d99c8a831717ffdffa70}\label{class_voxel_eng_1_1chunk_manager_a2ca1aea53d49d99c8a831717ffdffa70}} 
+static std\+::mutex \& {\bfseries freeable\+Chunks\+Mutex} ()
+\begin{DoxyCompactList}\small\item\em Returns the mutex that guards the freeable chunk list. WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_abb2aab50cda6f0b81311977dcd459a28}\label{class_voxel_eng_1_1chunk_manager_abb2aab50cda6f0b81311977dcd459a28}} 
+static std\+::mutex \& {\bfseries manager\+Thread\+Mutex} ()
+\begin{DoxyCompactList}\small\item\em Returns the mutex associated with the chunk management thread. WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_abf48cf73b511377bc0bbab1c0f665d6a}\label{class_voxel_eng_1_1chunk_manager_abf48cf73b511377bc0bbab1c0f665d6a}} 
+static std\+::condition\+\_\+variable \& {\bfseries manager\+Thread\+CV} ()
+\begin{DoxyCompactList}\small\item\em Returns the condition variable associated with the chunk management thread. WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a93649c9bbd26e20e7269c8eb952f99d9}\label{class_voxel_eng_1_1chunk_manager_a93649c9bbd26e20e7269c8eb952f99d9}} 
+static std\+::atomic$<$ bool $>$ \& {\bfseries force\+Sync\+Flag} ()
+\begin{DoxyCompactList}\small\item\em Returns the flag used to force synchronisation the rendering and chunk management threads. WARNING. Not meant for use in AI mode. \end{DoxyCompactList}\item 
+static void \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a56d265acb6be3e11d5e3d97ddaa7707c}{wait\+Terrain\+Loaded}} ()
+\begin{DoxyCompactList}\small\item\em Locks the calling thread until\+: \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a4be90fe9601f9418b8bf04eae3b9343c}\label{class_voxel_eng_1_1chunk_manager_a4be90fe9601f9418b8bf04eae3b9343c}} 
+static void {\bfseries push\+Drawable\+Chunks} (const \mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{chunk\+Rendering\+Data}} \&rendering\+Data)
+\begin{DoxyCompactList}\small\item\em Atomically pushes back a chunk\textquotesingle{}s rendering data into the write drawable chunks deque. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_ae4db6dff9f4bd67da998280921901aea}\label{class_voxel_eng_1_1chunk_manager_ae4db6dff9f4bd67da998280921901aea}} 
+static void {\bfseries swap\+Drawable\+Chunks\+Lists} ()
+\begin{DoxyCompactList}\small\item\em Swaps the buffers of chunks\textquotesingle{} vertices. The one used for reading in the renderer thread becomes the one used for writing in the chunk manager thread and vice versa. Sets the meshes updated flag to false and should be called only if it is set to true (check with chunk\+Manager\+::meshes\+Updated(). WARNING. ONLY CALL THIS METHOD WHEN THE RENDERER THREAD AND THE CHUNK MANAGER THREAD ARE SYNCED. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_adab6404c348c813b542eb1f5ae1788ca}\label{class_voxel_eng_1_1chunk_manager_adab6404c348c813b542eb1f5ae1788ca}} 
+static void {\bfseries update\+Priority\+Chunks} ()
+\begin{DoxyCompactList}\small\item\em Update vertex data of all chunks that have a pending hign priority update. WARNING. ONLY CALL THIS METHOD WHEN THE RENDERER THREAD AND THE CHUNK MANAGER THREAD ARE SYNCED. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_ada4d7ba7eb8aba561e009370c9d3bbe9}\label{class_voxel_eng_1_1chunk_manager_ada4d7ba7eb8aba561e009370c9d3bbe9}} 
+static void {\bfseries load\+Chunk} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Atomically loads a new chunk at the specified \textquotesingle{}chunk\+Pos\textquotesingle{} chunk position, overwriting any chunks that were already at that position, if any. WARNING. This method is used in with an infinite world. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a84e1af15ec8f8e31cb2bece4f2654098}\label{class_voxel_eng_1_1chunk_manager_a84e1af15ec8f8e31cb2bece4f2654098}} 
+static void {\bfseries unload\+Chunk} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Unloads the chunk at chunk position \textquotesingle{}chunk\+Pos\textquotesingle{}, pushing it into a free chunks deque to be reused later for another chunk position of the world. WARNING. Non-\/atomic operation! Must be called when all meshing threads are synced with the chunk management thread. WARNING. This method is used in with an infinite world. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a6d35b99295204c64a2b7c7ff8e132b3b}\label{class_voxel_eng_1_1chunk_manager_a6d35b99295204c64a2b7c7ff8e132b3b}} 
+static void {\bfseries mesh\+Chunks} (const std\+::atomic$<$ int $>$ \&chunk\+Range, int range\+Start, int range\+End, std\+::shared\+\_\+mutex \&sync\+Mutex, std\+::condition\+\_\+variable\+\_\+any \&meshing\+Threads\+CV, std\+::atomic$<$ bool $>$ \&meshing\+Ts\+CVFlag, std\+::barrier$<$$>$ \&sync\+Point)
+\begin{DoxyCompactList}\small\item\em Function called by meshing threads to generate meshes for chunks that are close to the player. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a66281b126d74f9612127a9dd48cae0ee}\label{class_voxel_eng_1_1chunk_manager_a66281b126d74f9612127a9dd48cae0ee}} 
+static void {\bfseries manage\+Chunks} (unsigned int n\+Meshing\+Threads)
+\begin{DoxyCompactList}\small\item\em Function called by the chunk management thread to use with infinite world types. It coordinates all meshing threads and manages the chunk unloading process in order to prevent any race condition between said threads, among other things such as synchronization and data transfering with the rendering thread. WARNING. CURRENTLY NOT TESTED, ONLY PROOF OF CONCEPT. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a731f558102aeb3a64726affbdc93f7a5}\label{class_voxel_eng_1_1chunk_manager_a731f558102aeb3a64726affbdc93f7a5}} 
+static void {\bfseries finite\+World\+Loading} (const std\+::string \&terrain\+File=\char`\"{}\char`\"{})
+\begin{DoxyCompactList}\small\item\em Finite world loading function for the chunk management thread. Playing AI match records is only supported by this world loading type. If \textquotesingle{}terrain\+File\textquotesingle{} is equal to \char`\"{}\char`\"{}, then either a new level will be generated or a level from a slot will be loaded (depending on the selected save slot). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_ae51dc8e3f96ffb3b466dfebcc8e0541e}\label{class_voxel_eng_1_1chunk_manager_ae51dc8e3f96ffb3b466dfebcc8e0541e}} 
+static void {\bfseries generate\+AIWorld} (const std\+::string \&path=\char`\"{}\char`\"{})
+\begin{DoxyCompactList}\small\item\em Generates only block data without the 3D graphics side. Intended to be used when testing or training AI agents without displaying the matches in the engine\textquotesingle{}s graphical mode to save CPU and GPU processing power. This generated world is the original copy. Copies for each AI agent will be generated in chunks as they are needed by their respective agents. If \textquotesingle{}path\textquotesingle{} is equal to \char`\"{}\char`\"{} then a randomly generated world will be created. Otherwise it will load de .terrain file located at \textquotesingle{}path\textquotesingle{} + \char`\"{}.\+terrain\char`\"{}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a9a56df726d1236704c90b975446b5647}\label{class_voxel_eng_1_1chunk_manager_a9a56df726d1236704c90b975446b5647}} 
+static void {\bfseries save\+All\+Chunks} (const std\+::string \&path)
+\begin{DoxyCompactList}\small\item\em Saves all loaded chunks. This is intended to be used along with finite world loading. The .terrain file extension is automatically appended. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a9d0926daf50e5a4dc304ae62c784e0c1}\label{class_voxel_eng_1_1chunk_manager_a9d0926daf50e5a4dc304ae62c784e0c1}} 
+static void {\bfseries load\+All\+Chunks} (const std\+::string \&path)
+\begin{DoxyCompactList}\small\item\em Loads all chunks from the specified TERRAIN file. This is intended to be used along with finite world loading. The .terrain file extension is automatically appended. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_ac3e71f30460f5f8e5906e2e6d3456cc0}\label{class_voxel_eng_1_1chunk_manager_ac3e71f30460f5f8e5906e2e6d3456cc0}} 
+static void {\bfseries high\+Priority\+Update} (const vec3 \&chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Queue a chunk in the high priority update list. Only chunks with high priority for being remeshed (such as chunks modified by the player) should be queued into this list. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a2c81fd377975d8d4b6268a744cd2c607}\label{class_voxel_eng_1_1chunk_manager_a2c81fd377975d8d4b6268a744cd2c607}} 
+static void {\bfseries select\+AIworld} (unsigned int individual\+ID)
+\begin{DoxyCompactList}\small\item\em Get block and set block operations in the chunk manager system will now be performed on the AI world/level of AI agent with ID \textquotesingle{}individual\+ID\textquotesingle{}. AI mode must be turned on in the chunk manager system. WARNING. This method is not thread safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a04c1f10f13aab327b7a7a888be4015ad}\label{class_voxel_eng_1_1chunk_manager_a04c1f10f13aab327b7a7a888be4015ad}} 
+static void {\bfseries select\+Original\+World} ()
+\begin{DoxyCompactList}\small\item\em ONLY get block operations in the chunk manager system will now be performed on the original copy of the level that is being used for the AI game. AI mode must be turned on in the chunk manager system. Set block operations will use the latest AI world selected (the one corresponding to the AI agent with ID 0 by default). WARNING. This method is not thread safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_af84d72859051399781be8212a5e75e75}\label{class_voxel_eng_1_1chunk_manager_af84d72859051399781be8212a5e75e75}} 
+static void {\bfseries reset\+AIChunks} ()
+\begin{DoxyCompactList}\small\item\em Sets all copies of chunks owned by AI agents as they never existed (AIChunks\+Available\mbox{[}Any AI World copy\mbox{]}\mbox{[}Any chunk\+Coord\mbox{]} will return false after this). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_af0cf21819b9c0b43c71da4cc51744d48}\label{class_voxel_eng_1_1chunk_manager_af0cf21819b9c0b43c71da4cc51744d48}} 
+static void {\bfseries opened\+Terrain\+File\+Name} (const std\+::string \&new\+Name)
+\begin{DoxyCompactList}\small\item\em Set \textquotesingle{}new\+Name\textquotesingle{} to \char`\"{}\char`\"{} to clear the opened terrain file name. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_aba752b163801ff360a94bf1325302bc0}\label{class_voxel_eng_1_1chunk_manager_aba752b163801ff360a94bf1325302bc0}} 
+static void {\bfseries clean} ()
+\begin{DoxyCompactList}\small\item\em Only cleans any resources like chunks created but it does not de-\/initialise the chunk management system. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_abaca4db6065dc98343fc50f3a333e248}\label{class_voxel_eng_1_1chunk_manager_abaca4db6065dc98343fc50f3a333e248}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em Frees any memory allocated in the process of generating the world, like all the Chunk objects created to load it. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Used for managing the chunks\textquotesingle{} life cycle, level loading... 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_voxel_eng_1_1chunk_manager_a56d265acb6be3e11d5e3d97ddaa7707c}\label{class_voxel_eng_1_1chunk_manager_a56d265acb6be3e11d5e3d97ddaa7707c}} 
+\index{VoxelEng::chunkManager@{VoxelEng::chunkManager}!waitTerrainLoaded@{waitTerrainLoaded}}
+\index{waitTerrainLoaded@{waitTerrainLoaded}!VoxelEng::chunkManager@{VoxelEng::chunkManager}}
+\doxysubsubsection{\texorpdfstring{waitTerrainLoaded()}{waitTerrainLoaded()}}
+{\footnotesize\ttfamily void Voxel\+Eng\+::chunk\+Manager\+::wait\+Terrain\+Loaded (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Locks the calling thread until\+: 
+
+
+\begin{DoxyItemize}
+\item Minimal terrain has been loaded around the player (infinite world).
+\item The entire level has been loaded (finite world). 
+\end{DoxyItemize}
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{chunk_8h}{chunk.\+h}}\item 
+code/chunk.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,131 @@
+\hypertarget{class_voxel_eng_1_1camera}{}\doxysection{Voxel\+Eng\+::camera Class Reference}
+\label{class_voxel_eng_1_1camera}\index{VoxelEng::camera@{VoxelEng::camera}}
+
+
+Abstraction of an object capable of \char`\"{}viewing\char`\"{} a portion of a simulated 3D world and provide several utilities to later get that vision into a 2D screen. For now it is considered that there is only one camera and that it is attached to the user.  
+
+
+
+
+{\ttfamily \#include $<$camera.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a32853d0c5b9a76676abf9cff0353c29e}\label{class_voxel_eng_1_1camera_a32853d0c5b9a76676abf9cff0353c29e}} 
+{\bfseries camera} (float \mbox{\hyperlink{class_voxel_eng_1_1camera_ade6c872cab0ef6237066ae61775822c5}{FOV}}, float z\+Near, float \mbox{\hyperlink{class_voxel_eng_1_1camera_a9367aa50946c31c339751ddbfbf7ef56}{z\+Far}}, \mbox{\hyperlink{class_voxel_eng_1_1window}{window}} \&\mbox{\hyperlink{class_voxel_eng_1_1window}{window}}, bool is\+Player\+Camera, const vec3 \&position=vec3(0.\+0f, 0.\+0f, 0.\+0f), const vec3 \&\mbox{\hyperlink{class_voxel_eng_1_1camera_a90d7aa49d46e76b6eb4c75a07f740fcc}{direction}}=vec3(0.\+0f, 0.\+0f, 0.\+0f))
+\begin{DoxyCompactList}\small\item\em The class\textquotesingle{} only constructor. Note\+: the window parameter must be the one with the graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_ade6c872cab0ef6237066ae61775822c5}\label{class_voxel_eng_1_1camera_ade6c872cab0ef6237066ae61775822c5}} 
+float {\bfseries FOV} () const
+\begin{DoxyCompactList}\small\item\em Provide access to the user camera\textquotesingle{}s field of view parameter. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a9367aa50946c31c339751ddbfbf7ef56}\label{class_voxel_eng_1_1camera_a9367aa50946c31c339751ddbfbf7ef56}} 
+float {\bfseries z\+Far} () const
+\begin{DoxyCompactList}\small\item\em Provide access to the user camera\textquotesingle{}s z\+Far parameter, which gives the limit in the camera\textquotesingle{}s local Z axis at which vertices are no longer included for rendering. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a21502404bed9ab53a56936b6c1c9970e}\label{class_voxel_eng_1_1camera_a21502404bed9ab53a56936b6c1c9970e}} 
+float {\bfseries mouse\+Sensibility} () const
+\begin{DoxyCompactList}\small\item\em Provide access to the user camera\textquotesingle{}s movement my mouse sensibility parameter. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a60423d6635ccba15e754567033826389}\label{class_voxel_eng_1_1camera_a60423d6635ccba15e754567033826389}} 
+float {\bfseries movement\+Speed} () const
+\begin{DoxyCompactList}\small\item\em Provide access to the user camera\textquotesingle{}s movement speed parameter. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_ae76489427f45df2fa0e7fdd7ca99a7e1}\label{class_voxel_eng_1_1camera_ae76489427f45df2fa0e7fdd7ca99a7e1}} 
+const glm\+::mat4 \& {\bfseries projection\+Matrix} () const
+\begin{DoxyCompactList}\small\item\em Provide access to the user camera\textquotesingle{}s projection matrix. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a3dfdd95e35b4d6f78a387c307c8a2ea8}\label{class_voxel_eng_1_1camera_a3dfdd95e35b4d6f78a387c307c8a2ea8}} 
+const glm\+::mat4 \& {\bfseries view\+Matrix} () const
+\begin{DoxyCompactList}\small\item\em Provide access to the user camera\textquotesingle{}s view matrix. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a4af3e8eda175b4cd1a88b48945e2cc21}\label{class_voxel_eng_1_1camera_a4af3e8eda175b4cd1a88b48945e2cc21}} 
+const glm\+::mat4 \& {\bfseries model\+Matrix} () const
+\begin{DoxyCompactList}\small\item\em Provide access to the user camera\textquotesingle{}s model matrix. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a90d7aa49d46e76b6eb4c75a07f740fcc}\label{class_voxel_eng_1_1camera_a90d7aa49d46e76b6eb4c75a07f740fcc}} 
+const vec3 \& {\bfseries direction} () const
+\begin{DoxyCompactList}\small\item\em Provide access to the user camera\textquotesingle{}s direction vector. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a66433b676f502248f2a15d42f71d9d83}\label{class_voxel_eng_1_1camera_a66433b676f502248f2a15d42f71d9d83}} 
+const vec3 \& {\bfseries chunk\+Pos} () const
+\begin{DoxyCompactList}\small\item\em Get the camera\textquotesingle{}s chunk relative position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_aed5d5b68450626db7c0086772282557d}\label{class_voxel_eng_1_1camera_aed5d5b68450626db7c0086772282557d}} 
+const vec3 \& {\bfseries pos} () const
+\begin{DoxyCompactList}\small\item\em Get the camera\textquotesingle{}s position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a57efe935bb816550b4f24af1b8af5e59}\label{class_voxel_eng_1_1camera_a57efe935bb816550b4f24af1b8af5e59}} 
+void {\bfseries set\+FOV} (float \mbox{\hyperlink{class_voxel_eng_1_1camera_ade6c872cab0ef6237066ae61775822c5}{FOV}})
+\begin{DoxyCompactList}\small\item\em Provide access to the user camera\textquotesingle{}s field of view parameter. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a85016adfdbd2b12547dac8b8042a7ea7}\label{class_voxel_eng_1_1camera_a85016adfdbd2b12547dac8b8042a7ea7}} 
+void {\bfseries update\+Projection\+Matrix} ()
+\begin{DoxyCompactList}\small\item\em In case some of the camera\textquotesingle{}s parameters are modified, it will be necessary some times to refresh the camera\textquotesingle{}s projection matrix (e.\+g, if the window where the graphics API is rendering the camera\textquotesingle{}s view is resized). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a7ddf893dc78bd67137790a0115a528cc}\label{class_voxel_eng_1_1camera_a7ddf893dc78bd67137790a0115a528cc}} 
+float \& {\bfseries mouse\+Sensibility} ()
+\begin{DoxyCompactList}\small\item\em Provide access to the camera\textquotesingle{}s movement my mouse sensibility parameter. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a7300de17fe4674be77c5dd42cae5bd65}\label{class_voxel_eng_1_1camera_a7300de17fe4674be77c5dd42cae5bd65}} 
+float \& {\bfseries movement\+Speed} ()
+\begin{DoxyCompactList}\small\item\em Provide access to the camera\textquotesingle{}s movement speed parameter. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a7275c1e3f6a1c85b5ea4f1c942a7596d}\label{class_voxel_eng_1_1camera_a7275c1e3f6a1c85b5ea4f1c942a7596d}} 
+glm\+::mat4 \& {\bfseries projection\+Matrix} ()
+\begin{DoxyCompactList}\small\item\em Provide access to the camera\textquotesingle{}s projection matrix. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a04fbb473441f947a9e2493f9034f0d46}\label{class_voxel_eng_1_1camera_a04fbb473441f947a9e2493f9034f0d46}} 
+glm\+::mat4 \& {\bfseries view\+Matrix} ()
+\begin{DoxyCompactList}\small\item\em Provide access to the camera\textquotesingle{}s view matrix. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a059b889df2b67370f0494f8c3e14ff47}\label{class_voxel_eng_1_1camera_a059b889df2b67370f0494f8c3e14ff47}} 
+glm\+::mat4 \& {\bfseries model\+Matrix} ()
+\begin{DoxyCompactList}\small\item\em Provide access to the camera\textquotesingle{}s model matrix. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_af4ba3520a49fec6feec09bd8642032d8}\label{class_voxel_eng_1_1camera_af4ba3520a49fec6feec09bd8642032d8}} 
+void {\bfseries set\+Pos} (const vec3 \&new\+Pos)
+\begin{DoxyCompactList}\small\item\em Set the camera\textquotesingle{}s position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a4156657ba4b3f675ee8ad91d84811781}\label{class_voxel_eng_1_1camera_a4156657ba4b3f675ee8ad91d84811781}} 
+void {\bfseries set\+Pos} (int newX, int newY, int newZ)
+\begin{DoxyCompactList}\small\item\em Set the camera\textquotesingle{}s position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a42808ef213c6ec54e479cc9e3c730ee5}\label{class_voxel_eng_1_1camera_a42808ef213c6ec54e479cc9e3c730ee5}} 
+void {\bfseries set\+Chunk\+Pos} (const vec3 \&new\+Chunk\+Pos)
+\begin{DoxyCompactList}\small\item\em Set the camera\textquotesingle{}s chunk position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a997bf3fbeb3cbac616f29b783a518094}\label{class_voxel_eng_1_1camera_a997bf3fbeb3cbac616f29b783a518094}} 
+void {\bfseries set\+Chunk\+Pos} (int new\+CX, int new\+CY, int new\+CZ)
+\begin{DoxyCompactList}\small\item\em Set the camera\textquotesingle{}s chunk position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a84575ec52e2e458c732773f45c6d2c91}\label{class_voxel_eng_1_1camera_a84575ec52e2e458c732773f45c6d2c91}} 
+void {\bfseries set\+Direction} (const vec3 \&new\+Dir)
+\begin{DoxyCompactList}\small\item\em Set the camera\textquotesingle{}s direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a5aa39aa41e8d9fc7d2ec832d7baf421d}\label{class_voxel_eng_1_1camera_a5aa39aa41e8d9fc7d2ec832d7baf421d}} 
+void {\bfseries set\+Direction} (int new\+DX, int new\+DY, int new\+DZ)
+\begin{DoxyCompactList}\small\item\em Set the camera\textquotesingle{}s direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a6556c5b420d23e86c59ee87fe34c2044}\label{class_voxel_eng_1_1camera_a6556c5b420d23e86c59ee87fe34c2044}} 
+void {\bfseries move\+Up} ()
+\begin{DoxyCompactList}\small\item\em Notify that the camera is to be moved up once according to its movement speed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a0605eec7bf0e5dea57567ce9ac38d3ad}\label{class_voxel_eng_1_1camera_a0605eec7bf0e5dea57567ce9ac38d3ad}} 
+void {\bfseries move\+Down} ()
+\begin{DoxyCompactList}\small\item\em Notify that the camera is to be moved down once according to its movement speed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a76f6a3c32e50340bbc6ade0ead30e062}\label{class_voxel_eng_1_1camera_a76f6a3c32e50340bbc6ade0ead30e062}} 
+void {\bfseries move\+North} ()
+\begin{DoxyCompactList}\small\item\em Notify that the camera is to be moved in global north direction (+x) once according to its movement speed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a7cd9529dcc6a1d93b1c1b8ef1f071e1c}\label{class_voxel_eng_1_1camera_a7cd9529dcc6a1d93b1c1b8ef1f071e1c}} 
+void {\bfseries move\+South} ()
+\begin{DoxyCompactList}\small\item\em Notify that the camera is to be moved in global south direction (-\/x) once according to its movement speed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a9ca042b2f1e5554dbce7c623db90b903}\label{class_voxel_eng_1_1camera_a9ca042b2f1e5554dbce7c623db90b903}} 
+void {\bfseries move\+East} ()
+\begin{DoxyCompactList}\small\item\em Notify that the camera is to be moved in global east direction (+z) once according to its movement speed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_afda76b4e63c5c00e14728240dcca6957}\label{class_voxel_eng_1_1camera_afda76b4e63c5c00e14728240dcca6957}} 
+void {\bfseries move\+West} ()
+\begin{DoxyCompactList}\small\item\em Notify that the camera is to be moved in global west direction (-\/z) once according to its movement speed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a55025896dc366a8360f2551c59e4b158}\label{class_voxel_eng_1_1camera_a55025896dc366a8360f2551c59e4b158}} 
+void {\bfseries update\+Pos} (float time\+Step)
+\begin{DoxyCompactList}\small\item\em Update the camera\textquotesingle{}s position and the direction it\textquotesingle{}s looking at taking into account the delta time to avoid the FPS from altering the movement speed. NOTE. Once this method is called, the next method that should be instantly called is \mbox{\hyperlink{class_voxel_eng_1_1camera_a546956b9c3b56ad068939eac1cc7ab3e}{camera\+::update\+View()}} to reflect the change in the camera\textquotesingle{}s position and view direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a546956b9c3b56ad068939eac1cc7ab3e}\label{class_voxel_eng_1_1camera_a546956b9c3b56ad068939eac1cc7ab3e}} 
+void {\bfseries update\+View} ()
+\begin{DoxyCompactList}\small\item\em Update the camera\textquotesingle{}s vision. NOTE. This method should be called after one to camera\+::update\+Pos(...) was made in order to reflect the change in the camera\textquotesingle{}s position and view direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a6cfa6ba3bdef8c210dd1fa1fcea7831d}\label{class_voxel_eng_1_1camera_a6cfa6ba3bdef8c210dd1fa1fcea7831d}} 
+{\bfseries $\sim$camera} ()
+\begin{DoxyCompactList}\small\item\em Class\textquotesingle{} destructor. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_acaef7f6d0eb2ac79bb46fcff4bf1cce7}\label{class_voxel_eng_1_1camera_acaef7f6d0eb2ac79bb46fcff4bf1cce7}} 
+static const \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}} $\ast$ {\bfseries c\+Player\+Camera} ()
+\begin{DoxyCompactList}\small\item\em Provide access to the user\textquotesingle{}s first person camera. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1camera_a9b4f5172a020cc69f14209e06b8b07e5}\label{class_voxel_eng_1_1camera_a9b4f5172a020cc69f14209e06b8b07e5}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}} $\ast$ {\bfseries player\+Camera} ()
+\begin{DoxyCompactList}\small\item\em Provide access to the user\textquotesingle{}s first person camera. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Abstraction of an object capable of \char`\"{}viewing\char`\"{} a portion of a simulated 3D world and provide several utilities to later get that vision into a 2D screen. For now it is considered that there is only one camera and that it is attached to the user. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{camera_8h}{camera.\+h}}\item 
+code/camera.\+cpp\end{DoxyCompactItemize}

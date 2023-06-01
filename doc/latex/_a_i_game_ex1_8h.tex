@@ -1,0 +1,51 @@
+\hypertarget{_a_i_game_ex1_8h}{}\doxysection{code/\+AI/\+AIGame\+Ex1.h File Reference}
+\label{_a_i_game_ex1_8h}\index{code/AI/AIGameEx1.h@{code/AI/AIGameEx1.h}}
+
+
+Contains the example AI game.  
+
+
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$array$>$}\newline
+{\ttfamily \#include $<$arrayfire.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}af/random.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}../\+AIAPI.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}../definitions.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}../world\+Gen.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}../chunk.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}genetic.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}NN.\+h\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_a_i_example_1_1mining_world_gen}{AIExample\+::mining\+World\+Gen}}
+\begin{DoxyCompactList}\small\item\em Custom world generation for the example AI game. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game}{AIExample\+::mining\+AIGame}}
+\begin{DoxyCompactList}\small\item\em AI game where the AI agents need to collect underground resources with a limited amount of actions that they can perform per match. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{_a_i_game_ex1_8h_ae988d64e69daeb5414d9ae13e94be726}\label{_a_i_game_ex1_8h_ae988d64e69daeb5414d9ae13e94be726}} 
+typedef std\+::array$<$ std\+::array$<$ int, \mbox{\hyperlink{definitions_8h_ac6b1ebceb207d8869690065097b574c6}{Voxel\+Eng\+::\+SCZ}} $>$, \mbox{\hyperlink{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}{Voxel\+Eng\+::\+SCX}} $>$ {\bfseries AIExample\+::chunk\+Height\+Map}
+\begin{DoxyCompactList}\small\item\em A chunk\textquotesingle{}s height map stores the highest non-\/null block in in all the X,Z block columns of the chunk. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{_a_i_game_ex1_8cpp_a2a6f96d601b4b23746161cd8ada2df46}\label{_a_i_game_ex1_8cpp_a2a6f96d601b4b23746161cd8ada2df46}} 
+float {\bfseries AIExample\+::mining\+AIGame\+Fitness} (unsigned int individual\+ID)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the example AI game. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+20/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title AI Game example. 
+\end{DoxyAuthor}

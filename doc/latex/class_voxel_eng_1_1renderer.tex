@@ -1,0 +1,34 @@
+\hypertarget{class_voxel_eng_1_1renderer}{}\doxysection{Voxel\+Eng\+::renderer Class Reference}
+\label{class_voxel_eng_1_1renderer}\index{VoxelEng::renderer@{VoxelEng::renderer}}
+
+
+Responsible of properly issuing the draw calls and clearing the window for the next frame. The vertices to draw must be sent using properly bound and prepared VBOs, along with other data structures that they could need.  
+
+
+
+
+{\ttfamily \#include $<$renderer.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1renderer_a4a9ed8b0867f01507540d8c3eb43a389}\label{class_voxel_eng_1_1renderer_a4a9ed8b0867f01507540d8c3eb43a389}} 
+void {\bfseries draw3D} (const \mbox{\hyperlink{class_voxel_eng_1_1index_buffer}{index\+Buffer}} \&ib) const
+\begin{DoxyCompactList}\small\item\em Performs a draw call using the \mbox{\hyperlink{class_voxel_eng_1_1index_buffer}{index\+Buffer}} object. WARNING. Must be called in a thread with valid graphics context and the index buffer and any associated buffer bust be bound properly before calling this method. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1renderer_a286d61c32861cb5040ea04086e450587}\label{class_voxel_eng_1_1renderer_a286d61c32861cb5040ea04086e450587}} 
+void {\bfseries draw3D} (int count) const
+\begin{DoxyCompactList}\small\item\em Draws \textquotesingle{}count\textquotesingle{} model triangles into a 3D space. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1renderer_a4572bfddf86ab0236052b40c25caa53c}\label{class_voxel_eng_1_1renderer_a4572bfddf86ab0236052b40c25caa53c}} 
+void {\bfseries draw2D} (int count) const
+\begin{DoxyCompactList}\small\item\em Draws \textquotesingle{}count\textquotesingle{} model triangles into a 2D space. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1renderer_a62f03d87fc5e7f43477634b4fa2ef892}\label{class_voxel_eng_1_1renderer_a62f03d87fc5e7f43477634b4fa2ef892}} 
+void {\bfseries clear} () const
+\begin{DoxyCompactList}\small\item\em Clears the window associated with the graphics API context in order to prepare it for the next frame that will be drawn. WARNING. Must be called in a thread with valid grahpics API context. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Responsible of properly issuing the draw calls and clearing the window for the next frame. The vertices to draw must be sent using properly bound and prepared VBOs, along with other data structures that they could need. 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{renderer_8h}{renderer.\+h}}\end{DoxyCompactItemize}

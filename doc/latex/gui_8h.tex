@@ -1,0 +1,54 @@
+\hypertarget{gui_8h}{}\doxysection{code/gui.h File Reference}
+\label{gui_8h}\index{code/gui.h@{code/gui.h}}
+
+
+Contains the definition of the Graphical User Interface (GUI) in the engine, along with the base class to create types of GUI elements and some built-\/in basic GUI elements.  
+
+
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+set$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$GL/glew.\+h$>$}\newline
+{\ttfamily \#include $<$GLFW/glfw3.\+h$>$}\newline
+{\ttfamily \#include $<$gtx/quaternion.\+hpp$>$}\newline
+{\ttfamily \#include $<$gtx/rotate\+\_\+vector.\+hpp$>$}\newline
+{\ttfamily \#include $<$glm.\+hpp$>$}\newline
+{\ttfamily \#include $<$mutex$>$}\newline
+{\ttfamily \#include \char`\"{}controls.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}definitions.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}vertex\+Buffer.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}vertex\+Array.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}shader.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}vertex.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}renderer.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}game\+Window.\+h\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{Voxel\+Eng\+::\+GUIelement}}
+\begin{DoxyCompactList}\small\item\em Base class that defines everything that a GUI element should at least have. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1_g_u_imanager}{Voxel\+Eng\+::\+GUImanager}}
+\begin{DoxyCompactList}\small\item\em Manages everything related to GUIelements. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{gui_8h_add5159333ccf3fc175fbf39b02502127}\label{gui_8h_add5159333ccf3fc175fbf39b02502127}} 
+enum class \mbox{\hyperlink{gui_8h_add5159333ccf3fc175fbf39b02502127}{Voxel\+Eng\+::\+GUIcontainer}} \{ {\bfseries main\+Menu}
+, {\bfseries level}
+, {\bfseries both}
+ \}
+\begin{DoxyCompactList}\small\item\em GUIcontainers are a way to group GUIelements into sets that are only usable in different circumstances of the engine\textquotesingle{}s execution. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the definition of the Graphical User Interface (GUI) in the engine, along with the base class to create types of GUI elements and some built-\/in basic GUI elements. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+25/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title GUI. 
+\end{DoxyAuthor}

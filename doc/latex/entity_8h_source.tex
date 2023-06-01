@@ -1,0 +1,539 @@
+\hypertarget{entity_8h_source}{}\doxysection{entity.\+h}
+\label{entity_8h_source}\index{code/entity.h@{code/entity.h}}
+\mbox{\hyperlink{entity_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#ifndef \_VOXENG\_ENTITY\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#define \_VOXENG\_ENTITY\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <atomic>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <condition\_variable>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <list>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <unordered\_map>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <unordered\_set>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include <mutex>}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{21 }
+\DoxyCodeLine{22 \textcolor{preprocessor}{\#include <GL/glew.h>}}
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#include <GLFW/glfw3.h>}}
+\DoxyCodeLine{24 \textcolor{preprocessor}{\#include <glm.hpp>}}
+\DoxyCodeLine{25 }
+\DoxyCodeLine{26 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{27 }
+\DoxyCodeLine{28 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{batch_8h}{batch.h}}"{}}}
+\DoxyCodeLine{29 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{camera_8h}{camera.h}}"{}}}
+\DoxyCodeLine{30 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{chunk_8h}{chunk.h}}"{}}}
+\DoxyCodeLine{31 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{32 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{game_window_8h}{gameWindow.h}}"{}}}
+\DoxyCodeLine{33 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{model_8h}{model.h}}"{}}}
+\DoxyCodeLine{34 }
+\DoxyCodeLine{35 }
+\DoxyCodeLine{36 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{37 }
+\DoxyCodeLine{39     \textcolor{comment}{//Forward declarations.//}}
+\DoxyCodeLine{41 \textcolor{comment}{}}
+\DoxyCodeLine{42     \textcolor{keyword}{class }batch;}
+\DoxyCodeLine{43     \textcolor{keyword}{class }entityManager;}
+\DoxyCodeLine{44 }
+\DoxyCodeLine{45 }
+\DoxyCodeLine{47     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{49 \textcolor{comment}{}}
+\DoxyCodeLine{54     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1player}{player}} \{}
+\DoxyCodeLine{55 }
+\DoxyCodeLine{56     \textcolor{keyword}{public}:}
+\DoxyCodeLine{57 }
+\DoxyCodeLine{58         \textcolor{comment}{// Initialisation.}}
+\DoxyCodeLine{59 }
+\DoxyCodeLine{63         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1player_a62c4d1563008e82384223fe280de5165}{init}}(\textcolor{keywordtype}{float} FOV, \textcolor{keywordtype}{float} zNear, \textcolor{keywordtype}{float} zFar, \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}\& \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} blockReachRange);}
+\DoxyCodeLine{64 }
+\DoxyCodeLine{65 }
+\DoxyCodeLine{66         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{67 }
+\DoxyCodeLine{71         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}\& \mbox{\hyperlink{class_voxel_eng_1_1player_a3964e485da0774ad344066f46fd3bbfa}{getCamera}}();}
+\DoxyCodeLine{72 }
+\DoxyCodeLine{77         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1player_ac912fe1688a71740ff85b1697d674129}{selectBlock}}();}
+\DoxyCodeLine{78 }
+\DoxyCodeLine{82         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1player_a6feb6346900ef4119bda60bede4dc545}{mouseButtonCallback}}(GLFWwindow* \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}, \textcolor{keywordtype}{int} button, \textcolor{keywordtype}{int} action, \textcolor{keywordtype}{int} mods);}
+\DoxyCodeLine{83 }
+\DoxyCodeLine{87         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1player_a29531cd0fd65aed1e72f22466f0c785a}{destroySelectedBlock}}();}
+\DoxyCodeLine{88 }
+\DoxyCodeLine{93         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1player_a6088716ff1d047c6d96a04f0c85fe401}{placeSelectedBlock}}();}
+\DoxyCodeLine{94 }
+\DoxyCodeLine{99         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1player_a39978c2c68cfb9a98e24c3675ea9857f}{processSelectionRaycast}}();}
+\DoxyCodeLine{100 }
+\DoxyCodeLine{104         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}{setBlockToPlace}}(block blockID);}
+\DoxyCodeLine{105 }
+\DoxyCodeLine{109         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1player_a0d2bf5cf49e936631891a28e1cc61a54}{changePosition}}(\textcolor{keyword}{const} vec3\& newPos, \textcolor{keyword}{const} vec3\& newDir = \mbox{\hyperlink{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}{vec3Zero}});}
+\DoxyCodeLine{110 }
+\DoxyCodeLine{114         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1player_a0d2bf5cf49e936631891a28e1cc61a54}{changePosition}}(\textcolor{keywordtype}{int} newX, \textcolor{keywordtype}{int} newY, \textcolor{keywordtype}{int} newZ, \textcolor{keywordtype}{int} newDirX = 0, \textcolor{keywordtype}{int} newDirY = 0, \textcolor{keywordtype}{int} newDirZ = 0);}
+\DoxyCodeLine{115 }
+\DoxyCodeLine{116 }
+\DoxyCodeLine{117         \textcolor{comment}{// Clean up.}}
+\DoxyCodeLine{118 }
+\DoxyCodeLine{122         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1player_aeb85eb7c0e42e449065cab2cd1c85f06}{cleanUp}}();}
+\DoxyCodeLine{123 }
+\DoxyCodeLine{124     \textcolor{keyword}{private}:}
+\DoxyCodeLine{125 }
+\DoxyCodeLine{126         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialised\_;}
+\DoxyCodeLine{127         \textcolor{keyword}{static} GLFWwindow* window\_;}
+\DoxyCodeLine{128         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}* camera\_;}
+\DoxyCodeLine{129         \textcolor{keyword}{static} \textcolor{keywordtype}{float} blockReachRange\_,}
+\DoxyCodeLine{130                      blockSearchIncrement\_;}
+\DoxyCodeLine{131         \textcolor{keyword}{static} block selectedBlock\_;}
+\DoxyCodeLine{132         \textcolor{keyword}{static} std::atomic<block> blockToPlace\_;}
+\DoxyCodeLine{133         \textcolor{keyword}{static} vec3 selectedBlockPos\_,}
+\DoxyCodeLine{134                     oldSelectedBlockPos\_;}
+\DoxyCodeLine{135         }
+\DoxyCodeLine{136 }
+\DoxyCodeLine{137         \textcolor{comment}{/*}}
+\DoxyCodeLine{138 \textcolor{comment}{        Flags used to coordinate the callbacks called}}
+\DoxyCodeLine{139 \textcolor{comment}{        on the rendering thread with the input processing thread.}}
+\DoxyCodeLine{140 \textcolor{comment}{        */}}
+\DoxyCodeLine{141         \textcolor{keyword}{static} std::atomic<bool> destroyBlock\_,}
+\DoxyCodeLine{142                           placeBlock\_;}
+\DoxyCodeLine{143 }
+\DoxyCodeLine{144     \};}
+\DoxyCodeLine{145 }
+\DoxyCodeLine{146     \textcolor{keyword}{inline} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}\& \mbox{\hyperlink{class_voxel_eng_1_1player_a3964e485da0774ad344066f46fd3bbfa}{player::getCamera}}() \{}
+\DoxyCodeLine{147 }
+\DoxyCodeLine{148         \textcolor{keywordflow}{return} *camera\_;}
+\DoxyCodeLine{149 }
+\DoxyCodeLine{150     \}}
+\DoxyCodeLine{151 }
+\DoxyCodeLine{152     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1player_a0d2bf5cf49e936631891a28e1cc61a54}{player::changePosition}}(\textcolor{keyword}{const} vec3\& newPos, \textcolor{keyword}{const} vec3\& newDir) \{}
+\DoxyCodeLine{153     }
+\DoxyCodeLine{154         \mbox{\hyperlink{class_voxel_eng_1_1player_a0d2bf5cf49e936631891a28e1cc61a54}{changePosition}}(newPos.x, newPos.y, newPos.z, newDir.x, newDir.y, newDir.z);}
+\DoxyCodeLine{155     }
+\DoxyCodeLine{156     \}}
+\DoxyCodeLine{157 }
+\DoxyCodeLine{158 }
+\DoxyCodeLine{164     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1entity}{entity}} \{}
+\DoxyCodeLine{165 }
+\DoxyCodeLine{166     \textcolor{keyword}{public}:}
+\DoxyCodeLine{167 }
+\DoxyCodeLine{168         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{169 }
+\DoxyCodeLine{175         \mbox{\hyperlink{class_voxel_eng_1_1entity}{entity}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID, \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1entity_a1285af7d130fd850d7805ff8a5422ec1}{pos}}, \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1entity_a2214619bb7ff55f033bb1ff37dc2833d}{rot}}, tickFunc func = \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{176 }
+\DoxyCodeLine{177 }
+\DoxyCodeLine{178         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{179 }
+\DoxyCodeLine{183         \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1entity_a1285af7d130fd850d7805ff8a5422ec1}{pos}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{184 }
+\DoxyCodeLine{188         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_afd47c6e14c066021e632d7580d933306}{x}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{189 }
+\DoxyCodeLine{193         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_ab2683b8974ab427956fdc3b4c1104e47}{y}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{194 }
+\DoxyCodeLine{198         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_aafcab1ad679953bfe604ebe7ef839cd0}{z}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{199 }
+\DoxyCodeLine{203         \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1entity_a2214619bb7ff55f033bb1ff37dc2833d}{rot}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{204 }
+\DoxyCodeLine{208         \textcolor{keyword}{const} \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}}\& \mbox{\hyperlink{class_voxel_eng_1_1entity_ad1ed40f5fb7328107d6c404939dcdaa4}{entityModel}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{209 }
+\DoxyCodeLine{213         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_a005e5c333d44a9ff291e2a874f8edf7c}{updateXRotation}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{214 }
+\DoxyCodeLine{218         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_aa1069a57d69797b0707c8759d71f5669}{updateYRotation}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{219 }
+\DoxyCodeLine{223         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_a0e881ed5053d6172fd32834dc163ffeb}{updateZRotation}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{224 }
+\DoxyCodeLine{228         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_abeec3dc36ea01e45efba55a058009ab2}{sinAngleX}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{229 }
+\DoxyCodeLine{233         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_a73cfffadb1adf87769ed5541dc7d2b50}{cosAngleX}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{234 }
+\DoxyCodeLine{238         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_ae9ee7aaa49c95251e96b6d6648ca73c6}{sinAngleY}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{239 }
+\DoxyCodeLine{243         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_a31e6f504576112c7909ca3300a3718a2}{cosAngleY}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{244 }
+\DoxyCodeLine{248         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_ab8322ddd77fa244c8738971bae4573c2}{sinAngleZ}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{249 }
+\DoxyCodeLine{253         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_a1ee1634aa0845f729b4271ef9a6c232b}{cosAngleZ}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{254 }
+\DoxyCodeLine{255 }
+\DoxyCodeLine{256         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{257 }
+\DoxyCodeLine{261         vec3\& \mbox{\hyperlink{class_voxel_eng_1_1entity_a1285af7d130fd850d7805ff8a5422ec1}{pos}}();}
+\DoxyCodeLine{262 }
+\DoxyCodeLine{266         \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1entity_afd47c6e14c066021e632d7580d933306}{x}}();}
+\DoxyCodeLine{267 }
+\DoxyCodeLine{271         \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1entity_ab2683b8974ab427956fdc3b4c1104e47}{y}}();}
+\DoxyCodeLine{272 }
+\DoxyCodeLine{276         \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1entity_aafcab1ad679953bfe604ebe7ef839cd0}{z}}();}
+\DoxyCodeLine{277 }
+\DoxyCodeLine{281         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_a4eabd3324ea51f78d31f92a8075f38b3}{setModelID}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID);}
+\DoxyCodeLine{282 }
+\DoxyCodeLine{286         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_a848f9cde6416ee615777959963d0377c}{rotate}}(\textcolor{keyword}{const} vec3\& rotation);}
+\DoxyCodeLine{287 }
+\DoxyCodeLine{291         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_a848f9cde6416ee615777959963d0377c}{rotate}}(\textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_afd47c6e14c066021e632d7580d933306}{x}}, \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_ab2683b8974ab427956fdc3b4c1104e47}{y}}, \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_aafcab1ad679953bfe604ebe7ef839cd0}{z}});}
+\DoxyCodeLine{292 }
+\DoxyCodeLine{296         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_ad71a4f3666befa0913a796e459d4ef20}{rotateX}}(\textcolor{keywordtype}{float} angle);}
+\DoxyCodeLine{297 }
+\DoxyCodeLine{301         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_a2b79320ecc788e22a4fcbc2b33844be4}{rotateY}}(\textcolor{keywordtype}{float} angle);}
+\DoxyCodeLine{302 }
+\DoxyCodeLine{306         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_af9a1548997ce9989f908a9360c7b5684}{rotateZ}}(\textcolor{keywordtype}{float} angle);}
+\DoxyCodeLine{307 }
+\DoxyCodeLine{315         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_a15a54c6ff0ca4d38db306f61e24c993f}{rotateView}}(\textcolor{keyword}{const} vec3\& rotation);}
+\DoxyCodeLine{316 }
+\DoxyCodeLine{322         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_a15a54c6ff0ca4d38db306f61e24c993f}{rotateView}}(\textcolor{keywordtype}{float} roll, \textcolor{keywordtype}{float} pitch, \textcolor{keywordtype}{float} yaw);}
+\DoxyCodeLine{323 }
+\DoxyCodeLine{329         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_af211e45a00eadc7f5415d2d3d5bcf253}{rotateViewRoll}}(\textcolor{keywordtype}{float} angle);}
+\DoxyCodeLine{330 }
+\DoxyCodeLine{336         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_ab2532e2bdcdf75c6278d42b1d2c0b064}{rotateViewPitch}}(\textcolor{keywordtype}{float} angle);}
+\DoxyCodeLine{337 }
+\DoxyCodeLine{343         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_a40f213fad022f82892e573413d84824d}{rotateViewYaw}}(\textcolor{keywordtype}{float} angle);}
+\DoxyCodeLine{344         }
+\DoxyCodeLine{345     \textcolor{keyword}{private}:}
+\DoxyCodeLine{346 }
+\DoxyCodeLine{347         \textcolor{comment}{/*}}
+\DoxyCodeLine{348 \textcolor{comment}{        Friend classes.}}
+\DoxyCodeLine{349 \textcolor{comment}{        */}}
+\DoxyCodeLine{350 }
+\DoxyCodeLine{351         \textcolor{keyword}{friend} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager}{entityManager}};}
+\DoxyCodeLine{352 }
+\DoxyCodeLine{353 }
+\DoxyCodeLine{354         \textcolor{comment}{/*}}
+\DoxyCodeLine{355 \textcolor{comment}{        Attributes.}}
+\DoxyCodeLine{356 \textcolor{comment}{        */}}
+\DoxyCodeLine{357 }
+\DoxyCodeLine{358         \textcolor{keyword}{static} \textcolor{keyword}{const} \textcolor{keywordtype}{float} piDiv;}
+\DoxyCodeLine{359 }
+\DoxyCodeLine{360         \textcolor{keywordtype}{bool} updateXRotation\_,}
+\DoxyCodeLine{361              updateYRotation\_,}
+\DoxyCodeLine{362              updateZRotation\_;}
+\DoxyCodeLine{363         vec3 pos\_,}
+\DoxyCodeLine{364              rot\_;}
+\DoxyCodeLine{365         \textcolor{keyword}{const} \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}}* model\_;}
+\DoxyCodeLine{366         tickFunc tickFunc\_;}
+\DoxyCodeLine{367 }
+\DoxyCodeLine{368     \};}
+\DoxyCodeLine{369 }
+\DoxyCodeLine{370     \textcolor{keyword}{inline} \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1entity_a1285af7d130fd850d7805ff8a5422ec1}{entity::pos}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{371     }
+\DoxyCodeLine{372         \textcolor{keywordflow}{return} pos\_;}
+\DoxyCodeLine{373     }
+\DoxyCodeLine{374     \}}
+\DoxyCodeLine{375 }
+\DoxyCodeLine{376     \textcolor{keyword}{inline} \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1entity_a2214619bb7ff55f033bb1ff37dc2833d}{entity::rot}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{377     }
+\DoxyCodeLine{378         \textcolor{keywordflow}{return} rot\_;}
+\DoxyCodeLine{379     }
+\DoxyCodeLine{380     \}}
+\DoxyCodeLine{381 }
+\DoxyCodeLine{382     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_afd47c6e14c066021e632d7580d933306}{entity::x}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{383     }
+\DoxyCodeLine{384         \textcolor{keywordflow}{return} pos\_.x;}
+\DoxyCodeLine{385     }
+\DoxyCodeLine{386     \}}
+\DoxyCodeLine{387 }
+\DoxyCodeLine{388     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_ab2683b8974ab427956fdc3b4c1104e47}{entity::y}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{389 }
+\DoxyCodeLine{390         \textcolor{keywordflow}{return} pos\_.y;}
+\DoxyCodeLine{391 }
+\DoxyCodeLine{392     \}}
+\DoxyCodeLine{393 }
+\DoxyCodeLine{394     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_aafcab1ad679953bfe604ebe7ef839cd0}{entity::z}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{395 }
+\DoxyCodeLine{396         \textcolor{keywordflow}{return} pos\_.z;}
+\DoxyCodeLine{397 }
+\DoxyCodeLine{398     \}}
+\DoxyCodeLine{399 }
+\DoxyCodeLine{400     \textcolor{keyword}{inline} \textcolor{keyword}{const} \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}}\& \mbox{\hyperlink{class_voxel_eng_1_1entity_ad1ed40f5fb7328107d6c404939dcdaa4}{entity::entityModel}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{401 }
+\DoxyCodeLine{402         \textcolor{keywordflow}{return} *model\_;}
+\DoxyCodeLine{403 }
+\DoxyCodeLine{404     \}}
+\DoxyCodeLine{405 }
+\DoxyCodeLine{406     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_a005e5c333d44a9ff291e2a874f8edf7c}{entity::updateXRotation}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{407     }
+\DoxyCodeLine{408         \textcolor{keywordflow}{return} updateXRotation\_;}
+\DoxyCodeLine{409     }
+\DoxyCodeLine{410     \}}
+\DoxyCodeLine{411 }
+\DoxyCodeLine{412     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_aa1069a57d69797b0707c8759d71f5669}{entity::updateYRotation}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{413 }
+\DoxyCodeLine{414         \textcolor{keywordflow}{return} updateYRotation\_;}
+\DoxyCodeLine{415 }
+\DoxyCodeLine{416     \}}
+\DoxyCodeLine{417 }
+\DoxyCodeLine{418     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_a0e881ed5053d6172fd32834dc163ffeb}{entity::updateZRotation}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{419 }
+\DoxyCodeLine{420         \textcolor{keywordflow}{return} updateZRotation\_;}
+\DoxyCodeLine{421 }
+\DoxyCodeLine{422     \}}
+\DoxyCodeLine{423 }
+\DoxyCodeLine{424     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_abeec3dc36ea01e45efba55a058009ab2}{entity::sinAngleX}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{425 }
+\DoxyCodeLine{426         \textcolor{keywordflow}{return} std::sin(rot\_.x * piDiv);}
+\DoxyCodeLine{427     }
+\DoxyCodeLine{428     \}}
+\DoxyCodeLine{429 }
+\DoxyCodeLine{430     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_a73cfffadb1adf87769ed5541dc7d2b50}{entity::cosAngleX}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{431 }
+\DoxyCodeLine{432         \textcolor{keywordflow}{return} std::cos(rot\_.x * piDiv);}
+\DoxyCodeLine{433 }
+\DoxyCodeLine{434     \}}
+\DoxyCodeLine{435 }
+\DoxyCodeLine{436     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_ae9ee7aaa49c95251e96b6d6648ca73c6}{entity::sinAngleY}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{437 }
+\DoxyCodeLine{438         \textcolor{keywordflow}{return} std::sin(rot\_.y * piDiv);}
+\DoxyCodeLine{439 }
+\DoxyCodeLine{440     \}}
+\DoxyCodeLine{441 }
+\DoxyCodeLine{442     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_a31e6f504576112c7909ca3300a3718a2}{entity::cosAngleY}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{443 }
+\DoxyCodeLine{444         \textcolor{keywordflow}{return} std::cos(rot\_.y * piDiv);}
+\DoxyCodeLine{445 }
+\DoxyCodeLine{446     \}}
+\DoxyCodeLine{447 }
+\DoxyCodeLine{448     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_ab8322ddd77fa244c8738971bae4573c2}{entity::sinAngleZ}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{449 }
+\DoxyCodeLine{450         \textcolor{keywordflow}{return} std::sin(rot\_.z * piDiv);}
+\DoxyCodeLine{451 }
+\DoxyCodeLine{452     \}}
+\DoxyCodeLine{453 }
+\DoxyCodeLine{454     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1entity_a1ee1634aa0845f729b4271ef9a6c232b}{entity::cosAngleZ}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{455 }
+\DoxyCodeLine{456         \textcolor{keywordflow}{return} std::cos(rot\_.z * piDiv);}
+\DoxyCodeLine{457 }
+\DoxyCodeLine{458     \}}
+\DoxyCodeLine{459 }
+\DoxyCodeLine{460     \textcolor{keyword}{inline} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1entity_a1285af7d130fd850d7805ff8a5422ec1}{entity::pos}}() \{}
+\DoxyCodeLine{461 }
+\DoxyCodeLine{462         \textcolor{keywordflow}{return} pos\_;}
+\DoxyCodeLine{463 }
+\DoxyCodeLine{464     \}}
+\DoxyCodeLine{465 }
+\DoxyCodeLine{466     \textcolor{keyword}{inline} \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1entity_afd47c6e14c066021e632d7580d933306}{entity::x}}() \{}
+\DoxyCodeLine{467 }
+\DoxyCodeLine{468         \textcolor{keywordflow}{return} pos\_.x;}
+\DoxyCodeLine{469 }
+\DoxyCodeLine{470     \}}
+\DoxyCodeLine{471 }
+\DoxyCodeLine{472     \textcolor{keyword}{inline} \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1entity_ab2683b8974ab427956fdc3b4c1104e47}{entity::y}}() \{}
+\DoxyCodeLine{473 }
+\DoxyCodeLine{474         \textcolor{keywordflow}{return} pos\_.y;}
+\DoxyCodeLine{475 }
+\DoxyCodeLine{476     \}}
+\DoxyCodeLine{477 }
+\DoxyCodeLine{478     \textcolor{keyword}{inline} \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1entity_aafcab1ad679953bfe604ebe7ef839cd0}{entity::z}}() \{}
+\DoxyCodeLine{479 }
+\DoxyCodeLine{480         \textcolor{keywordflow}{return} pos\_.z;}
+\DoxyCodeLine{481 }
+\DoxyCodeLine{482     \}}
+\DoxyCodeLine{483 }
+\DoxyCodeLine{484     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_a848f9cde6416ee615777959963d0377c}{entity::rotate}}(\textcolor{keyword}{const} vec3\& rot) \{}
+\DoxyCodeLine{485 }
+\DoxyCodeLine{486         \mbox{\hyperlink{class_voxel_eng_1_1entity_a848f9cde6416ee615777959963d0377c}{rotate}}(\mbox{\hyperlink{class_voxel_eng_1_1entity_a2214619bb7ff55f033bb1ff37dc2833d}{rot}}.x, \mbox{\hyperlink{class_voxel_eng_1_1entity_a2214619bb7ff55f033bb1ff37dc2833d}{rot}}.y, \mbox{\hyperlink{class_voxel_eng_1_1entity_a2214619bb7ff55f033bb1ff37dc2833d}{rot}}.z);}
+\DoxyCodeLine{487 }
+\DoxyCodeLine{488     \}}
+\DoxyCodeLine{489 }
+\DoxyCodeLine{490     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_a15a54c6ff0ca4d38db306f61e24c993f}{entity::rotateView}}(\textcolor{keyword}{const} vec3\& rotation) \{}
+\DoxyCodeLine{491 }
+\DoxyCodeLine{492         \mbox{\hyperlink{class_voxel_eng_1_1entity_a15a54c6ff0ca4d38db306f61e24c993f}{rotateView}}(rotation.x, rotation.y, rotation.z);}
+\DoxyCodeLine{493 }
+\DoxyCodeLine{494     \}}
+\DoxyCodeLine{495 }
+\DoxyCodeLine{496     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_a4eabd3324ea51f78d31f92a8075f38b3}{entity::setModelID}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID) \{}
+\DoxyCodeLine{497     }
+\DoxyCodeLine{498         model\_ = \&\mbox{\hyperlink{class_voxel_eng_1_1models_a697dddd92b62c2180c6407adb0ac122b}{models::getModelAt}}(modelID);}
+\DoxyCodeLine{499     }
+\DoxyCodeLine{500     \}}
+\DoxyCodeLine{501 }
+\DoxyCodeLine{502 }
+\DoxyCodeLine{508     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1entity_manager}{entityManager}} \{}
+\DoxyCodeLine{509 }
+\DoxyCodeLine{510     \textcolor{keyword}{public}:}
+\DoxyCodeLine{511 }
+\DoxyCodeLine{512         \textcolor{comment}{// Initialisation.}}
+\DoxyCodeLine{513 }
+\DoxyCodeLine{518         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a9d7486b7d759de85423ebc1683995bd6}{init}}();}
+\DoxyCodeLine{519 }
+\DoxyCodeLine{520 }
+\DoxyCodeLine{521         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{522 }
+\DoxyCodeLine{526         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a6fe5f9ffdab776f42dbc6ab8e5a26fba}{initialised}}();}
+\DoxyCodeLine{527 }
+\DoxyCodeLine{534         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a6dbcc5ab9a29da1acc052896d149eb1f}{isEntityRegistered}}(entityID entityID);}
+\DoxyCodeLine{535 }
+\DoxyCodeLine{539         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a46620bf377021a23b782c5f9e0122fd1}{isEntityActiveAt}}(entityID entityID);}
+\DoxyCodeLine{540 }
+\DoxyCodeLine{544         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_ad75dcb753379592b79fe0f991e382d28}{isEntityActive}}(entityID entityID);}
+\DoxyCodeLine{545 }
+\DoxyCodeLine{546 }
+\DoxyCodeLine{547         \textcolor{comment}{// Modifiers: general.}}
+\DoxyCodeLine{548 }
+\DoxyCodeLine{553         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a24261e37f70ed333632cd9cfe32d1321}{setAImode}}(\textcolor{keywordtype}{bool} on);}
+\DoxyCodeLine{554 }
+\DoxyCodeLine{559         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a7b8cc85aaa8dd5182593ff7b71395e02}{manageEntities}}();}
+\DoxyCodeLine{560 }
+\DoxyCodeLine{564         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a0397d245918009c1d147589d07142ab9}{nEntities}}();}
+\DoxyCodeLine{565 }
+\DoxyCodeLine{570         \textcolor{keyword}{static} entityID \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_aa7853f264e6d6dd2d878cb4da6918cb5}{registerEntity}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID, \textcolor{keyword}{const} vec3\& pos, \textcolor{keyword}{const} vec3\& rot = \mbox{\hyperlink{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}{vec3Zero}}, tickFunc func = \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{571 }
+\DoxyCodeLine{576         \textcolor{keyword}{static} entityID \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_aa7853f264e6d6dd2d878cb4da6918cb5}{registerEntity}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID, \textcolor{keywordtype}{int} posX, \textcolor{keywordtype}{int} posY, \textcolor{keywordtype}{int} posZ, \textcolor{keyword}{const} vec3\& rot = \mbox{\hyperlink{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}{vec3Zero}}, tickFunc func = \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{577 }
+\DoxyCodeLine{582         \textcolor{keyword}{static} entityID \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_aa7853f264e6d6dd2d878cb4da6918cb5}{registerEntity}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID, \textcolor{keywordtype}{int} posX, \textcolor{keywordtype}{int} posY, \textcolor{keywordtype}{int} posZ, \textcolor{keywordtype}{float} rotX, \textcolor{keywordtype}{float} rotY, \textcolor{keywordtype}{float} rotZ, tickFunc func = \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{583 }
+\DoxyCodeLine{587         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1entity}{entity}}\& \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_afde4a6b3b6ee6bb3fc623435d055f2af}{getEntityAt}}(entityID ID);}
+\DoxyCodeLine{588 }
+\DoxyCodeLine{592         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1entity}{entity}}\& \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a0afc8a2422c7111ca01a610b32a5974c}{getEntity}}(entityID ID);}
+\DoxyCodeLine{593 }
+\DoxyCodeLine{597         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a12676ccea5bd5b03af627c6fa77abef9}{changeEntityActiveStateAt}}(entityID ID, \textcolor{keywordtype}{bool} active);}
+\DoxyCodeLine{598 }
+\DoxyCodeLine{603         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a663a8dcaec0b8d87a60856f6df5fa55b}{deleteEntityAt}}(entityID ID);}
+\DoxyCodeLine{604 }
+\DoxyCodeLine{609         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a7a3452b570145da48a0a45f9c9b78109}{deleteEntity}}(entityID ID);}
+\DoxyCodeLine{610 }
+\DoxyCodeLine{615         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_aab7ed733e4956d56dba86ca21615050b}{swapReadWrite}}();}
+\DoxyCodeLine{616 }
+\DoxyCodeLine{620         \textcolor{keyword}{static} std::condition\_variable\& \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a7e1de7040814eb9686a5f9ba41ee12fc}{entityManagerCV}}();}
+\DoxyCodeLine{621 }
+\DoxyCodeLine{625         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a2b8b30705820e78a8e75844cac4e406c}{syncFlag}}();}
+\DoxyCodeLine{626 }
+\DoxyCodeLine{630         \textcolor{keyword}{static} std::mutex\& \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a7e9344df1ea63d8a66b6025059930050}{syncMutex}}();}
+\DoxyCodeLine{631 }
+\DoxyCodeLine{635         \textcolor{keyword}{static} \textcolor{keyword}{const} std::vector<model>* \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_ab53a877d3f0793c6636a7dd3b650c589}{renderingData}}();}
+\DoxyCodeLine{636 }
+\DoxyCodeLine{637 }
+\DoxyCodeLine{638         \textcolor{comment}{// Modifiers: actions on entities.}}
+\DoxyCodeLine{639 }
+\DoxyCodeLine{640         \textcolor{keyword}{static} \textcolor{keywordtype}{void} moveEntity(entityID entityID, \textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} y, \textcolor{keywordtype}{int} z);}
+\DoxyCodeLine{641 }
+\DoxyCodeLine{642         }
+\DoxyCodeLine{643         \textcolor{comment}{// Clean up.}}
+\DoxyCodeLine{644 }
+\DoxyCodeLine{648         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a0d765f875d12b5063d3a555d2d2ae7cd}{clean}}();}
+\DoxyCodeLine{649 }
+\DoxyCodeLine{653         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a18ef63a33a22be1a8f2c807cd372d0fc}{cleanUp}}();}
+\DoxyCodeLine{654 }
+\DoxyCodeLine{655     \textcolor{keyword}{private}:}
+\DoxyCodeLine{656 }
+\DoxyCodeLine{657         \textcolor{comment}{/*}}
+\DoxyCodeLine{658 \textcolor{comment}{        Attributes.}}
+\DoxyCodeLine{659 \textcolor{comment}{        */}}
+\DoxyCodeLine{660 }
+\DoxyCodeLine{661         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialised\_,}
+\DoxyCodeLine{662                     firstManagementIteration\_;}
+\DoxyCodeLine{663         \textcolor{keyword}{static} std::vector<entity> entities\_;}
+\DoxyCodeLine{664         \textcolor{keyword}{static} std::vector<batch> batches\_;}
+\DoxyCodeLine{665 }
+\DoxyCodeLine{666         \textcolor{keyword}{static} std::unordered\_map<unsigned int, unsigned int> entityBatch\_; \textcolor{comment}{// Relates entity's ID with the batch it belongs to.}}
+\DoxyCodeLine{667         \textcolor{keyword}{static} std::unordered\_set<unsigned int> activeEntityID\_,}
+\DoxyCodeLine{668                                                 activeBatchID\_,}
+\DoxyCodeLine{669                                                 freeEntityID\_,}
+\DoxyCodeLine{670                                                 freeBatchID\_,}
+\DoxyCodeLine{671                                                 inactiveEntityID\_,}
+\DoxyCodeLine{672                                                 inactiveBatchID\_,}
+\DoxyCodeLine{673                                                 deleteableEntityID\_;}
+\DoxyCodeLine{674 }
+\DoxyCodeLine{675         \textcolor{comment}{// Queue of entities' ID that belong to entities that are}}
+\DoxyCodeLine{676         \textcolor{comment}{// waiting for their tick method (with its respective pointer different from nullptr)}}
+\DoxyCodeLine{677         \textcolor{comment}{// to execute.}}
+\DoxyCodeLine{678         \textcolor{keyword}{static} std::list<unsigned int> tickingEntityID\_;    }
+\DoxyCodeLine{679 }
+\DoxyCodeLine{680         \textcolor{keyword}{static} std::vector <model>* renderingDataWrite\_,}
+\DoxyCodeLine{681                                   * renderingDataRead\_;}
+\DoxyCodeLine{682         }
+\DoxyCodeLine{683         \textcolor{keyword}{static} std::recursive\_mutex entitiesMutex\_,}
+\DoxyCodeLine{684                                     batchesMutex\_;}
+\DoxyCodeLine{685         \textcolor{keyword}{static} std::condition\_variable entityManagerCV\_;}
+\DoxyCodeLine{686         \textcolor{keyword}{static} std::atomic<bool> entityMngCVContinue\_;}
+\DoxyCodeLine{687         \textcolor{keyword}{static} std::mutex syncMutex\_;}
+\DoxyCodeLine{688         \textcolor{keyword}{static} std::unique\_lock<std::mutex> syncLock\_;}
+\DoxyCodeLine{689         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} ticksPerFrame\_, \textcolor{comment}{// Used to distribute tick function executions between frame.}}
+\DoxyCodeLine{690                             opsPerFrame\_; \textcolor{comment}{// Used to distribute some operations between frames.}}
+\DoxyCodeLine{691 }
+\DoxyCodeLine{692 }
+\DoxyCodeLine{693         \textcolor{comment}{/*}}
+\DoxyCodeLine{694 \textcolor{comment}{        Methods.}}
+\DoxyCodeLine{695 \textcolor{comment}{        */}}
+\DoxyCodeLine{696 }
+\DoxyCodeLine{697         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{698 }
+\DoxyCodeLine{699         \textcolor{comment}{/*}}
+\DoxyCodeLine{700 \textcolor{comment}{        Note: freed batches do not count as registered as they}}
+\DoxyCodeLine{701 \textcolor{comment}{        are 'deleted' but they actually are not in order to avoid}}
+\DoxyCodeLine{702 \textcolor{comment}{        unnecessary allocations.}}
+\DoxyCodeLine{703 \textcolor{comment}{        */}}
+\DoxyCodeLine{704         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} isBatchRegistered\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} batchID);}
+\DoxyCodeLine{705 }
+\DoxyCodeLine{706         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} isBatchActiveAt\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} batchID);}
+\DoxyCodeLine{707 }
+\DoxyCodeLine{708         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} isBatchActive\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} batchID);}
+\DoxyCodeLine{709 }
+\DoxyCodeLine{710 }
+\DoxyCodeLine{711         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{712 }
+\DoxyCodeLine{713         \textcolor{comment}{/*}}
+\DoxyCodeLine{714 \textcolor{comment}{        Method called by a batch automatically while it is being constructed to register itself}}
+\DoxyCodeLine{715 \textcolor{comment}{        in the entityManager's batch list. This allows the manager to access to all the entities in the world.}}
+\DoxyCodeLine{716 \textcolor{comment}{        Batches are used to save drawing calls, but the game logic for the entities is calculated by the method}}
+\DoxyCodeLine{717 \textcolor{comment}{        entityManager::manager.}}
+\DoxyCodeLine{718 \textcolor{comment}{        Returns the ID of the registered batch.}}
+\DoxyCodeLine{719 \textcolor{comment}{        */}}
+\DoxyCodeLine{720         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} registerBatch\_();}
+\DoxyCodeLine{721 }
+\DoxyCodeLine{722         \textcolor{keyword}{static} \textcolor{keywordtype}{void} changeBatchActiveStateAt\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} batchID, \textcolor{keywordtype}{bool} active);}
+\DoxyCodeLine{723 }
+\DoxyCodeLine{724         \textcolor{keyword}{static} \textcolor{keywordtype}{void} changeBatchActiveState\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} batchID, \textcolor{keywordtype}{bool} active);}
+\DoxyCodeLine{725 }
+\DoxyCodeLine{726         \textcolor{comment}{/*}}
+\DoxyCodeLine{727 \textcolor{comment}{        Marks a batch as free to be reused later.}}
+\DoxyCodeLine{728 \textcolor{comment}{        */}}
+\DoxyCodeLine{729         \textcolor{keyword}{static} \textcolor{keywordtype}{void} deleteBatchAt\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} batchID);}
+\DoxyCodeLine{730 }
+\DoxyCodeLine{731         \textcolor{comment}{/*}}
+\DoxyCodeLine{732 \textcolor{comment}{        Marks a batch as free to be reused later.}}
+\DoxyCodeLine{733 \textcolor{comment}{        */}}
+\DoxyCodeLine{734         \textcolor{keyword}{static} \textcolor{keywordtype}{void} deleteBatch\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} batchID);}
+\DoxyCodeLine{735 }
+\DoxyCodeLine{736 }
+\DoxyCodeLine{737     \};}
+\DoxyCodeLine{738 }
+\DoxyCodeLine{739     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a6fe5f9ffdab776f42dbc6ab8e5a26fba}{entityManager::initialised}}() \{}
+\DoxyCodeLine{740     }
+\DoxyCodeLine{741         \textcolor{keywordflow}{return} initialised\_;}
+\DoxyCodeLine{742     }
+\DoxyCodeLine{743     \}}
+\DoxyCodeLine{744 }
+\DoxyCodeLine{745     \textcolor{keyword}{inline} entityID \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_aa7853f264e6d6dd2d878cb4da6918cb5}{entityManager::registerEntity}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} entityTypeID, \textcolor{keyword}{const} vec3\& pos, \textcolor{keyword}{const} vec3\& rot, tickFunc func) \{}
+\DoxyCodeLine{746     }
+\DoxyCodeLine{747         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_aa7853f264e6d6dd2d878cb4da6918cb5}{registerEntity}}(entityTypeID, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, func);}
+\DoxyCodeLine{748     }
+\DoxyCodeLine{749     \}}
+\DoxyCodeLine{750 }
+\DoxyCodeLine{751     \textcolor{keyword}{inline} entityID \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_aa7853f264e6d6dd2d878cb4da6918cb5}{entityManager::registerEntity}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} entityTypeID, \textcolor{keywordtype}{int} posX, \textcolor{keywordtype}{int} posY, \textcolor{keywordtype}{int} posZ, \textcolor{keyword}{const} vec3\& rot, tickFunc func) \{}
+\DoxyCodeLine{752 }
+\DoxyCodeLine{753         \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_aa7853f264e6d6dd2d878cb4da6918cb5}{registerEntity}}(entityTypeID, posX, posY, posZ, rot.x, rot.y, rot.z, func);}
+\DoxyCodeLine{754 }
+\DoxyCodeLine{755     \}}
+\DoxyCodeLine{756 }
+\DoxyCodeLine{757     \textcolor{keyword}{inline} std::condition\_variable\& \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a7e1de7040814eb9686a5f9ba41ee12fc}{entityManager::entityManagerCV}}() \{}
+\DoxyCodeLine{758     }
+\DoxyCodeLine{759         \textcolor{keywordflow}{return} entityManagerCV\_;}
+\DoxyCodeLine{760     }
+\DoxyCodeLine{761     \}}
+\DoxyCodeLine{762 }
+\DoxyCodeLine{763     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a2b8b30705820e78a8e75844cac4e406c}{entityManager::syncFlag}}() \{}
+\DoxyCodeLine{764     }
+\DoxyCodeLine{765         \textcolor{keywordflow}{return} entityMngCVContinue\_;}
+\DoxyCodeLine{766         }
+\DoxyCodeLine{767     \}}
+\DoxyCodeLine{768 }
+\DoxyCodeLine{769     \textcolor{keyword}{inline} std::mutex\& \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_a7e9344df1ea63d8a66b6025059930050}{entityManager::syncMutex}}() \{}
+\DoxyCodeLine{770     }
+\DoxyCodeLine{771         \textcolor{keywordflow}{return} syncMutex\_;}
+\DoxyCodeLine{772     }
+\DoxyCodeLine{773     \}}
+\DoxyCodeLine{774 }
+\DoxyCodeLine{775     \textcolor{keyword}{inline} \textcolor{keyword}{const} std::vector<model>* \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_ab53a877d3f0793c6636a7dd3b650c589}{entityManager::renderingData}}() \{}
+\DoxyCodeLine{776     }
+\DoxyCodeLine{777         \textcolor{keywordflow}{return} renderingDataRead\_;}
+\DoxyCodeLine{778     }
+\DoxyCodeLine{779     \}}
+\DoxyCodeLine{780 }
+\DoxyCodeLine{781 \}}
+\DoxyCodeLine{782 }
+\DoxyCodeLine{783 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

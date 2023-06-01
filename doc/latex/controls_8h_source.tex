@@ -1,0 +1,106 @@
+\hypertarget{controls_8h_source}{}\doxysection{controls.\+h}
+\label{controls_8h_source}\index{code/controls.h@{code/controls.h}}
+\mbox{\hyperlink{controls_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_CONTROLS\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#define \_VOXELENG\_CONTROLS\_}}
+\DoxyCodeLine{12 }
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{14 }
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <GL/glew.h>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <GLFW/glfw3.h>}}
+\DoxyCodeLine{17 }
+\DoxyCodeLine{18 }
+\DoxyCodeLine{19 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{20 }
+\DoxyCodeLine{21 \textcolor{preprocessor}{\#include <unordered\_map>}}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{23 }
+\DoxyCodeLine{24 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{25 }
+\DoxyCodeLine{27     \textcolor{comment}{//Classes \& enums.//}}
+\DoxyCodeLine{29 \textcolor{comment}{}}
+\DoxyCodeLine{33     \textcolor{keyword}{enum class} \mbox{\hyperlink{controls_8h_af550b48700d4b033518ac433ba6c72bc}{controlCode}} \{}
+\DoxyCodeLine{34 }
+\DoxyCodeLine{35         noKey,}
+\DoxyCodeLine{36         alpha1,}
+\DoxyCodeLine{37         alpha2,}
+\DoxyCodeLine{38         alpha3,}
+\DoxyCodeLine{39         alpha4,}
+\DoxyCodeLine{40         alpha5,}
+\DoxyCodeLine{41         alpha6,}
+\DoxyCodeLine{42         alpha7,}
+\DoxyCodeLine{43         alpha8,}
+\DoxyCodeLine{44         alpha9,}
+\DoxyCodeLine{45         alpha0,}
+\DoxyCodeLine{46         q,}
+\DoxyCodeLine{47         w,}
+\DoxyCodeLine{48         e,}
+\DoxyCodeLine{49         r,}
+\DoxyCodeLine{50         t,}
+\DoxyCodeLine{51         y,}
+\DoxyCodeLine{52         u,}
+\DoxyCodeLine{53         i,}
+\DoxyCodeLine{54         o,}
+\DoxyCodeLine{55         p,}
+\DoxyCodeLine{56         a,}
+\DoxyCodeLine{57         s,}
+\DoxyCodeLine{58         d,}
+\DoxyCodeLine{59         f,}
+\DoxyCodeLine{60         g,}
+\DoxyCodeLine{61         h,}
+\DoxyCodeLine{62         j,}
+\DoxyCodeLine{63         k,}
+\DoxyCodeLine{64         l,}
+\DoxyCodeLine{65         ñ,}
+\DoxyCodeLine{66         z,}
+\DoxyCodeLine{67         x,}
+\DoxyCodeLine{68         c,}
+\DoxyCodeLine{69         v,}
+\DoxyCodeLine{70         b,}
+\DoxyCodeLine{71         n,}
+\DoxyCodeLine{72         m,}
+\DoxyCodeLine{73         comma,}
+\DoxyCodeLine{74         period,}
+\DoxyCodeLine{75         leftShift,}
+\DoxyCodeLine{76         rightShift,}
+\DoxyCodeLine{77         leftControl,}
+\DoxyCodeLine{78         rightControl,}
+\DoxyCodeLine{79         leftAlt,}
+\DoxyCodeLine{80         rightAlt,}
+\DoxyCodeLine{81         questionMarkUp,}
+\DoxyCodeLine{82         questionMarkDown,}
+\DoxyCodeLine{83         exclMarkUp,}
+\DoxyCodeLine{84         exckMarkDown,}
+\DoxyCodeLine{85         space,}
+\DoxyCodeLine{86         apostrophe,}
+\DoxyCodeLine{87         upArrow,}
+\DoxyCodeLine{88         downArrow,}
+\DoxyCodeLine{89         leftArrow,}
+\DoxyCodeLine{90         rightArrow,}
+\DoxyCodeLine{91         leftButton,}
+\DoxyCodeLine{92         rightButton,}
+\DoxyCodeLine{93         middleButton}
+\DoxyCodeLine{94 }
+\DoxyCodeLine{95     \};}
+\DoxyCodeLine{96 }
+\DoxyCodeLine{102     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1controls}{controls}} \{}
+\DoxyCodeLine{103 }
+\DoxyCodeLine{104     \textcolor{keyword}{public}:}
+\DoxyCodeLine{105 }
+\DoxyCodeLine{106         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{107 }
+\DoxyCodeLine{111         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1controls_a0e82b4ac448dbfba8f940245896f5438}{getGLFWControlCode}}(\mbox{\hyperlink{controls_8h_af550b48700d4b033518ac433ba6c72bc}{controlCode}} keyCode);}
+\DoxyCodeLine{112 }
+\DoxyCodeLine{113     \textcolor{keyword}{private}:}
+\DoxyCodeLine{114 }
+\DoxyCodeLine{115         \textcolor{keyword}{static} std::unordered\_map<controlCode, unsigned int> GLFWcontrolCodes\_;}
+\DoxyCodeLine{116 }
+\DoxyCodeLine{117     \};}
+\DoxyCodeLine{118 }
+\DoxyCodeLine{119 \}}
+\DoxyCodeLine{120 }
+\DoxyCodeLine{121 \textcolor{preprocessor}{\#endif }}
+
+\end{DoxyCode}

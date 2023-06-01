@@ -1,0 +1,58 @@
+\hypertarget{index__buffer_8h_source}{}\doxysection{index\+\_\+buffer.\+h}
+\label{index__buffer_8h_source}\index{code/index\_buffer.h@{code/index\_buffer.h}}
+\mbox{\hyperlink{index__buffer_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_INDEXBUFFER\_}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#define \_VOXELENG\_INDEXBUFFER\_}}
+\DoxyCodeLine{15 }
+\DoxyCodeLine{16 }
+\DoxyCodeLine{17 \textcolor{keyword}{namespace }\mbox{\hyperlink{namespace_voxel_eng}{VoxelEng}} \{}
+\DoxyCodeLine{18 }
+\DoxyCodeLine{20     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{22 \textcolor{comment}{}}
+\DoxyCodeLine{26     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1index_buffer}{indexBuffer}} \{}
+\DoxyCodeLine{27 }
+\DoxyCodeLine{28     \textcolor{keyword}{public}:}
+\DoxyCodeLine{29 }
+\DoxyCodeLine{30         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{31 }
+\DoxyCodeLine{36         \mbox{\hyperlink{class_voxel_eng_1_1index_buffer_a231aff76eb3ff4ca00a27868de80e8fb}{indexBuffer}}();}
+\DoxyCodeLine{37 }
+\DoxyCodeLine{38 }
+\DoxyCodeLine{39         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{40 }
+\DoxyCodeLine{44         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1index_buffer_ae7ced995798ccd9bb6618614c087f407}{nIndices}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{45 }
+\DoxyCodeLine{46 }
+\DoxyCodeLine{47         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{48 }
+\DoxyCodeLine{53         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1index_buffer_aeceb0f593a84f0f9699dd12fccbf57fa}{prepareStatic}}(\textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int}* data, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} indicesCount);}
+\DoxyCodeLine{54 }
+\DoxyCodeLine{60         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1index_buffer_ae6cb26d2bd5bc10ad696d8c05ec46769}{bind}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{61 }
+\DoxyCodeLine{67         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1index_buffer_a6b8cd2ba2e49ff95ed61420466475693}{unbind}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{68 }
+\DoxyCodeLine{69 }
+\DoxyCodeLine{70         \textcolor{comment}{// Destructors.}}
+\DoxyCodeLine{71 }
+\DoxyCodeLine{76         \mbox{\hyperlink{class_voxel_eng_1_1index_buffer_a52c1a6357415e3cdea6cd0454df2d37d}{\string~indexBuffer}}();}
+\DoxyCodeLine{77 }
+\DoxyCodeLine{78     \textcolor{keyword}{private}:}
+\DoxyCodeLine{79 }
+\DoxyCodeLine{80         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} rendererID\_;}
+\DoxyCodeLine{81         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nIndices\_;}
+\DoxyCodeLine{82 }
+\DoxyCodeLine{83     \};}
+\DoxyCodeLine{84 }
+\DoxyCodeLine{85     \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1index_buffer_ae7ced995798ccd9bb6618614c087f407}{indexBuffer::nIndices}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{86 }
+\DoxyCodeLine{87         \textcolor{keywordflow}{return} nIndices\_; }
+\DoxyCodeLine{88 }
+\DoxyCodeLine{89     \}}
+\DoxyCodeLine{90 }
+\DoxyCodeLine{91 \}}
+\DoxyCodeLine{92 }
+\DoxyCodeLine{93 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

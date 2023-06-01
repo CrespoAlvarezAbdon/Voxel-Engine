@@ -1,0 +1,60 @@
+\hypertarget{_a_i_a_p_i_8h}{}\doxysection{code/\+AIAPI.h File Reference}
+\label{_a_i_a_p_i_8h}\index{code/AIAPI.h@{code/AIAPI.h}}
+
+
+Contains everything related to AI agents and AI games.  
+
+
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$cstddef$>$}\newline
+{\ttfamily \#include $<$concepts$>$}\newline
+{\ttfamily \#include $<$deque$>$}\newline
+{\ttfamily \#include $<$initializer\+\_\+list$>$}\newline
+{\ttfamily \#include $<$list$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+set$>$}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+{\ttfamily \#include $<$filesystem$>$}\newline
+{\ttfamily \#include \char`\"{}chunk.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}definitions.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}entity.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}game.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}logger.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}time.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}world\+Gen.\+h\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1agent_action_arg}{Voxel\+Eng\+::\+AIAPI\+::agent\+Action\+Arg}}
+\begin{DoxyCompactList}\small\item\em Represents the type of one of the possible arguments that an AI action can have. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action}{Voxel\+Eng\+::\+AIAPI\+::\+AIagent\+Action}}
+\begin{DoxyCompactList}\small\item\em An AI agent action is what an AI agent can perform when in an AI game match in its level. It may affect the level, the AI agent itself, other entities or agents or other things defined in the AI game. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{Voxel\+Eng\+::\+AIAPI\+::ai\+Game}}
+\begin{DoxyCompactList}\small\item\em Manages all the general aspects of AI games and all the aspects of AI games that do not require training. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1training_game}{Voxel\+Eng\+::\+AIAPI\+::training\+Game}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{_a_i_a_p_i_8h_ae762db48ef500f736f7460e77249c24e}\label{_a_i_a_p_i_8h_ae762db48ef500f736f7460e77249c24e}} 
+enum class \mbox{\hyperlink{_a_i_a_p_i_8h_ae762db48ef500f736f7460e77249c24e}{Voxel\+Eng\+::\+AIAPI\+::record\+Play\+Mode}} \{ {\bfseries FORWARD}
+, {\bfseries PAUSE}
+, {\bfseries BACKWARDS}
+ \}
+\begin{DoxyCompactList}\small\item\em The available modes of playing an AI game match record. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains everything related to AI agents and AI games. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+20/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title AI API. 
+\end{DoxyAuthor}

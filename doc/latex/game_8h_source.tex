@@ -1,0 +1,217 @@
+\hypertarget{game_8h_source}{}\doxysection{game.\+h}
+\label{game_8h_source}\index{code/game.h@{code/game.h}}
+\mbox{\hyperlink{game_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_GAME\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#define \_VOXELENG\_GAME\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <atomic>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <condition\_variable>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <thread>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <mutex>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{chunk_8h}{chunk.h}}"{}}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{game_window_8h}{gameWindow.h}}"{}}}
+\DoxyCodeLine{19 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{index_buffer_8h}{indexBuffer.h}}"{}}}
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{vertex_buffer_8h}{vertexBuffer.h}}"{}}}
+\DoxyCodeLine{21 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{vertex_array_8h}{vertexArray.h}}"{}}}
+\DoxyCodeLine{22 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{vertex_buffer_layout_8h}{vertexBufferLayout.h}}"{}}}
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{renderer_8h}{renderer.h}}"{}}}
+\DoxyCodeLine{24 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{logger_8h}{logger.h}}"{}}}
+\DoxyCodeLine{25 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{world_8h}{world.h}}"{}}}
+\DoxyCodeLine{26 }
+\DoxyCodeLine{27 }
+\DoxyCodeLine{28 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{29 }
+\DoxyCodeLine{31     \textcolor{comment}{// Forward declarations.//}}
+\DoxyCodeLine{33 \textcolor{comment}{}}
+\DoxyCodeLine{34     \textcolor{keyword}{class }chunkManager;}
+\DoxyCodeLine{35 }
+\DoxyCodeLine{36 }
+\DoxyCodeLine{38     \textcolor{comment}{//Classes \& enums.//}}
+\DoxyCodeLine{40 \textcolor{comment}{}}
+\DoxyCodeLine{44     \textcolor{keyword}{enum class} \mbox{\hyperlink{game_8h_a04b7616f1a2ac83a88296abbb964fdec}{engineMode}} \{EXIT, AIMENULOOP, GRAPHICALMENU, INITLEVEL, EDITLEVEL, EXITLEVEL, INITRECORD, PLAYINGRECORD, EXITRECORD\};}
+\DoxyCodeLine{45 }
+\DoxyCodeLine{49     \textcolor{keyword}{enum class} \mbox{\hyperlink{game_8h_abab5b0cdd4fb53ef9713d75f8502808c}{slotAccessType}} \{}
+\DoxyCodeLine{50 }
+\DoxyCodeLine{51         save,}
+\DoxyCodeLine{52         load}
+\DoxyCodeLine{53 }
+\DoxyCodeLine{54     \};}
+\DoxyCodeLine{55 }
+\DoxyCodeLine{62     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1game}{game}} \{}
+\DoxyCodeLine{63 }
+\DoxyCodeLine{64     \textcolor{keyword}{public}:}
+\DoxyCodeLine{65 }
+\DoxyCodeLine{66         \textcolor{comment}{/*}}
+\DoxyCodeLine{67 \textcolor{comment}{        Attributes.}}
+\DoxyCodeLine{68 \textcolor{comment}{        */}}
+\DoxyCodeLine{69 }
+\DoxyCodeLine{74         \textcolor{keyword}{static} std::atomic<bool> \mbox{\hyperlink{class_voxel_eng_1_1game_adaf1273a74153e438562687ecfdb0e3f}{threadsExecute}}[3];}
+\DoxyCodeLine{75 }
+\DoxyCodeLine{76 }
+\DoxyCodeLine{77         \textcolor{comment}{/*}}
+\DoxyCodeLine{78 \textcolor{comment}{        Methods.}}
+\DoxyCodeLine{79 \textcolor{comment}{        */}}
+\DoxyCodeLine{80 }
+\DoxyCodeLine{81         \textcolor{comment}{// Initialisers.}}
+\DoxyCodeLine{82 }
+\DoxyCodeLine{86         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_ad8e52e222af2489936710e9b9ae94c0a}{init}}();}
+\DoxyCodeLine{87 }
+\DoxyCodeLine{91         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_a5e106223ce9eed47debb72776b376f44}{initGraphicalMode}}();}
+\DoxyCodeLine{92 }
+\DoxyCodeLine{93 }
+\DoxyCodeLine{94         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{95 }
+\DoxyCodeLine{99         \textcolor{keyword}{static} \mbox{\hyperlink{game_8h_abab5b0cdd4fb53ef9713d75f8502808c}{slotAccessType}} \mbox{\hyperlink{class_voxel_eng_1_1game_a16e11eb9b658ad45ee975db7603a93ee}{getSlotAccessType}}();}
+\DoxyCodeLine{100 }
+\DoxyCodeLine{104         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1game_aff7d544eeed2805f2c76661ac537cd0f}{selectedSaveSlot}}();}
+\DoxyCodeLine{105 }
+\DoxyCodeLine{109         \textcolor{keyword}{static} \textcolor{keywordtype}{double} \mbox{\hyperlink{class_voxel_eng_1_1game_a1135a578c4e9afb379ef71f86af96042}{timeStep}}();}
+\DoxyCodeLine{110 }
+\DoxyCodeLine{114         \textcolor{keyword}{static} \mbox{\hyperlink{game_8h_a04b7616f1a2ac83a88296abbb964fdec}{engineMode}} \mbox{\hyperlink{class_voxel_eng_1_1game_adb43cda9cea85b3a5280a8046395e3fb}{selectedEngineMode}}();}
+\DoxyCodeLine{115 }
+\DoxyCodeLine{120         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1game_aad983da413011dc5b0b5d97f8ac4fa2e}{AImodeON}}();}
+\DoxyCodeLine{121 }
+\DoxyCodeLine{122 }
+\DoxyCodeLine{123         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{124 }
+\DoxyCodeLine{128         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_a8bc5c921480d9e2f579a22a7d8127a4c}{mainLoop}}();}
+\DoxyCodeLine{129 }
+\DoxyCodeLine{133         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_a9d958b9c48c242d5ea7c1ca0cb06c89d}{aiMenuLoop}}();}
+\DoxyCodeLine{134 }
+\DoxyCodeLine{138         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_a26f0c66d3326676c9c6309e98fbaf06f}{mainMenuLoop}}();}
+\DoxyCodeLine{139 }
+\DoxyCodeLine{145         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_ac6a2e4558b8b172bfc3d84e8ef036870}{gameLoop}}(\textcolor{keyword}{const} std::string\& terrainFile = \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{146 }
+\DoxyCodeLine{152         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_ad6e5f4f697cf5cab0ce0799ba5341317}{setLoopSelection}}(\mbox{\hyperlink{game_8h_a04b7616f1a2ac83a88296abbb964fdec}{engineMode}} mode);}
+\DoxyCodeLine{153 }
+\DoxyCodeLine{161         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_a778e1a138d6224e9bbe236d3bc80c5aa}{setSaveSlot}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} saveSlot);}
+\DoxyCodeLine{162 }
+\DoxyCodeLine{166         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_acb4695289c477dcce2d5536de3d02d1f}{setSlotAccessType}}(\mbox{\hyperlink{game_8h_abab5b0cdd4fb53ef9713d75f8502808c}{slotAccessType}} type);}
+\DoxyCodeLine{167 }
+\DoxyCodeLine{171         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}\& \mbox{\hyperlink{class_voxel_eng_1_1game_a9bc668bc15d84ec26c574c7427cfeafe}{playerCamera}}();}
+\DoxyCodeLine{172 }
+\DoxyCodeLine{179         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}\& \mbox{\hyperlink{class_voxel_eng_1_1game_aed69cdb92392fe852a672e9fe143286c}{getWindow}}();}
+\DoxyCodeLine{180 }
+\DoxyCodeLine{184         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_ac5ff0bad13c0a8efe6aea47f778b406b}{switchComplexLighting}}();}
+\DoxyCodeLine{185 }
+\DoxyCodeLine{189         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_a7f0c7b1f76a35b5816407f95f440d85b}{setAImode}}(\textcolor{keywordtype}{bool} ON);}
+\DoxyCodeLine{190 }
+\DoxyCodeLine{194         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_aa56e7a86cca87d5c6faa3a06d671db58}{stopAuxiliaryThreads}}();}
+\DoxyCodeLine{195 }
+\DoxyCodeLine{196 }
+\DoxyCodeLine{197         \textcolor{comment}{// Clean up.}}
+\DoxyCodeLine{198 }
+\DoxyCodeLine{205         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_a33ca2b55379e8b9d5e329affc7cffbeb}{cleanUpLevel}}();}
+\DoxyCodeLine{206 }
+\DoxyCodeLine{211         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_a31b15605a5c966b9adb3c431bafaa0c3}{cleanUp}}();}
+\DoxyCodeLine{212         }
+\DoxyCodeLine{216         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_ae16490a14af34132686ad4d6e80a3673}{cleanUpGraphicalMode}}();}
+\DoxyCodeLine{217 }
+\DoxyCodeLine{218     \textcolor{keyword}{private}:}
+\DoxyCodeLine{219 }
+\DoxyCodeLine{220         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialised\_,}
+\DoxyCodeLine{221                     graphicalModeInitialised\_,}
+\DoxyCodeLine{222                     AImodeON\_,}
+\DoxyCodeLine{223                     useComplexLighting\_;}
+\DoxyCodeLine{224         }
+\DoxyCodeLine{225         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}* mainWindow\_;}
+\DoxyCodeLine{226 }
+\DoxyCodeLine{227         \textcolor{keyword}{static} std::thread* chunkManagementThread\_,}
+\DoxyCodeLine{228                           * playerInputThread\_,}
+\DoxyCodeLine{229                           * tickManagementThread\_;}
+\DoxyCodeLine{230 }
+\DoxyCodeLine{231         \textcolor{keyword}{static} std::atomic<engineMode> loopSelection\_;}
+\DoxyCodeLine{232         \textcolor{keyword}{static} std::atomic<double> timeStep\_; \textcolor{comment}{// How much time has passed since the last frame was drawn. Use this to move entities without caring about FPS.}}
+\DoxyCodeLine{233 }
+\DoxyCodeLine{234         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1world}{world}}* world\_; \textcolor{comment}{// A world defines things as the sky background or other level-\/related properties.}}
+\DoxyCodeLine{235         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1color}{skybox}} defaultSkybox\_;}
+\DoxyCodeLine{236 }
+\DoxyCodeLine{237         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} saveSlot\_,}
+\DoxyCodeLine{238                             blockReachRange\_,}
+\DoxyCodeLine{239                             nMeshingThreads\_; \textcolor{comment}{// Number of threads for non-\/high priority mesh updates with infinite world loading}}
+\DoxyCodeLine{240         \textcolor{keyword}{static} \textcolor{keywordtype}{float} FOV\_,}
+\DoxyCodeLine{241                      zNear\_,}
+\DoxyCodeLine{242                      zFar\_;}
+\DoxyCodeLine{243 }
+\DoxyCodeLine{244         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}* playerCamera\_;}
+\DoxyCodeLine{245 }
+\DoxyCodeLine{246         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1texture}{texture}}* blockTextureAtlas\_;}
+\DoxyCodeLine{247         \textcolor{keyword}{static} std::unordered\_map<vec3, std::vector<vertex>> \textcolor{keyword}{const}* chunksToDraw\_;}
+\DoxyCodeLine{248         \textcolor{keyword}{static} \textcolor{keyword}{const} std::vector<model>* batchesToDraw\_;}
+\DoxyCodeLine{249         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1shader}{shader}}* defaultShader\_;}
+\DoxyCodeLine{250         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer}{vertexBuffer}}* vbo\_;}
+\DoxyCodeLine{251         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1vertex_array}{vertexArray}}* va\_;}
+\DoxyCodeLine{252         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout}{vertexBufferLayout}}* layout\_;}
+\DoxyCodeLine{253         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1renderer}{renderer}}* renderer\_;}
+\DoxyCodeLine{254 }
+\DoxyCodeLine{255 \textcolor{preprocessor}{        \#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{256 }
+\DoxyCodeLine{257             \textcolor{keyword}{static} glm::mat4 MVPmatrix\_;}
+\DoxyCodeLine{258 }
+\DoxyCodeLine{259 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{260         }
+\DoxyCodeLine{261         \textcolor{keyword}{static} \mbox{\hyperlink{game_8h_abab5b0cdd4fb53ef9713d75f8502808c}{slotAccessType}} slotAccessType\_;}
+\DoxyCodeLine{262 }
+\DoxyCodeLine{263     \};}
+\DoxyCodeLine{264 }
+\DoxyCodeLine{265     \textcolor{keyword}{inline} \mbox{\hyperlink{game_8h_abab5b0cdd4fb53ef9713d75f8502808c}{slotAccessType}} \mbox{\hyperlink{class_voxel_eng_1_1game_a16e11eb9b658ad45ee975db7603a93ee}{game::getSlotAccessType}}() \{}
+\DoxyCodeLine{266     }
+\DoxyCodeLine{267         \textcolor{keywordflow}{return} slotAccessType\_;}
+\DoxyCodeLine{268     }
+\DoxyCodeLine{269     \}}
+\DoxyCodeLine{270 }
+\DoxyCodeLine{271     \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1game_aff7d544eeed2805f2c76661ac537cd0f}{game::selectedSaveSlot}}() \{}
+\DoxyCodeLine{272     }
+\DoxyCodeLine{273         \textcolor{keywordflow}{return} saveSlot\_;}
+\DoxyCodeLine{274     }
+\DoxyCodeLine{275     \}}
+\DoxyCodeLine{276 }
+\DoxyCodeLine{277     \textcolor{keyword}{inline} \textcolor{keywordtype}{double} \mbox{\hyperlink{class_voxel_eng_1_1game_a1135a578c4e9afb379ef71f86af96042}{game::timeStep}}() \{}
+\DoxyCodeLine{278     }
+\DoxyCodeLine{279         \textcolor{keywordflow}{return} timeStep\_;}
+\DoxyCodeLine{280     }
+\DoxyCodeLine{281     \}}
+\DoxyCodeLine{282 }
+\DoxyCodeLine{283     \textcolor{keyword}{inline} \mbox{\hyperlink{game_8h_a04b7616f1a2ac83a88296abbb964fdec}{engineMode}} \mbox{\hyperlink{class_voxel_eng_1_1game_adb43cda9cea85b3a5280a8046395e3fb}{game::selectedEngineMode}}() \{}
+\DoxyCodeLine{284     }
+\DoxyCodeLine{285         \textcolor{keywordflow}{return} loopSelection\_;}
+\DoxyCodeLine{286     }
+\DoxyCodeLine{287     \}}
+\DoxyCodeLine{288 }
+\DoxyCodeLine{289     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1game_aad983da413011dc5b0b5d97f8ac4fa2e}{game::AImodeON}}() \{}
+\DoxyCodeLine{290 }
+\DoxyCodeLine{291         \textcolor{keywordflow}{return} AImodeON\_;}
+\DoxyCodeLine{292 }
+\DoxyCodeLine{293     \}}
+\DoxyCodeLine{294 }
+\DoxyCodeLine{295     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_a778e1a138d6224e9bbe236d3bc80c5aa}{game::setSaveSlot}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} slot) \{}
+\DoxyCodeLine{296     }
+\DoxyCodeLine{297         saveSlot\_ = slot;}
+\DoxyCodeLine{298     }
+\DoxyCodeLine{299     \}}
+\DoxyCodeLine{300 }
+\DoxyCodeLine{301     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1game_acb4695289c477dcce2d5536de3d02d1f}{game::setSlotAccessType}}(\mbox{\hyperlink{game_8h_abab5b0cdd4fb53ef9713d75f8502808c}{slotAccessType}} type) \{}
+\DoxyCodeLine{302     }
+\DoxyCodeLine{303         slotAccessType\_ = type;}
+\DoxyCodeLine{304     }
+\DoxyCodeLine{305     \}}
+\DoxyCodeLine{306 }
+\DoxyCodeLine{307     \textcolor{keyword}{inline} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}\& \mbox{\hyperlink{class_voxel_eng_1_1game_a9bc668bc15d84ec26c574c7427cfeafe}{game::playerCamera}}() \{}
+\DoxyCodeLine{308     }
+\DoxyCodeLine{309         \textcolor{keywordflow}{return} *playerCamera\_;}
+\DoxyCodeLine{310     }
+\DoxyCodeLine{311     \}}
+\DoxyCodeLine{312 }
+\DoxyCodeLine{313     \textcolor{keyword}{inline} \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}\& \mbox{\hyperlink{class_voxel_eng_1_1game_aed69cdb92392fe852a672e9fe143286c}{game::getWindow}}() \{}
+\DoxyCodeLine{314 }
+\DoxyCodeLine{315         \textcolor{keywordflow}{return} *mainWindow\_;}
+\DoxyCodeLine{316 }
+\DoxyCodeLine{317     \}}
+\DoxyCodeLine{318 }
+\DoxyCodeLine{319 \}}
+\DoxyCodeLine{320 }
+\DoxyCodeLine{321 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

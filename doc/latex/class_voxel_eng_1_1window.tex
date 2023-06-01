@@ -1,0 +1,77 @@
+\hypertarget{class_voxel_eng_1_1window}{}\doxysection{Voxel\+Eng\+::window Class Reference}
+\label{class_voxel_eng_1_1window}\index{VoxelEng::window@{VoxelEng::window}}
+
+
+Abstraction of the engine\textquotesingle{}s graphical part window.  
+
+
+
+
+{\ttfamily \#include $<$game\+Window.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a6a298ef6ab630136e820c15f95f411f4}\label{class_voxel_eng_1_1window_a6a298ef6ab630136e820c15f95f411f4}} 
+{\bfseries window} (unsigned int \mbox{\hyperlink{class_voxel_eng_1_1window_a1ffd17daa2e7466fb17a327ee25c203a}{width}}, unsigned int \mbox{\hyperlink{class_voxel_eng_1_1window_ab60157f6b31bb15544981b92edc84db8}{height}}, const std\+::string \&\mbox{\hyperlink{class_voxel_eng_1_1window_a94f544a6fa1ae55e14c784c5c670ed71}{name}})
+\begin{DoxyCompactList}\small\item\em Creates and shows up a new window. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a1ffd17daa2e7466fb17a327ee25c203a}\label{class_voxel_eng_1_1window_a1ffd17daa2e7466fb17a327ee25c203a}} 
+unsigned int {\bfseries width} () const
+\begin{DoxyCompactList}\small\item\em Returns the window\textquotesingle{}s width. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_ab60157f6b31bb15544981b92edc84db8}\label{class_voxel_eng_1_1window_ab60157f6b31bb15544981b92edc84db8}} 
+unsigned int {\bfseries height} () const
+\begin{DoxyCompactList}\small\item\em Returns the window\textquotesingle{}s height. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a9fcad17cdb4b9368160cf33c6a8045cb}\label{class_voxel_eng_1_1window_a9fcad17cdb4b9368160cf33c6a8045cb}} 
+bool {\bfseries is\+Closing} () const
+\begin{DoxyCompactList}\small\item\em Returns true if the window is being closed or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a94f544a6fa1ae55e14c784c5c670ed71}\label{class_voxel_eng_1_1window_a94f544a6fa1ae55e14c784c5c670ed71}} 
+const std\+::string \& {\bfseries name} () const
+\begin{DoxyCompactList}\small\item\em Returns the window\textquotesingle{}s width. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_adef26207efe8c55bcda65b3598539944}\label{class_voxel_eng_1_1window_adef26207efe8c55bcda65b3598539944}} 
+bool {\bfseries was\+Resized} () const
+\begin{DoxyCompactList}\small\item\em Returns true if the window has been resized or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a0480c9aabe70f2ff828e6058d19b6bc2}\label{class_voxel_eng_1_1window_a0480c9aabe70f2ff828e6058d19b6bc2}} 
+float {\bfseries aspect\+Ratio} () const
+\begin{DoxyCompactList}\small\item\em Returns the window\textquotesingle{}s aspect ratio. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a4bbf0e935554bfcd223c74c0f4984367}\label{class_voxel_eng_1_1window_a4bbf0e935554bfcd223c74c0f4984367}} 
+bool {\bfseries is\+Mouse\+Free} () const
+\begin{DoxyCompactList}\small\item\em Returns true if the window is currently not locking the user\textquotesingle{}s mouse cursor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a99c897a7c21a4fb8400e85d4eeca187f}\label{class_voxel_eng_1_1window_a99c897a7c21a4fb8400e85d4eeca187f}} 
+Graphics\+APIWindow $\ast$\& {\bfseries window\+APIpointer} ()
+\begin{DoxyCompactList}\small\item\em Returns the window\textquotesingle{}s pointer used by the current graphic API. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a43efd06f174a9d2c28ccdc4793e52974}\label{class_voxel_eng_1_1window_a43efd06f174a9d2c28ccdc4793e52974}} 
+\mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}} $\ast$\& {\bfseries player\+Camera} ()
+\begin{DoxyCompactList}\small\item\em Returns the user\textquotesingle{}s camera that is assignated to this window. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a484abae43921807293670aae4cd2445a}\label{class_voxel_eng_1_1window_a484abae43921807293670aae4cd2445a}} 
+std\+::string \& {\bfseries name} ()
+\begin{DoxyCompactList}\small\item\em Returns the window\textquotesingle{}s name. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a8e0c3ff58354cf2a48101a6fd1d70bea}\label{class_voxel_eng_1_1window_a8e0c3ff58354cf2a48101a6fd1d70bea}} 
+bool \& {\bfseries was\+Resized} ()
+\begin{DoxyCompactList}\small\item\em Used to set the window\textquotesingle{}s flag that tells if it was resized or not. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a57e42788071163e062189abf975e5ddb}\label{class_voxel_eng_1_1window_a57e42788071163e062189abf975e5ddb}} 
+void {\bfseries change\+State\+Mouse\+Lock} (bool is\+Enabled)
+\begin{DoxyCompactList}\small\item\em Set whether the window should lock the user\textquotesingle{}s mouse cursor when it has focus or not. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_acd37ae4ebcc35c5ad49ce138a9c04738}\label{class_voxel_eng_1_1window_acd37ae4ebcc35c5ad49ce138a9c04738}} 
+void {\bfseries change\+State\+Mouse\+Lock} ()
+\begin{DoxyCompactList}\small\item\em Returns the window\textquotesingle{}s aspect ratio. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a0888d053cd9f106c59460df2a88b18fc}\label{class_voxel_eng_1_1window_a0888d053cd9f106c59460df2a88b18fc}} 
+void {\bfseries resize} (unsigned int \mbox{\hyperlink{class_voxel_eng_1_1window_a1ffd17daa2e7466fb17a327ee25c203a}{width}}, unsigned int \mbox{\hyperlink{class_voxel_eng_1_1window_ab60157f6b31bb15544981b92edc84db8}{height}})
+\begin{DoxyCompactList}\small\item\em Sets the new window\textquotesingle{}s width and height to resize the window. This functions is used for the GLFW window size callback. Because of this, it gets executed each time the window\textquotesingle{}s size IS MODIFIED (not when the user stops resizing the window with the desired width and height). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a31255698313937bfd3a3472710cfb8a5}\label{class_voxel_eng_1_1window_a31255698313937bfd3a3472710cfb8a5}} 
+void {\bfseries resize\+Heavy\+Processing} ()
+\begin{DoxyCompactList}\small\item\em Windows\textquotesingle{} resizing heavy processing tasks are executed here. This function should only be called when \mbox{\hyperlink{class_voxel_eng_1_1window_a8e0c3ff58354cf2a48101a6fd1d70bea}{was\+Resized()}} equals to false since that indicates that the user has stopped resizing the window. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1window_a2de6e141472adb2c75a6dede1aedc4ec}\label{class_voxel_eng_1_1window_a2de6e141472adb2c75a6dede1aedc4ec}} 
+static void {\bfseries window\+Size\+Callback} (Graphics\+APIWindow $\ast$\mbox{\hyperlink{class_voxel_eng_1_1window}{window}}, int \mbox{\hyperlink{class_voxel_eng_1_1window_a1ffd17daa2e7466fb17a327ee25c203a}{width}}, int \mbox{\hyperlink{class_voxel_eng_1_1window_ab60157f6b31bb15544981b92edc84db8}{height}})
+\begin{DoxyCompactList}\small\item\em Callback used for window resizing using Open\+GL and GLFW. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Abstraction of the engine\textquotesingle{}s graphical part window. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{game_window_8h}{game\+Window.\+h}}\item 
+code/game\+Window.\+cpp\end{DoxyCompactItemize}

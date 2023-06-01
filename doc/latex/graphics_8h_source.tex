@@ -1,0 +1,173 @@
+\hypertarget{graphics_8h_source}{}\doxysection{graphics.\+h}
+\label{graphics_8h_source}\index{code/graphics.h@{code/graphics.h}}
+\mbox{\hyperlink{graphics_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_GRAPHICS\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#define \_VOXELENG\_GRAPHICS\_}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{game_window_8h}{gameWindow.h}}"{}}}
+\DoxyCodeLine{14 }
+\DoxyCodeLine{15 }
+\DoxyCodeLine{16 \textcolor{keyword}{namespace }VoxelEng \{    }
+\DoxyCodeLine{17 }
+\DoxyCodeLine{19     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{21 \textcolor{comment}{}}
+\DoxyCodeLine{26     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1color}{color}} \{}
+\DoxyCodeLine{27     }
+\DoxyCodeLine{28     \textcolor{keyword}{public}:}
+\DoxyCodeLine{29 }
+\DoxyCodeLine{30         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{31 }
+\DoxyCodeLine{35         \mbox{\hyperlink{class_voxel_eng_1_1color}{color}}(\textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a25ac26e494bd6a18bb467fdfdc8875dc}{red}}, \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a35defcf73fdff5afe26fe1601755b106}{green}}, \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a87d801a4fcf4366e40114e99e4693515}{blue}}, \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a719fd53ab1f15a5fe2afe4de931904ce}{alpha}});}
+\DoxyCodeLine{36 }
+\DoxyCodeLine{37 }
+\DoxyCodeLine{38         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{39 }
+\DoxyCodeLine{43         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a25ac26e494bd6a18bb467fdfdc8875dc}{red}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{44 }
+\DoxyCodeLine{48         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a35defcf73fdff5afe26fe1601755b106}{green}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{49 }
+\DoxyCodeLine{53         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a87d801a4fcf4366e40114e99e4693515}{blue}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{54 }
+\DoxyCodeLine{58         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a719fd53ab1f15a5fe2afe4de931904ce}{alpha}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{59 }
+\DoxyCodeLine{60 }
+\DoxyCodeLine{61         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{62 }
+\DoxyCodeLine{66         \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1color_a25ac26e494bd6a18bb467fdfdc8875dc}{red}}();}
+\DoxyCodeLine{67 }
+\DoxyCodeLine{71         \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1color_a35defcf73fdff5afe26fe1601755b106}{green}}();}
+\DoxyCodeLine{72 }
+\DoxyCodeLine{76         \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1color_a87d801a4fcf4366e40114e99e4693515}{blue}}();}
+\DoxyCodeLine{77 }
+\DoxyCodeLine{81         \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1color_a719fd53ab1f15a5fe2afe4de931904ce}{alpha}}();}
+\DoxyCodeLine{82 }
+\DoxyCodeLine{83     \textcolor{keyword}{private}:}
+\DoxyCodeLine{84 }
+\DoxyCodeLine{85         \textcolor{keywordtype}{float} red\_,}
+\DoxyCodeLine{86               green\_,}
+\DoxyCodeLine{87               blue\_,}
+\DoxyCodeLine{88               alpha\_;}
+\DoxyCodeLine{89     }
+\DoxyCodeLine{90     \};}
+\DoxyCodeLine{91 }
+\DoxyCodeLine{92     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a25ac26e494bd6a18bb467fdfdc8875dc}{color::red}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{93     }
+\DoxyCodeLine{94         \textcolor{keywordflow}{return} red\_;}
+\DoxyCodeLine{95     }
+\DoxyCodeLine{96     \}}
+\DoxyCodeLine{97 }
+\DoxyCodeLine{98     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a35defcf73fdff5afe26fe1601755b106}{color::green}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{99     }
+\DoxyCodeLine{100         \textcolor{keywordflow}{return} green\_;}
+\DoxyCodeLine{101     }
+\DoxyCodeLine{102     \}}
+\DoxyCodeLine{103 }
+\DoxyCodeLine{104     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a87d801a4fcf4366e40114e99e4693515}{color::blue}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{105     }
+\DoxyCodeLine{106         \textcolor{keywordflow}{return} blue\_;}
+\DoxyCodeLine{107     }
+\DoxyCodeLine{108     \}}
+\DoxyCodeLine{109 }
+\DoxyCodeLine{110     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1color_a719fd53ab1f15a5fe2afe4de931904ce}{color::alpha}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{111     }
+\DoxyCodeLine{112         \textcolor{keywordflow}{return} alpha\_;}
+\DoxyCodeLine{113     }
+\DoxyCodeLine{114     \}}
+\DoxyCodeLine{115 }
+\DoxyCodeLine{116     \textcolor{keyword}{inline} \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1color_a25ac26e494bd6a18bb467fdfdc8875dc}{color::red}}() \{}
+\DoxyCodeLine{117 }
+\DoxyCodeLine{118         \textcolor{keywordflow}{return} red\_;}
+\DoxyCodeLine{119 }
+\DoxyCodeLine{120     \}}
+\DoxyCodeLine{121 }
+\DoxyCodeLine{122     \textcolor{keyword}{inline} \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1color_a35defcf73fdff5afe26fe1601755b106}{color::green}}() \{}
+\DoxyCodeLine{123 }
+\DoxyCodeLine{124         \textcolor{keywordflow}{return} green\_;}
+\DoxyCodeLine{125 }
+\DoxyCodeLine{126     \}}
+\DoxyCodeLine{127 }
+\DoxyCodeLine{128     \textcolor{keyword}{inline} \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1color_a87d801a4fcf4366e40114e99e4693515}{color::blue}}() \{}
+\DoxyCodeLine{129 }
+\DoxyCodeLine{130         \textcolor{keywordflow}{return} blue\_;}
+\DoxyCodeLine{131 }
+\DoxyCodeLine{132     \}}
+\DoxyCodeLine{133 }
+\DoxyCodeLine{134     \textcolor{keyword}{inline} \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1color_a719fd53ab1f15a5fe2afe4de931904ce}{color::alpha}}() \{}
+\DoxyCodeLine{135 }
+\DoxyCodeLine{136         \textcolor{keywordflow}{return} alpha\_;}
+\DoxyCodeLine{137 }
+\DoxyCodeLine{138     \}}
+\DoxyCodeLine{139 }
+\DoxyCodeLine{140 }
+\DoxyCodeLine{146     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1graphics}{graphics}} \{}
+\DoxyCodeLine{147     }
+\DoxyCodeLine{148     \textcolor{keyword}{public}:}
+\DoxyCodeLine{149 }
+\DoxyCodeLine{150         \textcolor{comment}{// Initialisers.}}
+\DoxyCodeLine{151 }
+\DoxyCodeLine{156         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1graphics_a06f66f3a52e712317c6f910fa4ecac6a}{init}}(\mbox{\hyperlink{class_voxel_eng_1_1window}{window}}\& renderingWindow);}
+\DoxyCodeLine{157 }
+\DoxyCodeLine{158 }
+\DoxyCodeLine{159         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{160 }
+\DoxyCodeLine{166         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}* \mbox{\hyperlink{class_voxel_eng_1_1graphics_ab4b6f884fe7ea3ebdb2f74279155f859}{getMainWindow}}();}
+\DoxyCodeLine{167 }
+\DoxyCodeLine{171         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1graphics_acba2e39b73a1ed98eb69046233d7112d}{initialised}}();}
+\DoxyCodeLine{172 }
+\DoxyCodeLine{177         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1graphics_a42a63db1e881af2bcfb0227e1aa980a0}{eraseErrors}}();}
+\DoxyCodeLine{178 }
+\DoxyCodeLine{184         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1graphics_af5d36ff1857ffc129dadf14db8dfbc5c}{GLCheckErrors}}(std::ostream\& os, \textcolor{keyword}{const} \textcolor{keywordtype}{char}* file, \textcolor{keyword}{const} \textcolor{keywordtype}{char}* function, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} line);}
+\DoxyCodeLine{185 }
+\DoxyCodeLine{186 }
+\DoxyCodeLine{187         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{188 }
+\DoxyCodeLine{193         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1graphics_a8f45a5034e2fa285783894e33c735e18}{setVSync}}(\textcolor{keywordtype}{bool} isEnabled);}
+\DoxyCodeLine{194 }
+\DoxyCodeLine{199         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1graphics_a0cff74af0970452983c326703394d4a0}{setDepthTest}}(\textcolor{keywordtype}{bool} isEnabled);}
+\DoxyCodeLine{200 }
+\DoxyCodeLine{205         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1graphics_a402f48430ed70fc5110c474c53f22e4b}{setBasicFaceCulling}}(\textcolor{keywordtype}{bool} isEnabled);}
+\DoxyCodeLine{206 }
+\DoxyCodeLine{211         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1graphics_a4fe8b1d3e4eac216702ac46aabd8e0a0}{setTransparency}}(\textcolor{keywordtype}{bool} isEnabled);}
+\DoxyCodeLine{212 }
+\DoxyCodeLine{213 }
+\DoxyCodeLine{214         \textcolor{comment}{// Clean up.}}
+\DoxyCodeLine{215 }
+\DoxyCodeLine{219         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1graphics_a60cf9267b6bc4eb4a964780d48486605}{cleanUp}}();}
+\DoxyCodeLine{220 }
+\DoxyCodeLine{221     \textcolor{keyword}{private}:}
+\DoxyCodeLine{222 }
+\DoxyCodeLine{223         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialised\_;}
+\DoxyCodeLine{224         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}* mainWindow\_;}
+\DoxyCodeLine{225         }
+\DoxyCodeLine{226     \};}
+\DoxyCodeLine{227 }
+\DoxyCodeLine{228     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1graphics_a42a63db1e881af2bcfb0227e1aa980a0}{graphics::eraseErrors}}() \{}
+\DoxyCodeLine{229 }
+\DoxyCodeLine{230         \textcolor{keywordflow}{while} (glGetError());}
+\DoxyCodeLine{231 }
+\DoxyCodeLine{232     \}}
+\DoxyCodeLine{233 }
+\DoxyCodeLine{234     \textcolor{keyword}{inline} \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}* \mbox{\hyperlink{class_voxel_eng_1_1graphics_ab4b6f884fe7ea3ebdb2f74279155f859}{graphics::getMainWindow}}() \{}
+\DoxyCodeLine{235     }
+\DoxyCodeLine{236         \textcolor{keywordflow}{return} mainWindow\_;}
+\DoxyCodeLine{237     }
+\DoxyCodeLine{238     \}}
+\DoxyCodeLine{239 }
+\DoxyCodeLine{240     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1graphics_acba2e39b73a1ed98eb69046233d7112d}{graphics::initialised}}() \{}
+\DoxyCodeLine{241     }
+\DoxyCodeLine{242         \textcolor{keywordflow}{return} initialised\_;}
+\DoxyCodeLine{243     }
+\DoxyCodeLine{244     \}}
+\DoxyCodeLine{245 }
+\DoxyCodeLine{246     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1graphics_a8f45a5034e2fa285783894e33c735e18}{graphics::setVSync}}(\textcolor{keywordtype}{bool} isEnabled) \{}
+\DoxyCodeLine{247 }
+\DoxyCodeLine{248         glfwSwapInterval(isEnabled);}
+\DoxyCodeLine{249 }
+\DoxyCodeLine{250     \}}
+\DoxyCodeLine{251 }
+\DoxyCodeLine{252 \}}
+\DoxyCodeLine{253 }
+\DoxyCodeLine{254 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

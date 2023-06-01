@@ -1,0 +1,41 @@
+\hypertarget{class_voxel_eng_1_1vertex_array}{}\doxysection{Voxel\+Eng\+::vertex\+Array Class Reference}
+\label{class_voxel_eng_1_1vertex_array}\index{VoxelEng::vertexArray@{VoxelEng::vertexArray}}
+
+
+A vertex array is responsible for collecting the data from the used vertex buffers and the format of this data (stored in \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout}{vertex\+Buffer\+Layout}} objects).  
+
+
+
+
+{\ttfamily \#include $<$vertex\+Array.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_array_a4f1925d04fdb72f6d38f02f81cfbbfdd}\label{class_voxel_eng_1_1vertex_array_a4f1925d04fdb72f6d38f02f81cfbbfdd}} 
+{\bfseries vertex\+Array} ()
+\begin{DoxyCompactList}\small\item\em Class constructor. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_array_a580d4b0ecc5a8cacd742856d628704d4}\label{class_voxel_eng_1_1vertex_array_a580d4b0ecc5a8cacd742856d628704d4}} 
+void {\bfseries bind} () const
+\begin{DoxyCompactList}\small\item\em Bind the VAO to the graphics API context. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_array_afab90c6096a9458bb21485426a25f212}\label{class_voxel_eng_1_1vertex_array_afab90c6096a9458bb21485426a25f212}} 
+void {\bfseries unbind} () const
+\begin{DoxyCompactList}\small\item\em Unbind the VAO from the graphics API contex. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_array_a8edd720cee72fd5d29b0ec5eff136a9b}\label{class_voxel_eng_1_1vertex_array_a8edd720cee72fd5d29b0ec5eff136a9b}} 
+void {\bfseries add\+Layout} (const \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout}{vertex\+Buffer\+Layout}} \&layout)
+\begin{DoxyCompactList}\small\item\em Add a vertex buffer layout to the VAO so the GPU can figure out what is the data we sent to it. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_array_abf690ec45fc86d2ec68013c6dff7c83d}\label{class_voxel_eng_1_1vertex_array_abf690ec45fc86d2ec68013c6dff7c83d}} 
+void {\bfseries add\+Dynamic\+Buffer} (const \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer}{vertex\+Buffer}} \&vb, const \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout}{vertex\+Buffer\+Layout}} \&layout, size\+\_\+t size, const void $\ast$data)
+\begin{DoxyCompactList}\small\item\em Submit vertex data from a vertex buffer object to an VAO which has been prepared for dynamic geometry with a call to vertex\+Buffer\+::prepare\+Dynamic(...) done before this one. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_array_a7ce2c8bfdd144e34a916d4097e79ea1f}\label{class_voxel_eng_1_1vertex_array_a7ce2c8bfdd144e34a916d4097e79ea1f}} 
+{\bfseries $\sim$vertex\+Array} ()
+\begin{DoxyCompactList}\small\item\em Class destructor. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A vertex array is responsible for collecting the data from the used vertex buffers and the format of this data (stored in \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout}{vertex\+Buffer\+Layout}} objects). 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{vertex_array_8h}{vertex\+Array.\+h}}\item 
+code/vertex\+Array.\+cpp\end{DoxyCompactItemize}

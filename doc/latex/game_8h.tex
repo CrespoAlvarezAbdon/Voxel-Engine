@@ -1,0 +1,63 @@
+\hypertarget{game_8h}{}\doxysection{code/game.h File Reference}
+\label{game_8h}\index{code/game.h@{code/game.h}}
+
+
+Game Engine API that contains the most basic and important members for the game engine.  
+
+
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$condition\+\_\+variable$>$}\newline
+{\ttfamily \#include $<$thread$>$}\newline
+{\ttfamily \#include $<$mutex$>$}\newline
+{\ttfamily \#include \char`\"{}chunk.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}definitions.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}game\+Window.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}index\+Buffer.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}vertex\+Buffer.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}vertex\+Array.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}vertex\+Buffer\+Layout.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}renderer.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}logger.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}world.\+h\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1game}{Voxel\+Eng\+::game}}
+\begin{DoxyCompactList}\small\item\em Game engine API responsible for all the basic engines operations (startup, menu/level/\+AI mode loops, access to save slots...). This class also serves as a way to abstract classes that directly implement the engine. For example, instead of storing a reference to the player camera for the engines\textquotesingle{} graphical mode and polluting the code, said camera can be accessed by calling \mbox{\hyperlink{class_voxel_eng_1_1game_a9bc668bc15d84ec26c574c7427cfeafe}{game\+::player\+Camera()}}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{game_8h_a04b7616f1a2ac83a88296abbb964fdec}\label{game_8h_a04b7616f1a2ac83a88296abbb964fdec}} 
+enum class \mbox{\hyperlink{game_8h_a04b7616f1a2ac83a88296abbb964fdec}{Voxel\+Eng\+::engine\+Mode}} \{ \newline
+{\bfseries EXIT}
+, {\bfseries AIMENULOOP}
+, {\bfseries GRAPHICALMENU}
+, {\bfseries INITLEVEL}
+, \newline
+{\bfseries EDITLEVEL}
+, {\bfseries EXITLEVEL}
+, {\bfseries INITRECORD}
+, {\bfseries PLAYINGRECORD}
+, \newline
+{\bfseries EXITRECORD}
+ \}
+\begin{DoxyCompactList}\small\item\em The execution modes of the engine. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{game_8h_abab5b0cdd4fb53ef9713d75f8502808c}\label{game_8h_abab5b0cdd4fb53ef9713d75f8502808c}} 
+enum class \mbox{\hyperlink{game_8h_abab5b0cdd4fb53ef9713d75f8502808c}{Voxel\+Eng\+::slot\+Access\+Type}} \{ {\bfseries save}
+, {\bfseries load}
+ \}
+\begin{DoxyCompactList}\small\item\em The different access modes when accessing a level save slot. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Game Engine API that contains the most basic and important members for the game engine. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+04/10/2022 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title Game Engine API. 
+\end{DoxyAuthor}

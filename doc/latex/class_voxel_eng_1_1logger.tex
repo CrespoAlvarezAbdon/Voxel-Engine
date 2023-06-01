@@ -1,0 +1,41 @@
+\hypertarget{class_voxel_eng_1_1logger}{}\doxysection{Voxel\+Eng\+::logger Class Reference}
+\label{class_voxel_eng_1_1logger}\index{VoxelEng::logger@{VoxelEng::logger}}
+
+
+Utility class to log information and report execution errors to the standard output.  
+
+
+
+
+{\ttfamily \#include $<$logger.\+h$>$}
+
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1logger_a015b7d1afba0449a802f290e1c681bbf}\label{class_voxel_eng_1_1logger_a015b7d1afba0449a802f290e1c681bbf}} 
+static void {\bfseries say} (const std\+::string \&msg)
+\begin{DoxyCompactList}\small\item\em Directly print \textquotesingle{}msg\textquotesingle{} into the standard output. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1logger_a4c622621dc637b3b08cfba10eab5211d}\label{class_voxel_eng_1_1logger_a4c622621dc637b3b08cfba10eab5211d}} 
+static void {\bfseries log} (const std\+::string \&msg)
+\begin{DoxyCompactList}\small\item\em Print \char`\"{}\mbox{[}log\mbox{]}\+: \char`\"{} + \textquotesingle{}msg\textquotesingle{} into the standard output. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1logger_a72aa0af143d71d101d2643aed2707729}\label{class_voxel_eng_1_1logger_a72aa0af143d71d101d2643aed2707729}} 
+static void {\bfseries debug\+Log} (const std\+::string \&msg)
+\begin{DoxyCompactList}\small\item\em Print \char`\"{}\mbox{[}\+DEBUG\mbox{]}\+: \char`\"{} + \textquotesingle{}msg\textquotesingle{} into the standard output. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1logger_ab677b1036f17ae6666890b1b9b6eb5e2}\label{class_voxel_eng_1_1logger_ab677b1036f17ae6666890b1b9b6eb5e2}} 
+static void {\bfseries warning\+Log} (const std\+::string \&msg)
+\begin{DoxyCompactList}\small\item\em Print \char`\"{}\mbox{[}\+WARNING\mbox{]}\+: \char`\"{} + \textquotesingle{}msg\textquotesingle{} into the standard output. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1logger_a71bf58e041bae58e2ff5be50cd11e382}\label{class_voxel_eng_1_1logger_a71bf58e041bae58e2ff5be50cd11e382}} 
+static void {\bfseries error\+Log} (const std\+::string \&msg)
+\begin{DoxyCompactList}\small\item\em Print \char`\"{}\mbox{[}\+ERROR\mbox{]}\+:\char`\"{} + \textquotesingle{}msg\textquotesingle{} into the standard output and throw a std\+::runtime\+\_\+exception with \textquotesingle{}msg\textquotesingle{} as the error message. Try to save the loaded level into a special file at the root directory named \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_adbb043896c963a970576500da79e5c5f}{chunk\+Manager\+::opened\+Terrain\+File\+Name()}} + \char`\"{}\+ERRORED\char`\"{} if possible. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1logger_a68ffa0fcce370eee85cc441a8d663d39}\label{class_voxel_eng_1_1logger_a68ffa0fcce370eee85cc441a8d663d39}} 
+static void {\bfseries error\+Out\+Of\+Range} (const std\+::string \&msg)
+\begin{DoxyCompactList}\small\item\em Print \char`\"{}\mbox{[}\+ERROR\mbox{]}\+:\char`\"{} + \textquotesingle{}msg\textquotesingle{} into the standard output and throw a std\+::out\+\_\+of\+\_\+range with \textquotesingle{}msg\textquotesingle{} as the error message. Try to save the loaded level into a special file at the root directory named \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_adbb043896c963a970576500da79e5c5f}{chunk\+Manager\+::opened\+Terrain\+File\+Name()}} + \char`\"{}\+ERRORED\char`\"{} if possible. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Utility class to log information and report execution errors to the standard output. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{logger_8h}{logger.\+h}}\item 
+code/logger.\+cpp\end{DoxyCompactItemize}

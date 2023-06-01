@@ -1,0 +1,106 @@
+\hypertarget{batch_8h_source}{}\doxysection{batch.\+h}
+\label{batch_8h_source}\index{code/batch.h@{code/batch.h}}
+\mbox{\hyperlink{batch_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_BATCH\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#define \_VOXELENG\_BATCH\_}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <unordered\_set>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <atomic>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <cstddef>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{model_8h}{model.h}}"{}}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{entity_8h}{entity.h}}"{}}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{game_window_8h}{gameWindow.h}}"{}}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 }
+\DoxyCodeLine{21 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{24     \textcolor{comment}{//Defines.//}}
+\DoxyCodeLine{26 \textcolor{comment}{}}
+\DoxyCodeLine{30     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{batch_8h_a8a8cc162f6b60de951f8c5c52ded94a8}{BATCH\_MAX\_VERTEX\_COUNT}} = 10000;}
+\DoxyCodeLine{31 }
+\DoxyCodeLine{32 }
+\DoxyCodeLine{34     \textcolor{comment}{//Forward declarations.//}}
+\DoxyCodeLine{36 \textcolor{comment}{}}
+\DoxyCodeLine{37     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1entity}{entity}};}
+\DoxyCodeLine{38 }
+\DoxyCodeLine{39 }
+\DoxyCodeLine{41     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{43 \textcolor{comment}{}}
+\DoxyCodeLine{49     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1batch}{batch}} \{}
+\DoxyCodeLine{50 }
+\DoxyCodeLine{51     \textcolor{keyword}{public}:}
+\DoxyCodeLine{52 }
+\DoxyCodeLine{53         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{54 }
+\DoxyCodeLine{58         \mbox{\hyperlink{class_voxel_eng_1_1batch_a9cb2bd779870acef86c3c2186a36537a}{batch}}();}
+\DoxyCodeLine{59 }
+\DoxyCodeLine{63         \mbox{\hyperlink{class_voxel_eng_1_1batch_a9cb2bd779870acef86c3c2186a36537a}{batch}}(\textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1batch}{batch}}\& b);}
+\DoxyCodeLine{64 }
+\DoxyCodeLine{65 }
+\DoxyCodeLine{66         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{67 }
+\DoxyCodeLine{72         \textcolor{keyword}{const} \textcolor{keywordtype}{void}* \mbox{\hyperlink{class_voxel_eng_1_1batch_aec495481dd392792cd37332ce42e68a2}{data}}();}
+\DoxyCodeLine{73 }
+\DoxyCodeLine{78         std::size\_t \mbox{\hyperlink{class_voxel_eng_1_1batch_a94e2a57601e30ce87bc7d9b686d6bdc9}{size}}();}
+\DoxyCodeLine{79 }
+\DoxyCodeLine{83         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1batch_ac98c21a180961a0ca887f26b9a8d5e5a}{isDirty}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{84 }
+\DoxyCodeLine{89         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1batch_a0a6180e0276ac41cbbb52b4bca291b0e}{nEntities}}();}
+\DoxyCodeLine{90 }
+\DoxyCodeLine{94         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1batch_a884b124df69c8839a42561c4f637c101}{isEntityInBatchAt}}(entityID entityID);}
+\DoxyCodeLine{95 }
+\DoxyCodeLine{99         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1batch_a3a80ca2b8bdb7dd3ff89d7cfb81bee31}{isEntityInBatch}}(entityID entityID);}
+\DoxyCodeLine{100 }
+\DoxyCodeLine{101 }
+\DoxyCodeLine{102         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{103 }
+\DoxyCodeLine{110         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1batch_ab587781a4b97a450245f3d57d4e2c5a0}{addEntityAt}}(entityID entityID);}
+\DoxyCodeLine{111 }
+\DoxyCodeLine{118         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1batch_a49f317dc4f6043b806bdddcea6cbb6cb}{addEntity}}(entityID entityID);}
+\DoxyCodeLine{119 }
+\DoxyCodeLine{124         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1batch_af409c62575b30529287d9ba4317ad842}{doesEntityFitInside}}(entityID entityID);}
+\DoxyCodeLine{125 }
+\DoxyCodeLine{129         std::atomic<bool>\& \mbox{\hyperlink{class_voxel_eng_1_1batch_ac98c21a180961a0ca887f26b9a8d5e5a}{isDirty}}();}
+\DoxyCodeLine{130 }
+\DoxyCodeLine{135         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1batch_a2fd8e54b0099405055ee22de0f979dcb}{changeActiveStateAt}}(entityID entityID, \textcolor{keywordtype}{bool} active);}
+\DoxyCodeLine{136 }
+\DoxyCodeLine{141         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1batch_a45584eddd4fbdc0d1acc6e6c0df228ff}{changeActiveState}}(entityID entityID, \textcolor{keywordtype}{bool} active);}
+\DoxyCodeLine{142 }
+\DoxyCodeLine{147         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1batch_a9be99b513bf05faca609d5ad323a58a9}{deleteEntityAt}}(entityID entityID);}
+\DoxyCodeLine{148 }
+\DoxyCodeLine{153         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1batch_a9d2a31279220f1a97214e2ca6de6a46e}{deleteEntity}}(entityID entityID);}
+\DoxyCodeLine{154 }
+\DoxyCodeLine{161         \textcolor{keyword}{const} \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}}\& \mbox{\hyperlink{class_voxel_eng_1_1batch_a5abd4eaf309b433046798e7d29eea517}{generateVertices}}();}
+\DoxyCodeLine{162 }
+\DoxyCodeLine{168         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1batch_ae93ef4f6dba6ad9fa2382ace8e59f858}{clear}}();}
+\DoxyCodeLine{169 }
+\DoxyCodeLine{170         std::recursive\_mutex mutex\_; \textcolor{comment}{// FOR TESTING ONLY.}}
+\DoxyCodeLine{171     \textcolor{keyword}{private}:}
+\DoxyCodeLine{172 }
+\DoxyCodeLine{173         std::atomic<bool> dirty\_;}
+\DoxyCodeLine{174         std::unordered\_set<unsigned int> activeEntityID\_,}
+\DoxyCodeLine{175                                          inactiveEntityID\_;}
+\DoxyCodeLine{176         \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}} model\_;}
+\DoxyCodeLine{177 }
+\DoxyCodeLine{178         }
+\DoxyCodeLine{179 }
+\DoxyCodeLine{180     \};}
+\DoxyCodeLine{181 }
+\DoxyCodeLine{182     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1batch_ac98c21a180961a0ca887f26b9a8d5e5a}{batch::isDirty}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{183 }
+\DoxyCodeLine{184         \textcolor{keywordflow}{return} dirty\_;}
+\DoxyCodeLine{185 }
+\DoxyCodeLine{186     \}}
+\DoxyCodeLine{187 }
+\DoxyCodeLine{188     \textcolor{keyword}{inline} std::atomic<bool>\& \mbox{\hyperlink{class_voxel_eng_1_1batch_ac98c21a180961a0ca887f26b9a8d5e5a}{batch::isDirty}}() \{}
+\DoxyCodeLine{189 }
+\DoxyCodeLine{190         \textcolor{keywordflow}{return} dirty\_;}
+\DoxyCodeLine{191 }
+\DoxyCodeLine{192     \}}
+\DoxyCodeLine{193 }
+\DoxyCodeLine{194 \}}
+\DoxyCodeLine{195 }
+\DoxyCodeLine{196 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

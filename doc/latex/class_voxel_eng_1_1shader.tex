@@ -1,0 +1,50 @@
+\hypertarget{class_voxel_eng_1_1shader}{}\doxysection{Voxel\+Eng\+::shader Class Reference}
+\label{class_voxel_eng_1_1shader}\index{VoxelEng::shader@{VoxelEng::shader}}
+
+
+Abstraction of a graphics API shader. It is usually described as a program executed by the graphics API in order to properly process the vertex data that is sent to the GPU.  
+
+
+
+
+{\ttfamily \#include $<$shader.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1shader_a40b41c8d85e551a6d254cd19df381023}\label{class_voxel_eng_1_1shader_a40b41c8d85e551a6d254cd19df381023}} 
+{\bfseries shader} (const std\+::string \&vertex\+Shader\+Path, const std\+::string \&fragment\+Shader\+Path)
+\begin{DoxyCompactList}\small\item\em Class constructor. The engine only accepts, for now, a combination of vertex shader and fragment shader in order to process the vertex data. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1shader_a265e6c9927f1309bb37c8f67287d4b97}\label{class_voxel_eng_1_1shader_a265e6c9927f1309bb37c8f67287d4b97}} 
+void {\bfseries bind} () const
+\begin{DoxyCompactList}\small\item\em Binds the shader to the corresponding graphics API context inside the thread from which this method was called. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1shader_a593aca853d1c1be8378b956435d17fd4}\label{class_voxel_eng_1_1shader_a593aca853d1c1be8378b956435d17fd4}} 
+void {\bfseries unbind} () const
+\begin{DoxyCompactList}\small\item\em Unbinds the shader from the corresponding graphics API context inside the thread from which this method was called. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1shader_a29a25086e054598ad5c3f752a01f9bd8}\label{class_voxel_eng_1_1shader_a29a25086e054598ad5c3f752a01f9bd8}} 
+void {\bfseries set\+Uniform1i} (const std\+::string \&name, int i1)
+\begin{DoxyCompactList}\small\item\em Sets the value of a previously existing integer variable named \textquotesingle{}name\textquotesingle{} in the shader program. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1shader_a800c0d9878068f388bc5bd563a210a38}\label{class_voxel_eng_1_1shader_a800c0d9878068f388bc5bd563a210a38}} 
+void {\bfseries set\+Uniform1iv} (const std\+::string \&name, const int $\ast$v, int v\+Size)
+\begin{DoxyCompactList}\small\item\em Sets a previously existing vector of integers named \textquotesingle{}name\textquotesingle{} in the shader program of size \textquotesingle{}v\+Size\textquotesingle{}. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1shader_a08ebbb7402835387b8f79170320bb2ef}\label{class_voxel_eng_1_1shader_a08ebbb7402835387b8f79170320bb2ef}} 
+void {\bfseries set\+Uniform\+Vec4f} (const std\+::string \&name, float f1, float f2, float f3, float f4)
+\begin{DoxyCompactList}\small\item\em Sets a previously existing vector of 4 floats named \textquotesingle{}name\textquotesingle{} in the shader program. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1shader_adab13a8f491f546c65304b6fdb7a9e02}\label{class_voxel_eng_1_1shader_adab13a8f491f546c65304b6fdb7a9e02}} 
+void {\bfseries set\+Uniform\+Vec3f} (const std\+::string \&name, const vec3 \&vec)
+\begin{DoxyCompactList}\small\item\em Sets a previously existing vector of 3 floats named \textquotesingle{}name\textquotesingle{} in the shader program. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1shader_a23911f7c52e8882d25b37880d88bbd46}\label{class_voxel_eng_1_1shader_a23911f7c52e8882d25b37880d88bbd46}} 
+void {\bfseries set\+Uniform\+Matrix4f} (const std\+::string \&name, const glm\+::mat4 \&matrix)
+\begin{DoxyCompactList}\small\item\em Sets a previously existing uniform matrix named \textquotesingle{}name\textquotesingle{} of 4x4 floats in the shader program. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1shader_aa88fd36697cd49faf1109f9576e72206}\label{class_voxel_eng_1_1shader_aa88fd36697cd49faf1109f9576e72206}} 
+{\bfseries $\sim$shader} ()
+\begin{DoxyCompactList}\small\item\em Class destructor. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Abstraction of a graphics API shader. It is usually described as a program executed by the graphics API in order to properly process the vertex data that is sent to the GPU. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{shader_8h}{shader.\+h}}\item 
+code/shader.\+cpp\end{DoxyCompactItemize}

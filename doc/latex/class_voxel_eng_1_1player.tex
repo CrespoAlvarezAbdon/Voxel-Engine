@@ -1,0 +1,56 @@
+\hypertarget{class_voxel_eng_1_1player}{}\doxysection{Voxel\+Eng\+::player Class Reference}
+\label{class_voxel_eng_1_1player}\index{VoxelEng::player@{VoxelEng::player}}
+
+
+Abstraction containing everything that defines the entity that represents the user inside the engine.  
+
+
+
+
+{\ttfamily \#include $<$entity.\+h$>$}
+
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1player_a62c4d1563008e82384223fe280de5165}\label{class_voxel_eng_1_1player_a62c4d1563008e82384223fe280de5165}} 
+static void {\bfseries init} (float FOV, float z\+Near, float z\+Far, \mbox{\hyperlink{class_voxel_eng_1_1window}{window}} \&\mbox{\hyperlink{class_voxel_eng_1_1window}{window}}, unsigned int block\+Reach\+Range)
+\begin{DoxyCompactList}\small\item\em Initialise the player system and all the class\textquotesingle{} static attributes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1player_a3964e485da0774ad344066f46fd3bbfa}\label{class_voxel_eng_1_1player_a3964e485da0774ad344066f46fd3bbfa}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}} \& {\bfseries get\+Camera} ()
+\begin{DoxyCompactList}\small\item\em Get the user\textquotesingle{}s first person camera. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1player_ac912fe1688a71740ff85b1697d674129}\label{class_voxel_eng_1_1player_ac912fe1688a71740ff85b1697d674129}} 
+static void {\bfseries select\+Block} ()
+\begin{DoxyCompactList}\small\item\em Computes a basic raycast to select a block in the world that is reachable from where the user stands. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1player_a6feb6346900ef4119bda60bede4dc545}\label{class_voxel_eng_1_1player_a6feb6346900ef4119bda60bede4dc545}} 
+static void {\bfseries mouse\+Button\+Callback} (GLFWwindow $\ast$\mbox{\hyperlink{class_voxel_eng_1_1window}{window}}, int button, int action, int mods)
+\begin{DoxyCompactList}\small\item\em Callback function to get the user\textquotesingle{}s mouse buttons input. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1player_a29531cd0fd65aed1e72f22466f0c785a}\label{class_voxel_eng_1_1player_a29531cd0fd65aed1e72f22466f0c785a}} 
+static void {\bfseries destroy\+Selected\+Block} ()
+\begin{DoxyCompactList}\small\item\em Destroys the block selected by the user\textquotesingle{}s camera, if any. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1player_a6088716ff1d047c6d96a04f0c85fe401}\label{class_voxel_eng_1_1player_a6088716ff1d047c6d96a04f0c85fe401}} 
+static void {\bfseries place\+Selected\+Block} ()
+\begin{DoxyCompactList}\small\item\em Places the current selected block where the user is looking at. Cannot place a block on thin air, must be looking into a solid block to place. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1player_a39978c2c68cfb9a98e24c3675ea9857f}\label{class_voxel_eng_1_1player_a39978c2c68cfb9a98e24c3675ea9857f}} 
+static void {\bfseries process\+Selection\+Raycast} ()
+\begin{DoxyCompactList}\small\item\em Function to process user\textquotesingle{}s raycast used to interact with the level\textquotesingle{}s enviroment. WARNING. Must not be called in the rendering thread. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}\label{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}} 
+static void {\bfseries set\+Block\+To\+Place} (block block\+ID)
+\begin{DoxyCompactList}\small\item\em Change the current block ID used by the player to place blocks. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1player_a0d2bf5cf49e936631891a28e1cc61a54}\label{class_voxel_eng_1_1player_a0d2bf5cf49e936631891a28e1cc61a54}} 
+static void {\bfseries change\+Position} (const vec3 \&new\+Pos, const vec3 \&new\+Dir=\mbox{\hyperlink{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}{vec3\+Zero}})
+\begin{DoxyCompactList}\small\item\em Change user position and viewing direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1player_a274e83173af3ebe3834792d58c26358a}\label{class_voxel_eng_1_1player_a274e83173af3ebe3834792d58c26358a}} 
+static void {\bfseries change\+Position} (int newX, int newY, int newZ, int new\+DirX=0, int new\+DirY=0, int new\+DirZ=0)
+\begin{DoxyCompactList}\small\item\em Change user position and viewing direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1player_aeb85eb7c0e42e449065cab2cd1c85f06}\label{class_voxel_eng_1_1player_aeb85eb7c0e42e449065cab2cd1c85f06}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em Used to clean up the heap memory allocated by this system and deinitialise it. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Abstraction containing everything that defines the entity that represents the user inside the engine. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{entity_8h}{entity.\+h}}\item 
+code/entity.\+cpp\end{DoxyCompactItemize}

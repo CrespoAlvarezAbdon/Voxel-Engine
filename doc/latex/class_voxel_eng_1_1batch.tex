@@ -1,0 +1,83 @@
+\hypertarget{class_voxel_eng_1_1batch}{}\doxysection{Voxel\+Eng\+::batch Class Reference}
+\label{class_voxel_eng_1_1batch}\index{VoxelEng::batch@{VoxelEng::batch}}
+
+
+Collection of vertex data from the models of many entities. All the models which have their vertices in the same batch will be rendered in one draw call.  
+
+
+
+
+{\ttfamily \#include $<$batch.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a9cb2bd779870acef86c3c2186a36537a}\label{class_voxel_eng_1_1batch_a9cb2bd779870acef86c3c2186a36537a}} 
+{\bfseries batch} ()
+\begin{DoxyCompactList}\small\item\em Default constructor. It must be registered properly using the \mbox{\hyperlink{class_voxel_eng_1_1entity_manager}{entity\+Manager}} class. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a359a6270e00b1ff9b18571e4f3eb05d7}\label{class_voxel_eng_1_1batch_a359a6270e00b1ff9b18571e4f3eb05d7}} 
+{\bfseries batch} (const \mbox{\hyperlink{class_voxel_eng_1_1batch}{batch}} \&b)
+\begin{DoxyCompactList}\small\item\em Copy constructor. It must be registered properly using the \mbox{\hyperlink{class_voxel_eng_1_1entity_manager}{entity\+Manager}} class. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_aec495481dd392792cd37332ce42e68a2}\label{class_voxel_eng_1_1batch_aec495481dd392792cd37332ce42e68a2}} 
+const void $\ast$ {\bfseries data} ()
+\begin{DoxyCompactList}\small\item\em Returns the vertex data stored in the batch. Thread-\/safe operation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a94e2a57601e30ce87bc7d9b686d6bdc9}\label{class_voxel_eng_1_1batch_a94e2a57601e30ce87bc7d9b686d6bdc9}} 
+std\+::size\+\_\+t {\bfseries size} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of vertices stored in the batch. Thread-\/safe operation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_ac98c21a180961a0ca887f26b9a8d5e5a}\label{class_voxel_eng_1_1batch_ac98c21a180961a0ca887f26b9a8d5e5a}} 
+bool {\bfseries is\+Dirty} () const
+\begin{DoxyCompactList}\small\item\em Get whether the batch needs to regenerate the vertices (true) or not (false). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a0a6180e0276ac41cbbb52b4bca291b0e}\label{class_voxel_eng_1_1batch_a0a6180e0276ac41cbbb52b4bca291b0e}} 
+unsigned int {\bfseries n\+Entities} ()
+\begin{DoxyCompactList}\small\item\em Get the number of entities in the batch. Thread-\/safe operation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a884b124df69c8839a42561c4f637c101}\label{class_voxel_eng_1_1batch_a884b124df69c8839a42561c4f637c101}} 
+bool {\bfseries is\+Entity\+In\+Batch\+At} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em Get whether the batch contains the model of the specified entity (true) or not (false). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a3a80ca2b8bdb7dd3ff89d7cfb81bee31}\label{class_voxel_eng_1_1batch_a3a80ca2b8bdb7dd3ff89d7cfb81bee31}} 
+bool {\bfseries is\+Entity\+In\+Batch} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em Get whether the batch contains the model of the specified entity (true) or not (false). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_ab587781a4b97a450245f3d57d4e2c5a0}\label{class_voxel_eng_1_1batch_ab587781a4b97a450245f3d57d4e2c5a0}} 
+bool {\bfseries add\+Entity\+At} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em The model must NOT be already translated into it\textquotesingle{}s correct position. Returns true if the model could be added into the batch or false if the number of vertices of said model added to the actual vertex count in the batch exceeds the maximum number of vertices per batch. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a49f317dc4f6043b806bdddcea6cbb6cb}\label{class_voxel_eng_1_1batch_a49f317dc4f6043b806bdddcea6cbb6cb}} 
+bool {\bfseries add\+Entity} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em The model must NOT be already translated into it\textquotesingle{}s correct position. Returns true if the model could be added into the batch or false if the number of vertices of said model added to the actual vertex count in the batch exceeds the maximum number of vertices per batch. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_af409c62575b30529287d9ba4317ad842}\label{class_voxel_eng_1_1batch_af409c62575b30529287d9ba4317ad842}} 
+bool {\bfseries does\+Entity\+Fit\+Inside} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em Returns true if the specified entity\textquotesingle{}s model fits inside the batch or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_aeb2f6752ff2cbbf941a9ae8da229f3e6}\label{class_voxel_eng_1_1batch_aeb2f6752ff2cbbf941a9ae8da229f3e6}} 
+std\+::atomic$<$ bool $>$ \& {\bfseries is\+Dirty} ()
+\begin{DoxyCompactList}\small\item\em Set whether the batch needs to regenerate the vertices (true) or not (false). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a2fd8e54b0099405055ee22de0f979dcb}\label{class_voxel_eng_1_1batch_a2fd8e54b0099405055ee22de0f979dcb}} 
+bool {\bfseries change\+Active\+State\+At} (entity\+ID entity\+ID, bool active)
+\begin{DoxyCompactList}\small\item\em Returns true if the batch no longer has any active entity after this call has made the required changes or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a45584eddd4fbdc0d1acc6e6c0df228ff}\label{class_voxel_eng_1_1batch_a45584eddd4fbdc0d1acc6e6c0df228ff}} 
+bool {\bfseries change\+Active\+State} (entity\+ID entity\+ID, bool active)
+\begin{DoxyCompactList}\small\item\em Returns true if the batch no longer has any active entity after this call has made the required changes or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a9be99b513bf05faca609d5ad323a58a9}\label{class_voxel_eng_1_1batch_a9be99b513bf05faca609d5ad323a58a9}} 
+bool {\bfseries delete\+Entity\+At} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em Deletes an entity with the identifier \textquotesingle{}entity\+ID\textquotesingle{}. Returns true if, after deletion, the batch is empty or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a9d2a31279220f1a97214e2ca6de6a46e}\label{class_voxel_eng_1_1batch_a9d2a31279220f1a97214e2ca6de6a46e}} 
+bool {\bfseries delete\+Entity} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em Deletes an entity with the identifier \textquotesingle{}entity\+ID\textquotesingle{}. Returns true if, after deletion, the batch is empty or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a5abd4eaf309b433046798e7d29eea517}\label{class_voxel_eng_1_1batch_a5abd4eaf309b433046798e7d29eea517}} 
+const \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}} \& {\bfseries generate\+Vertices} ()
+\begin{DoxyCompactList}\small\item\em Generates new vertices based on the entities that are in the batch and their positions/rotations/states... Sets the batch as not dirty. WARNING. It overwrites any other vertex data stored inside the batch. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_ae93ef4f6dba6ad9fa2382ace8e59f858}\label{class_voxel_eng_1_1batch_ae93ef4f6dba6ad9fa2382ace8e59f858}} 
+void {\bfseries clear} ()
+\begin{DoxyCompactList}\small\item\em Deletes all vertices that belong to the batch and removes any previous association with any entity. Sets the batch as dirty. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1batch_a696059e75b6af6967b80a6531925df5f}\label{class_voxel_eng_1_1batch_a696059e75b6af6967b80a6531925df5f}} 
+std\+::recursive\+\_\+mutex {\bfseries mutex\+\_\+}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Collection of vertex data from the models of many entities. All the models which have their vertices in the same batch will be rendered in one draw call. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{batch_8h}{batch.\+h}}\item 
+code/batch.\+cpp\end{DoxyCompactItemize}

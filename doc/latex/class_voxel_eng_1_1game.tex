@@ -1,0 +1,112 @@
+\hypertarget{class_voxel_eng_1_1game}{}\doxysection{Voxel\+Eng\+::game Class Reference}
+\label{class_voxel_eng_1_1game}\index{VoxelEng::game@{VoxelEng::game}}
+
+
+Game engine API responsible for all the basic engines operations (startup, menu/level/\+AI mode loops, access to save slots...). This class also serves as a way to abstract classes that directly implement the engine. For example, instead of storing a reference to the player camera for the engines\textquotesingle{} graphical mode and polluting the code, said camera can be accessed by calling \mbox{\hyperlink{class_voxel_eng_1_1game_a9bc668bc15d84ec26c574c7427cfeafe}{game\+::player\+Camera()}}.  
+
+
+
+
+{\ttfamily \#include $<$game.\+h$>$}
+
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_ad8e52e222af2489936710e9b9ae94c0a}\label{class_voxel_eng_1_1game_ad8e52e222af2489936710e9b9ae94c0a}} 
+static void {\bfseries init} ()
+\begin{DoxyCompactList}\small\item\em Initialise the game engine and allocate any resources that are needed on initialisation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_a5e106223ce9eed47debb72776b376f44}\label{class_voxel_eng_1_1game_a5e106223ce9eed47debb72776b376f44}} 
+static void {\bfseries init\+Graphical\+Mode} ()
+\begin{DoxyCompactList}\small\item\em Initialise the game engine\textquotesingle{}s graphical part and allocate any resources that are needed on initialisation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_a16e11eb9b658ad45ee975db7603a93ee}\label{class_voxel_eng_1_1game_a16e11eb9b658ad45ee975db7603a93ee}} 
+static \mbox{\hyperlink{game_8h_abab5b0cdd4fb53ef9713d75f8502808c}{slot\+Access\+Type}} {\bfseries get\+Slot\+Access\+Type} ()
+\begin{DoxyCompactList}\small\item\em Get the engine\textquotesingle{}s current level save slot access type. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_aff7d544eeed2805f2c76661ac537cd0f}\label{class_voxel_eng_1_1game_aff7d544eeed2805f2c76661ac537cd0f}} 
+static unsigned int {\bfseries selected\+Save\+Slot} ()
+\begin{DoxyCompactList}\small\item\em Get the currently selected save slot. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_a1135a578c4e9afb379ef71f86af96042}\label{class_voxel_eng_1_1game_a1135a578c4e9afb379ef71f86af96042}} 
+static double {\bfseries time\+Step} ()
+\begin{DoxyCompactList}\small\item\em Get the actual time step. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_adb43cda9cea85b3a5280a8046395e3fb}\label{class_voxel_eng_1_1game_adb43cda9cea85b3a5280a8046395e3fb}} 
+static \mbox{\hyperlink{game_8h_a04b7616f1a2ac83a88296abbb964fdec}{engine\+Mode}} {\bfseries selected\+Engine\+Mode} ()
+\begin{DoxyCompactList}\small\item\em Get the currently selected engine mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_aad983da413011dc5b0b5d97f8ac4fa2e}\label{class_voxel_eng_1_1game_aad983da413011dc5b0b5d97f8ac4fa2e}} 
+static bool {\bfseries AImode\+ON} ()
+\begin{DoxyCompactList}\small\item\em Returns whether the engine is in AI mode (training, testing AIs, generating a record of an AI game match... without the need for the graphical capabilities of the engine to save resources) or not. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_a8bc5c921480d9e2f579a22a7d8127a4c}\label{class_voxel_eng_1_1game_a8bc5c921480d9e2f579a22a7d8127a4c}} 
+static void {\bfseries main\+Loop} ()
+\begin{DoxyCompactList}\small\item\em The engine\textquotesingle{}s main loop. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_a9d958b9c48c242d5ea7c1ca0cb06c89d}\label{class_voxel_eng_1_1game_a9d958b9c48c242d5ea7c1ca0cb06c89d}} 
+static void {\bfseries ai\+Menu\+Loop} ()
+\begin{DoxyCompactList}\small\item\em The engine\textquotesingle{}s AI menu loop. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_a26f0c66d3326676c9c6309e98fbaf06f}\label{class_voxel_eng_1_1game_a26f0c66d3326676c9c6309e98fbaf06f}} 
+static void {\bfseries main\+Menu\+Loop} ()
+\begin{DoxyCompactList}\small\item\em The engine\textquotesingle{}s graphical main menu loop. \end{DoxyCompactList}\item 
+static void \mbox{\hyperlink{class_voxel_eng_1_1game_ac6a2e4558b8b172bfc3d84e8ef036870}{game\+Loop}} (const std\+::string \&terrain\+File=\char`\"{}\char`\"{})
+\begin{DoxyCompactList}\small\item\em Graphical mode main loop when in a level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_ad6e5f4f697cf5cab0ce0799ba5341317}\label{class_voxel_eng_1_1game_ad6e5f4f697cf5cab0ce0799ba5341317}} 
+static void {\bfseries set\+Loop\+Selection} (\mbox{\hyperlink{game_8h_a04b7616f1a2ac83a88296abbb964fdec}{engine\+Mode}} mode)
+\begin{DoxyCompactList}\small\item\em Set the engine\textquotesingle{}s current execution mode. If the specified mode is equal to the one currently selected, then this function does nothing. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_a778e1a138d6224e9bbe236d3bc80c5aa}\label{class_voxel_eng_1_1game_a778e1a138d6224e9bbe236d3bc80c5aa}} 
+static void {\bfseries set\+Save\+Slot} (unsigned int save\+Slot)
+\begin{DoxyCompactList}\small\item\em Set the currently selected level save slot. If slot = 0, then a new level will be generated (unless a terrain file is specificated in the corresponding code that generates the level\textquotesingle{}s terrain). Otherwise, the level will contain the save data of the specified save slot. If the specified slot doesn\textquotesingle{}t have any data or doesn\textquotesingle{}t exists, a new level will be generated. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_acb4695289c477dcce2d5536de3d02d1f}\label{class_voxel_eng_1_1game_acb4695289c477dcce2d5536de3d02d1f}} 
+static void {\bfseries set\+Slot\+Access\+Type} (\mbox{\hyperlink{game_8h_abab5b0cdd4fb53ef9713d75f8502808c}{slot\+Access\+Type}} type)
+\begin{DoxyCompactList}\small\item\em Set the engine\textquotesingle{}s current level save slot mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_a9bc668bc15d84ec26c574c7427cfeafe}\label{class_voxel_eng_1_1game_a9bc668bc15d84ec26c574c7427cfeafe}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}} \& {\bfseries player\+Camera} ()
+\begin{DoxyCompactList}\small\item\em Returns the user\textquotesingle{}s camera. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_aed69cdb92392fe852a672e9fe143286c}\label{class_voxel_eng_1_1game_aed69cdb92392fe852a672e9fe143286c}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1window}{window}} \& {\bfseries get\+Window} ()
+\begin{DoxyCompactList}\small\item\em Returns the graphics API context window. WARNING. Locks the mutex guarding said window. Check if locked with game\+::is\+Window\+Mutex\+Locked() and unlock when finished using it with game\+::unlock\+Window\+Mutex(). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_ac5ff0bad13c0a8efe6aea47f778b406b}\label{class_voxel_eng_1_1game_ac5ff0bad13c0a8efe6aea47f778b406b}} 
+static void {\bfseries switch\+Complex\+Lighting} ()
+\begin{DoxyCompactList}\small\item\em Switch between using the shader lighting test or not (disabled by default). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_a7f0c7b1f76a35b5816407f95f440d85b}\label{class_voxel_eng_1_1game_a7f0c7b1f76a35b5816407f95f440d85b}} 
+static void {\bfseries set\+AImode} (bool ON)
+\begin{DoxyCompactList}\small\item\em Set the engine\textquotesingle{}s AI mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_aa56e7a86cca87d5c6faa3a06d671db58}\label{class_voxel_eng_1_1game_aa56e7a86cca87d5c6faa3a06d671db58}} 
+static void {\bfseries stop\+Auxiliary\+Threads} ()
+\begin{DoxyCompactList}\small\item\em Safely stop all auxiliary threads used for world generation, rendering, tick/player input processing, etc... \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_a33ca2b55379e8b9d5e329affc7cffbeb}\label{class_voxel_eng_1_1game_a33ca2b55379e8b9d5e329affc7cffbeb}} 
+static void {\bfseries clean\+Up\+Level} ()
+\begin{DoxyCompactList}\small\item\em Cleaning up special data structures allocated only for use when the user is in a level and blocks the caller thread until the function that executes the level game loop has finished it\textquotesingle{}s execution. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_a31b15605a5c966b9adb3c431bafaa0c3}\label{class_voxel_eng_1_1game_a31b15605a5c966b9adb3c431bafaa0c3}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em To be called when closing the engine. Cleans up the heap memory allocated and deinitialises it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_ae16490a14af34132686ad4d6e80a3673}\label{class_voxel_eng_1_1game_ae16490a14af34132686ad4d6e80a3673}} 
+static void {\bfseries clean\+Up\+Graphical\+Mode} ()
+\begin{DoxyCompactList}\small\item\em Cleans up the heap memory allocated for the engine\textquotesingle{}s graphical part and deinitialises it. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1game_adaf1273a74153e438562687ecfdb0e3f}\label{class_voxel_eng_1_1game_adaf1273a74153e438562687ecfdb0e3f}} 
+static std\+::atomic$<$ bool $>$ {\bfseries threads\+Execute} \mbox{[}3\mbox{]} = \{false, false, false\}
+\begin{DoxyCompactList}\small\item\em Auxiliary threads\textquotesingle{} flags that tell if they can be executed or not or if they should stop their execution or not. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Game engine API responsible for all the basic engines operations (startup, menu/level/\+AI mode loops, access to save slots...). This class also serves as a way to abstract classes that directly implement the engine. For example, instead of storing a reference to the player camera for the engines\textquotesingle{} graphical mode and polluting the code, said camera can be accessed by calling \mbox{\hyperlink{class_voxel_eng_1_1game_a9bc668bc15d84ec26c574c7427cfeafe}{game\+::player\+Camera()}}. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_voxel_eng_1_1game_ac6a2e4558b8b172bfc3d84e8ef036870}\label{class_voxel_eng_1_1game_ac6a2e4558b8b172bfc3d84e8ef036870}} 
+\index{VoxelEng::game@{VoxelEng::game}!gameLoop@{gameLoop}}
+\index{gameLoop@{gameLoop}!VoxelEng::game@{VoxelEng::game}}
+\doxysubsubsection{\texorpdfstring{gameLoop()}{gameLoop()}}
+{\footnotesize\ttfamily void Voxel\+Eng\+::game\+::game\+Loop (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{terrain\+File = {\ttfamily \char`\"{}\char`\"{}} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Graphical mode main loop when in a level. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em terrain\+File} & The file from where to load the terrain for the level. If terrain\+File is equal to \char`\"{}\char`\"{}, then either a new level will be generated or a level from a slot will be loaded (depending on the selected save slot). \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{game_8h}{game.\+h}}\item 
+code/game.\+cpp\end{DoxyCompactItemize}

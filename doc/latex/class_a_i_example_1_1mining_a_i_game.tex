@@ -1,0 +1,288 @@
+\hypertarget{class_a_i_example_1_1mining_a_i_game}{}\doxysection{AIExample\+::mining\+AIGame Class Reference}
+\label{class_a_i_example_1_1mining_a_i_game}\index{AIExample::miningAIGame@{AIExample::miningAIGame}}
+
+
+AI game where the AI agents need to collect underground resources with a limited amount of actions that they can perform per match.  
+
+
+
+
+{\ttfamily \#include $<$AIGame\+Ex1.\+h$>$}
+
+Inheritance diagram for AIExample\+::mining\+AIGame\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_a_i_example_1_1mining_a_i_game}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a3291fd6d6074500bd383149ecf21550b}\label{class_a_i_example_1_1mining_a_i_game_a3291fd6d6074500bd383149ecf21550b}} 
+{\bfseries mining\+AIGame} ()
+\begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a257c50e97747428144f4e24a6ef1740b}\label{class_a_i_example_1_1mining_a_i_game_a257c50e97747428144f4e24a6ef1740b}} 
+const \mbox{\hyperlink{class_a_i_example_1_1genetic}{genetic}} \& {\bfseries get\+Genetic} () const
+\begin{DoxyCompactList}\small\item\em Get the \char`\"{}genetic\char`\"{} object that manages all the game\textquotesingle{}s genetic algorithms part. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_ac1aea18e6809a3a7a8a2a8045be950a3}\label{class_a_i_example_1_1mining_a_i_game_ac1aea18e6809a3a7a8a2a8045be950a3}} 
+unsigned int {\bfseries vision\+Depth} () const
+\begin{DoxyCompactList}\small\item\em Get how far the AI agents can \char`\"{}see\char`\"{} blocks from their position. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a6ac1561f8c15aba4d97048ce75eeeb2b}\label{class_a_i_example_1_1mining_a_i_game_a6ac1561f8c15aba4d97048ce75eeeb2b}} 
+unsigned int {\bfseries vision\+Radius} () const
+\begin{DoxyCompactList}\small\item\em Get how wide the AI agents vision is. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a9d558ca04d8fee25731ea37e696e6a2c}\label{class_a_i_example_1_1mining_a_i_game_a9d558ca04d8fee25731ea37e696e6a2c}} 
+float {\bfseries block\+Score} (Voxel\+Eng\+::block) const
+\begin{DoxyCompactList}\small\item\em Get the score associated with a specified block ID. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a5526963c8cadcaebe962c5c196c3e926}\label{class_a_i_example_1_1mining_a_i_game_a5526963c8cadcaebe962c5c196c3e926}} 
+bool {\bfseries needs\+Training} () const
+\begin{DoxyCompactList}\small\item\em Method to indicate if this AI game requires training of the agents or not. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a5c7166fdf40fb6e543f9a1d8a2c23e0f}\label{class_a_i_example_1_1mining_a_i_game_a5c7166fdf40fb6e543f9a1d8a2c23e0f}} 
+unsigned int {\bfseries n\+Initial\+Actions} () const
+\begin{DoxyCompactList}\small\item\em Number of actions that any AI agent spawns with. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_afd40a0f52ee8846b662f82888608f22e}\label{class_a_i_example_1_1mining_a_i_game_afd40a0f52ee8846b662f82888608f22e}} 
+unsigned int {\bfseries n\+No\+Cost\+Actions\+To\+Pen} () const
+\begin{DoxyCompactList}\small\item\em The AI agent shouldn\textquotesingle{}t spam moves that do not cost actions to avoid infinite loops. Returns the number of actions without cost that can be performed without penalization. Said penalization should result in decreasing the number of actions that the agent has left. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_ad42c39a934bb0d80fb0096981b6e2630}\label{class_a_i_example_1_1mining_a_i_game_ad42c39a934bb0d80fb0096981b6e2630}} 
+af\+::random\+Engine \& {\bfseries AIrand\+Eng} ()
+\begin{DoxyCompactList}\small\item\em The random generator used by the AI game with things that do not involve terrain generation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a30fe040d0e03b18028b87a53d523d15f}\label{class_a_i_example_1_1mining_a_i_game_a30fe040d0e03b18028b87a53d523d15f}} 
+void {\bfseries set\+AISeed} ()
+\begin{DoxyCompactList}\small\item\em Set seed used to generate random weight data when creating new neural networks and similar uses. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a4db67d7ae1a88a28eba740c6b3d15126}\label{class_a_i_example_1_1mining_a_i_game_a4db67d7ae1a88a28eba740c6b3d15126}} 
+void {\bfseries set\+AISeed} (unsigned int seed)
+\begin{DoxyCompactList}\small\item\em Set seed used to generate random weight data when creating new neural networks and similar uses. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_acabbae0f078bb90e450cb2127a44c2d4}\label{class_a_i_example_1_1mining_a_i_game_acabbae0f078bb90e450cb2127a44c2d4}} 
+\mbox{\hyperlink{class_a_i_example_1_1genetic}{genetic}} \& {\bfseries get\+Genetic} ()
+\begin{DoxyCompactList}\small\item\em Get the \char`\"{}genetic\char`\"{} object that manages all the game\textquotesingle{}s genetic algorithms part. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_ae00ba72161bb9f04cbb7e3ad8e2d8a33}\label{class_a_i_example_1_1mining_a_i_game_ae00ba72161bb9f04cbb7e3ad8e2d8a33}} 
+void {\bfseries add\+Score\+At} (unsigned int individual\+ID, float score)
+\begin{DoxyCompactList}\small\item\em Increase or substract an AI agent\textquotesingle{}s score with bounds checking. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a56fe3f8fe8e9e47ae7a54df77a1c3f8d}\label{class_a_i_example_1_1mining_a_i_game_a56fe3f8fe8e9e47ae7a54df77a1c3f8d}} 
+void {\bfseries add\+Score} (unsigned int individual\+ID, float score)
+\begin{DoxyCompactList}\small\item\em Increase or substract an AI agent\textquotesingle{}s score without bounds checking. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_acd8d50191cc457e1c4e726d24dc33f4a}\label{class_a_i_example_1_1mining_a_i_game_acd8d50191cc457e1c4e726d24dc33f4a}} 
+float {\bfseries get\+Score\+At} (unsigned int individual\+ID)
+\begin{DoxyCompactList}\small\item\em Get an AI agent\textquotesingle{}s score with bounds checking. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_ab2a571a784e53a3e29b833eee140512a}\label{class_a_i_example_1_1mining_a_i_game_ab2a571a784e53a3e29b833eee140512a}} 
+float {\bfseries get\+Score} (unsigned int individual\+ID)
+\begin{DoxyCompactList}\small\item\em Get an AI agent\textquotesingle{}s score without bounds checking. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a964e6e83b68c548cab392829300de2a5}\label{class_a_i_example_1_1mining_a_i_game_a964e6e83b68c548cab392829300de2a5}} 
+int {\bfseries load\+Agents\+Data} (const std\+::string \&path)
+\begin{DoxyCompactList}\small\item\em Load an AI data file. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a0630ca4b9972fbda7500f4ab042b8a6a}\label{class_a_i_example_1_1mining_a_i_game_a0630ca4b9972fbda7500f4ab042b8a6a}} 
+void {\bfseries save\+Agents\+Data} (const std\+::string \&path)
+\begin{DoxyCompactList}\small\item\em Save the current AI data of all the agents into an AI data file. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a2a20c5f20828871a3c1c4d01652bc542}\label{class_a_i_example_1_1mining_a_i_game_a2a20c5f20828871a3c1c4d01652bc542}} 
+void {\bfseries set\+Agents\+Model} (unsigned int model\+ID)
+\begin{DoxyCompactList}\small\item\em Sets the agents\textquotesingle{} model to a registered one. By default the model used is the default one (model ID = 0). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a8aed415e50f933190d8ac6630da21698}\label{class_a_i_example_1_1mining_a_i_game_a8aed415e50f933190d8ac6630da21698}} 
+void {\bfseries spawn\+Agents} ()
+\begin{DoxyCompactList}\small\item\em Create (or reset if they are already created by a previous call to this method) as many agents as needed. Said number of needed AI agents is automatically provided by the set up methods. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a1660b32bc2fb0b2708ca205ba1cd6543}{general\+Set\+Up\+\_\+}} ()
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_acb9824f1f99c079433cf6e7d55bdae88}{display\+Menu\+\_\+}} ()
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_ac829166ad1adbee0b78ed26998f80c4a}{set\+Up\+Test\+\_\+}} (unsigned int n\+Agents, unsigned int n\+Epochs)
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a3263192f338dbe2f1a26b95e69fdadc3}{test\+\_\+}} ()
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a4a090f9945af775ec41327895a07c7f6}{set\+Up\+Record\+\_\+}} (unsigned int n\+Agents)
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a63ebb30170e604aa3f0576e108043169}{record\+\_\+}} ()
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_aa8151c210487aae82c5231635186ddf0}{spawn\+Agents\+\_\+}} (unsigned int n\+Agents)
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_aa646e2126189c4f92cd9a612e2c1f3d9}{clean\+Up\+Match\+\_\+}} ()
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_accc71942ce5593c7850d315f02641d1f}{clean\+Up\+Game\+\_\+}} ()
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a70ec167a3fc6b4d0e05c9844f242d0cc}{set\+Up\+Training\+\_\+}} (unsigned int n\+Agents, unsigned n\+Epochs)
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a1f9e8a1c10dc39b45618d706cb66ed40}{train\+\_\+}} ()
+\item 
+bool \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a173450c7bd060ca90fb250684719b823}{train\+Loaded\+Agents\+\_\+}} (const std\+::string \&path)
+\item 
+bool \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a4fb99e26d1a7a6b6efea7fd68f68197b}{test\+Loaded\+Agents\+\_\+}} (const std\+::string \&path)
+\item 
+bool \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a4112cfac2031c67574f4e51882f3c01f}{record\+Loaded\+Agents\+\_\+}} (const std\+::string \&path)
+\item 
+int \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_ab17d3bb0dd0052cd6374eba4270032fd}{load\+Agents\+Data\+\_\+}} (const std\+::string \&path)
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a6323e4d876550fd9799ff5a0010047b7}{save\+Agents\+Data\+\_\+}} (const std\+::string \&path)
+\end{DoxyCompactItemize}
+\doxysubsection*{Additional Inherited Members}
+
+
+\doxysubsection{Detailed Description}
+AI game where the AI agents need to collect underground resources with a limited amount of actions that they can perform per match. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_accc71942ce5593c7850d315f02641d1f}\label{class_a_i_example_1_1mining_a_i_game_accc71942ce5593c7850d315f02641d1f}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!cleanUpGame\_@{cleanUpGame\_}}
+\index{cleanUpGame\_@{cleanUpGame\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{cleanUpGame\_()}{cleanUpGame\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::clean\+Up\+Game\+\_\+ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{Voxel\+Eng\+::\+AIAPI\+::ai\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_aa646e2126189c4f92cd9a612e2c1f3d9}\label{class_a_i_example_1_1mining_a_i_game_aa646e2126189c4f92cd9a612e2c1f3d9}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!cleanUpMatch\_@{cleanUpMatch\_}}
+\index{cleanUpMatch\_@{cleanUpMatch\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{cleanUpMatch\_()}{cleanUpMatch\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::clean\+Up\+Match\+\_\+ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{Voxel\+Eng\+::\+AIAPI\+::ai\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_acb9824f1f99c079433cf6e7d55bdae88}\label{class_a_i_example_1_1mining_a_i_game_acb9824f1f99c079433cf6e7d55bdae88}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!displayMenu\_@{displayMenu\_}}
+\index{displayMenu\_@{displayMenu\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{displayMenu\_()}{displayMenu\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::display\+Menu\+\_\+ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{Voxel\+Eng\+::\+AIAPI\+::ai\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a1660b32bc2fb0b2708ca205ba1cd6543}\label{class_a_i_example_1_1mining_a_i_game_a1660b32bc2fb0b2708ca205ba1cd6543}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!generalSetUp\_@{generalSetUp\_}}
+\index{generalSetUp\_@{generalSetUp\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{generalSetUp\_()}{generalSetUp\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::general\+Set\+Up\+\_\+ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{Voxel\+Eng\+::\+AIAPI\+::ai\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_ab17d3bb0dd0052cd6374eba4270032fd}\label{class_a_i_example_1_1mining_a_i_game_ab17d3bb0dd0052cd6374eba4270032fd}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!loadAgentsData\_@{loadAgentsData\_}}
+\index{loadAgentsData\_@{loadAgentsData\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{loadAgentsData\_()}{loadAgentsData\_()}}
+{\footnotesize\ttfamily int AIExample\+::mining\+AIGame\+::load\+Agents\+Data\+\_\+ (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{path }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1training_game}{Voxel\+Eng\+::\+AIAPI\+::training\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a63ebb30170e604aa3f0576e108043169}\label{class_a_i_example_1_1mining_a_i_game_a63ebb30170e604aa3f0576e108043169}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!record\_@{record\_}}
+\index{record\_@{record\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{record\_()}{record\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::record\+\_\+ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{Voxel\+Eng\+::\+AIAPI\+::ai\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a4112cfac2031c67574f4e51882f3c01f}\label{class_a_i_example_1_1mining_a_i_game_a4112cfac2031c67574f4e51882f3c01f}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!recordLoadedAgents\_@{recordLoadedAgents\_}}
+\index{recordLoadedAgents\_@{recordLoadedAgents\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{recordLoadedAgents\_()}{recordLoadedAgents\_()}}
+{\footnotesize\ttfamily bool AIExample\+::mining\+AIGame\+::record\+Loaded\+Agents\+\_\+ (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{path }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1training_game}{Voxel\+Eng\+::\+AIAPI\+::training\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a6323e4d876550fd9799ff5a0010047b7}\label{class_a_i_example_1_1mining_a_i_game_a6323e4d876550fd9799ff5a0010047b7}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!saveAgentsData\_@{saveAgentsData\_}}
+\index{saveAgentsData\_@{saveAgentsData\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{saveAgentsData\_()}{saveAgentsData\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::save\+Agents\+Data\+\_\+ (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{path }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1training_game}{Voxel\+Eng\+::\+AIAPI\+::training\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a4a090f9945af775ec41327895a07c7f6}\label{class_a_i_example_1_1mining_a_i_game_a4a090f9945af775ec41327895a07c7f6}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!setUpRecord\_@{setUpRecord\_}}
+\index{setUpRecord\_@{setUpRecord\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{setUpRecord\_()}{setUpRecord\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::set\+Up\+Record\+\_\+ (\begin{DoxyParamCaption}\item[{unsigned int}]{n\+Agents }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{Voxel\+Eng\+::\+AIAPI\+::ai\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_ac829166ad1adbee0b78ed26998f80c4a}\label{class_a_i_example_1_1mining_a_i_game_ac829166ad1adbee0b78ed26998f80c4a}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!setUpTest\_@{setUpTest\_}}
+\index{setUpTest\_@{setUpTest\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{setUpTest\_()}{setUpTest\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::set\+Up\+Test\+\_\+ (\begin{DoxyParamCaption}\item[{unsigned int}]{n\+Agents,  }\item[{unsigned int}]{n\+Epochs }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{Voxel\+Eng\+::\+AIAPI\+::ai\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a70ec167a3fc6b4d0e05c9844f242d0cc}\label{class_a_i_example_1_1mining_a_i_game_a70ec167a3fc6b4d0e05c9844f242d0cc}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!setUpTraining\_@{setUpTraining\_}}
+\index{setUpTraining\_@{setUpTraining\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{setUpTraining\_()}{setUpTraining\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::set\+Up\+Training\+\_\+ (\begin{DoxyParamCaption}\item[{unsigned int}]{n\+Agents,  }\item[{unsigned}]{n\+Epochs }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1training_game}{Voxel\+Eng\+::\+AIAPI\+::training\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_aa8151c210487aae82c5231635186ddf0}\label{class_a_i_example_1_1mining_a_i_game_aa8151c210487aae82c5231635186ddf0}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!spawnAgents\_@{spawnAgents\_}}
+\index{spawnAgents\_@{spawnAgents\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{spawnAgents\_()}{spawnAgents\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::spawn\+Agents\+\_\+ (\begin{DoxyParamCaption}\item[{unsigned int}]{n\+Agents }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{Voxel\+Eng\+::\+AIAPI\+::ai\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a3263192f338dbe2f1a26b95e69fdadc3}\label{class_a_i_example_1_1mining_a_i_game_a3263192f338dbe2f1a26b95e69fdadc3}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!test\_@{test\_}}
+\index{test\_@{test\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{test\_()}{test\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::test\+\_\+ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{Voxel\+Eng\+::\+AIAPI\+::ai\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a4fb99e26d1a7a6b6efea7fd68f68197b}\label{class_a_i_example_1_1mining_a_i_game_a4fb99e26d1a7a6b6efea7fd68f68197b}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!testLoadedAgents\_@{testLoadedAgents\_}}
+\index{testLoadedAgents\_@{testLoadedAgents\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{testLoadedAgents\_()}{testLoadedAgents\_()}}
+{\footnotesize\ttfamily bool AIExample\+::mining\+AIGame\+::test\+Loaded\+Agents\+\_\+ (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{path }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1training_game}{Voxel\+Eng\+::\+AIAPI\+::training\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a1f9e8a1c10dc39b45618d706cb66ed40}\label{class_a_i_example_1_1mining_a_i_game_a1f9e8a1c10dc39b45618d706cb66ed40}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!train\_@{train\_}}
+\index{train\_@{train\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{train\_()}{train\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+AIGame\+::train\+\_\+ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1training_game}{Voxel\+Eng\+::\+AIAPI\+::training\+Game}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_a_i_game_a173450c7bd060ca90fb250684719b823}\label{class_a_i_example_1_1mining_a_i_game_a173450c7bd060ca90fb250684719b823}} 
+\index{AIExample::miningAIGame@{AIExample::miningAIGame}!trainLoadedAgents\_@{trainLoadedAgents\_}}
+\index{trainLoadedAgents\_@{trainLoadedAgents\_}!AIExample::miningAIGame@{AIExample::miningAIGame}}
+\doxysubsubsection{\texorpdfstring{trainLoadedAgents\_()}{trainLoadedAgents\_()}}
+{\footnotesize\ttfamily bool AIExample\+::mining\+AIGame\+::train\+Loaded\+Agents\+\_\+ (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{path }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1training_game}{Voxel\+Eng\+::\+AIAPI\+::training\+Game}}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\+AI/\mbox{\hyperlink{_a_i_game_ex1_8h}{AIGame\+Ex1.\+h}}\item 
+code/\+AI/AIGame\+Ex1.\+cpp\end{DoxyCompactItemize}

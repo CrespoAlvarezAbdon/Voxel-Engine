@@ -1,0 +1,81 @@
+\hypertarget{class_a_i_example_1_1genetic_job}{}\doxysection{AIExample\+::genetic\+Job Class Reference}
+\label{class_a_i_example_1_1genetic_job}\index{AIExample::geneticJob@{AIExample::geneticJob}}
+
+
+Derives from \textquotesingle{}job\textquotesingle{} class at \mbox{\hyperlink{thread_pool_8h}{thread\+Pool.\+h}}. Used to represent jobs related to the heavy processing parts of the training process that will be completed by worker threads. In this particular case, this class is created for processing a fitness function applied to the individuals.  
+
+
+
+
+{\ttfamily \#include $<$genetic.\+h$>$}
+
+Inheritance diagram for AIExample\+::genetic\+Job\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_a_i_example_1_1genetic_job}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_a_i_example_1_1genetic_job_a59587602cb2939131851c9ac02692d62}{genetic\+Job}} (std\+::size\+\_\+t range\+Start, std\+::size\+\_\+t range\+End, float $\ast$fitness, unsigned int $\ast$indices, float($\ast$evaluation\+Function)(unsigned int individual\+ID))
+\begin{DoxyCompactList}\small\item\em Class constructor. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_a_i_example_1_1genetic_job_a481ee31c16d629cd9c40b480b618c399}{set\+Attributes}} (std\+::size\+\_\+t range\+Start, std\+::size\+\_\+t range\+End, float $\ast$fitness, unsigned int $\ast$indices, float($\ast$evaluation\+Function)(unsigned int individual\+ID))
+\begin{DoxyCompactList}\small\item\em Instead of creating and deleting \mbox{\hyperlink{class_a_i_example_1_1genetic_job}{genetic\+Job}} objects, this method allows to reassing the object\textquotesingle{}s attributes in order to reuse objects. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Derives from \textquotesingle{}job\textquotesingle{} class at \mbox{\hyperlink{thread_pool_8h}{thread\+Pool.\+h}}. Used to represent jobs related to the heavy processing parts of the training process that will be completed by worker threads. In this particular case, this class is created for processing a fitness function applied to the individuals. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_job_a59587602cb2939131851c9ac02692d62}\label{class_a_i_example_1_1genetic_job_a59587602cb2939131851c9ac02692d62}} 
+\index{AIExample::geneticJob@{AIExample::geneticJob}!geneticJob@{geneticJob}}
+\index{geneticJob@{geneticJob}!AIExample::geneticJob@{AIExample::geneticJob}}
+\doxysubsubsection{\texorpdfstring{geneticJob()}{geneticJob()}}
+{\footnotesize\ttfamily AIExample\+::genetic\+Job\+::genetic\+Job (\begin{DoxyParamCaption}\item[{std\+::size\+\_\+t}]{range\+Start,  }\item[{std\+::size\+\_\+t}]{range\+End,  }\item[{float $\ast$}]{fitness,  }\item[{unsigned int $\ast$}]{indices,  }\item[{float($\ast$)(unsigned int individual\+ID)}]{evaluation\+Function }\end{DoxyParamCaption})}
+
+
+
+Class constructor. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em The} & beginning of the range of individuals to process. \\
+\hline
+{\em The} & end of the range of individuals to process. \\
+\hline
+{\em The} & start of the array that holds the fitness value of the individuals. \\
+\hline
+{\em The} & start of the array that holds the individuals indices for accessing their neural networks. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_job_a481ee31c16d629cd9c40b480b618c399}\label{class_a_i_example_1_1genetic_job_a481ee31c16d629cd9c40b480b618c399}} 
+\index{AIExample::geneticJob@{AIExample::geneticJob}!setAttributes@{setAttributes}}
+\index{setAttributes@{setAttributes}!AIExample::geneticJob@{AIExample::geneticJob}}
+\doxysubsubsection{\texorpdfstring{setAttributes()}{setAttributes()}}
+{\footnotesize\ttfamily void AIExample\+::genetic\+Job\+::set\+Attributes (\begin{DoxyParamCaption}\item[{std\+::size\+\_\+t}]{range\+Start,  }\item[{std\+::size\+\_\+t}]{range\+End,  }\item[{float $\ast$}]{fitness,  }\item[{unsigned int $\ast$}]{indices,  }\item[{float($\ast$)(unsigned int individual\+ID)}]{evaluation\+Function }\end{DoxyParamCaption})}
+
+
+
+Instead of creating and deleting \mbox{\hyperlink{class_a_i_example_1_1genetic_job}{genetic\+Job}} objects, this method allows to reassing the object\textquotesingle{}s attributes in order to reuse objects. 
+
+Class constructor. 
+\begin{DoxyParams}{Parameters}
+{\em The} & beginning of the range of individuals to process. \\
+\hline
+{\em The} & end of the range of individuals to process. \\
+\hline
+{\em The} & start of the array that holds the fitness value of the individuals. \\
+\hline
+{\em The} & start of the array that holds the individuals indices for accessing their neural networks. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\+AI/\mbox{\hyperlink{genetic_8h}{genetic.\+h}}\item 
+code/\+AI/genetic.\+cpp\end{DoxyCompactItemize}

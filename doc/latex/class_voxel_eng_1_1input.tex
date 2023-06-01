@@ -1,0 +1,52 @@
+\hypertarget{class_voxel_eng_1_1input}{}\doxysection{Voxel\+Eng\+::input Class Reference}
+\label{class_voxel_eng_1_1input}\index{VoxelEng::input@{VoxelEng::input}}
+
+
+Responsible for managing and providing all aspects related to how the engine accepts and process the user input from keyboard and mouse (except standard input). In the case of user input that affects GUIelements, the GUIfunctions and the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_imanager}{GUImanager}} are responsible for managing those cases.  
+
+
+
+
+{\ttfamily \#include $<$input.\+h$>$}
+
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1input_a2f8a258ac57a45557998806e4273d8c1}\label{class_voxel_eng_1_1input_a2f8a258ac57a45557998806e4273d8c1}} 
+static void {\bfseries init} ()
+\begin{DoxyCompactList}\small\item\em Initialise the input system. Allocate any resources that are needed on initialisation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1input_a24464db3e9b998f294840f5270699326}\label{class_voxel_eng_1_1input_a24464db3e9b998f294840f5270699326}} 
+static bool {\bfseries should\+Process\+Inputs} ()
+\begin{DoxyCompactList}\small\item\em Returns true if the input system is currently accepting any type of user input or false otherwise. WARNING. Lock \mbox{\hyperlink{class_voxel_eng_1_1input_a9122c685b1ff3afcde5468b2e66c7888}{input\+::input\+Mutex()}} if it is not desirable for this flag to be altered by other thread. Access without doing this does not ensure mutual exclusion! \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1input_a1498953605588dc9090f6a889d4298a6}\label{class_voxel_eng_1_1input_a1498953605588dc9090f6a889d4298a6}} 
+static void {\bfseries set\+Control\+Action} (\mbox{\hyperlink{controls_8h_af550b48700d4b033518ac433ba6c72bc}{control\+Code}} code, void($\ast$action)(), bool is\+Continuous=true)
+\begin{DoxyCompactList}\small\item\em Assign a control code with an executed action. Note.\+This operation is thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1input_a3d60ba9de7f9cc0321582e1733028de7}\label{class_voxel_eng_1_1input_a3d60ba9de7f9cc0321582e1733028de7}} 
+static void {\bfseries handle\+Inputs} ()
+\begin{DoxyCompactList}\small\item\em Method to handle the user inputs in one game\textquotesingle{}s tick. \end{DoxyCompactList}\item 
+static std\+::recursive\+\_\+mutex \& \mbox{\hyperlink{class_voxel_eng_1_1input_a9122c685b1ff3afcde5468b2e66c7888}{input\+Mutex}} ()
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1input_a78e24f214319faa099ea07483de4a9d5}\label{class_voxel_eng_1_1input_a78e24f214319faa099ea07483de4a9d5}} 
+static void {\bfseries should\+Process\+Inputs} (bool new\+Value)
+\begin{DoxyCompactList}\small\item\em Set the value of the flag that indicates if the input system is currently accepting any type of user input or not. WARNING. Locks \mbox{\hyperlink{class_voxel_eng_1_1input_a9122c685b1ff3afcde5468b2e66c7888}{input\+::input\+Mutex()}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1input_ab0ab54ebfe1d02a624922ba6aca3d252}\label{class_voxel_eng_1_1input_ab0ab54ebfe1d02a624922ba6aca3d252}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em Deinitialise the input system and clean up any resources (heap memory, opened files...) allocated to it. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Responsible for managing and providing all aspects related to how the engine accepts and process the user input from keyboard and mouse (except standard input). In the case of user input that affects GUIelements, the GUIfunctions and the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_imanager}{GUImanager}} are responsible for managing those cases. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_voxel_eng_1_1input_a9122c685b1ff3afcde5468b2e66c7888}\label{class_voxel_eng_1_1input_a9122c685b1ff3afcde5468b2e66c7888}} 
+\index{VoxelEng::input@{VoxelEng::input}!inputMutex@{inputMutex}}
+\index{inputMutex@{inputMutex}!VoxelEng::input@{VoxelEng::input}}
+\doxysubsubsection{\texorpdfstring{inputMutex()}{inputMutex()}}
+{\footnotesize\ttfamily std\+::recursive\+\_\+mutex \& Voxel\+Eng\+::input\+::input\+Mutex (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+@ brief Returns the mutex associated with the user input system. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{input_8h}{input.\+h}}\item 
+code/input.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,210 @@
+\hypertarget{input_functions_8h_source}{}\doxysection{input\+Functions.\+h}
+\label{input_functions_8h_source}\index{code/inputFunctions.h@{code/inputFunctions.h}}
+\mbox{\hyperlink{input_functions_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_INPUTFUNCTIONS\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#define \_VOXELENG\_INPUTFUNCTIONS\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{_a_i_a_p_i_8h}{AIAPI.h}}"{}}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{camera_8h}{camera.h}}"{}}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{game_8h}{game.h}}"{}}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{logger_8h}{logger.h}}"{}}}
+\DoxyCodeLine{16 }
+\DoxyCodeLine{17 }
+\DoxyCodeLine{18 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1input_functions}{inputFunctions}} \{}
+\DoxyCodeLine{21 }
+\DoxyCodeLine{22     \textcolor{keyword}{public}:}
+\DoxyCodeLine{23 }
+\DoxyCodeLine{24         \textcolor{comment}{// Initialisation.}}
+\DoxyCodeLine{25 }
+\DoxyCodeLine{32         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a2a008ee2c369bc8de05db885c26a1fad}{init}}();}
+\DoxyCodeLine{33 }
+\DoxyCodeLine{34         \textcolor{comment}{// API methods.}}
+\DoxyCodeLine{35 }
+\DoxyCodeLine{40         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_afd345d4ef2e4d7a9956abb737609ee87}{moveUp}}();}
+\DoxyCodeLine{41 }
+\DoxyCodeLine{46         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_ae0b8315272e36cdba95f0ad67ac76b14}{moveDown}}();}
+\DoxyCodeLine{47 }
+\DoxyCodeLine{52         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a61641f72b415f941e5de6b112b6c3a11}{moveNorth}}();}
+\DoxyCodeLine{53 }
+\DoxyCodeLine{58         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a31c436c5627729057a58624acd50051f}{moveSouth}}();}
+\DoxyCodeLine{59 }
+\DoxyCodeLine{64         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a9843a82e40bda558b5611ebf283ab2fe}{moveEast}}();}
+\DoxyCodeLine{65         }
+\DoxyCodeLine{70         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_afc47ecdb963814bda7c4b796372f79a0}{moveWest}}();}
+\DoxyCodeLine{71 }
+\DoxyCodeLine{75         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a806e10c0bc1f122ff44bb8edfac6d9a2}{switchComplexLighting}}();}
+\DoxyCodeLine{76 }
+\DoxyCodeLine{80         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a8904814ca2bb519bde974912b342010d}{recordForward}}();}
+\DoxyCodeLine{81 }
+\DoxyCodeLine{85         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a46388446f03901d4587705e45739b859}{recordPause}}();}
+\DoxyCodeLine{86 }
+\DoxyCodeLine{90         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_af9a7f5291f1517f29ed5f8dda762a6ed}{recordBackwards}}();}
+\DoxyCodeLine{91 }
+\DoxyCodeLine{95         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_ad5c25f85459f445340fb23b77ddca22e}{exitRecord}}();}
+\DoxyCodeLine{96 }
+\DoxyCodeLine{100         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a49d5b70331a1cac611f42a1c2ae5266f}{selectBlockSlot1}}();}
+\DoxyCodeLine{101 }
+\DoxyCodeLine{105         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_aec1c0bfb3e06f7a501ad1780710b65d1}{selectBlockSlot2}}();}
+\DoxyCodeLine{106 }
+\DoxyCodeLine{110         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a84beeef61806789e365a997caffbc9ed}{selectBlockSlot3}}();}
+\DoxyCodeLine{111 }
+\DoxyCodeLine{115         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_af43b2c11ca217e64e48f8b1eb0e75996}{selectBlockSlot4}}();}
+\DoxyCodeLine{116 }
+\DoxyCodeLine{120         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_ac23cecc52286f6c764fe820306f123b2}{selectBlockSlot5}}();}
+\DoxyCodeLine{121 }
+\DoxyCodeLine{125         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_add6b363d16cd9b7e7b5768b05290e765}{selectBlockSlot6}}();}
+\DoxyCodeLine{126 }
+\DoxyCodeLine{130         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a75e98d6ea1fc7ed734029c316cebe163}{selectBlockSlot7}}();}
+\DoxyCodeLine{131 }
+\DoxyCodeLine{135         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a4af90c761c3d0691f91ef99dcdd55b2f}{selectBlockSlot8}}();}
+\DoxyCodeLine{136 }
+\DoxyCodeLine{140         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a28eddbd84a6145f794b3199c7c4c9b1f}{selectBlockSlot9}}();}
+\DoxyCodeLine{141 }
+\DoxyCodeLine{145         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_ae3c8279652cf804c3250cf3022bd3761}{intentionalCrash}}();}
+\DoxyCodeLine{146 }
+\DoxyCodeLine{147         }
+\DoxyCodeLine{148         \textcolor{comment}{// Clean up.}}
+\DoxyCodeLine{149 }
+\DoxyCodeLine{153         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a85de04dd15fc5d79ddf83af68082922b}{cleanUp}}();}
+\DoxyCodeLine{154 }
+\DoxyCodeLine{155     \textcolor{keyword}{private}:}
+\DoxyCodeLine{156 }
+\DoxyCodeLine{157         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialised\_;}
+\DoxyCodeLine{158         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}* playerCamera\_; \textcolor{comment}{// To avoid calling game::playerCamera() too many times.}}
+\DoxyCodeLine{159 }
+\DoxyCodeLine{160     \};}
+\DoxyCodeLine{161 }
+\DoxyCodeLine{162     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_afd345d4ef2e4d7a9956abb737609ee87}{inputFunctions::moveUp}}() \{}
+\DoxyCodeLine{163 }
+\DoxyCodeLine{164         playerCamera\_-\/>\mbox{\hyperlink{class_voxel_eng_1_1camera_a6556c5b420d23e86c59ee87fe34c2044}{moveUp}}();}
+\DoxyCodeLine{165 }
+\DoxyCodeLine{166     \}}
+\DoxyCodeLine{167 }
+\DoxyCodeLine{168     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_ae0b8315272e36cdba95f0ad67ac76b14}{inputFunctions::moveDown}}() \{}
+\DoxyCodeLine{169 }
+\DoxyCodeLine{170         playerCamera\_-\/>\mbox{\hyperlink{class_voxel_eng_1_1camera_a0605eec7bf0e5dea57567ce9ac38d3ad}{moveDown}}();}
+\DoxyCodeLine{171 }
+\DoxyCodeLine{172     \}}
+\DoxyCodeLine{173 }
+\DoxyCodeLine{174     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a61641f72b415f941e5de6b112b6c3a11}{inputFunctions::moveNorth}}() \{}
+\DoxyCodeLine{175 }
+\DoxyCodeLine{176         playerCamera\_-\/>\mbox{\hyperlink{class_voxel_eng_1_1camera_a76f6a3c32e50340bbc6ade0ead30e062}{moveNorth}}();}
+\DoxyCodeLine{177 }
+\DoxyCodeLine{178     \}}
+\DoxyCodeLine{179 }
+\DoxyCodeLine{180     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a31c436c5627729057a58624acd50051f}{inputFunctions::moveSouth}}() \{}
+\DoxyCodeLine{181 }
+\DoxyCodeLine{182         playerCamera\_-\/>\mbox{\hyperlink{class_voxel_eng_1_1camera_a7cd9529dcc6a1d93b1c1b8ef1f071e1c}{moveSouth}}();}
+\DoxyCodeLine{183 }
+\DoxyCodeLine{184     \}}
+\DoxyCodeLine{185 }
+\DoxyCodeLine{186     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a9843a82e40bda558b5611ebf283ab2fe}{inputFunctions::moveEast}}() \{}
+\DoxyCodeLine{187 }
+\DoxyCodeLine{188         playerCamera\_-\/>\mbox{\hyperlink{class_voxel_eng_1_1camera_a9ca042b2f1e5554dbce7c623db90b903}{moveEast}}();}
+\DoxyCodeLine{189 }
+\DoxyCodeLine{190     \}}
+\DoxyCodeLine{191 }
+\DoxyCodeLine{192     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_afc47ecdb963814bda7c4b796372f79a0}{inputFunctions::moveWest}}() \{}
+\DoxyCodeLine{193 }
+\DoxyCodeLine{194         playerCamera\_-\/>\mbox{\hyperlink{class_voxel_eng_1_1camera_afda76b4e63c5c00e14728240dcca6957}{moveWest}}();}
+\DoxyCodeLine{195 }
+\DoxyCodeLine{196     \}}
+\DoxyCodeLine{197 }
+\DoxyCodeLine{198     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a806e10c0bc1f122ff44bb8edfac6d9a2}{inputFunctions::switchComplexLighting}}() \{}
+\DoxyCodeLine{199     }
+\DoxyCodeLine{200         \mbox{\hyperlink{class_voxel_eng_1_1game_ac5ff0bad13c0a8efe6aea47f778b406b}{game::switchComplexLighting}}();}
+\DoxyCodeLine{201     }
+\DoxyCodeLine{202     \}}
+\DoxyCodeLine{203 }
+\DoxyCodeLine{204     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a8904814ca2bb519bde974912b342010d}{inputFunctions::recordForward}}() \{}
+\DoxyCodeLine{205 }
+\DoxyCodeLine{206         AIAPI::aiGame::changeRecordPlayMode(AIAPI::recordPlayMode::FORWARD);}
+\DoxyCodeLine{207 }
+\DoxyCodeLine{208     \}}
+\DoxyCodeLine{209 }
+\DoxyCodeLine{210     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a46388446f03901d4587705e45739b859}{inputFunctions::recordPause}}() \{}
+\DoxyCodeLine{211 }
+\DoxyCodeLine{212         AIAPI::aiGame::changeRecordPlayMode(AIAPI::recordPlayMode::PAUSE);}
+\DoxyCodeLine{213 }
+\DoxyCodeLine{214     \}}
+\DoxyCodeLine{215 }
+\DoxyCodeLine{216     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_af9a7f5291f1517f29ed5f8dda762a6ed}{inputFunctions::recordBackwards}}() \{}
+\DoxyCodeLine{217 }
+\DoxyCodeLine{218         AIAPI::aiGame::changeRecordPlayMode(AIAPI::recordPlayMode::BACKWARDS);}
+\DoxyCodeLine{219 }
+\DoxyCodeLine{220     \}}
+\DoxyCodeLine{221 }
+\DoxyCodeLine{222     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_ad5c25f85459f445340fb23b77ddca22e}{inputFunctions::exitRecord}}() \{}
+\DoxyCodeLine{223     }
+\DoxyCodeLine{224         AIAPI::aiGame::stopPlayingRecord();}
+\DoxyCodeLine{225     }
+\DoxyCodeLine{226     \}}
+\DoxyCodeLine{227 }
+\DoxyCodeLine{228     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a49d5b70331a1cac611f42a1c2ae5266f}{inputFunctions::selectBlockSlot1}}() \{}
+\DoxyCodeLine{229     }
+\DoxyCodeLine{230         \mbox{\hyperlink{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}{player::setBlockToPlace}}(1);}
+\DoxyCodeLine{231     }
+\DoxyCodeLine{232     \}}
+\DoxyCodeLine{233 }
+\DoxyCodeLine{234     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_aec1c0bfb3e06f7a501ad1780710b65d1}{inputFunctions::selectBlockSlot2}}() \{}
+\DoxyCodeLine{235 }
+\DoxyCodeLine{236         \mbox{\hyperlink{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}{player::setBlockToPlace}}(2);}
+\DoxyCodeLine{237 }
+\DoxyCodeLine{238     \}}
+\DoxyCodeLine{239 }
+\DoxyCodeLine{240     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a84beeef61806789e365a997caffbc9ed}{inputFunctions::selectBlockSlot3}}() \{}
+\DoxyCodeLine{241 }
+\DoxyCodeLine{242         \mbox{\hyperlink{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}{player::setBlockToPlace}}(3);}
+\DoxyCodeLine{243 }
+\DoxyCodeLine{244     \}}
+\DoxyCodeLine{245 }
+\DoxyCodeLine{246     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_af43b2c11ca217e64e48f8b1eb0e75996}{inputFunctions::selectBlockSlot4}}() \{}
+\DoxyCodeLine{247 }
+\DoxyCodeLine{248         \mbox{\hyperlink{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}{player::setBlockToPlace}}(4); }
+\DoxyCodeLine{249 }
+\DoxyCodeLine{250     \}}
+\DoxyCodeLine{251 }
+\DoxyCodeLine{252     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_ac23cecc52286f6c764fe820306f123b2}{inputFunctions::selectBlockSlot5}}() \{}
+\DoxyCodeLine{253 }
+\DoxyCodeLine{254         \mbox{\hyperlink{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}{player::setBlockToPlace}}(10); \textcolor{comment}{// Texture ID 4 is reserved for the warden model's texture.}}
+\DoxyCodeLine{255 }
+\DoxyCodeLine{256     \}}
+\DoxyCodeLine{257 }
+\DoxyCodeLine{258     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_add6b363d16cd9b7e7b5768b05290e765}{inputFunctions::selectBlockSlot6}}() \{}
+\DoxyCodeLine{259 }
+\DoxyCodeLine{260         \mbox{\hyperlink{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}{player::setBlockToPlace}}(6);}
+\DoxyCodeLine{261 }
+\DoxyCodeLine{262     \}}
+\DoxyCodeLine{263 }
+\DoxyCodeLine{264     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a75e98d6ea1fc7ed734029c316cebe163}{inputFunctions::selectBlockSlot7}}() \{}
+\DoxyCodeLine{265 }
+\DoxyCodeLine{266         \mbox{\hyperlink{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}{player::setBlockToPlace}}(7);}
+\DoxyCodeLine{267 }
+\DoxyCodeLine{268     \}}
+\DoxyCodeLine{269 }
+\DoxyCodeLine{270     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a4af90c761c3d0691f91ef99dcdd55b2f}{inputFunctions::selectBlockSlot8}}() \{}
+\DoxyCodeLine{271 }
+\DoxyCodeLine{272         \mbox{\hyperlink{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}{player::setBlockToPlace}}(8);}
+\DoxyCodeLine{273 }
+\DoxyCodeLine{274     \}}
+\DoxyCodeLine{275 }
+\DoxyCodeLine{276     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_a28eddbd84a6145f794b3199c7c4c9b1f}{inputFunctions::selectBlockSlot9}}() \{}
+\DoxyCodeLine{277 }
+\DoxyCodeLine{278         \mbox{\hyperlink{class_voxel_eng_1_1player_afc9338a248bd2082ad84ebea9c142493}{player::setBlockToPlace}}(9);}
+\DoxyCodeLine{279 }
+\DoxyCodeLine{280     \}}
+\DoxyCodeLine{281 }
+\DoxyCodeLine{282     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1input_functions_ae3c8279652cf804c3250cf3022bd3761}{inputFunctions::intentionalCrash}}() \{}
+\DoxyCodeLine{283     }
+\DoxyCodeLine{284         \mbox{\hyperlink{class_voxel_eng_1_1logger_a71bf58e041bae58e2ff5be50cd11e382}{logger::errorLog}}(\textcolor{stringliteral}{"{}This is an intentional error caused to test the engine's error management capabilities."{}});}
+\DoxyCodeLine{285     }
+\DoxyCodeLine{286     \}}
+\DoxyCodeLine{287 }
+\DoxyCodeLine{288 \}}
+\DoxyCodeLine{289 }
+\DoxyCodeLine{290 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

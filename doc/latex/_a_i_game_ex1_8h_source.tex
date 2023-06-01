@@ -1,0 +1,357 @@
+\hypertarget{_a_i_game_ex1_8h_source}{}\doxysection{AIGame\+Ex1.\+h}
+\label{_a_i_game_ex1_8h_source}\index{code/AI/AIGameEx1.h@{code/AI/AIGameEx1.h}}
+\mbox{\hyperlink{_a_i_game_ex1_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#ifndef \_AIEXAMPLE\_EX1\_}}
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#define \_AIEXAMPLE\_EX1\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <unordered\_map>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <array>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <arrayfire.h>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include "{}af/random.h"{}}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include "{}../AIAPI.h"{}}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include "{}../definitions.h"{}}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include "{}../worldGen.h"{}}}
+\DoxyCodeLine{19 \textcolor{preprocessor}{\#include "{}../chunk.h"{}}}
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{genetic_8h}{genetic.h}}"{}}}
+\DoxyCodeLine{21 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{_n_n_8h}{NN.h}}"{}}}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{23 }
+\DoxyCodeLine{24 \textcolor{keyword}{namespace }AIExample \{}
+\DoxyCodeLine{25 }
+\DoxyCodeLine{26 }
+\DoxyCodeLine{28     \textcolor{comment}{//Function prototypes.//}}
+\DoxyCodeLine{30 \textcolor{comment}{}}
+\DoxyCodeLine{31     \textcolor{keywordtype}{float} miningAIGameFitness(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID);}
+\DoxyCodeLine{32 }
+\DoxyCodeLine{33 }
+\DoxyCodeLine{35     \textcolor{comment}{//Typedefs.//}}
+\DoxyCodeLine{37 \textcolor{comment}{}}
+\DoxyCodeLine{42     \textcolor{keyword}{typedef} std::array<std::array<int, VoxelEng::SCZ>, VoxelEng::SCX> \mbox{\hyperlink{_a_i_game_ex1_8h_ae988d64e69daeb5414d9ae13e94be726}{chunkHeightMap}};}
+\DoxyCodeLine{43 }
+\DoxyCodeLine{44 }
+\DoxyCodeLine{46     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{48 \textcolor{comment}{}}
+\DoxyCodeLine{52     \textcolor{keyword}{class }\mbox{\hyperlink{class_a_i_example_1_1mining_world_gen}{miningWorldGen}} : \textcolor{keyword}{public} \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{VoxelEng::worldGen}} \{}
+\DoxyCodeLine{53 }
+\DoxyCodeLine{54     \textcolor{keyword}{public}:}
+\DoxyCodeLine{55 }
+\DoxyCodeLine{56         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{57 }
+\DoxyCodeLine{61         \mbox{\hyperlink{class_a_i_example_1_1mining_world_gen_a2dccdef2daec89e59cc25cbee683593f}{miningWorldGen}}();}
+\DoxyCodeLine{62 }
+\DoxyCodeLine{63 }
+\DoxyCodeLine{64         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{65 }
+\DoxyCodeLine{69         \textcolor{keyword}{const} VoxelEng::vec3\& \mbox{\hyperlink{class_a_i_example_1_1mining_world_gen_aa39b85b37e2776d6557b8254d4274fde}{spawnPos}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{70 }
+\DoxyCodeLine{71     \textcolor{keyword}{protected}:}
+\DoxyCodeLine{72 }
+\DoxyCodeLine{73         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{74 }
+\DoxyCodeLine{75         \textcolor{keywordtype}{void} prepareGen\_();}
+\DoxyCodeLine{76 }
+\DoxyCodeLine{77         \textcolor{keywordtype}{void} generate\_(\mbox{\hyperlink{class_voxel_eng_1_1chunk}{VoxelEng::chunk}}\& chunk);}
+\DoxyCodeLine{78 }
+\DoxyCodeLine{79         \textcolor{keywordtype}{void} cascadeOreGen\_(\textcolor{keyword}{const} VoxelEng::vec3 chunkPos, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int}\& nBlocksCounter, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nBlocks,}
+\DoxyCodeLine{80             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} inChunkX, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} inChunkY, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} inChunkZ, VoxelEng::block oreID);}
+\DoxyCodeLine{81 }
+\DoxyCodeLine{82 }
+\DoxyCodeLine{83     \textcolor{keyword}{private}:}
+\DoxyCodeLine{84 }
+\DoxyCodeLine{85         \textcolor{comment}{/*}}
+\DoxyCodeLine{86 \textcolor{comment}{        Attributes.}}
+\DoxyCodeLine{87 \textcolor{comment}{        */}}
+\DoxyCodeLine{88 }
+\DoxyCodeLine{89         \textcolor{keyword}{static} \textcolor{keyword}{const} std::uniform\_int\_distribution<unsigned int> int6Dice\_;}
+\DoxyCodeLine{90         \textcolor{keyword}{static} std::uniform\_int\_distribution<unsigned int> intDice\_;}
+\DoxyCodeLine{91         \textcolor{keyword}{static} std::uniform\_real\_distribution<float> floatDice\_;}
+\DoxyCodeLine{92 }
+\DoxyCodeLine{93         \textcolor{keywordtype}{bool} spawnSet\_;}
+\DoxyCodeLine{94         \textcolor{keywordtype}{int} maxBlockYCoord\_;}
+\DoxyCodeLine{95         VoxelEng::vec3 AISpawnPos\_; \textcolor{comment}{// Same spawn position for every AI agent.}}
+\DoxyCodeLine{96         std::unordered\_map<VoxelEng::vec2, chunkHeightMap> chunkColHeight\_;}
+\DoxyCodeLine{97         std::uniform\_int\_distribution<unsigned int>::param\_type coalSpreadRange\_,}
+\DoxyCodeLine{98                                                                 ironSpreadRange\_,}
+\DoxyCodeLine{99                                                                 goldSpreadRange\_,}
+\DoxyCodeLine{100                                                                 diamondSpreadRange\_;}
+\DoxyCodeLine{101         VoxelEng::vec2 oreInChunkPos\_;}
+\DoxyCodeLine{102 }
+\DoxyCodeLine{103         \textcolor{keyword}{enum class} ore \{ COAL, IRON, GOLD, DIAMOND \};}
+\DoxyCodeLine{104 }
+\DoxyCodeLine{105         \textcolor{comment}{/*}}
+\DoxyCodeLine{106 \textcolor{comment}{        Methods.}}
+\DoxyCodeLine{107 \textcolor{comment}{        */}}
+\DoxyCodeLine{108 }
+\DoxyCodeLine{109         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{110 }
+\DoxyCodeLine{111         \textcolor{comment}{/*}}
+\DoxyCodeLine{112 \textcolor{comment}{        Generates a height map from a chunk column (that is, a set}}
+\DoxyCodeLine{113 \textcolor{comment}{        of chunks that share the same X and Z chunk coordinate) using}}
+\DoxyCodeLine{114 \textcolor{comment}{        perlin noise if it is not already generated. Otherwise it}}
+\DoxyCodeLine{115 \textcolor{comment}{        returns said value for the specified chunk column.}}
+\DoxyCodeLine{116 \textcolor{comment}{        */}}
+\DoxyCodeLine{117         \textcolor{keyword}{const} \mbox{\hyperlink{_a_i_game_ex1_8h_ae988d64e69daeb5414d9ae13e94be726}{chunkHeightMap}}\& chunkHeightMap\_(\textcolor{keywordtype}{int} blockX, \textcolor{keywordtype}{int} blockZ);}
+\DoxyCodeLine{118 }
+\DoxyCodeLine{119         \textcolor{comment}{/*}}
+\DoxyCodeLine{120 \textcolor{comment}{        Generates a height map from a chunk column (that is, a set}}
+\DoxyCodeLine{121 \textcolor{comment}{        of chunks that share the same X and Z chunk coordinate) using}}
+\DoxyCodeLine{122 \textcolor{comment}{        perlin noise if it is not already generated. Otherwise it}}
+\DoxyCodeLine{123 \textcolor{comment}{        returns said value for the specified chunk column.}}
+\DoxyCodeLine{124 \textcolor{comment}{        */}}
+\DoxyCodeLine{125         \textcolor{keyword}{const} \mbox{\hyperlink{_a_i_game_ex1_8h_ae988d64e69daeb5414d9ae13e94be726}{chunkHeightMap}}\& chunkHeightMap\_(\textcolor{keyword}{const} VoxelEng::vec2\& blockXZPos);}
+\DoxyCodeLine{126 }
+\DoxyCodeLine{127         \textcolor{keywordtype}{void} generateChunkHeightMap\_(\textcolor{keyword}{const} VoxelEng::vec2\& chunkXZPos);}
+\DoxyCodeLine{128 }
+\DoxyCodeLine{129         \textcolor{comment}{/*}}
+\DoxyCodeLine{130 \textcolor{comment}{        'inChunkX', 'inChunkY' and 'inChunkZ' serve as the starting point to generate the ore.}}
+\DoxyCodeLine{131 \textcolor{comment}{        */}}
+\DoxyCodeLine{132         \textcolor{keywordtype}{void} generateOre\_(VoxelEng::vec3 inChunkPos, \mbox{\hyperlink{class_voxel_eng_1_1chunk}{VoxelEng::chunk}}\& chunk, ore ore);}
+\DoxyCodeLine{133 }
+\DoxyCodeLine{134     \};}
+\DoxyCodeLine{135 }
+\DoxyCodeLine{136     \textcolor{keyword}{inline} \mbox{\hyperlink{class_a_i_example_1_1mining_world_gen_a2dccdef2daec89e59cc25cbee683593f}{miningWorldGen::miningWorldGen}}()}
+\DoxyCodeLine{137         : spawnSet\_(false), maxBlockYCoord\_(0), AISpawnPos\_(VoxelEng::vec3Zero)}
+\DoxyCodeLine{138     \{\}}
+\DoxyCodeLine{139 }
+\DoxyCodeLine{140     \textcolor{keyword}{inline} \textcolor{keyword}{const} VoxelEng::vec3\& \mbox{\hyperlink{class_a_i_example_1_1mining_world_gen_aa39b85b37e2776d6557b8254d4274fde}{miningWorldGen::spawnPos}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{141     }
+\DoxyCodeLine{142         \textcolor{keywordflow}{return} AISpawnPos\_;}
+\DoxyCodeLine{143     }
+\DoxyCodeLine{144     \}}
+\DoxyCodeLine{145 }
+\DoxyCodeLine{146     \textcolor{keyword}{inline} \textcolor{keyword}{const} \mbox{\hyperlink{_a_i_game_ex1_8h_ae988d64e69daeb5414d9ae13e94be726}{chunkHeightMap}}\& miningWorldGen::chunkHeightMap\_(\textcolor{keyword}{const} VoxelEng::vec2\& blockXZPos) \{}
+\DoxyCodeLine{147 }
+\DoxyCodeLine{148         \textcolor{keywordflow}{return} chunkHeightMap\_(blockXZPos[0], blockXZPos[1]);}
+\DoxyCodeLine{149 }
+\DoxyCodeLine{150     \}}
+\DoxyCodeLine{151 }
+\DoxyCodeLine{152 }
+\DoxyCodeLine{153     \textcolor{comment}{// 'miningAIGame' class.}}
+\DoxyCodeLine{154 }
+\DoxyCodeLine{159     \textcolor{keyword}{class }\mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game}{miningAIGame}} : \textcolor{keyword}{public} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1training_game}{VoxelEng::AIAPI::trainingGame}} \{}
+\DoxyCodeLine{160 }
+\DoxyCodeLine{161     \textcolor{keyword}{public}:}
+\DoxyCodeLine{162 }
+\DoxyCodeLine{163         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{164 }
+\DoxyCodeLine{168         \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a3291fd6d6074500bd383149ecf21550b}{miningAIGame}}();}
+\DoxyCodeLine{169 }
+\DoxyCodeLine{170 }
+\DoxyCodeLine{171         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{172 }
+\DoxyCodeLine{176         \textcolor{keyword}{const} \mbox{\hyperlink{class_a_i_example_1_1genetic}{genetic}}\& \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a257c50e97747428144f4e24a6ef1740b}{getGenetic}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{177 }
+\DoxyCodeLine{181         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_ac1aea18e6809a3a7a8a2a8045be950a3}{visionDepth}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{182 }
+\DoxyCodeLine{186         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a6ac1561f8c15aba4d97048ce75eeeb2b}{visionRadius}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{187 }
+\DoxyCodeLine{191         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a9d558ca04d8fee25731ea37e696e6a2c}{blockScore}}(VoxelEng::block) \textcolor{keyword}{const};}
+\DoxyCodeLine{192 }
+\DoxyCodeLine{196         \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a5526963c8cadcaebe962c5c196c3e926}{needsTraining}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{197 }
+\DoxyCodeLine{201         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a5c7166fdf40fb6e543f9a1d8a2c23e0f}{nInitialActions}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{202 }
+\DoxyCodeLine{208         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_afd40a0f52ee8846b662f82888608f22e}{nNoCostActionsToPen}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{209 }
+\DoxyCodeLine{210 }
+\DoxyCodeLine{211         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{212 }
+\DoxyCodeLine{216         af::randomEngine\& \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_ad42c39a934bb0d80fb0096981b6e2630}{AIrandEng}}();}
+\DoxyCodeLine{217 }
+\DoxyCodeLine{222         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a30fe040d0e03b18028b87a53d523d15f}{setAISeed}}();}
+\DoxyCodeLine{223 }
+\DoxyCodeLine{228         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a30fe040d0e03b18028b87a53d523d15f}{setAISeed}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} seed);}
+\DoxyCodeLine{229 }
+\DoxyCodeLine{233         \mbox{\hyperlink{class_a_i_example_1_1genetic}{genetic}}\& \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a257c50e97747428144f4e24a6ef1740b}{getGenetic}}();}
+\DoxyCodeLine{234 }
+\DoxyCodeLine{238         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_ae00ba72161bb9f04cbb7e3ad8e2d8a33}{addScoreAt}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID, \textcolor{keywordtype}{float} score);}
+\DoxyCodeLine{239 }
+\DoxyCodeLine{243         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a56fe3f8fe8e9e47ae7a54df77a1c3f8d}{addScore}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID, \textcolor{keywordtype}{float} score);}
+\DoxyCodeLine{244 }
+\DoxyCodeLine{248         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_acd8d50191cc457e1c4e726d24dc33f4a}{getScoreAt}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID);}
+\DoxyCodeLine{249 }
+\DoxyCodeLine{253         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_ab2a571a784e53a3e29b833eee140512a}{getScore}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID);}
+\DoxyCodeLine{254 }
+\DoxyCodeLine{258         \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a964e6e83b68c548cab392829300de2a5}{loadAgentsData}}(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{259 }
+\DoxyCodeLine{263         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a0630ca4b9972fbda7500f4ab042b8a6a}{saveAgentsData}}(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{264 }
+\DoxyCodeLine{269         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a2a20c5f20828871a3c1c4d01652bc542}{setAgentsModel}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID);}
+\DoxyCodeLine{270 }
+\DoxyCodeLine{276         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a8aed415e50f933190d8ac6630da21698}{spawnAgents}}();}
+\DoxyCodeLine{277 }
+\DoxyCodeLine{278     \textcolor{keyword}{protected}:}
+\DoxyCodeLine{279 }
+\DoxyCodeLine{280         \textcolor{comment}{/*}}
+\DoxyCodeLine{281 \textcolor{comment}{        Methods.}}
+\DoxyCodeLine{282 \textcolor{comment}{        */}}
+\DoxyCodeLine{283 }
+\DoxyCodeLine{284 }
+\DoxyCodeLine{285         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{286 }
+\DoxyCodeLine{287         \textcolor{keywordtype}{void} generalSetUp\_();}
+\DoxyCodeLine{288 }
+\DoxyCodeLine{289         \textcolor{keywordtype}{void} displayMenu\_();}
+\DoxyCodeLine{290 }
+\DoxyCodeLine{291         \textcolor{keywordtype}{void} setUpTest\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nAgents, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochs);}
+\DoxyCodeLine{292 }
+\DoxyCodeLine{293         \textcolor{keywordtype}{void} test\_();}
+\DoxyCodeLine{294 }
+\DoxyCodeLine{295         \textcolor{keywordtype}{void} setUpRecord\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nAgents);}
+\DoxyCodeLine{296 }
+\DoxyCodeLine{297         \textcolor{keywordtype}{void} record\_();}
+\DoxyCodeLine{298 }
+\DoxyCodeLine{299         \textcolor{keywordtype}{void} spawnAgents\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nAgents);}
+\DoxyCodeLine{300 }
+\DoxyCodeLine{301         \textcolor{keywordtype}{void} cleanUpMatch\_();}
+\DoxyCodeLine{302         }
+\DoxyCodeLine{303         \textcolor{keywordtype}{void} cleanUpGame\_();}
+\DoxyCodeLine{304 }
+\DoxyCodeLine{305         \textcolor{keywordtype}{void} setUpTraining\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nAgents, \textcolor{keywordtype}{unsigned} nEpochs);}
+\DoxyCodeLine{306 }
+\DoxyCodeLine{307         \textcolor{keywordtype}{void} train\_();}
+\DoxyCodeLine{308 }
+\DoxyCodeLine{309         \textcolor{keywordtype}{bool} trainLoadedAgents\_(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{310 }
+\DoxyCodeLine{311         \textcolor{keywordtype}{bool} testLoadedAgents\_(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{312 }
+\DoxyCodeLine{313         \textcolor{keywordtype}{bool} recordLoadedAgents\_(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{314 }
+\DoxyCodeLine{315         \textcolor{keywordtype}{int} loadAgentsData\_(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{316 }
+\DoxyCodeLine{317         \textcolor{keywordtype}{void} saveAgentsData\_(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{318 }
+\DoxyCodeLine{319     \textcolor{keyword}{private}:}
+\DoxyCodeLine{320 }
+\DoxyCodeLine{321         std::random\_device rd\_;}
+\DoxyCodeLine{322         std::mt19937 randGen\_;}
+\DoxyCodeLine{323         std::uniform\_int\_distribution<unsigned int> UIdist\_;}
+\DoxyCodeLine{324         af::randomEngine AFrandEng\_; \textcolor{comment}{// Random engine used separately from the world generation for the AI training.}}
+\DoxyCodeLine{325         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} popSize\_,}
+\DoxyCodeLine{326                      visionDepth\_,}
+\DoxyCodeLine{327                      visionRadius\_,}
+\DoxyCodeLine{328                      epochForNewWorld\_,}
+\DoxyCodeLine{329                      nInputs\_,}
+\DoxyCodeLine{330                      nEpochs\_,}
+\DoxyCodeLine{331                      nEpochsBetweenSaves\_,}
+\DoxyCodeLine{332                      agentsModelID\_;}
+\DoxyCodeLine{333         std::unordered\_map<VoxelEng::block, float> blockScore\_;}
+\DoxyCodeLine{334         std::vector<float> scores\_;}
+\DoxyCodeLine{335         \mbox{\hyperlink{class_a_i_example_1_1genetic}{genetic}} genetic\_;}
+\DoxyCodeLine{336         std::string lastWorldPath\_;}
+\DoxyCodeLine{337 }
+\DoxyCodeLine{338     \};}
+\DoxyCodeLine{339 }
+\DoxyCodeLine{340     \textcolor{keyword}{inline} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a3291fd6d6074500bd383149ecf21550b}{miningAIGame::miningAIGame}}()}
+\DoxyCodeLine{341         : randGen\_(rd\_()), UIdist\_(0, std::numeric\_limits<unsigned int>::max()), popSize\_(0), visionDepth\_(0),}
+\DoxyCodeLine{342         visionRadius\_(0), epochForNewWorld\_(0), agentsModelID\_(2), nEpochsBetweenSaves\_(0), nEpochs\_(0), nInputs\_(0) \{}
+\DoxyCodeLine{343 }
+\DoxyCodeLine{344         name\_ = \textcolor{stringliteral}{"{}MiningAIGame"{}};}
+\DoxyCodeLine{345 }
+\DoxyCodeLine{346     \}}
+\DoxyCodeLine{347     }
+\DoxyCodeLine{348     \textcolor{keyword}{inline} af::randomEngine\& \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_ad42c39a934bb0d80fb0096981b6e2630}{miningAIGame::AIrandEng}}() \{}
+\DoxyCodeLine{349     }
+\DoxyCodeLine{350         \textcolor{keywordflow}{return} AFrandEng\_;}
+\DoxyCodeLine{351     }
+\DoxyCodeLine{352     \}}
+\DoxyCodeLine{353 }
+\DoxyCodeLine{354     \textcolor{keyword}{inline} \textcolor{keyword}{const} \mbox{\hyperlink{class_a_i_example_1_1genetic}{genetic}}\& \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a257c50e97747428144f4e24a6ef1740b}{miningAIGame::getGenetic}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{355 }
+\DoxyCodeLine{356         \textcolor{keywordflow}{return} genetic\_;}
+\DoxyCodeLine{357 }
+\DoxyCodeLine{358     \}}
+\DoxyCodeLine{359 }
+\DoxyCodeLine{360     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a30fe040d0e03b18028b87a53d523d15f}{miningAIGame::setAISeed}}() \{}
+\DoxyCodeLine{361 }
+\DoxyCodeLine{362         AFrandEng\_.setSeed(UIdist\_(randGen\_));}
+\DoxyCodeLine{363         \mbox{\hyperlink{class_voxel_eng_1_1logger_a72aa0af143d71d101d2643aed2707729}{VoxelEng::logger::debugLog}}(\textcolor{stringliteral}{"{}AF seed: "{}} + std::to\_string(AFrandEng\_.getSeed()));}
+\DoxyCodeLine{364 }
+\DoxyCodeLine{365     \}}
+\DoxyCodeLine{366 }
+\DoxyCodeLine{367     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a30fe040d0e03b18028b87a53d523d15f}{miningAIGame::setAISeed}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} seed) \{}
+\DoxyCodeLine{368 }
+\DoxyCodeLine{369         AFrandEng\_.setSeed(seed);}
+\DoxyCodeLine{370         \mbox{\hyperlink{class_voxel_eng_1_1logger_a72aa0af143d71d101d2643aed2707729}{VoxelEng::logger::debugLog}}(\textcolor{stringliteral}{"{}AF seed: "{}} + std::to\_string(AFrandEng\_.getSeed()));}
+\DoxyCodeLine{371 }
+\DoxyCodeLine{372     \}}
+\DoxyCodeLine{373 }
+\DoxyCodeLine{374     \textcolor{keyword}{inline} \mbox{\hyperlink{class_a_i_example_1_1genetic}{genetic}}\& \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a257c50e97747428144f4e24a6ef1740b}{miningAIGame::getGenetic}}() \{}
+\DoxyCodeLine{375 }
+\DoxyCodeLine{376         \textcolor{keywordflow}{return} genetic\_;}
+\DoxyCodeLine{377 }
+\DoxyCodeLine{378     \}}
+\DoxyCodeLine{379 }
+\DoxyCodeLine{380     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a2a20c5f20828871a3c1c4d01652bc542}{miningAIGame::setAgentsModel}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} modelID) \{}
+\DoxyCodeLine{381     }
+\DoxyCodeLine{382         agentsModelID\_ = modelID;}
+\DoxyCodeLine{383     }
+\DoxyCodeLine{384     \}}
+\DoxyCodeLine{385 }
+\DoxyCodeLine{386     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a8aed415e50f933190d8ac6630da21698}{miningAIGame::spawnAgents}}() \{}
+\DoxyCodeLine{387     }
+\DoxyCodeLine{388         spawnAgents\_((recording\_) ? popSize\_ : popSize\_ * 2); \textcolor{comment}{// Newborn agents have their separate agent entity as well.}}
+\DoxyCodeLine{389     }
+\DoxyCodeLine{390     \}}
+\DoxyCodeLine{391 }
+\DoxyCodeLine{392     \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_ac1aea18e6809a3a7a8a2a8045be950a3}{miningAIGame::visionDepth}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{393     }
+\DoxyCodeLine{394         \textcolor{keywordflow}{return} visionDepth\_;}
+\DoxyCodeLine{395     }
+\DoxyCodeLine{396     \}}
+\DoxyCodeLine{397 }
+\DoxyCodeLine{398     \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a6ac1561f8c15aba4d97048ce75eeeb2b}{miningAIGame::visionRadius}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{399     }
+\DoxyCodeLine{400         \textcolor{keywordflow}{return} visionRadius\_;}
+\DoxyCodeLine{401     }
+\DoxyCodeLine{402     \}}
+\DoxyCodeLine{403 }
+\DoxyCodeLine{404     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a5526963c8cadcaebe962c5c196c3e926}{miningAIGame::needsTraining}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{405     }
+\DoxyCodeLine{406         \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{407     }
+\DoxyCodeLine{408     \}}
+\DoxyCodeLine{409 }
+\DoxyCodeLine{410     \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a5c7166fdf40fb6e543f9a1d8a2c23e0f}{miningAIGame::nInitialActions}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{411     }
+\DoxyCodeLine{412         \textcolor{keywordflow}{return} 500;}
+\DoxyCodeLine{413     }
+\DoxyCodeLine{414     \}}
+\DoxyCodeLine{415 }
+\DoxyCodeLine{416     \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_afd40a0f52ee8846b662f82888608f22e}{miningAIGame::nNoCostActionsToPen}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{417         }
+\DoxyCodeLine{418         \textcolor{keywordflow}{return} 10;}
+\DoxyCodeLine{419     }
+\DoxyCodeLine{420     \}}
+\DoxyCodeLine{421 }
+\DoxyCodeLine{422     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_a56fe3f8fe8e9e47ae7a54df77a1c3f8d}{miningAIGame::addScore}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID, \textcolor{keywordtype}{float} score) \{}
+\DoxyCodeLine{423     }
+\DoxyCodeLine{424         scores\_[individualID] += score;}
+\DoxyCodeLine{425 }
+\DoxyCodeLine{426     \}}
+\DoxyCodeLine{427 }
+\DoxyCodeLine{428     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game_ab2a571a784e53a3e29b833eee140512a}{miningAIGame::getScore}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID) \{}
+\DoxyCodeLine{429 }
+\DoxyCodeLine{430         \textcolor{keywordflow}{return} scores\_[individualID];}
+\DoxyCodeLine{431 }
+\DoxyCodeLine{432     \}}
+\DoxyCodeLine{433 }
+\DoxyCodeLine{434     \textcolor{keyword}{inline} \textcolor{keywordtype}{int} miningAIGame::loadAgentsData\_(\textcolor{keyword}{const} std::string\& path) \{}
+\DoxyCodeLine{435 }
+\DoxyCodeLine{436         \textcolor{keywordflow}{return} genetic\_.\mbox{\hyperlink{class_a_i_example_1_1genetic_afcce5cc614c220f5ea972ff3864fc9af}{loadIndividualsData}}(path);}
+\DoxyCodeLine{437 }
+\DoxyCodeLine{438     \}}
+\DoxyCodeLine{439 }
+\DoxyCodeLine{440     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} miningAIGame::saveAgentsData\_(\textcolor{keyword}{const} std::string\& path) \{}
+\DoxyCodeLine{441     }
+\DoxyCodeLine{442         genetic\_.\mbox{\hyperlink{class_a_i_example_1_1genetic_a471129d5835464ad13279ac38a458e2a}{saveIndividualsData}}(path);}
+\DoxyCodeLine{443     }
+\DoxyCodeLine{444     \}}
+\DoxyCodeLine{445 }
+\DoxyCodeLine{446 \}}
+\DoxyCodeLine{447 }
+\DoxyCodeLine{448 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

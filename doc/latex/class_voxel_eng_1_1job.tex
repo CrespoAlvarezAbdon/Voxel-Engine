@@ -1,0 +1,31 @@
+\hypertarget{class_voxel_eng_1_1job}{}\doxysection{Voxel\+Eng\+::job Class Reference}
+\label{class_voxel_eng_1_1job}\index{VoxelEng::job@{VoxelEng::job}}
+
+
+Jobs are computational steps that solve some small tasks that are to be processed in a parallel fashion in order to divide the workload of completing a heavy task in terms of computational cost between many threads. That is, said heavy task is divided into smaller tasks that can be completed in parallel.  
+
+
+
+
+{\ttfamily \#include $<$thread\+Pool.\+h$>$}
+
+Inheritance diagram for Voxel\+Eng\+::job\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_voxel_eng_1_1job}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1job_a503e66312bb141b8894b6b13586ebc4c}\label{class_voxel_eng_1_1job_a503e66312bb141b8894b6b13586ebc4c}} 
+virtual void {\bfseries process} ()=0
+\begin{DoxyCompactList}\small\item\em Represents the small tasks to be done by all the assigned threads in order to complete the computation of the main task. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Jobs are computational steps that solve some small tasks that are to be processed in a parallel fashion in order to divide the workload of completing a heavy task in terms of computational cost between many threads. That is, said heavy task is divided into smaller tasks that can be completed in parallel. 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{thread_pool_8h}{thread\+Pool.\+h}}\end{DoxyCompactItemize}

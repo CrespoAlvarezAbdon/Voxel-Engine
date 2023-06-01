@@ -1,0 +1,80 @@
+\hypertarget{class_a_i_example_1_1genetic}{}\doxysection{AIExample\+::genetic Class Reference}
+\label{class_a_i_example_1_1genetic}\index{AIExample::genetic@{AIExample::genetic}}
+
+
+Manages everything related to the genetic algorithms part of the example AI game, including the training, testing and record generation processes as well as the implementation of the genetic operators and the modification of the neural networks that are associated with the individuals.  
+
+
+
+
+{\ttfamily \#include $<$genetic.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_a544b05132c0363d9c297c3bde62b1df5}\label{class_a_i_example_1_1genetic_a544b05132c0363d9c297c3bde62b1df5}} 
+{\bfseries genetic} ()
+\begin{DoxyCompactList}\small\item\em Class constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_a3ec064f5bc327a45ef3d69f3c55fa74f}\label{class_a_i_example_1_1genetic_a3ec064f5bc327a45ef3d69f3c55fa74f}} 
+bool {\bfseries sim\+In\+Progress} () const
+\begin{DoxyCompactList}\small\item\em Returns true if a simulation (training, testing or recording process) is currently in progress or false otherwise. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_a1aeff9ac8eb612b45f1016b82b4a9f2d}\label{class_a_i_example_1_1genetic_a1aeff9ac8eb612b45f1016b82b4a9f2d}} 
+unsigned int {\bfseries n\+Individuals} () const
+\begin{DoxyCompactList}\small\item\em Returns the number of individuals. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_a6393aaaddf5fc4293d8e7c4d5a333796}\label{class_a_i_example_1_1genetic_a6393aaaddf5fc4293d8e7c4d5a333796}} 
+void {\bfseries gen\+Init\+Pop} (unsigned int \mbox{\hyperlink{class_a_i_example_1_1genetic_a1aeff9ac8eb612b45f1016b82b4a9f2d}{n\+Individuals}}, float range\+Min, float range\+Max, bool training)
+\begin{DoxyCompactList}\small\item\em Generate an initial population of \textquotesingle{}n\+Individuals\textquotesingle{} individuals with random weights. Said weights will be randomly generated in range \mbox{[}range\+Min, range\+Max\mbox{]}. If \textquotesingle{}training\textquotesingle{} is true, then the restrictions to the paremeters in case of AI training will be applied (n\+Individuals must be divisible by 2 for example). If false, then they will not be applied. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_aaf5dc934614c66cd22f76b3e650d82ce}\label{class_a_i_example_1_1genetic_aaf5dc934614c66cd22f76b3e650d82ce}} 
+void {\bfseries set\+Game} ()
+\begin{DoxyCompactList}\small\item\em Sets the loaded AI game as the set game for the \textquotesingle{}genetic\textquotesingle{} object. Said loaded AI game must be loaded and selected using the \textquotesingle{}ai\+Game\textquotesingle{} class and said game must be represented by an \textquotesingle{}\mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game}{mining\+AIGame}}\textquotesingle{} object. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_a0d6cbecb13f2deec34340aa9d7cbdf31}\label{class_a_i_example_1_1genetic_a0d6cbecb13f2deec34340aa9d7cbdf31}} 
+void {\bfseries set\+Network\+Taxonomy} (const std\+::initializer\+\_\+list$<$ unsigned int $>$ \&size\+Layer)
+\begin{DoxyCompactList}\small\item\em Sets the network topology that all the individuals will follow for the simulation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_ad378b8850767df08d971e098b5d4dd8e}\label{class_a_i_example_1_1genetic_ad378b8850767df08d971e098b5d4dd8e}} 
+void {\bfseries set\+Fitness\+Function} (float($\ast$fitness\+Function)(unsigned int individual\+ID))
+\begin{DoxyCompactList}\small\item\em Sets the fitness function that will be used when training AI agents. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_a0f7d57540bca4a076f13945b0a964564}\label{class_a_i_example_1_1genetic_a0f7d57540bca4a076f13945b0a964564}} 
+void {\bfseries set\+Crossover\+Split\+Point} (unsigned int point)
+\begin{DoxyCompactList}\small\item\em Set the crossover operator\textquotesingle{}s split point. It is unused in implementation 1 of the crossover operator. Example\+: if we have a neural network with 5 hidden layers and the split point is set at point 2, the weights that connect the input layer (layer 0) to the first hidden layer (layer 1), the ones that connect the first hidden layer to the second hidden layer (layer 2) and the ones that connect the second hidden layer to the third hidden layer (layer 3) will be exchanged between the parents to create the new offspring. WARNING. Must be called before start\+Simulation(). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_ac473bf6e1ce21393ac904d3f5c05adf9}\label{class_a_i_example_1_1genetic_ac473bf6e1ce21393ac904d3f5c05adf9}} 
+void {\bfseries set\+Mutation\+Parameters} (float rate, float mutation\+Variation\+Min, float mutation\+Variation\+Max)
+\begin{DoxyCompactList}\small\item\em Set the mutation operator\textquotesingle{}s parameters WARNING. Must be called before start\+Simulation(). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_a9e9fcf6d5953b7e127bc2e53c9202c1d}\label{class_a_i_example_1_1genetic_a9e9fcf6d5953b7e127bc2e53c9202c1d}} 
+void {\bfseries set\+NThreads} (unsigned int n\+Jobs=0)
+\begin{DoxyCompactList}\small\item\em Set the number of thread that will parallelize the workload of various sections of the learning process that are computationally expensive. If n\+Jobs is set to 0, the number of jobs will be equal to the number returned by std\+::thread\+::hardware\+\_\+concurrency (this is the default value). WARNING. Must be called before start\+Simulation(). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_ace4af62bee747c8d1b08ded2a1655ce9}\label{class_a_i_example_1_1genetic_ace4af62bee747c8d1b08ded2a1655ce9}} 
+void {\bfseries train} (unsigned int n\+Epochs)
+\begin{DoxyCompactList}\small\item\em Begin the training process. WARNING. There cannot be two simulations running at the same time for the same \textquotesingle{}genetic\textquotesingle{} object. No individual data is saved by this method. A call to \mbox{\hyperlink{class_a_i_example_1_1genetic_a6393aaaddf5fc4293d8e7c4d5a333796}{genetic\+::gen\+Init\+Pop()}} must be made first to generate the initial population. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_ad0d20eed5c14c43f8c112d9adf5dcba3}\label{class_a_i_example_1_1genetic_ad0d20eed5c14c43f8c112d9adf5dcba3}} 
+void {\bfseries train} (unsigned int n\+Epochs, unsigned int n\+Epochs\+Per\+Save=0, unsigned int n\+Epochs\+For\+New\+World=0)
+\begin{DoxyCompactList}\small\item\em Begin the training process. WARNING. There cannot be two simulations running at the same time for the same \textquotesingle{}genetic\textquotesingle{} object. If \textquotesingle{}n\+Epochs\+Per\+Save\textquotesingle{} is 0, the individuals\textquotesingle{} data will be saved once all the epochs have been processed. If \textquotesingle{}n\+Epochs\+For\+New\+World\textquotesingle{} is 0, a new world will be generated per epoch. A call to \mbox{\hyperlink{class_a_i_example_1_1genetic_a6393aaaddf5fc4293d8e7c4d5a333796}{genetic\+::gen\+Init\+Pop()}} must be made first to generate the initial population. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_ab795a241c3ad327fb8cabe49827eb759}\label{class_a_i_example_1_1genetic_ab795a241c3ad327fb8cabe49827eb759}} 
+void {\bfseries test} (unsigned int n\+Epochs, float $\ast$\&output, unsigned int \&output\+Size, unsigned int n\+Epochs\+For\+New\+World=0)
+\begin{DoxyCompactList}\small\item\em Begin the testing process. The average fitness of all individuals is returned. The array\textquotesingle{}s size is equal to the number of individuals in this object\textquotesingle{}s population. If \textquotesingle{}n\+Epochs\+For\+New\+World\textquotesingle{} is 0, a new world will be generated per epoch. WARNING. Heap memory allocated in \textquotesingle{}output\textquotesingle{} must be freed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_a7a4ac402ab33bfd974ff9645afa3954c}\label{class_a_i_example_1_1genetic_a7a4ac402ab33bfd974ff9645afa3954c}} 
+void {\bfseries test} (unsigned int n\+Epochs)
+\begin{DoxyCompactList}\small\item\em Begin the testing process. Same as void genetic\+::test(unsigned int n\+Epochs, float$\ast$ output, unsigned int\& output\+Size) but without returning the average fitness of all individuals. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_a9a18dc0254e93a9b8858277fe109ddd9}\label{class_a_i_example_1_1genetic_a9a18dc0254e93a9b8858277fe109ddd9}} 
+void {\bfseries record} (const std\+::string \&record\+Name)
+\begin{DoxyCompactList}\small\item\em Performs one epoch without training and saves the world used for the epoch in \char`\"{}saves/recordings\+Worlds/\char`\"{} + AI game name + record\+Name + \char`\"{}.\+terrain\char`\"{} along with the recording of said epoch in \char`\"{}records/\char`\"{} + AI game name + record\+Name + \char`\"{}.\+rec\char`\"{}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_a471129d5835464ad13279ac38a458e2a}\label{class_a_i_example_1_1genetic_a471129d5835464ad13279ac38a458e2a}} 
+void {\bfseries save\+Individuals\+Data} (const std\+::string \&path)
+\begin{DoxyCompactList}\small\item\em Saves the current individuals stored in this \textquotesingle{}genetic\textquotesingle{} object to disk in the specified directory. The file extension \char`\"{}.\+aidata\char`\"{} is automatically appended to \textquotesingle{}path\textquotesingle{}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_afcce5cc614c220f5ea972ff3864fc9af}\label{class_a_i_example_1_1genetic_afcce5cc614c220f5ea972ff3864fc9af}} 
+int {\bfseries load\+Individuals\+Data} (const std\+::string \&path)
+\begin{DoxyCompactList}\small\item\em Loads the data directly from the specified file for being used in the simulation. WARNING. Replaces other individual data store on this object. Doesn\textquotesingle{}t load data and returns false if a file in \textquotesingle{}save\+Path\textquotesingle{} already exists. Loads data and returns true otherwise. Returns 0 and if the file specified in \textquotesingle{}save\+Path\textquotesingle{} is not found or could not be loaded properly. Otherwise it loads the individuals\textquotesingle{} data and returns the number of loaded individuals. The file extension \char`\"{}.\+aidata\char`\"{} is automatically appended to \textquotesingle{}path\textquotesingle{}. It will ask the user to specify a limit to the number of individuals to load from the file, if it is equal to 0 then all the individuals found in the file will be loaded. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_a52737655d28e972597e877d2d4c3112f}\label{class_a_i_example_1_1genetic_a52737655d28e972597e877d2d4c3112f}} 
+\mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}} \& {\bfseries individual} (unsigned int individual\+ID)
+\item 
+\mbox{\Hypertarget{class_a_i_example_1_1genetic_aff859c236b366cd92b456f719eb2ee92}\label{class_a_i_example_1_1genetic_aff859c236b366cd92b456f719eb2ee92}} 
+{\bfseries $\sim$genetic} ()
+\begin{DoxyCompactList}\small\item\em Class destructor. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manages everything related to the genetic algorithms part of the example AI game, including the training, testing and record generation processes as well as the implementation of the genetic operators and the modification of the neural networks that are associated with the individuals. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\+AI/\mbox{\hyperlink{genetic_8h}{genetic.\+h}}\item 
+code/\+AI/genetic.\+cpp\end{DoxyCompactItemize}

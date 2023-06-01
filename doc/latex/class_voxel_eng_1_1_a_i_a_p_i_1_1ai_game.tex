@@ -1,0 +1,349 @@
+\hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{}\doxysection{Voxel\+Eng\+::AIAPI\+::ai\+Game Class Reference}
+\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}\index{VoxelEng::AIAPI::aiGame@{VoxelEng::AIAPI::aiGame}}
+
+
+Manages all the general aspects of AI games and all the aspects of AI games that do not require training.  
+
+
+
+
+{\ttfamily \#include $<$AIAPI.\+h$>$}
+
+Inheritance diagram for Voxel\+Eng\+::AIAPI\+::ai\+Game\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a134bd672878d2689cac37dd5e1fc5b41}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a134bd672878d2689cac37dd5e1fc5b41}} 
+{\bfseries ai\+Game} ()
+\begin{DoxyCompactList}\small\item\em WARNING\+: calling \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{ai\+Game}}\textquotesingle{}s constructor or the constructor of any class that derives from \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{ai\+Game}} results in undefined behaviour. Use \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa86993a5085293e32ab0d2103d547cfc}{ai\+Game\+::register\+Game}} to create a new AI game object from any derived class. This constructor was made public because of the requirements of some used C++\textquotesingle{}s STL data structures. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4b89903410df7c2832fa4c9f6ad5c2e4}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4b89903410df7c2832fa4c9f6ad5c2e4}} 
+const std\+::string \& {\bfseries name} () const
+\begin{DoxyCompactList}\small\item\em Name used to identify the AI game uniquely. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a611fab249bfc8d3b72559d1d193d9db2}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a611fab249bfc8d3b72559d1d193d9db2}} 
+bool {\bfseries is\+Agent\+Registered} (agent\+ID agent\+ID) const
+\begin{DoxyCompactList}\small\item\em Returns true if the specified AI agent exists or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_adba3af56f9cfc44f3b7d3f9864f7f5f2}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_adba3af56f9cfc44f3b7d3f9864f7f5f2}} 
+bool {\bfseries entity\+Is\+Agent} (entity\+ID entity\+ID) const
+\begin{DoxyCompactList}\small\item\em Returns true if the specified entity is also an AI agent or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ae5331739c389189e5dd5919ded290b4b}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ae5331739c389189e5dd5919ded290b4b}} 
+unsigned int {\bfseries get\+Agent\+Entity\+ID} (agent\+ID agent\+ID) const
+\begin{DoxyCompactList}\small\item\em Get the AI agent\textquotesingle{}s entity ID. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ae36ac01c4bfc63eee20e0b5e5da99227}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ae36ac01c4bfc63eee20e0b5e5da99227}} 
+unsigned int {\bfseries get\+Entity\+Agent\+ID} (entity\+ID entity\+ID) const
+\begin{DoxyCompactList}\small\item\em Get the entity\textquotesingle{}s AI agent ID (assuming said entity is an AI agent, otherwise an exception will be thrown). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a20fc5e9985d80c3678d26828e24c12ca}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a20fc5e9985d80c3678d26828e24c12ca}} 
+{\footnotesize template$<$typename T $>$ }\\T {\bfseries get\+Param} (unsigned int index) const =delete
+\begin{DoxyCompactList}\small\item\em Get the value of one of the parameters read from the current AI action that is going to be played. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3ccf63db0bad6d2def4c7ccf4b35d09b}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3ccf63db0bad6d2def4c7ccf4b35d09b}} 
+template$<$$>$ int {\bfseries get\+Param} (unsigned int index) const
+\begin{DoxyCompactList}\small\item\em Get the value of one of the parameters read from the current AI action that is going to be played. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8cda3657a4f55d96bc3060bd904a1536}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8cda3657a4f55d96bc3060bd904a1536}} 
+template$<$$>$ unsigned int {\bfseries get\+Param} (unsigned int index) const
+\begin{DoxyCompactList}\small\item\em Get the value of one of the parameters read from the current AI action that is going to be played. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a957a9353a7ba95cc123541525cc08219}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a957a9353a7ba95cc123541525cc08219}} 
+template$<$$>$ float {\bfseries get\+Param} (unsigned int index) const
+\begin{DoxyCompactList}\small\item\em Get the value of one of the parameters read from the current AI action that is going to be played. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4f19889201fed492fa40eda4e72149d5}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4f19889201fed492fa40eda4e72149d5}} 
+template$<$$>$ char {\bfseries get\+Param} (unsigned int index) const
+\begin{DoxyCompactList}\small\item\em Get the value of one of the parameters read from the current AI action that is going to be played. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_acf38ab44e2f0cd289b97fb4521016c86}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_acf38ab44e2f0cd289b97fb4521016c86}} 
+template$<$$>$ bool {\bfseries get\+Param} (unsigned int index) const
+\begin{DoxyCompactList}\small\item\em Get the value of one of the parameters read from the current AI action that is going to be played. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a18e54295498a729a27109e66c02c0881}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a18e54295498a729a27109e66c02c0881}} 
+template$<$$>$ block {\bfseries get\+Param} (unsigned int index) const
+\begin{DoxyCompactList}\small\item\em Get the value of one of the parameters read from the current AI action that is going to be played. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a859c6764c6ac7178585ff635222a0413}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a859c6764c6ac7178585ff635222a0413}} 
+template$<$$>$ \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} {\bfseries get\+Param} (unsigned int index) const
+\begin{DoxyCompactList}\small\item\em Get the value of one of the parameters read from the current AI action that is going to be played. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8d8b7534897162be21fc33fe94a6c782}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8d8b7534897162be21fc33fe94a6c782}} 
+bool {\bfseries has\+Modified\+Level} (agent\+ID agent\+ID) const
+\begin{DoxyCompactList}\small\item\em Returns true if the AI agent has made modifications to its copy of the original level that is being used in the AI game or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a0c3413fb92c2f3a49efe0bbcfe7785fe}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a0c3413fb92c2f3a49efe0bbcfe7785fe}} 
+bool {\bfseries record\+Agent\+Modified\+Blocks} () const
+\begin{DoxyCompactList}\small\item\em Returns true if the recording of the AI agents\textquotesingle{} modifications of the level\textquotesingle{}s terrain is enabled or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_af82c44e00a233c6400efb267cce3cc6a}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_af82c44e00a233c6400efb267cce3cc6a}} 
+void {\bfseries generate\+AIWorld} (const std\+::string \&path=\char`\"{}\char`\"{})
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa96112932a96298959eebdea2529eb7e}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa96112932a96298959eebdea2529eb7e}} 
+void {\bfseries select\+AIworld} (unsigned int individual\+ID)
+\begin{DoxyCompactList}\small\item\em Get block and set block operations in the chunk manager system will now be performed on the AI world/level of AI agent with ID \textquotesingle{}individual\+ID\textquotesingle{}. AI mode must be turned on in the chunk manager system. WARNING. This method is not thread safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1f0febc8a123d529a297cca6029615be}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1f0febc8a123d529a297cca6029615be}} 
+void {\bfseries select\+Original\+World} ()
+\begin{DoxyCompactList}\small\item\em ONLY get block operations in the chunk manager system will now be performed on the original copy of the level that is being used for the AI game. AI mode must be turned on in the chunk manager system. Set block operations will use the latest AI world selected (the one corresponding to the AI agent with ID 0 by default). WARNING. This method is not thread safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ae093e95b3f3a67d467cbdda7bcc47264}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ae093e95b3f3a67d467cbdda7bcc47264}} 
+void {\bfseries record\+Action} (const std\+::string \&action\+Name, std\+::initializer\+\_\+list$<$ \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1agent_action_arg}{agent\+Action\+Arg}} $>$ args)
+\begin{DoxyCompactList}\small\item\em Record an AI action performed by an AI agent. WARNING. The recording flag must be set to true before recording an action. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab627553b39e440832bd0ebfc19361f7e}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab627553b39e440832bd0ebfc19361f7e}} 
+block {\bfseries get\+Last\+Modified\+Block} (agent\+ID agent\+ID, bool pop\+Block=false)
+\begin{DoxyCompactList}\small\item\em Get the last modified block ID by the specified AI agent. The caller may also optionally pop that ID out of the ordered list of the modified block IDs by said agent. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a17bb2ab67db4dbe3dfd9c4453e104ff6}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a17bb2ab67db4dbe3dfd9c4453e104ff6}} 
+block {\bfseries get\+First\+Modified\+Block} (agent\+ID agent\+ID, bool pop\+Block=false)
+\begin{DoxyCompactList}\small\item\em Get the first modified block ID by the specified AI agent. The caller may also optionally pop that ID out of the ordered list of the modified block IDs by said agent. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_af5bc26f7c838ff40480733fdba4fd11a}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_af5bc26f7c838ff40480733fdba4fd11a}} 
+void {\bfseries init\+Block\+Mod\+Recording} ()
+\begin{DoxyCompactList}\small\item\em Begin the recording of the AI agents\textquotesingle{} modifications done to the level\textquotesingle{}s terrain. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a67dd19d165ffd02c1750418a90ae325e}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a67dd19d165ffd02c1750418a90ae325e}} 
+void {\bfseries clear\+Block\+Mod\+Recording} ()
+\begin{DoxyCompactList}\small\item\em Stop the recording of the AI agents\textquotesingle{} modifications done to the level\textquotesingle{}s terrain and clear the modification lists of all the registered agents. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8980def03a3059c58abfdad69e356cb5}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8980def03a3059c58abfdad69e356cb5}} 
+block {\bfseries get\+Modified\+Block} (entity\+ID entity\+ID, unsigned int block\+Index)
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6c7821ce83969c86b61a01c60e5a6976}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6c7821ce83969c86b61a01c60e5a6976}} 
+\mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} {\bfseries get\+Block\+View\+Dir} (agent\+ID agent\+ID)
+\begin{DoxyCompactList}\small\item\em Get the Block View Direction (BVD) of the specified AI agent. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8ba6bcc94d172ec6c29f8c26831a5618}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8ba6bcc94d172ec6c29f8c26831a5618}} 
+block {\bfseries set\+Block} (entity\+ID entity\+ID, const vec3 \&pos, block block\+ID, bool record)
+\begin{DoxyCompactList}\small\item\em Performs a modification of a terrain block and associates that modification to a specified entity. Block ID 0 equals no block or empty/null block. Returns the old ID of the modified block. WARNING. Select the proper level you want to access with \char`\"{}ai\+Game\+::select\+AIWorld()\char`\"{} or \char`\"{}ai\+Game\+::select\+Original\+World()\char`\"{} before calling this method. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1e1d6a8336e49c3aba5201ce9d40cce4}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1e1d6a8336e49c3aba5201ce9d40cce4}} 
+block {\bfseries set\+Block} (entity\+ID entity\+ID, int x, int y, int z, block block\+ID, bool record)
+\begin{DoxyCompactList}\small\item\em Performs a modification of a terrain block and associates that modification to a specified entity. Block ID 0 equals no block or empty/null block. Returns the old ID of the modified block. WARNING. Select the proper level you want to access with \char`\"{}ai\+Game\+::select\+AIWorld()\char`\"{} or \char`\"{}ai\+Game\+::select\+Original\+World()\char`\"{} before calling this method. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a5f6db48b606d57ada1524532920a4bec}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a5f6db48b606d57ada1524532920a4bec}} 
+std\+::vector$<$ block $>$ {\bfseries get\+Blocks\+Box} (const vec3 \&pos1, const vec3 \&pos2)
+\begin{DoxyCompactList}\small\item\em Get all blocks in the world that are in the box defined with the positions pos1 and pos2. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_acd58ed7a94635bf328ce1bbc260dbe66}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_acd58ed7a94635bf328ce1bbc260dbe66}} 
+std\+::vector$<$ block $>$ {\bfseries get\+Blocks\+Box} (int x1, int y1, int z1, int x2, int y2, int z2)
+\begin{DoxyCompactList}\small\item\em Get all blocks in the world that are in the box defined with the positions pos1 and pos2. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a2caa3bb6a8f8fee253741502f43afefa}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a2caa3bb6a8f8fee253741502f43afefa}} 
+void {\bfseries move\+Entity} (entity\+ID entity\+ID, const vec3 \&movement)
+\begin{DoxyCompactList}\small\item\em Performs agent.\+pos() += movement;. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3e0b10c0ff2d7f993abe8209bca87cf0}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3e0b10c0ff2d7f993abe8209bca87cf0}} 
+void {\bfseries move\+Entity} (entity\+ID entity\+ID, int x, int y, int z)
+\begin{DoxyCompactList}\small\item\em Performs agent.\+pos() += vec3(x, y, z);. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab890985bd3ee2b92c16c5cd6e89f101d}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab890985bd3ee2b92c16c5cd6e89f101d}} 
+void {\bfseries set\+Entity\+Pos} (unsigned entity\+ID, const vec3 \&pos)
+\begin{DoxyCompactList}\small\item\em Performs agent.\+pos() = pos;. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3183dbf496fa499c5c44bc9877784418}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3183dbf496fa499c5c44bc9877784418}} 
+void {\bfseries set\+Entity\+Pos} (unsigned entity\+ID, int x, int y, int z)
+\begin{DoxyCompactList}\small\item\em Performs agent.\+pos() = vec3(x, y, z);. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aecdf991ca323368f686e9b2ab30df07b}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aecdf991ca323368f686e9b2ab30df07b}} 
+void {\bfseries rotate\+Agent\+View\+Dir} (agent\+ID agent\+ID, \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} direction)
+\begin{DoxyCompactList}\small\item\em Rotate the AI agent\textquotesingle{}s viewing direction and rotate it\textquotesingle{}s model to represent graphically where it is now looking at. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6ce8be74b405c29d7087f1f647c7c75b}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6ce8be74b405c29d7087f1f647c7c75b}} 
+void {\bfseries rotate\+Entity} (entity\+ID entity\+ID, const vec3 \&rot)
+\begin{DoxyCompactList}\small\item\em Rotates an entity. AI agents\textquotesingle{} view direction cannot be rotated with this method, use \char`\"{}ai\+Game\+::rotate\+Agent\+View\+Dir()\char`\"{} instead. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a70f9a7336dbe60b6a95ad335139f377f}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a70f9a7336dbe60b6a95ad335139f377f}} 
+void {\bfseries rotate\+Entity} (unsigned entity\+ID, float rotX, float rotY, float rotZ)
+\begin{DoxyCompactList}\small\item\em Rotates an entity. AI agents\textquotesingle{} view direction cannot be rotated with this method, use \char`\"{}ai\+Game\+::rotate\+Agent\+View\+Dir()\char`\"{} instead. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a62e4f7fa78d797a745eb8720f1bf30fe}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a62e4f7fa78d797a745eb8720f1bf30fe}} 
+void {\bfseries inverse\+Rotate\+Entity} (unsigned entity\+ID, const vec3 \&rot)
+\begin{DoxyCompactList}\small\item\em Inversely rotates an entity. AI agents\textquotesingle{} view direction cannot be rotated with this method, use \char`\"{}ai\+Game\+::rotate\+Agent\+View\+Dir()\char`\"{} instead. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ad3035ea5e6e9b7c82dc573ca66fa91ce}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ad3035ea5e6e9b7c82dc573ca66fa91ce}} 
+void {\bfseries inverse\+Rotate\+Entity} (unsigned entity\+ID, float rotX, float rotY, float rotZ)
+\begin{DoxyCompactList}\small\item\em Inversely rotates an entity. AI agents\textquotesingle{} view direction cannot be rotated with this method, use \char`\"{}ai\+Game\+::rotate\+Agent\+View\+Dir()\char`\"{} instead. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ad483d93fd23c87c8742fa72322c42e81}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ad483d93fd23c87c8742fa72322c42e81}} 
+unsigned int {\bfseries create\+Entity} (unsigned int entity\+Type\+ID, const vec3 \&pos, const vec3 \&rot)
+\begin{DoxyCompactList}\small\item\em Create an entity with its model determined by \char`\"{}entity\+Type\+ID\char`\"{}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6181c7a8fc1d3aee2e599638a60397e3}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6181c7a8fc1d3aee2e599638a60397e3}} 
+unsigned int {\bfseries create\+Entity} (unsigned int entity\+Type\+ID, int posX, int posY, int posZ, float rotX, float rotY, float rotZ)
+\begin{DoxyCompactList}\small\item\em Create an entity with its model determined by \char`\"{}entity\+Type\+ID\char`\"{}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a10ae3b97931c5f2e2d725d05e2a7583e}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a10ae3b97931c5f2e2d725d05e2a7583e}} 
+unsigned int {\bfseries create\+Agent} (unsigned int entity\+Type\+ID, const vec3 \&pos, \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} face\+View\+Dir=block\+View\+Dir\+::\+PLUSX)
+\begin{DoxyCompactList}\small\item\em Create an AI agent with its model determined by \char`\"{}entity\+Type\+ID\char`\"{}. This only creates the representation of said AI agent in the system and in graphical form, without the AI implementation part. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ace7f967c14d55f195d9ad3f788d98628}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ace7f967c14d55f195d9ad3f788d98628}} 
+unsigned int {\bfseries create\+Agent} (unsigned int entity\+Type\+ID, int x, int y, int z, \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} face\+View\+Dir=block\+View\+Dir\+::\+PLUSX)
+\begin{DoxyCompactList}\small\item\em Create an AI agent with its model determined by \char`\"{}entity\+Type\+ID\char`\"{}. This only creates the representation of said AI agent in the system and in graphical form, without the AI implementation part. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a2455541f93c3a3acb78e16693a79c2fa}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a2455541f93c3a3acb78e16693a79c2fa}} 
+vec3 {\bfseries get\+Entity\+Pos} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em Get the entity\textquotesingle{}s global position in the level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a59f05ce008e6f71dfa7ed73bc1fe9819}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a59f05ce008e6f71dfa7ed73bc1fe9819}} 
+void {\bfseries change\+Entity\+Active\+State} (entity\+ID entity\+ID, bool state)
+\begin{DoxyCompactList}\small\item\em Change the entity\textquotesingle{}s active state. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a9596654e0561a62cf4e73e9765ae345e}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a9596654e0561a62cf4e73e9765ae345e}} 
+void {\bfseries delete\+Entity} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em Delete an entity. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3dfa19934ec8c1a875e3bf69eea7cc20}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3dfa19934ec8c1a875e3bf69eea7cc20}} 
+void {\bfseries delete\+Agent} (agent\+ID agent\+ID)
+\begin{DoxyCompactList}\small\item\em Delete an AI agent. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a39fbde582bbd5131bf3e10c32310acf6}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a39fbde582bbd5131bf3e10c32310acf6}} 
+void {\bfseries play\+Record\+Tick} ()
+\begin{DoxyCompactList}\small\item\em The implementation of the tick function that executes the next AI action from the record file each time a determined amount of ticks have passed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3ccf63db0bad6d2def4c7ccf4b35d09b}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3ccf63db0bad6d2def4c7ccf4b35d09b}} 
+template$<$$>$ int {\bfseries get\+Param} (unsigned int index) const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8cda3657a4f55d96bc3060bd904a1536}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8cda3657a4f55d96bc3060bd904a1536}} 
+template$<$$>$ unsigned int {\bfseries get\+Param} (unsigned int index) const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a957a9353a7ba95cc123541525cc08219}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a957a9353a7ba95cc123541525cc08219}} 
+template$<$$>$ float {\bfseries get\+Param} (unsigned int index) const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4f19889201fed492fa40eda4e72149d5}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4f19889201fed492fa40eda4e72149d5}} 
+template$<$$>$ char {\bfseries get\+Param} (unsigned int index) const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_acf38ab44e2f0cd289b97fb4521016c86}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_acf38ab44e2f0cd289b97fb4521016c86}} 
+template$<$$>$ bool {\bfseries get\+Param} (unsigned int index) const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a18e54295498a729a27109e66c02c0881}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a18e54295498a729a27109e66c02c0881}} 
+template$<$$>$ block {\bfseries get\+Param} (unsigned int index) const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a859c6764c6ac7178585ff635222a0413}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a859c6764c6ac7178585ff635222a0413}} 
+template$<$$>$ \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} {\bfseries get\+Param} (unsigned int index) const
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_abca3af31c5f5400ba11eb6339780a733}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_abca3af31c5f5400ba11eb6339780a733}} 
+static void {\bfseries init} ()
+\begin{DoxyCompactList}\small\item\em Initialise the management system. Allocate any resources that are needed on initialisation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a40174611804b23771a4d3fd29975cd5c}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a40174611804b23771a4d3fd29975cd5c}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{ai\+Game}} $\ast$ {\bfseries selected\+Game} ()
+\begin{DoxyCompactList}\small\item\em Returns the currently loaded and selected AI game. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a27c9d7408015ff41259ee16d03f5ecaa}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a27c9d7408015ff41259ee16d03f5ecaa}} 
+static const std\+::string \& {\bfseries record\+Filename} ()
+\begin{DoxyCompactList}\small\item\em Returns the name of the last specified recording file (even if it is being written at the moment). Does not include the path or the extension of said file. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa8a0a5615124b0af74af0056d6cf86c7}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa8a0a5615124b0af74af0056d6cf86c7}} 
+static bool {\bfseries recording} ()
+\begin{DoxyCompactList}\small\item\em Returns true if the engine is currently recording an AI game match and false if otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a972af3a73b389a9cbe1b936909c2bdaf}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a972af3a73b389a9cbe1b936909c2bdaf}} 
+static bool {\bfseries playing\+Record} ()
+\begin{DoxyCompactList}\small\item\em Returns true if the engine is currently playing an AI game match record and false if otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a07716c35f1aa85e38b8fd6b737f6d26d}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a07716c35f1aa85e38b8fd6b737f6d26d}} 
+static bool {\bfseries playing\+Record\+Forward} ()
+\begin{DoxyCompactList}\small\item\em Returns true if the engine is currently playing an AI game match record in forward mode and false if otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6b12f1f548fc73d492543ff698f30f01}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6b12f1f548fc73d492543ff698f30f01}} 
+static bool {\bfseries record\+Paused} ()
+\begin{DoxyCompactList}\small\item\em Returns true if the AI game match\textquotesingle{}s record playback is paused and false if otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa86993a5085293e32ab0d2103d547cfc}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa86993a5085293e32ab0d2103d547cfc}} 
+{\footnotesize template$<$class T $>$ \newline
+requires std\+::derived\+\_\+from$<$T, \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{ai\+Game}}$>$}\\static void {\bfseries register\+Game} (const std\+::string \&game\+Name)
+\begin{DoxyCompactList}\small\item\em Register an instance of a \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{ai\+Game}}\textquotesingle{} object (or an object from a class that derives from \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{ai\+Game}}\textquotesingle{}) to use it when generating new chunks in levels. \textquotesingle{}T\textquotesingle{} is the class that either is \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{ai\+Game}}\textquotesingle{} or a class that derives from \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{ai\+Game}}\textquotesingle{}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a7e06b3c2816f8d4853be9550162e7750}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a7e06b3c2816f8d4853be9550162e7750}} 
+static void {\bfseries select\+Game} (const std\+::string \&game\+Name)
+\begin{DoxyCompactList}\small\item\em Select one registered AI game to load and mark as the currently selected AI game. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a819fe8b201f722d5e3336a502a4658ec}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a819fe8b201f722d5e3336a502a4658ec}} 
+static void {\bfseries select\+Game} (unsigned int index)
+\begin{DoxyCompactList}\small\item\em Select the \textquotesingle{}index\textquotesingle{}º registered AI game. \textquotesingle{}index\textquotesingle{} begins at 0 and the AI games are sorted in the order they were registered. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a611697f37b3ad37000c574c0faeaecc5}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a611697f37b3ad37000c574c0faeaecc5}} 
+static void {\bfseries start\+Game} ()
+\begin{DoxyCompactList}\small\item\em Starts the currently loaded and selected AI game. WARNING. There must be an AI game previously loaded using \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a7e06b3c2816f8d4853be9550162e7750}{ai\+Game\+::select\+Game()}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a042c6cde5e9fea5c84e40ea4c39a8975}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a042c6cde5e9fea5c84e40ea4c39a8975}} 
+static void {\bfseries finish\+Game} ()
+\begin{DoxyCompactList}\small\item\em Finishes the currently loaded, selected and started AI game. WARNING. There must be an AI game previously loaded using \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a7e06b3c2816f8d4853be9550162e7750}{ai\+Game\+::select\+Game()}} and it must have been started previosuly using \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a611697f37b3ad37000c574c0faeaecc5}{ai\+Game\+::start\+Game()}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a5f6ca864870f2fc1d9a820ae86d65cbf}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a5f6ca864870f2fc1d9a820ae86d65cbf}} 
+static unsigned int {\bfseries list\+AIGames} ()
+\begin{DoxyCompactList}\small\item\em Display all registered AI games in the standard output for selection. Returns the number of registered AI games. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aeb54b8bfcaf7b6765fcb6a06397c5438}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aeb54b8bfcaf7b6765fcb6a06397c5438}} 
+static void {\bfseries change\+Record\+Play\+Mode} (\mbox{\hyperlink{_a_i_a_p_i_8h_ae762db48ef500f736f7460e77249c24e}{record\+Play\+Mode}} mode)
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_adaa605740e045ba3ed85b6d7f8dd6086}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_adaa605740e045ba3ed85b6d7f8dd6086}} 
+static void {\bfseries stop\+Playing\+Record} ()
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa7944410244fef8e418e30ceebddd2cb}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa7944410244fef8e418e30ceebddd2cb}} 
+static void {\bfseries register\+Action} (const std\+::string \&action\+Name, const \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action}{AIagent\+Action}} \&action)
+\begin{DoxyCompactList}\small\item\em Register an AI action with its unique name to identify it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a9bc40c8f2e4f9389cb34a8531c1a6113}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a9bc40c8f2e4f9389cb34a8531c1a6113}} 
+static bool {\bfseries is\+In\+World} (const Voxel\+Eng\+::vec3 \&pos)
+\begin{DoxyCompactList}\small\item\em Check if a block coordinate is withing the level\textquotesingle{}s limits. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa11869457685051bed770978386440db}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa11869457685051bed770978386440db}} 
+static bool {\bfseries is\+In\+World} (int x, int y, int z)
+\begin{DoxyCompactList}\small\item\em Check if a block coordinate is withing the level\textquotesingle{}s limits. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a161245fd8bcd7585ebeede6408280c6c}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a161245fd8bcd7585ebeede6408280c6c}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em Clean heap memory allocated by this system. More precisely, it cleans the heap memory allocated with registered AI games. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa86993a5085293e32ab0d2103d547cfc}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa86993a5085293e32ab0d2103d547cfc}} 
+{\footnotesize template$<$class T $>$ \newline
+requires std\+::derived\+\_\+from$<$T, \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{ai\+Game}}$>$}\\static void {\bfseries register\+Game} (const std\+::string \&game\+Name)
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a2aa3aaa33d16363e779f37ecd12dd1e3}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a2aa3aaa33d16363e779f37ecd12dd1e3}} 
+virtual void {\bfseries general\+Set\+Up\+\_\+} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a721fc704fd129277ba5ef288cbf96688}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a721fc704fd129277ba5ef288cbf96688}} 
+virtual void {\bfseries display\+Menu\+\_\+} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a18bd8aed0b748d9fe612dbcf4350752b}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a18bd8aed0b748d9fe612dbcf4350752b}} 
+virtual void {\bfseries set\+Up\+Test\+\_\+} (unsigned int n\+Agents, unsigned int n\+Epochs)=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4850a3d9b125848e7d44eb4e64209877}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4850a3d9b125848e7d44eb4e64209877}} 
+virtual void {\bfseries test\+\_\+} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a96bdf1fa0f4ce8532619f52b6e897451}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a96bdf1fa0f4ce8532619f52b6e897451}} 
+virtual void {\bfseries set\+Up\+Record\+\_\+} (unsigned int n\+Agents)=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa45dfdd70c92f4aaa29cc644658dbfd2}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa45dfdd70c92f4aaa29cc644658dbfd2}} 
+virtual void {\bfseries record\+\_\+} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4a343bc12ee65045d98806e85558463e}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4a343bc12ee65045d98806e85558463e}} 
+virtual void {\bfseries spawn\+Agents\+\_\+} (unsigned int n\+Agents)=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3911ae3c4376054970fdcb61935a50c7}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3911ae3c4376054970fdcb61935a50c7}} 
+virtual void {\bfseries clean\+Up\+Game\+\_\+} ()=0
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1fb079b902381318379e0a907cda2870}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1fb079b902381318379e0a907cda2870}} 
+virtual void {\bfseries clean\+Up\+Match\+\_\+} ()=0
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1e4a5ab082abe61ca001dbedae7f0705}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1e4a5ab082abe61ca001dbedae7f0705}} 
+static unsigned int {\bfseries generate\+Record\+\_\+} (const std\+::string \&path, const std\+::string \&filename)
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a35ce8a8b83a4ca4e36fd6a223f6156d9}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a35ce8a8b83a4ca4e36fd6a223f6156d9}} 
+static unsigned int {\bfseries play\+Record\+\_\+} (const std\+::string \&path)
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a7d69b1ed3fcdf684e3388e703f8e8154}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a7d69b1ed3fcdf684e3388e703f8e8154}} 
+std\+::string {\bfseries name\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aaf337a385c04f9d390df9ec11c2e6404}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aaf337a385c04f9d390df9ec11c2e6404}} 
+std\+::unordered\+\_\+set$<$ entity\+ID $>$ {\bfseries entity\+IDIs\+Agent}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_afedbd77d98011cb2ecbfea718f5070f2}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_afedbd77d98011cb2ecbfea718f5070f2}} 
+std\+::vector$<$ agent\+ID $>$ {\bfseries AIagent\+Entity\+ID\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a0841893557f0f8f0db45236e7947fb5c}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a0841893557f0f8f0db45236e7947fb5c}} 
+std\+::vector$<$ \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} $>$ {\bfseries AIagent\+Look\+Direction\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1506c11abe8385f2fcf056bdc7cc01fb}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1506c11abe8385f2fcf056bdc7cc01fb}} 
+std\+::unordered\+\_\+set$<$ agent\+ID $>$ {\bfseries free\+AIagent\+ID\+\_\+}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a0fe7daf48d790194d8491eae81b147c7}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a0fe7daf48d790194d8491eae81b147c7}} 
+static std\+::atomic$<$ bool $>$ {\bfseries recording\+\_\+} = false
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a76cc5ebc0099807d60e06604e3f2e705}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a76cc5ebc0099807d60e06604e3f2e705}} 
+static std\+::atomic$<$ bool $>$ {\bfseries record\+Agent\+Modified\+Blocks\+\_\+} = false
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a51c82f4a9e4dcbfe4f697d1780728311}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a51c82f4a9e4dcbfe4f697d1780728311}} 
+static std\+::atomic$<$ bool $>$ {\bfseries game\+In\+Progress\+\_\+} = false
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab517837a8e174ad239097d4b7ad5e2a9}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab517837a8e174ad239097d4b7ad5e2a9}} 
+static std\+::ofstream {\bfseries save\+File\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_af284235bfcb3b529ea22cfb4c05c2c47}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_af284235bfcb3b529ea22cfb4c05c2c47}} 
+static std\+::string {\bfseries save\+Data\+Buffer\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a777dbcc00671bb93c88d239e0d5ad7f9}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a777dbcc00671bb93c88d239e0d5ad7f9}} 
+static std\+::string {\bfseries save\+File\+Name\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab665803d044663f5d28754ac331de410}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab665803d044663f5d28754ac331de410}} 
+static \mbox{\hyperlink{_a_i_a_p_i_8h_ae762db48ef500f736f7460e77249c24e}{record\+Play\+Mode}} {\bfseries record\+Play\+Mode\+\_\+} = record\+Play\+Mode\+::\+FORWARD
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa3a4eff3c48673fcdfca450076e67dc7}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa3a4eff3c48673fcdfca450076e67dc7}} 
+static std\+::vector$<$ std\+::deque$<$ block $>$ $>$ {\bfseries agent\+Modified\+Blocks\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a7d8cdcca51a9f35a94d4f9222ed568d0}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a7d8cdcca51a9f35a94d4f9222ed568d0}} 
+static std\+::list$<$ entity\+ID $>$ {\bfseries entity\+IDcreation\+Order\+\_\+}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa49b1e8e09a86b26f3ba5ac41382ebfe}\label{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa49b1e8e09a86b26f3ba5ac41382ebfe}} 
+static std\+::list$<$ agent\+ID $>$ {\bfseries agent\+IDcreation\+Order\+\_\+}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manages all the general aspects of AI games and all the aspects of AI games that do not require training. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{_a_i_a_p_i_8h}{AIAPI.\+h}}\item 
+code/AIAPI.\+cpp\end{DoxyCompactItemize}

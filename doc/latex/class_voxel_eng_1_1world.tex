@@ -1,0 +1,50 @@
+\hypertarget{class_voxel_eng_1_1world}{}\doxysection{Voxel\+Eng\+::world Class Reference}
+\label{class_voxel_eng_1_1world}\index{VoxelEng::world@{VoxelEng::world}}
+
+
+Worlds are the greatest level of terrain organization in the engine and are a synonym of level. This class provides capalities that apply globally to an entire world in this engine.  
+
+
+
+
+{\ttfamily \#include $<$world.\+h$>$}
+
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_a756fdfc03044435127a9d96b104ebf2a}\label{class_voxel_eng_1_1world_a756fdfc03044435127a9d96b104ebf2a}} 
+static void {\bfseries init} ()
+\begin{DoxyCompactList}\small\item\em Initialise the class\textquotesingle{}s static members and allocated any resources that are required on initialisation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_a4a1f36528b31c888fae157d89fd971a7}\label{class_voxel_eng_1_1world_a4a1f36528b31c888fae157d89fd971a7}} 
+static void {\bfseries set\+Skybox} (const \mbox{\hyperlink{world_8h_a26a0f71865c5345dfc629c4e5b0039cf}{skybox}} \&\mbox{\hyperlink{world_8h_a26a0f71865c5345dfc629c4e5b0039cf}{skybox}})
+\begin{DoxyCompactList}\small\item\em Set the level\textquotesingle{}s skybox. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_a24a539fc0c788756b8fbd64abb68ef38}\label{class_voxel_eng_1_1world_a24a539fc0c788756b8fbd64abb68ef38}} 
+static void {\bfseries add\+Global\+Tick\+Function} (const std\+::string \&name, tick\+Func func, bool active=true)
+\begin{DoxyCompactList}\small\item\em Add a global tick function to the level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_a729156a0a987c884924aac7fec5f8d16}\label{class_voxel_eng_1_1world_a729156a0a987c884924aac7fec5f8d16}} 
+static void {\bfseries change\+State\+Global\+Tick\+Function} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Change the active state of a global tick function registered in the level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_a097a27e706096edb6baf065e56966775}\label{class_voxel_eng_1_1world_a097a27e706096edb6baf065e56966775}} 
+static void {\bfseries change\+State\+Global\+Tick\+Function} (const std\+::string \&name, bool active)
+\begin{DoxyCompactList}\small\item\em Change the active state of a global tick function registered in the level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_a47c5dbdffa4bd680168ce811512f52f3}\label{class_voxel_eng_1_1world_a47c5dbdffa4bd680168ce811512f52f3}} 
+static void {\bfseries delete\+Global\+Tick\+Function} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Delete a global tick function registered in the level. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_a2f432ae52ba40babb6f8b38c1a2d63e7}\label{class_voxel_eng_1_1world_a2f432ae52ba40babb6f8b38c1a2d63e7}} 
+static void {\bfseries process\+World\+Ticks} ()
+\begin{DoxyCompactList}\small\item\em Method to provide the capability of processing the global and entity ticks of the world to a worker thread that is not created inside this method. Effectively will call \mbox{\hyperlink{class_voxel_eng_1_1world_acf450563ffe17762f0b4a48fb2109303}{world\+::process\+Global\+Tick\+Functions()}} and the entity tick functions counterpart of this method. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_acf450563ffe17762f0b4a48fb2109303}\label{class_voxel_eng_1_1world_acf450563ffe17762f0b4a48fb2109303}} 
+static void {\bfseries process\+Global\+Tick\+Functions} ()
+\begin{DoxyCompactList}\small\item\em Method to provide the capability of processing the global ticks of the world to a worker thread that is not created inside this method. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1world_a530a54107015dd58b5c8e4391b9363ca}\label{class_voxel_eng_1_1world_a530a54107015dd58b5c8e4391b9363ca}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em Deinitialise the class\textquotesingle{}s static members and free any resources allocated by them. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Worlds are the greatest level of terrain organization in the engine and are a synonym of level. This class provides capalities that apply globally to an entire world in this engine. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{world_8h}{world.\+h}}\item 
+code/world.\+cpp\end{DoxyCompactItemize}

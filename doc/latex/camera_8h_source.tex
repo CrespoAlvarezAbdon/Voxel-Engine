@@ -1,0 +1,337 @@
+\hypertarget{camera_8h_source}{}\doxysection{camera.\+h}
+\label{camera_8h_source}\index{code/camera.h@{code/camera.h}}
+\mbox{\hyperlink{camera_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_CAMERA\_}}
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#define \_VOXELENG\_CAMERA\_}}
+\DoxyCodeLine{11 }
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{13 }
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <GL/glew.h>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <GLFW/glfw3.h>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <gtx/quaternion.hpp>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <gtx/rotate\_vector.hpp>}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include <glm.hpp>}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{21 }
+\DoxyCodeLine{22 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{chunk_8h}{chunk.h}}"{}}}
+\DoxyCodeLine{24 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{game_window_8h}{gameWindow.h}}"{}}}
+\DoxyCodeLine{25 }
+\DoxyCodeLine{26 }
+\DoxyCodeLine{27 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{28 }
+\DoxyCodeLine{29 }
+\DoxyCodeLine{31     \textcolor{comment}{//Forward declarations.//}}
+\DoxyCodeLine{33 \textcolor{comment}{}}
+\DoxyCodeLine{34     \textcolor{keyword}{class }chunk;}
+\DoxyCodeLine{35     \textcolor{keyword}{class }chunkManager;}
+\DoxyCodeLine{36     \textcolor{keyword}{class }window;}
+\DoxyCodeLine{37 }
+\DoxyCodeLine{38 }
+\DoxyCodeLine{40     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{42 \textcolor{comment}{}}
+\DoxyCodeLine{49     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}} \{}
+\DoxyCodeLine{50 }
+\DoxyCodeLine{51     \textcolor{keyword}{public}:}
+\DoxyCodeLine{52 }
+\DoxyCodeLine{53         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{54 }
+\DoxyCodeLine{59         \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}(\textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1camera_ade6c872cab0ef6237066ae61775822c5}{FOV}}, \textcolor{keywordtype}{float} zNear, \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1camera_a9367aa50946c31c339751ddbfbf7ef56}{zFar}}, \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}\& \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}, \textcolor{keywordtype}{bool} isPlayerCamera,}
+\DoxyCodeLine{60                \textcolor{keyword}{const} vec3\& position = vec3(0.0f, 0.0f, 0.0f), \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a90d7aa49d46e76b6eb4c75a07f740fcc}{direction}} = vec3(0.0f, 0.0f, 0.0f));}
+\DoxyCodeLine{61 }
+\DoxyCodeLine{62 }
+\DoxyCodeLine{63         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{64 }
+\DoxyCodeLine{68         \textcolor{keyword}{static} \textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}* \mbox{\hyperlink{class_voxel_eng_1_1camera_acaef7f6d0eb2ac79bb46fcff4bf1cce7}{cPlayerCamera}}();}
+\DoxyCodeLine{69 }
+\DoxyCodeLine{73         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1camera_ade6c872cab0ef6237066ae61775822c5}{FOV}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{74 }
+\DoxyCodeLine{79         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1camera_a9367aa50946c31c339751ddbfbf7ef56}{zFar}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{80 }
+\DoxyCodeLine{84         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1camera_a21502404bed9ab53a56936b6c1c9970e}{mouseSensibility}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{85 }
+\DoxyCodeLine{89         \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1camera_a60423d6635ccba15e754567033826389}{movementSpeed}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{90 }
+\DoxyCodeLine{94         \textcolor{keyword}{const} glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_ae76489427f45df2fa0e7fdd7ca99a7e1}{projectionMatrix}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{95 }
+\DoxyCodeLine{99         \textcolor{keyword}{const} glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a3dfdd95e35b4d6f78a387c307c8a2ea8}{viewMatrix}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{100 }
+\DoxyCodeLine{104         \textcolor{keyword}{const} glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a4af3e8eda175b4cd1a88b48945e2cc21}{modelMatrix}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{105 }
+\DoxyCodeLine{109         \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a90d7aa49d46e76b6eb4c75a07f740fcc}{direction}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{110 }
+\DoxyCodeLine{114         \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a66433b676f502248f2a15d42f71d9d83}{chunkPos}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{115 }
+\DoxyCodeLine{119         \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1camera_aed5d5b68450626db7c0086772282557d}{pos}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{120 }
+\DoxyCodeLine{121 }
+\DoxyCodeLine{122         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{123 }
+\DoxyCodeLine{127         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}* \mbox{\hyperlink{class_voxel_eng_1_1camera_a9b4f5172a020cc69f14209e06b8b07e5}{playerCamera}}();}
+\DoxyCodeLine{128 }
+\DoxyCodeLine{132         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a57efe935bb816550b4f24af1b8af5e59}{setFOV}}(\textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1camera_ade6c872cab0ef6237066ae61775822c5}{FOV}});}
+\DoxyCodeLine{133 }
+\DoxyCodeLine{140         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a85016adfdbd2b12547dac8b8042a7ea7}{updateProjectionMatrix}}();}
+\DoxyCodeLine{141 }
+\DoxyCodeLine{145         \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a21502404bed9ab53a56936b6c1c9970e}{mouseSensibility}}();}
+\DoxyCodeLine{146 }
+\DoxyCodeLine{150         \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a60423d6635ccba15e754567033826389}{movementSpeed}}();}
+\DoxyCodeLine{151 }
+\DoxyCodeLine{155         glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_ae76489427f45df2fa0e7fdd7ca99a7e1}{projectionMatrix}}();}
+\DoxyCodeLine{156 }
+\DoxyCodeLine{160         glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a3dfdd95e35b4d6f78a387c307c8a2ea8}{viewMatrix}}();}
+\DoxyCodeLine{161 }
+\DoxyCodeLine{165         glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a4af3e8eda175b4cd1a88b48945e2cc21}{modelMatrix}}();}
+\DoxyCodeLine{166 }
+\DoxyCodeLine{170         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_af4ba3520a49fec6feec09bd8642032d8}{setPos}}(\textcolor{keyword}{const} vec3\& newPos);}
+\DoxyCodeLine{171 }
+\DoxyCodeLine{175         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_af4ba3520a49fec6feec09bd8642032d8}{setPos}}(\textcolor{keywordtype}{int} newX, \textcolor{keywordtype}{int} newY, \textcolor{keywordtype}{int} newZ);}
+\DoxyCodeLine{176 }
+\DoxyCodeLine{180         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a42808ef213c6ec54e479cc9e3c730ee5}{setChunkPos}}(\textcolor{keyword}{const} vec3\& newChunkPos);}
+\DoxyCodeLine{181 }
+\DoxyCodeLine{185         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a42808ef213c6ec54e479cc9e3c730ee5}{setChunkPos}}(\textcolor{keywordtype}{int} newCX, \textcolor{keywordtype}{int} newCY, \textcolor{keywordtype}{int} newCZ);}
+\DoxyCodeLine{186 }
+\DoxyCodeLine{190         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a84575ec52e2e458c732773f45c6d2c91}{setDirection}}(\textcolor{keyword}{const} vec3\& newDir);}
+\DoxyCodeLine{191 }
+\DoxyCodeLine{195         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a84575ec52e2e458c732773f45c6d2c91}{setDirection}}(\textcolor{keywordtype}{int} newDX, \textcolor{keywordtype}{int} newDY, \textcolor{keywordtype}{int} newDZ);}
+\DoxyCodeLine{196 }
+\DoxyCodeLine{201         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a6556c5b420d23e86c59ee87fe34c2044}{moveUp}}();}
+\DoxyCodeLine{202 }
+\DoxyCodeLine{207         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a0605eec7bf0e5dea57567ce9ac38d3ad}{moveDown}}();}
+\DoxyCodeLine{208 }
+\DoxyCodeLine{213         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a76f6a3c32e50340bbc6ade0ead30e062}{moveNorth}}();}
+\DoxyCodeLine{214 }
+\DoxyCodeLine{219         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a7cd9529dcc6a1d93b1c1b8ef1f071e1c}{moveSouth}}();}
+\DoxyCodeLine{220 }
+\DoxyCodeLine{225         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a9ca042b2f1e5554dbce7c623db90b903}{moveEast}}();}
+\DoxyCodeLine{226 }
+\DoxyCodeLine{231         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_afda76b4e63c5c00e14728240dcca6957}{moveWest}}();}
+\DoxyCodeLine{232 }
+\DoxyCodeLine{239         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a55025896dc366a8360f2551c59e4b158}{updatePos}}(\textcolor{keywordtype}{float} timeStep);}
+\DoxyCodeLine{240 }
+\DoxyCodeLine{246         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a546956b9c3b56ad068939eac1cc7ab3e}{updateView}}();}
+\DoxyCodeLine{247 }
+\DoxyCodeLine{248 }
+\DoxyCodeLine{249         \textcolor{comment}{// Destructors.}}
+\DoxyCodeLine{250 }
+\DoxyCodeLine{254         \mbox{\hyperlink{class_voxel_eng_1_1camera_a6cfa6ba3bdef8c210dd1fa1fcea7831d}{\string~camera}}();}
+\DoxyCodeLine{255 }
+\DoxyCodeLine{256     \textcolor{keyword}{private}:}
+\DoxyCodeLine{257 }
+\DoxyCodeLine{258         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}* playerCamera\_;}
+\DoxyCodeLine{259 }
+\DoxyCodeLine{260         \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}\& window\_;}
+\DoxyCodeLine{261         \textcolor{keywordtype}{bool} moveUp\_,}
+\DoxyCodeLine{262              moveDown\_,}
+\DoxyCodeLine{263              moveNorth\_,}
+\DoxyCodeLine{264              moveSouth\_,}
+\DoxyCodeLine{265              moveEast\_,}
+\DoxyCodeLine{266              moveWest\_;}
+\DoxyCodeLine{267         \textcolor{keywordtype}{float} FOV\_,}
+\DoxyCodeLine{268              zNear\_,}
+\DoxyCodeLine{269              zFar\_,}
+\DoxyCodeLine{270              angleX\_,}
+\DoxyCodeLine{271              angleY\_,}
+\DoxyCodeLine{272              mouseSensibility\_,}
+\DoxyCodeLine{273              movementSpeed\_;}
+\DoxyCodeLine{274         \textcolor{keywordtype}{double} mouseX\_,}
+\DoxyCodeLine{275                mouseY\_,}
+\DoxyCodeLine{276                oldMouseX\_,}
+\DoxyCodeLine{277                oldMouseY\_;}
+\DoxyCodeLine{278         glm::mat4 projectionMatrix\_,}
+\DoxyCodeLine{279                   viewMatrix\_,}
+\DoxyCodeLine{280                   modelMatrix\_; \textcolor{comment}{// All models' vertices will be multiplied with this matrix (so you can, for example, rotate the entire world around the camera).}}
+\DoxyCodeLine{281 }
+\DoxyCodeLine{282         vec3 position\_,}
+\DoxyCodeLine{283              direction\_,}
+\DoxyCodeLine{284              upAxis\_,}
+\DoxyCodeLine{285              chunkPosition\_,}
+\DoxyCodeLine{286              oldChunkPos\_;}
+\DoxyCodeLine{287 }
+\DoxyCodeLine{288     \};}
+\DoxyCodeLine{289 }
+\DoxyCodeLine{290     \textcolor{keyword}{inline} \textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}* \mbox{\hyperlink{class_voxel_eng_1_1camera_acaef7f6d0eb2ac79bb46fcff4bf1cce7}{camera::cPlayerCamera}}() \{}
+\DoxyCodeLine{291 }
+\DoxyCodeLine{292         \textcolor{keywordflow}{return} playerCamera\_;}
+\DoxyCodeLine{293 }
+\DoxyCodeLine{294     \}}
+\DoxyCodeLine{295 }
+\DoxyCodeLine{296     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1camera_ade6c872cab0ef6237066ae61775822c5}{camera::FOV}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{297 }
+\DoxyCodeLine{298         \textcolor{keywordflow}{return} FOV\_;}
+\DoxyCodeLine{299 }
+\DoxyCodeLine{300     \}}
+\DoxyCodeLine{301 }
+\DoxyCodeLine{302     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1camera_a9367aa50946c31c339751ddbfbf7ef56}{camera::zFar}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{303 }
+\DoxyCodeLine{304         \textcolor{keywordflow}{return} zFar\_;}
+\DoxyCodeLine{305 }
+\DoxyCodeLine{306     \}}
+\DoxyCodeLine{307 }
+\DoxyCodeLine{308     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1camera_a21502404bed9ab53a56936b6c1c9970e}{camera::mouseSensibility}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{309 }
+\DoxyCodeLine{310         \textcolor{keywordflow}{return} mouseSensibility\_;}
+\DoxyCodeLine{311 }
+\DoxyCodeLine{312     \}}
+\DoxyCodeLine{313 }
+\DoxyCodeLine{314     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1camera_a60423d6635ccba15e754567033826389}{camera::movementSpeed}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{315 }
+\DoxyCodeLine{316         \textcolor{keywordflow}{return} movementSpeed\_;}
+\DoxyCodeLine{317 }
+\DoxyCodeLine{318     \}}
+\DoxyCodeLine{319 }
+\DoxyCodeLine{320     \textcolor{keyword}{inline} \textcolor{keyword}{const} glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_ae76489427f45df2fa0e7fdd7ca99a7e1}{camera::projectionMatrix}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{321 }
+\DoxyCodeLine{322         \textcolor{keywordflow}{return} projectionMatrix\_;}
+\DoxyCodeLine{323 }
+\DoxyCodeLine{324     \}}
+\DoxyCodeLine{325 }
+\DoxyCodeLine{326     \textcolor{keyword}{inline} \textcolor{keyword}{const} glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a3dfdd95e35b4d6f78a387c307c8a2ea8}{camera::viewMatrix}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{327 }
+\DoxyCodeLine{328         \textcolor{keywordflow}{return} viewMatrix\_;}
+\DoxyCodeLine{329 }
+\DoxyCodeLine{330     \}}
+\DoxyCodeLine{331 }
+\DoxyCodeLine{332     \textcolor{keyword}{inline} \textcolor{keyword}{const} glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a4af3e8eda175b4cd1a88b48945e2cc21}{camera::modelMatrix}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{333 }
+\DoxyCodeLine{334         \textcolor{keywordflow}{return} modelMatrix\_;}
+\DoxyCodeLine{335 }
+\DoxyCodeLine{336     \}}
+\DoxyCodeLine{337 }
+\DoxyCodeLine{338     \textcolor{keyword}{inline} \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1camera_aed5d5b68450626db7c0086772282557d}{camera::pos}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{339 }
+\DoxyCodeLine{340         \textcolor{keywordflow}{return} position\_;}
+\DoxyCodeLine{341 }
+\DoxyCodeLine{342     \}}
+\DoxyCodeLine{343 }
+\DoxyCodeLine{344     \textcolor{keyword}{inline} \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a66433b676f502248f2a15d42f71d9d83}{camera::chunkPos}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{345 }
+\DoxyCodeLine{346         \textcolor{keywordflow}{return} chunkPosition\_;}
+\DoxyCodeLine{347 }
+\DoxyCodeLine{348     \}}
+\DoxyCodeLine{349 }
+\DoxyCodeLine{350     \textcolor{keyword}{inline} \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a90d7aa49d46e76b6eb4c75a07f740fcc}{camera::direction}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{351 }
+\DoxyCodeLine{352         \textcolor{keywordflow}{return} direction\_;}
+\DoxyCodeLine{353 }
+\DoxyCodeLine{354     \}}
+\DoxyCodeLine{355 }
+\DoxyCodeLine{356     \textcolor{keyword}{inline} \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}* \mbox{\hyperlink{class_voxel_eng_1_1camera_a9b4f5172a020cc69f14209e06b8b07e5}{camera::playerCamera}}() \{}
+\DoxyCodeLine{357 }
+\DoxyCodeLine{358         \textcolor{keywordflow}{return} playerCamera\_;}
+\DoxyCodeLine{359 }
+\DoxyCodeLine{360     \}}
+\DoxyCodeLine{361 }
+\DoxyCodeLine{362     \textcolor{keyword}{inline} \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a21502404bed9ab53a56936b6c1c9970e}{camera::mouseSensibility}}() \{}
+\DoxyCodeLine{363 }
+\DoxyCodeLine{364         \textcolor{keywordflow}{return} mouseSensibility\_;}
+\DoxyCodeLine{365 }
+\DoxyCodeLine{366     \}}
+\DoxyCodeLine{367 }
+\DoxyCodeLine{368     \textcolor{keyword}{inline} \textcolor{keywordtype}{float}\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a60423d6635ccba15e754567033826389}{camera::movementSpeed}}() \{}
+\DoxyCodeLine{369 }
+\DoxyCodeLine{370         \textcolor{keywordflow}{return} movementSpeed\_;}
+\DoxyCodeLine{371 }
+\DoxyCodeLine{372     \}}
+\DoxyCodeLine{373 }
+\DoxyCodeLine{374     \textcolor{keyword}{inline} glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_ae76489427f45df2fa0e7fdd7ca99a7e1}{camera::projectionMatrix}}() \{}
+\DoxyCodeLine{375 }
+\DoxyCodeLine{376         \textcolor{keywordflow}{return} projectionMatrix\_;}
+\DoxyCodeLine{377 }
+\DoxyCodeLine{378     \}}
+\DoxyCodeLine{379 }
+\DoxyCodeLine{380     \textcolor{keyword}{inline} glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a3dfdd95e35b4d6f78a387c307c8a2ea8}{camera::viewMatrix}}() \{}
+\DoxyCodeLine{381 }
+\DoxyCodeLine{382         \textcolor{keywordflow}{return} viewMatrix\_;}
+\DoxyCodeLine{383 }
+\DoxyCodeLine{384     \}}
+\DoxyCodeLine{385 }
+\DoxyCodeLine{386     \textcolor{keyword}{inline} glm::mat4\& \mbox{\hyperlink{class_voxel_eng_1_1camera_a4af3e8eda175b4cd1a88b48945e2cc21}{camera::modelMatrix}}() \{}
+\DoxyCodeLine{387 }
+\DoxyCodeLine{388         \textcolor{keywordflow}{return} modelMatrix\_;}
+\DoxyCodeLine{389 }
+\DoxyCodeLine{390     \}}
+\DoxyCodeLine{391 }
+\DoxyCodeLine{392     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_af4ba3520a49fec6feec09bd8642032d8}{camera::setPos}}(\textcolor{keyword}{const} vec3\& newPos) \{}
+\DoxyCodeLine{393 }
+\DoxyCodeLine{394         \mbox{\hyperlink{class_voxel_eng_1_1camera_af4ba3520a49fec6feec09bd8642032d8}{setPos}}(newPos.x, newPos.y, newPos.z);}
+\DoxyCodeLine{395 }
+\DoxyCodeLine{396     \}}
+\DoxyCodeLine{397 }
+\DoxyCodeLine{398     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a42808ef213c6ec54e479cc9e3c730ee5}{camera::setChunkPos}}(\textcolor{keyword}{const} vec3\& newChunkPos) \{}
+\DoxyCodeLine{399 }
+\DoxyCodeLine{400         \mbox{\hyperlink{class_voxel_eng_1_1camera_a42808ef213c6ec54e479cc9e3c730ee5}{setChunkPos}}(newChunkPos.x, newChunkPos.y, newChunkPos.z);}
+\DoxyCodeLine{401 }
+\DoxyCodeLine{402     \}}
+\DoxyCodeLine{403 }
+\DoxyCodeLine{404     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a84575ec52e2e458c732773f45c6d2c91}{camera::setDirection}}(\textcolor{keyword}{const} vec3\& newDir) \{}
+\DoxyCodeLine{405     }
+\DoxyCodeLine{406         \mbox{\hyperlink{class_voxel_eng_1_1camera_a84575ec52e2e458c732773f45c6d2c91}{setDirection}}(newDir.x, newDir.y, newDir.z);}
+\DoxyCodeLine{407     }
+\DoxyCodeLine{408     \}}
+\DoxyCodeLine{409 }
+\DoxyCodeLine{410     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a6556c5b420d23e86c59ee87fe34c2044}{camera::moveUp}}() \{}
+\DoxyCodeLine{411 }
+\DoxyCodeLine{412         moveUp\_ = \textcolor{keyword}{true};}
+\DoxyCodeLine{413 }
+\DoxyCodeLine{414     \}}
+\DoxyCodeLine{415 }
+\DoxyCodeLine{416     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a0605eec7bf0e5dea57567ce9ac38d3ad}{camera::moveDown}}() \{}
+\DoxyCodeLine{417 }
+\DoxyCodeLine{418         moveDown\_ = \textcolor{keyword}{true};}
+\DoxyCodeLine{419 }
+\DoxyCodeLine{420     \}}
+\DoxyCodeLine{421 }
+\DoxyCodeLine{422     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a76f6a3c32e50340bbc6ade0ead30e062}{camera::moveNorth}}() \{}
+\DoxyCodeLine{423 }
+\DoxyCodeLine{424         moveNorth\_ = \textcolor{keyword}{true};}
+\DoxyCodeLine{425 }
+\DoxyCodeLine{426     \}}
+\DoxyCodeLine{427 }
+\DoxyCodeLine{428     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a7cd9529dcc6a1d93b1c1b8ef1f071e1c}{camera::moveSouth}}() \{}
+\DoxyCodeLine{429 }
+\DoxyCodeLine{430         moveSouth\_ = \textcolor{keyword}{true};}
+\DoxyCodeLine{431 }
+\DoxyCodeLine{432     \}}
+\DoxyCodeLine{433 }
+\DoxyCodeLine{434     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a9ca042b2f1e5554dbce7c623db90b903}{camera::moveEast}}() \{}
+\DoxyCodeLine{435 }
+\DoxyCodeLine{436         moveEast\_ = \textcolor{keyword}{true};}
+\DoxyCodeLine{437 }
+\DoxyCodeLine{438     \}}
+\DoxyCodeLine{439 }
+\DoxyCodeLine{440     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_afda76b4e63c5c00e14728240dcca6957}{camera::moveWest}}() \{}
+\DoxyCodeLine{441 }
+\DoxyCodeLine{442         moveWest\_ = \textcolor{keyword}{true};}
+\DoxyCodeLine{443 }
+\DoxyCodeLine{444     \}}
+\DoxyCodeLine{445 }
+\DoxyCodeLine{446     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1camera_a546956b9c3b56ad068939eac1cc7ab3e}{camera::updateView}}() \{}
+\DoxyCodeLine{447 }
+\DoxyCodeLine{448 \textcolor{preprocessor}{        \#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{449 }
+\DoxyCodeLine{450             viewMatrix\_ = glm::lookAt(position\_, position\_ + direction\_, upAxis\_);}
+\DoxyCodeLine{451 }
+\DoxyCodeLine{452 \textcolor{preprocessor}{        \#else}}
+\DoxyCodeLine{453 }
+\DoxyCodeLine{454             }
+\DoxyCodeLine{455 }
+\DoxyCodeLine{456 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{457 }
+\DoxyCodeLine{458     \}}
+\DoxyCodeLine{459 }
+\DoxyCodeLine{460     \textcolor{keyword}{inline} \mbox{\hyperlink{class_voxel_eng_1_1camera_a6cfa6ba3bdef8c210dd1fa1fcea7831d}{camera::\string~camera}}() \{}
+\DoxyCodeLine{461     }
+\DoxyCodeLine{462         \textcolor{keywordflow}{if} (\textcolor{keyword}{this} == playerCamera\_)}
+\DoxyCodeLine{463             playerCamera\_ = \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{464     }
+\DoxyCodeLine{465     \}}
+\DoxyCodeLine{466 }
+\DoxyCodeLine{467 \}}
+\DoxyCodeLine{468 }
+\DoxyCodeLine{469 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

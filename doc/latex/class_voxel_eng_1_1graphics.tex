@@ -1,0 +1,53 @@
+\hypertarget{class_voxel_eng_1_1graphics}{}\doxysection{Voxel\+Eng\+::graphics Class Reference}
+\label{class_voxel_eng_1_1graphics}\index{VoxelEng::graphics@{VoxelEng::graphics}}
+
+
+Class used to abstract the graphics operations independently of the underlying graphics API (directX, Open\+GL...) that is being used.  
+
+
+
+
+{\ttfamily \#include $<$graphics.\+h$>$}
+
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1graphics_a06f66f3a52e712317c6f910fa4ecac6a}\label{class_voxel_eng_1_1graphics_a06f66f3a52e712317c6f910fa4ecac6a}} 
+static void {\bfseries init} (\mbox{\hyperlink{class_voxel_eng_1_1window}{window}} \&rendering\+Window)
+\begin{DoxyCompactList}\small\item\em Initializes the underlying graphics APIs/libraries that are used by the engine. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1graphics_ab4b6f884fe7ea3ebdb2f74279155f859}\label{class_voxel_eng_1_1graphics_ab4b6f884fe7ea3ebdb2f74279155f859}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1window}{window}} $\ast$ {\bfseries get\+Main\+Window} ()
+\begin{DoxyCompactList}\small\item\em Gets the pointer to the \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1window}{Voxel\+Eng\+::window}}\textquotesingle{} class object that is being used to handle the game window\textquotesingle{}s callbacks. WARNING. Must be called in a thread with valid graphic API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1graphics_acba2e39b73a1ed98eb69046233d7112d}\label{class_voxel_eng_1_1graphics_acba2e39b73a1ed98eb69046233d7112d}} 
+static bool {\bfseries initialised} ()
+\begin{DoxyCompactList}\small\item\em Returns true if the engine graphics API is initialised or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1graphics_a42a63db1e881af2bcfb0227e1aa980a0}\label{class_voxel_eng_1_1graphics_a42a63db1e881af2bcfb0227e1aa980a0}} 
+static void {\bfseries erase\+Errors} ()
+\begin{DoxyCompactList}\small\item\em Clear all previous thrown graphics API errors prior to this function\textquotesingle{}s call. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1graphics_af5d36ff1857ffc129dadf14db8dfbc5c}\label{class_voxel_eng_1_1graphics_af5d36ff1857ffc129dadf14db8dfbc5c}} 
+static void {\bfseries GLCheck\+Errors} (std\+::ostream \&os, const char $\ast$file, const char $\ast$function, unsigned int line)
+\begin{DoxyCompactList}\small\item\em Obtain the graphics API\textquotesingle{}s last errors. The last three parameters should be used to help locate the error when debugging. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1graphics_a8f45a5034e2fa285783894e33c735e18}\label{class_voxel_eng_1_1graphics_a8f45a5034e2fa285783894e33c735e18}} 
+static void {\bfseries set\+VSync} (bool is\+Enabled)
+\begin{DoxyCompactList}\small\item\em Set Vertical Synchronization (VSync) on (true) or off (false). WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1graphics_a0cff74af0970452983c326703394d4a0}\label{class_voxel_eng_1_1graphics_a0cff74af0970452983c326703394d4a0}} 
+static void {\bfseries set\+Depth\+Test} (bool is\+Enabled)
+\begin{DoxyCompactList}\small\item\em Set Depth test on (true) or off (false). WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1graphics_a402f48430ed70fc5110c474c53f22e4b}\label{class_voxel_eng_1_1graphics_a402f48430ed70fc5110c474c53f22e4b}} 
+static void {\bfseries set\+Basic\+Face\+Culling} (bool is\+Enabled)
+\begin{DoxyCompactList}\small\item\em Set basic face culling on (true) or off (false). WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1graphics_a4fe8b1d3e4eac216702ac46aabd8e0a0}\label{class_voxel_eng_1_1graphics_a4fe8b1d3e4eac216702ac46aabd8e0a0}} 
+static void {\bfseries set\+Transparency} (bool is\+Enabled)
+\begin{DoxyCompactList}\small\item\em Set transparency on (true) or off (false). WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1graphics_a60cf9267b6bc4eb4a964780d48486605}\label{class_voxel_eng_1_1graphics_a60cf9267b6bc4eb4a964780d48486605}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em Deallocate any heap memory used by the engine graphics API and shut it down. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class used to abstract the graphics operations independently of the underlying graphics API (directX, Open\+GL...) that is being used. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{graphics_8h}{graphics.\+h}}\item 
+code/graphics.\+cpp\end{DoxyCompactItemize}

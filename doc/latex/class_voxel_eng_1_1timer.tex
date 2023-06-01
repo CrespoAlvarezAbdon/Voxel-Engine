@@ -1,0 +1,38 @@
+\hypertarget{class_voxel_eng_1_1timer}{}\doxysection{Voxel\+Eng\+::timer Class Reference}
+\label{class_voxel_eng_1_1timer}\index{VoxelEng::timer@{VoxelEng::timer}}
+
+
+Provides the capability of measuring the duration of fragments of the engine\textquotesingle{}s code.  
+
+
+
+
+{\ttfamily \#include $<$timer.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1timer_a958bab7d4c1ae6df0404002f4ebbafd2}\label{class_voxel_eng_1_1timer_a958bab7d4c1ae6df0404002f4ebbafd2}} 
+{\bfseries timer} ()
+\begin{DoxyCompactList}\small\item\em Class constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1timer_a2e55d8b792fddb13ec0d410d03184bac}\label{class_voxel_eng_1_1timer_a2e55d8b792fddb13ec0d410d03184bac}} 
+bool {\bfseries has\+Started} () const
+\begin{DoxyCompactList}\small\item\em Returns true if the timer has started counting or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1timer_ad4d705c648b6115cd8fb204a22443a7d}\label{class_voxel_eng_1_1timer_ad4d705c648b6115cd8fb204a22443a7d}} 
+void {\bfseries start} ()
+\begin{DoxyCompactList}\small\item\em The timer starts counting. To stop counting, call \mbox{\hyperlink{class_voxel_eng_1_1timer_a041d43b4dbd42de4fa9c3e6360625a33}{finish()}}. WARNING. A call to \mbox{\hyperlink{class_voxel_eng_1_1timer_ad4d705c648b6115cd8fb204a22443a7d}{start()}} after another call to the same method will throw an exception. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1timer_a041d43b4dbd42de4fa9c3e6360625a33}\label{class_voxel_eng_1_1timer_a041d43b4dbd42de4fa9c3e6360625a33}} 
+void {\bfseries finish} ()
+\begin{DoxyCompactList}\small\item\em The timer finishes counting. A previous call to \mbox{\hyperlink{class_voxel_eng_1_1timer_ad4d705c648b6115cd8fb204a22443a7d}{start()}} must be made on the same \textquotesingle{}timer\textquotesingle{} object. WARNING. A call to \mbox{\hyperlink{class_voxel_eng_1_1timer_a041d43b4dbd42de4fa9c3e6360625a33}{finish()}} after another call to the same method will throw an exception. WARNING. A call to \mbox{\hyperlink{class_voxel_eng_1_1timer_a041d43b4dbd42de4fa9c3e6360625a33}{finish()}} without being paired to a call to the \mbox{\hyperlink{class_voxel_eng_1_1timer_ad4d705c648b6115cd8fb204a22443a7d}{start()}} method will make \mbox{\hyperlink{class_voxel_eng_1_1timer_a041d43b4dbd42de4fa9c3e6360625a33}{finish()}} throw an exception. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1timer_a089fb41cd3dc07cc81ea95a691e8efe0}\label{class_voxel_eng_1_1timer_a089fb41cd3dc07cc81ea95a691e8efe0}} 
+duration {\bfseries get\+Duration\+Ms} ()
+\begin{DoxyCompactList}\small\item\em Returns elapsed time between the last \mbox{\hyperlink{class_voxel_eng_1_1timer_ad4d705c648b6115cd8fb204a22443a7d}{start()}} and \mbox{\hyperlink{class_voxel_eng_1_1timer_a041d43b4dbd42de4fa9c3e6360625a33}{finish()}} calls in ms. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Provides the capability of measuring the duration of fragments of the engine\textquotesingle{}s code. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{timer_8h}{timer.\+h}}\item 
+code/timer.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,62 @@
+\hypertarget{class_voxel_eng_1_1texture}{}\doxysection{Voxel\+Eng\+::texture Class Reference}
+\label{class_voxel_eng_1_1texture}\index{VoxelEng::texture@{VoxelEng::texture}}
+
+
+Represents a texture, a 2D image usually applied to vertex data in order to give their models an alternative to using solid colors to draw them.  
+
+
+
+
+{\ttfamily \#include $<$texture.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_ac3cb1fff4d6c35db3d78b13232c0b2f1}\label{class_voxel_eng_1_1texture_ac3cb1fff4d6c35db3d78b13232c0b2f1}} 
+{\bfseries texture} (const std\+::string \&filepath)
+\begin{DoxyCompactList}\small\item\em Class constructor. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_a93b62731c2cee24312d947c23bff8d93}\label{class_voxel_eng_1_1texture_a93b62731c2cee24312d947c23bff8d93}} 
+int {\bfseries width} () const
+\begin{DoxyCompactList}\small\item\em Returns the texture\textquotesingle{}s width. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_a5882eaa5ec738b2e6903a8296a323386}\label{class_voxel_eng_1_1texture_a5882eaa5ec738b2e6903a8296a323386}} 
+int {\bfseries height} () const
+\begin{DoxyCompactList}\small\item\em Returns the texture\textquotesingle{}s width. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_a8a6552737dfee763ba9622bdd41d6973}\label{class_voxel_eng_1_1texture_a8a6552737dfee763ba9622bdd41d6973}} 
+GLuint {\bfseries renderer\+ID} () const
+\begin{DoxyCompactList}\small\item\em Returns the texture\textquotesingle{}s ID used by the graphics API to identify it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_a345461e5902b311c823fba9e749fac41}\label{class_voxel_eng_1_1texture_a345461e5902b311c823fba9e749fac41}} 
+void {\bfseries bind} (unsigned int slot=0) const
+\begin{DoxyCompactList}\small\item\em Bind the texture to an graphics API texture slot (slot 0 by default). WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_ad01688ec56b66c94fabe956d6ed468ac}\label{class_voxel_eng_1_1texture_ad01688ec56b66c94fabe956d6ed468ac}} 
+void {\bfseries unbind} () const
+\begin{DoxyCompactList}\small\item\em Unbind the texture. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_adfcf7bbd5094c22ccd920994bf874e81}\label{class_voxel_eng_1_1texture_adfcf7bbd5094c22ccd920994bf874e81}} 
+{\bfseries $\sim$texture} ()
+\begin{DoxyCompactList}\small\item\em Class destructor. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_acef93ddee00aea4d9fbc234f9ca7853a}\label{class_voxel_eng_1_1texture_acef93ddee00aea4d9fbc234f9ca7853a}} 
+static const \mbox{\hyperlink{class_voxel_eng_1_1texture}{texture}} $\ast$ {\bfseries block\+Texture\+Atlas} ()
+\begin{DoxyCompactList}\small\item\em Returns the currently used block texture atlas. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_a057007ef5c9d8239c79da45539a3912a}\label{class_voxel_eng_1_1texture_a057007ef5c9d8239c79da45539a3912a}} 
+static int {\bfseries block\+Atlas\+Resolution} ()
+\begin{DoxyCompactList}\small\item\em Returns the currently used block texture atlas\textquotesingle{} resolution per block. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_ae70ddc7ca83076032888cf3009506b4f}\label{class_voxel_eng_1_1texture_ae70ddc7ca83076032888cf3009506b4f}} 
+static const std\+::pair$<$ int, int $>$ \& {\bfseries get\+Texture\+WH} (unsigned int texture\+ID)
+\begin{DoxyCompactList}\small\item\em Returns the width and height of the specified texture with the \textquotesingle{}texture\+ID\textquotesingle{}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_af3d9c68e7ef29c6aa95877eef95b9d27}\label{class_voxel_eng_1_1texture_af3d9c68e7ef29c6aa95877eef95b9d27}} 
+static void {\bfseries set\+Block\+Atlas} (const \mbox{\hyperlink{class_voxel_eng_1_1texture}{texture}} \&\mbox{\hyperlink{class_voxel_eng_1_1texture_acef93ddee00aea4d9fbc234f9ca7853a}{block\+Texture\+Atlas}})
+\begin{DoxyCompactList}\small\item\em Set \textquotesingle{}block\+Texture\+Atlas\textquotesingle{} as the block texture atlas. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1texture_a6eff4a44da5c668dee20f1f73a396c0a}\label{class_voxel_eng_1_1texture_a6eff4a44da5c668dee20f1f73a396c0a}} 
+static void {\bfseries set\+Block\+Atlas\+Resolution} (int resolution)
+\begin{DoxyCompactList}\small\item\em Set the block texture atlas\textquotesingle{} resolution per block. The resolution will always make block textures be square. That is, if you execute \mbox{\hyperlink{class_voxel_eng_1_1texture_a057007ef5c9d8239c79da45539a3912a}{texture\+::block\+Atlas\+Resolution()}} = 32, now the block textures will have a resolution of 32x32 pixels. WARNING. You must set the resolution at least once before the method \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a66281b126d74f9612127a9dd48cae0ee}{chunk\+Manager\+::manage\+Chunks}} starts executing in the chunk management thread. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Represents a texture, a 2D image usually applied to vertex data in order to give their models an alternative to using solid colors to draw them. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{texture_8h}{texture.\+h}}\item 
+code/texture.\+cpp\end{DoxyCompactItemize}

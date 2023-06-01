@@ -1,0 +1,49 @@
+\hypertarget{namespace_a_i_example}{}\doxysection{AIExample Namespace Reference}
+\label{namespace_a_i_example}\index{AIExample@{AIExample}}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_a_i_example_1_1copy_job}{copy\+Job}}
+\begin{DoxyCompactList}\small\item\em Derives from \textquotesingle{}job\textquotesingle{} class at \mbox{\hyperlink{thread_pool_8h}{thread\+Pool.\+h}}. Used to represent jobs related to the heavy processing parts of the training process that will be completed by worker threads. In this particular case, this class is created for processing the copy of individuals. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_a_i_example_1_1genetic}{genetic}}
+\begin{DoxyCompactList}\small\item\em Manages everything related to the genetic algorithms part of the example AI game, including the training, testing and record generation processes as well as the implementation of the genetic operators and the modification of the neural networks that are associated with the individuals. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_a_i_example_1_1genetic_job}{genetic\+Job}}
+\begin{DoxyCompactList}\small\item\em Derives from \textquotesingle{}job\textquotesingle{} class at \mbox{\hyperlink{thread_pool_8h}{thread\+Pool.\+h}}. Used to represent jobs related to the heavy processing parts of the training process that will be completed by worker threads. In this particular case, this class is created for processing a fitness function applied to the individuals. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}}
+\begin{DoxyCompactList}\small\item\em This neural network implementation is meant to be used alongside with genetic algorithms operators such as fitness function, selection, crossover, mutation and replacement to modify the network\textquotesingle{}s weights. Implementations of some of these operators can be found in Deep dive \mbox{\hyperlink{genetic_8h}{open/code/\+AI/genetic.\+h}} and Deep dive \mbox{\hyperlink{genetic_8cpp}{open/code/\+AI/genetic.\+cpp}}. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_a_i_example_1_1mining_a_i_game}{mining\+AIGame}}
+\begin{DoxyCompactList}\small\item\em AI game where the AI agents need to collect underground resources with a limited amount of actions that they can perform per match. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_a_i_example_1_1mining_world_gen}{mining\+World\+Gen}}
+\begin{DoxyCompactList}\small\item\em Custom world generation for the example AI game. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef std\+::array$<$ std\+::array$<$ int, \mbox{\hyperlink{namespace_voxel_eng_ac6b1ebceb207d8869690065097b574c6}{Voxel\+Eng\+::\+SCZ}} $>$, \mbox{\hyperlink{namespace_voxel_eng_a9c9f34f9c7e9c5abffafdba162c2d34f}{Voxel\+Eng\+::\+SCX}} $>$ \mbox{\hyperlink{namespace_a_i_example_ae988d64e69daeb5414d9ae13e94be726}{chunk\+Height\+Map}}
+\begin{DoxyCompactList}\small\item\em A chunk\textquotesingle{}s height map stores the highest non-\/null block in in all the X,Z block columns of the chunk. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+float \mbox{\hyperlink{namespace_a_i_example_a2a6f96d601b4b23746161cd8ada2df46}{mining\+AIGame\+Fitness}} (unsigned int individual\+ID)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{namespace_a_i_example_ae988d64e69daeb5414d9ae13e94be726}\label{namespace_a_i_example_ae988d64e69daeb5414d9ae13e94be726}} 
+\index{AIExample@{AIExample}!chunkHeightMap@{chunkHeightMap}}
+\index{chunkHeightMap@{chunkHeightMap}!AIExample@{AIExample}}
+\doxysubsubsection{\texorpdfstring{chunkHeightMap}{chunkHeightMap}}
+{\footnotesize\ttfamily typedef std\+::array$<$std\+::array$<$int, \mbox{\hyperlink{namespace_voxel_eng_ac6b1ebceb207d8869690065097b574c6}{Voxel\+Eng\+::\+SCZ}}$>$, \mbox{\hyperlink{namespace_voxel_eng_a9c9f34f9c7e9c5abffafdba162c2d34f}{Voxel\+Eng\+::\+SCX}}$>$ \mbox{\hyperlink{namespace_a_i_example_ae988d64e69daeb5414d9ae13e94be726}{AIExample\+::chunk\+Height\+Map}}}
+
+
+
+A chunk\textquotesingle{}s height map stores the highest non-\/null block in in all the X,Z block columns of the chunk. 
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{namespace_a_i_example_a2a6f96d601b4b23746161cd8ada2df46}\label{namespace_a_i_example_a2a6f96d601b4b23746161cd8ada2df46}} 
+\index{AIExample@{AIExample}!miningAIGameFitness@{miningAIGameFitness}}
+\index{miningAIGameFitness@{miningAIGameFitness}!AIExample@{AIExample}}
+\doxysubsubsection{\texorpdfstring{miningAIGameFitness()}{miningAIGameFitness()}}
+{\footnotesize\ttfamily float AIExample\+::mining\+AIGame\+Fitness (\begin{DoxyParamCaption}\item[{unsigned int}]{individual\+ID }\end{DoxyParamCaption})}
+

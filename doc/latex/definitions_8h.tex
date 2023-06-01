@@ -1,0 +1,149 @@
+\hypertarget{definitions_8h}{}\doxysection{code/definitions.h File Reference}
+\label{definitions_8h}\index{code/definitions.h@{code/definitions.h}}
+
+
+Contains general typedefs, constant definitions an declarations of several other concepts used all across the engine\textquotesingle{}s code.  
+
+
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include $<$GL/glew.\+h$>$}\newline
+{\ttfamily \#include $<$GLFW/glfw3.\+h$>$}\newline
+{\ttfamily \#include $<$glm.\+hpp$>$}\newline
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{definitions_8h_a696b8f3aafebe71e9fc3290288c7ea60}\label{definitions_8h_a696b8f3aafebe71e9fc3290288c7ea60}} 
+typedef void($\ast$ {\bfseries Voxel\+Eng\+::tick\+Func}) ()
+\item 
+\mbox{\Hypertarget{definitions_8h_a6c7264784221a6f00d14887b3d5f4ff5}\label{definitions_8h_a6c7264784221a6f00d14887b3d5f4ff5}} 
+typedef glm\+::vec3 {\bfseries Voxel\+Eng\+::vec3}
+\item 
+\mbox{\Hypertarget{definitions_8h_aac9fe1393c02a61c2260dac6e23020fb}\label{definitions_8h_aac9fe1393c02a61c2260dac6e23020fb}} 
+typedef glm\+::vec2 {\bfseries Voxel\+Eng\+::vec2}
+\item 
+\mbox{\Hypertarget{definitions_8h_ac318027043a2a1059934dccd47531430}\label{definitions_8h_ac318027043a2a1059934dccd47531430}} 
+typedef unsigned int {\bfseries Voxel\+Eng\+::agent\+ID}
+\item 
+\mbox{\Hypertarget{definitions_8h_a335767f4052c05f566ed810304e5966b}\label{definitions_8h_a335767f4052c05f566ed810304e5966b}} 
+typedef unsigned int {\bfseries Voxel\+Eng\+::entity\+ID}
+\item 
+\mbox{\Hypertarget{definitions_8h_af8fc5fb3a5a34d18467d0b412c884a8b}\label{definitions_8h_af8fc5fb3a5a34d18467d0b412c884a8b}} 
+typedef unsigned short {\bfseries Voxel\+Eng\+::block}
+\item 
+\mbox{\Hypertarget{definitions_8h_a47a36b96c39f7448714b31bd9a2640e0}\label{definitions_8h_a47a36b96c39f7448714b31bd9a2640e0}} 
+typedef unsigned char {\bfseries Voxel\+Eng\+::byte}
+\item 
+\mbox{\Hypertarget{definitions_8h_a35a52ecafddecf3aadc61ee55fdb144e}\label{definitions_8h_a35a52ecafddecf3aadc61ee55fdb144e}} 
+typedef float {\bfseries Voxel\+Eng\+::vertex\+Coord}
+\item 
+\mbox{\Hypertarget{definitions_8h_a10a827f40f2fd3564e6912ade484827d}\label{definitions_8h_a10a827f40f2fd3564e6912ade484827d}} 
+typedef float {\bfseries Voxel\+Eng\+::texture\+Coord}
+\item 
+\mbox{\Hypertarget{definitions_8h_a485dbed284f61e02ce683e48903a349e}\label{definitions_8h_a485dbed284f61e02ce683e48903a349e}} 
+typedef float {\bfseries Voxel\+Eng\+::angle}
+\item 
+\mbox{\Hypertarget{definitions_8h_a18187b9727a5583b2f354911b06ded42}\label{definitions_8h_a18187b9727a5583b2f354911b06ded42}} 
+typedef GLint {\bfseries Voxel\+Eng\+::normal\+Vec}
+\item 
+\mbox{\Hypertarget{definitions_8h_a0b377bf3160ff2b43556c879f1e82a48}\label{definitions_8h_a0b377bf3160ff2b43556c879f1e82a48}} 
+typedef GLFWwindow {\bfseries Voxel\+Eng\+::\+Graphics\+APIWindow}
+\item 
+\mbox{\Hypertarget{definitions_8h_a43730e42a373d31c3c77701f03e7029c}\label{definitions_8h_a43730e42a373d31c3c77701f03e7029c}} 
+typedef std\+::chrono\+::time\+\_\+point$<$ std\+::chrono\+::high\+\_\+resolution\+\_\+clock $>$ {\bfseries Voxel\+Eng\+::time\+Point}
+\item 
+\mbox{\Hypertarget{definitions_8h_abba3512d49474c636a1471035860abaf}\label{definitions_8h_abba3512d49474c636a1471035860abaf}} 
+typedef long long {\bfseries Voxel\+Eng\+::duration}
+\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{definitions_8h_a928223d21827269f0f31ec25a182169f}\label{definitions_8h_a928223d21827269f0f31ec25a182169f}} 
+enum class \mbox{\hyperlink{definitions_8h_a928223d21827269f0f31ec25a182169f}{Voxel\+Eng\+::graphics\+API}} \{ {\bfseries OPENGL}
+ \}
+\begin{DoxyCompactList}\small\item\em The different graphics APIs supported by the engine. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}\label{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}} 
+enum class \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{Voxel\+Eng\+::block\+View\+Dir}} \{ \newline
+{\bfseries NONE}
+, {\bfseries PLUSY}
+, {\bfseries NEGY}
+, {\bfseries PLUSX}
+, \newline
+{\bfseries NEGX}
+, {\bfseries PLUSZ}
+, {\bfseries NEGZ}
+ \}
+\begin{DoxyCompactList}\small\item\em Viewing directions expressed in a discrete and simple way. It could be seen as a \char`\"{}blocky\char`\"{} viewing direction if it could be compared to block coordinates, which are only integer coordinates compared to global coordinates. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}\label{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}} 
+const vec3 {\bfseries Voxel\+Eng\+::vec3\+Zero} (0, 0, 0)
+\begin{DoxyCompactList}\small\item\em vec3 constant of the zero vector. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_a44d1aef28ea19f487fc170379f945759}\label{definitions_8h_a44d1aef28ea19f487fc170379f945759}} 
+const vec3 {\bfseries Voxel\+Eng\+::vec3\+Fixed\+Up} (0, 1, 0)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed up direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_a1004d23c076b2ca7ddbd4af3dada87d0}\label{definitions_8h_a1004d23c076b2ca7ddbd4af3dada87d0}} 
+const vec3 {\bfseries Voxel\+Eng\+::vec3\+Fixed\+Down} (0, -\/1, 0)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed down direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_aa0e1382e5a1f527203e304b3844a105e}\label{definitions_8h_aa0e1382e5a1f527203e304b3844a105e}} 
+const vec3 {\bfseries Voxel\+Eng\+::vec3\+Fixed\+North} (1, 0, 0)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed north direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_ad2bcc3dd0a11308558946604babecbae}\label{definitions_8h_ad2bcc3dd0a11308558946604babecbae}} 
+const vec3 {\bfseries Voxel\+Eng\+::vec3\+Fixed\+South} (-\/1, 0, 0)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed south direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_a19fc56ea6bff80bce866b6c39a2742dd}\label{definitions_8h_a19fc56ea6bff80bce866b6c39a2742dd}} 
+const vec3 {\bfseries Voxel\+Eng\+::vec3\+Fixed\+East} (0, 0, 1)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed east direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_a7625d5a0b4b5c1d7bb93971b8aa72576}\label{definitions_8h_a7625d5a0b4b5c1d7bb93971b8aa72576}} 
+const vec3 {\bfseries Voxel\+Eng\+::vec3\+Fixed\+West} (0, 0, -\/1)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed west direction. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{definitions_8h_a4f2ff64448774d5ecdd34bc4903008f4}\label{definitions_8h_a4f2ff64448774d5ecdd34bc4903008f4}} 
+const graphics\+API {\bfseries Voxel\+Eng\+::graphics\+APIUsed} = graphics\+API\+::\+OPENGL
+\begin{DoxyCompactList}\small\item\em The graphics API currently used by the engine during it\textquotesingle{}s execution. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_af60c4d1aab8a8d8d762c22b6b31c5080}\label{definitions_8h_af60c4d1aab8a8d8d762c22b6b31c5080}} 
+const unsigned int {\bfseries Voxel\+Eng\+::\+MIN\+\_\+\+TEX\+\_\+\+RES} = 16
+\begin{DoxyCompactList}\small\item\em Minimal block texture size in pixels. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}\label{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}} 
+const int {\bfseries Voxel\+Eng\+::\+SCX} = 16
+\begin{DoxyCompactList}\small\item\em Chunk size (in blocks) in X axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_ada54a66531ebf97036138412933b093a}\label{definitions_8h_ada54a66531ebf97036138412933b093a}} 
+const int {\bfseries Voxel\+Eng\+::\+SCY} = 16
+\begin{DoxyCompactList}\small\item\em Chunk size (in blocks) in Y axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_ac6b1ebceb207d8869690065097b574c6}\label{definitions_8h_ac6b1ebceb207d8869690065097b574c6}} 
+const int {\bfseries Voxel\+Eng\+::\+SCZ} = 16
+\begin{DoxyCompactList}\small\item\em Chunk size (in blocks) in Z axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_a7d834d8858ded4bc469a50b0db8eca70}\label{definitions_8h_a7d834d8858ded4bc469a50b0db8eca70}} 
+const unsigned int {\bfseries Voxel\+Eng\+::\+DEF\+\_\+\+WIDTH} = 800
+\begin{DoxyCompactList}\small\item\em Default width for a game window. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_afe330da91441bf605dabbcbe83e46078}\label{definitions_8h_afe330da91441bf605dabbcbe83e46078}} 
+const unsigned int {\bfseries Voxel\+Eng\+::\+DEF\+\_\+\+HEIGHT} = 600
+\begin{DoxyCompactList}\small\item\em Default height for a game window. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_afe7a66d1b2b8f3ba46acc2bd275c8796}\label{definitions_8h_afe7a66d1b2b8f3ba46acc2bd275c8796}} 
+const unsigned int {\bfseries Voxel\+Eng\+::\+DEF\+\_\+\+N\+\_\+\+CHUNKS\+\_\+\+TO\+\_\+\+COMPUTE} = 10
+\begin{DoxyCompactList}\small\item\em Default total number of chunks to compute in the X and Z axes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_af19a54d1769112d801ffad30b5d4d4fb}\label{definitions_8h_af19a54d1769112d801ffad30b5d4d4fb}} 
+const unsigned int {\bfseries Voxel\+Eng\+::\+N\+\_\+\+GUI\+\_\+\+LAYERS} = 3
+\begin{DoxyCompactList}\small\item\em Number of \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} layers in which to organize the graphical user interface. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_a4c7407b1517302cc403a931427aab650}\label{definitions_8h_a4c7407b1517302cc403a931427aab650}} 
+const int {\bfseries Voxel\+Eng\+::y\+Chunks\+Range} = 12
+\begin{DoxyCompactList}\small\item\em Number of chunks to compute in the Y axis (only in the +Y direction or the -\/Y direction). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{definitions_8h_a6e187eeaffc3134934223d0c86c594a6}\label{definitions_8h_a6e187eeaffc3134934223d0c86c594a6}} 
+const int {\bfseries Voxel\+Eng\+::total\+YChunks} = y\+Chunks\+Range $\ast$ 2
+\begin{DoxyCompactList}\small\item\em Total number of chunks to compute in the Y axis (both in the +Y direction and the -\/Y direction). \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains general typedefs, constant definitions an declarations of several other concepts used all across the engine\textquotesingle{}s code. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+20/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title Definitions. 
+\end{DoxyAuthor}

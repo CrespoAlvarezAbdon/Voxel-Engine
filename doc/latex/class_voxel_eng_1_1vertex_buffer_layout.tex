@@ -1,0 +1,65 @@
+\hypertarget{class_voxel_eng_1_1vertex_buffer_layout}{}\doxysection{Voxel\+Eng\+::vertex\+Buffer\+Layout Class Reference}
+\label{class_voxel_eng_1_1vertex_buffer_layout}\index{VoxelEng::vertexBufferLayout@{VoxelEng::vertexBufferLayout}}
+
+
+Represents a vertex buffer\textquotesingle{}s layout. This layout gives information about how the data sent to the GPU is formed. For example, it could tell that the first 32bits of a vertex\textquotesingle{}s data is a float that represents the position of said vertex in the x-\/axis.  
+
+
+
+
+{\ttfamily \#include $<$vertex\+Buffer\+Layout.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a7b3b3813316418602556237a56cfb59a}\label{class_voxel_eng_1_1vertex_buffer_layout_a7b3b3813316418602556237a56cfb59a}} 
+{\bfseries vertex\+Buffer\+Layout} ()
+\begin{DoxyCompactList}\small\item\em Class constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_ac58bd2cb8a947da12101ee0e5f8be48c}\label{class_voxel_eng_1_1vertex_buffer_layout_ac58bd2cb8a947da12101ee0e5f8be48c}} 
+const std\+::vector$<$ \mbox{\hyperlink{struct_voxel_eng_1_1vertex_buffer_element}{vertex\+Buffer\+Element}} $>$ \& {\bfseries elements} () const
+\begin{DoxyCompactList}\small\item\em Returns the number of elements in the layout. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_ad683c99066dc0d3a342430b34d78ae4f}\label{class_voxel_eng_1_1vertex_buffer_layout_ad683c99066dc0d3a342430b34d78ae4f}} 
+unsigned int {\bfseries stride} () const
+\begin{DoxyCompactList}\small\item\em Return\textquotesingle{}s the layout stride, that is, the byte count from the beginning of one vertex to the one of the next vertex. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a9f1eab22ef1f307fcc9807da9d6a4c17}\label{class_voxel_eng_1_1vertex_buffer_layout_a9f1eab22ef1f307fcc9807da9d6a4c17}} 
+{\footnotesize template$<$typename T $>$ }\\void {\bfseries push} (unsigned int count)
+\begin{DoxyCompactList}\small\item\em Pushes \textquotesingle{}count\textquotesingle{} elements into the vertex buffer layout. Everytime an element is pushed into a layout, its the same as saying that the layout now contains the same data as before this push and the new \textquotesingle{}count\textquotesingle{} elements pushed. This is a template function with no implementation, use the specialized methods. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}\label{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}} 
+template$<$$>$ void {\bfseries push} (unsigned int count)
+\begin{DoxyCompactList}\small\item\em Now the vertex data will have \textquotesingle{}count\textquotesingle{} more floats at the end. Be aware that vertex data alignment must be of 4 bytes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}\label{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}} 
+template$<$$>$ void {\bfseries push} (unsigned int count)
+\begin{DoxyCompactList}\small\item\em Now the vertex data will have \textquotesingle{}count\textquotesingle{} more unsigned ints at the end. Be aware that vertex data alignment must be of 4 bytes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}\label{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}} 
+template$<$$>$ void {\bfseries push} (unsigned int count)
+\begin{DoxyCompactList}\small\item\em Now the vertex data will have \textquotesingle{}count\textquotesingle{} more unsigned ints at the end. Be aware that vertex data alignment must be of 4 bytes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}\label{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}} 
+template$<$$>$ void {\bfseries push} (unsigned int count)
+\begin{DoxyCompactList}\small\item\em Now the vertex data will have \textquotesingle{}count\textquotesingle{} more unsigned ints at the end. Be aware that vertex data alignment must be of 4 bytes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}\label{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}} 
+template$<$$>$ void {\bfseries push} (unsigned int count)
+\begin{DoxyCompactList}\small\item\em Now the vertex data will have \textquotesingle{}count\textquotesingle{} more unsigned ints at the end. Be aware that vertex data alignment must be of 4 bytes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}\label{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}} 
+template$<$$>$ void {\bfseries push} (unsigned int count)
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}\label{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}} 
+template$<$$>$ void {\bfseries push} (unsigned int count)
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}\label{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}} 
+template$<$$>$ void {\bfseries push} (unsigned int count)
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}\label{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}} 
+template$<$$>$ void {\bfseries push} (unsigned int count)
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}\label{class_voxel_eng_1_1vertex_buffer_layout_a002f57db91d20840b470c38e262ad9d7}} 
+template$<$$>$ void {\bfseries push} (unsigned int count)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Represents a vertex buffer\textquotesingle{}s layout. This layout gives information about how the data sent to the GPU is formed. For example, it could tell that the first 32bits of a vertex\textquotesingle{}s data is a float that represents the position of said vertex in the x-\/axis. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{vertex_buffer_layout_8h}{vertex\+Buffer\+Layout.\+h}}\item 
+code/vertex\+Buffer\+Layout.\+cpp\end{DoxyCompactItemize}

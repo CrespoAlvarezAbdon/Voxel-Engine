@@ -1,0 +1,735 @@
+\hypertarget{_a_i_a_p_i_8h_source}{}\doxysection{AIAPI.\+h}
+\label{_a_i_a_p_i_8h_source}\index{code/AIAPI.h@{code/AIAPI.h}}
+\mbox{\hyperlink{_a_i_a_p_i_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_AIAPI\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#define \_VOXELENG\_AIAPI\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <atomic>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <cstddef>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <concepts>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <deque>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <initializer\_list>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <list>}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{19 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#include <unordered\_map>}}
+\DoxyCodeLine{21 \textcolor{preprocessor}{\#include <unordered\_set>}}
+\DoxyCodeLine{22 \textcolor{preprocessor}{\#include <fstream>}}
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#include <filesystem>}}
+\DoxyCodeLine{24 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{chunk_8h}{chunk.h}}"{}}}
+\DoxyCodeLine{25 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{26 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{entity_8h}{entity.h}}"{}}}
+\DoxyCodeLine{27 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{game_8h}{game.h}}"{}}}
+\DoxyCodeLine{28 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{logger_8h}{logger.h}}"{}}}
+\DoxyCodeLine{29 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{time_8h}{time.h}}"{}}}
+\DoxyCodeLine{30 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{world_gen_8h}{worldGen.h}}"{}}}
+\DoxyCodeLine{31 }
+\DoxyCodeLine{32 }
+\DoxyCodeLine{33 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{34 }
+\DoxyCodeLine{35     \textcolor{keyword}{namespace }AIAPI \{}
+\DoxyCodeLine{36 }
+\DoxyCodeLine{38         \textcolor{comment}{//Forward declarations.//}}
+\DoxyCodeLine{40 \textcolor{comment}{}}
+\DoxyCodeLine{41         \textcolor{keyword}{class }trainingGame;}
+\DoxyCodeLine{42 }
+\DoxyCodeLine{43 }
+\DoxyCodeLine{45         \textcolor{comment}{//Enum classes.//}}
+\DoxyCodeLine{47 \textcolor{comment}{}}
+\DoxyCodeLine{51         \textcolor{keyword}{enum class} \mbox{\hyperlink{_a_i_a_p_i_8h_ae762db48ef500f736f7460e77249c24e}{recordPlayMode}} \{FORWARD, PAUSE, BACKWARDS\};}
+\DoxyCodeLine{52 }
+\DoxyCodeLine{53 }
+\DoxyCodeLine{55         \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{57 \textcolor{comment}{}}
+\DoxyCodeLine{62         \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1agent_action_arg}{agentActionArg}} \{}
+\DoxyCodeLine{63 }
+\DoxyCodeLine{64         \textcolor{keyword}{public}:}
+\DoxyCodeLine{65 }
+\DoxyCodeLine{66             \textcolor{comment}{/*}}
+\DoxyCodeLine{67 \textcolor{comment}{            Attributes.}}
+\DoxyCodeLine{68 \textcolor{comment}{            */}}
+\DoxyCodeLine{69 }
+\DoxyCodeLine{73             \textcolor{keyword}{enum class} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1agent_action_arg_af43e02e9cb657831ae34c4a8794af19e}{type}} \{ INT, UINT, FLOAT, CHAR, BOOL, BLOCK, BLOCKVIEWDIR \} tag;}
+\DoxyCodeLine{74 }
+\DoxyCodeLine{75             \textcolor{keyword}{union }\{}
+\DoxyCodeLine{76 }
+\DoxyCodeLine{77                 \textcolor{keywordtype}{int} i;}
+\DoxyCodeLine{78                 \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} ui;}
+\DoxyCodeLine{79                 \textcolor{keywordtype}{float} f;}
+\DoxyCodeLine{80                 \textcolor{keywordtype}{char} c;}
+\DoxyCodeLine{81                 \textcolor{keywordtype}{bool} b;}
+\DoxyCodeLine{82                 block bl;}
+\DoxyCodeLine{83                 \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{blockViewDir}} bvd;}
+\DoxyCodeLine{84 }
+\DoxyCodeLine{85             \};}
+\DoxyCodeLine{86 }
+\DoxyCodeLine{87 }
+\DoxyCodeLine{88             \textcolor{comment}{/*}}
+\DoxyCodeLine{89 \textcolor{comment}{            Methods.}}
+\DoxyCodeLine{90 \textcolor{comment}{            */}}
+\DoxyCodeLine{91 }
+\DoxyCodeLine{92             \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{93 }
+\DoxyCodeLine{97             agentActionArg(\textcolor{keywordtype}{int} value);}
+\DoxyCodeLine{98 }
+\DoxyCodeLine{102             agentActionArg(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} value);}
+\DoxyCodeLine{103 }
+\DoxyCodeLine{107             agentActionArg(\textcolor{keywordtype}{float} value);}
+\DoxyCodeLine{108 }
+\DoxyCodeLine{112             agentActionArg(\textcolor{keywordtype}{char} value);}
+\DoxyCodeLine{113 }
+\DoxyCodeLine{117             agentActionArg(\textcolor{keywordtype}{bool} value);}
+\DoxyCodeLine{118 }
+\DoxyCodeLine{122             agentActionArg(block value);}
+\DoxyCodeLine{123 }
+\DoxyCodeLine{127             agentActionArg(\mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{blockViewDir}} value);}
+\DoxyCodeLine{128 }
+\DoxyCodeLine{129 }
+\DoxyCodeLine{130         \textcolor{keyword}{private}:}
+\DoxyCodeLine{131 }
+\DoxyCodeLine{132             \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} unionSize\_ = 6;}
+\DoxyCodeLine{133 }
+\DoxyCodeLine{134         \};}
+\DoxyCodeLine{135 }
+\DoxyCodeLine{136 }
+\DoxyCodeLine{142         \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action}{AIagentAction}} \{}
+\DoxyCodeLine{143 }
+\DoxyCodeLine{144         \textcolor{keyword}{public}:}
+\DoxyCodeLine{145 }
+\DoxyCodeLine{146             \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{147 }
+\DoxyCodeLine{153             \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action}{AIagentAction}}(\textcolor{keywordtype}{void}(*action)(), std::initializer\_list<agentActionArg::type> paramTypes);}
+\DoxyCodeLine{154 }
+\DoxyCodeLine{155 }
+\DoxyCodeLine{156             \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{157 }
+\DoxyCodeLine{161             \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1agent_action_arg_af43e02e9cb657831ae34c4a8794af19e}{agentActionArg::type}} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action_a90226bd90b38985839c7e4e9efbeee4e}{paramType}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} index) \textcolor{keyword}{const};}
+\DoxyCodeLine{162 }
+\DoxyCodeLine{163 }
+\DoxyCodeLine{164             \textcolor{comment}{// Misc.}}
+\DoxyCodeLine{165 }
+\DoxyCodeLine{170             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action_a3f73fd818553df179fe4bc6bebf3b910}{playRecordedAction}}();}
+\DoxyCodeLine{171 }
+\DoxyCodeLine{172 }
+\DoxyCodeLine{173         \textcolor{keyword}{private}:}
+\DoxyCodeLine{174 }
+\DoxyCodeLine{175             void(*action\_)();}
+\DoxyCodeLine{176             \textcolor{keyword}{const} std::vector<agentActionArg::type> paramTypes\_;}
+\DoxyCodeLine{177 }
+\DoxyCodeLine{178         \};}
+\DoxyCodeLine{179 }
+\DoxyCodeLine{180         \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action_a3f73fd818553df179fe4bc6bebf3b910}{AIagentAction::playRecordedAction}}() \{}
+\DoxyCodeLine{181 }
+\DoxyCodeLine{182             action\_();}
+\DoxyCodeLine{183 }
+\DoxyCodeLine{184         \}}
+\DoxyCodeLine{185 }
+\DoxyCodeLine{186 }
+\DoxyCodeLine{191         \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{aiGame}} \{}
+\DoxyCodeLine{192 }
+\DoxyCodeLine{193         \textcolor{keyword}{public}:}
+\DoxyCodeLine{194 }
+\DoxyCodeLine{195             \textcolor{comment}{// Initialization.}}
+\DoxyCodeLine{196 }
+\DoxyCodeLine{201             \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_abca3af31c5f5400ba11eb6339780a733}{init}}();}
+\DoxyCodeLine{202 }
+\DoxyCodeLine{203 }
+\DoxyCodeLine{204             \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{205 }
+\DoxyCodeLine{212             \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a134bd672878d2689cac37dd5e1fc5b41}{aiGame}}();}
+\DoxyCodeLine{213 }
+\DoxyCodeLine{214 }
+\DoxyCodeLine{215             \textcolor{comment}{// Observers: general.}}
+\DoxyCodeLine{216 }
+\DoxyCodeLine{220             \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{aiGame}}* \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a40174611804b23771a4d3fd29975cd5c}{selectedGame}}();}
+\DoxyCodeLine{221 }
+\DoxyCodeLine{226             \textcolor{keyword}{static} \textcolor{keyword}{const} std::string\& \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a27c9d7408015ff41259ee16d03f5ecaa}{recordFilename}}();}
+\DoxyCodeLine{227 }
+\DoxyCodeLine{231             \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa8a0a5615124b0af74af0056d6cf86c7}{recording}}();}
+\DoxyCodeLine{232 }
+\DoxyCodeLine{236             \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a972af3a73b389a9cbe1b936909c2bdaf}{playingRecord}}();}
+\DoxyCodeLine{237 }
+\DoxyCodeLine{242             \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a07716c35f1aa85e38b8fd6b737f6d26d}{playingRecordForward}}();}
+\DoxyCodeLine{243 }
+\DoxyCodeLine{247             \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6b12f1f548fc73d492543ff698f30f01}{recordPaused}}();}
+\DoxyCodeLine{248 }
+\DoxyCodeLine{252             \textcolor{keyword}{const} std::string\& \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4b89903410df7c2832fa4c9f6ad5c2e4}{name}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{253 }
+\DoxyCodeLine{257             \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a611fab249bfc8d3b72559d1d193d9db2}{isAgentRegistered}}(agentID agentID) \textcolor{keyword}{const};}
+\DoxyCodeLine{258 }
+\DoxyCodeLine{262             \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_adba3af56f9cfc44f3b7d3f9864f7f5f2}{entityIsAgent}}(entityID entityID) \textcolor{keyword}{const};}
+\DoxyCodeLine{263 }
+\DoxyCodeLine{267             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ae5331739c389189e5dd5919ded290b4b}{getAgentEntityID}}(agentID agentID) \textcolor{keyword}{const};}
+\DoxyCodeLine{268 }
+\DoxyCodeLine{273             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ae36ac01c4bfc63eee20e0b5e5da99227}{getEntityAgentID}}(entityID entityID) \textcolor{keyword}{const};}
+\DoxyCodeLine{274 }
+\DoxyCodeLine{275 }
+\DoxyCodeLine{276             \textcolor{comment}{// Observers: Agent actions API. }}
+\DoxyCodeLine{277 }
+\DoxyCodeLine{282             \textcolor{keyword}{template} <\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{283             T \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a20fc5e9985d80c3678d26828e24c12ca}{getParam}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} index) \textcolor{keyword}{const} = \textcolor{keyword}{delete};}
+\DoxyCodeLine{284 }
+\DoxyCodeLine{289             \textcolor{keyword}{template} <>}
+\DoxyCodeLine{290             \textcolor{keywordtype}{int} getParam<int>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} index) \textcolor{keyword}{const};}
+\DoxyCodeLine{291 }
+\DoxyCodeLine{296             \textcolor{keyword}{template} <>}
+\DoxyCodeLine{297             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} getParam<unsigned int>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} index) \textcolor{keyword}{const};}
+\DoxyCodeLine{298 }
+\DoxyCodeLine{303             \textcolor{keyword}{template} <>}
+\DoxyCodeLine{304             \textcolor{keywordtype}{float} getParam<float>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} index) \textcolor{keyword}{const};}
+\DoxyCodeLine{305 }
+\DoxyCodeLine{310             \textcolor{keyword}{template} <>}
+\DoxyCodeLine{311             \textcolor{keywordtype}{char} getParam<char>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} index) \textcolor{keyword}{const};}
+\DoxyCodeLine{312 }
+\DoxyCodeLine{317             \textcolor{keyword}{template} <>}
+\DoxyCodeLine{318             \textcolor{keywordtype}{bool} getParam<bool>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} index) \textcolor{keyword}{const};}
+\DoxyCodeLine{319 }
+\DoxyCodeLine{324             \textcolor{keyword}{template} <>}
+\DoxyCodeLine{325             block getParam<block>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} index) \textcolor{keyword}{const};}
+\DoxyCodeLine{326 }
+\DoxyCodeLine{331             \textcolor{keyword}{template} <>}
+\DoxyCodeLine{332             \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{blockViewDir}} getParam<blockViewDir>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} index) \textcolor{keyword}{const};}
+\DoxyCodeLine{333 }
+\DoxyCodeLine{338             \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8d8b7534897162be21fc33fe94a6c782}{hasModifiedLevel}}(agentID agentID) \textcolor{keyword}{const};}
+\DoxyCodeLine{339 }
+\DoxyCodeLine{344             \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a0c3413fb92c2f3a49efe0bbcfe7785fe}{recordAgentModifiedBlocks}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{345 }
+\DoxyCodeLine{346 }
+\DoxyCodeLine{347             \textcolor{comment}{// Modifiers: general.}}
+\DoxyCodeLine{348 }
+\DoxyCodeLine{354             \textcolor{keyword}{template} <\textcolor{keyword}{class} T>}
+\DoxyCodeLine{355             \textcolor{keyword}{requires} std::derived\_from<T, aiGame>}
+\DoxyCodeLine{356             \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa86993a5085293e32ab0d2103d547cfc}{registerGame}}(\textcolor{keyword}{const} std::string\& gameName);}
+\DoxyCodeLine{357 }
+\DoxyCodeLine{362             \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a7e06b3c2816f8d4853be9550162e7750}{selectGame}}(\textcolor{keyword}{const} std::string\& gameName);}
+\DoxyCodeLine{363 }
+\DoxyCodeLine{369             \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a7e06b3c2816f8d4853be9550162e7750}{selectGame}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} index);}
+\DoxyCodeLine{370 }
+\DoxyCodeLine{375             \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a611697f37b3ad37000c574c0faeaecc5}{startGame}}();}
+\DoxyCodeLine{376 }
+\DoxyCodeLine{382             \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a042c6cde5e9fea5c84e40ea4c39a8975}{finishGame}}();}
+\DoxyCodeLine{383 }
+\DoxyCodeLine{388             \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a5f6ca864870f2fc1d9a820ae86d65cbf}{listAIGames}}();}
+\DoxyCodeLine{389 }
+\DoxyCodeLine{390             \textcolor{comment}{/*}}
+\DoxyCodeLine{391 \textcolor{comment}{            * @brief Change between the different record playing modes.}}
+\DoxyCodeLine{392 \textcolor{comment}{            */}}
+\DoxyCodeLine{393             \textcolor{keyword}{static} \textcolor{keywordtype}{void} changeRecordPlayMode(\mbox{\hyperlink{_a_i_a_p_i_8h_ae762db48ef500f736f7460e77249c24e}{recordPlayMode}} mode);}
+\DoxyCodeLine{394 }
+\DoxyCodeLine{395             \textcolor{comment}{/*}}
+\DoxyCodeLine{396 \textcolor{comment}{            * @brief Stops the current record playback.}}
+\DoxyCodeLine{397 \textcolor{comment}{            */}}
+\DoxyCodeLine{398             \textcolor{keyword}{static} \textcolor{keywordtype}{void} stopPlayingRecord();}
+\DoxyCodeLine{399 }
+\DoxyCodeLine{400             \textcolor{comment}{/*}}
+\DoxyCodeLine{401 \textcolor{comment}{            * @brief Generate the level to be used when using AI agents without}}
+\DoxyCodeLine{402 \textcolor{comment}{            * the graphical part of the engine.}}
+\DoxyCodeLine{403 \textcolor{comment}{            */}}
+\DoxyCodeLine{404             \textcolor{keywordtype}{void} generateAIWorld(\textcolor{keyword}{const} std::string\& path = \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{405 }
+\DoxyCodeLine{412             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa96112932a96298959eebdea2529eb7e}{selectAIworld}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} individualID);}
+\DoxyCodeLine{413 }
+\DoxyCodeLine{422             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1f0febc8a123d529a297cca6029615be}{selectOriginalWorld}}();}
+\DoxyCodeLine{423 }
+\DoxyCodeLine{424 }
+\DoxyCodeLine{425             \textcolor{comment}{// Modifiers: Agent actions' API.}}
+\DoxyCodeLine{426 }
+\DoxyCodeLine{430             \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa7944410244fef8e418e30ceebddd2cb}{registerAction}}(\textcolor{keyword}{const} std::string\& actionName, \textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1_a_iagent_action}{AIagentAction}}\& action);}
+\DoxyCodeLine{431 }
+\DoxyCodeLine{435             \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a9bc40c8f2e4f9389cb34a8531c1a6113}{isInWorld}}(\textcolor{keyword}{const} VoxelEng::vec3\& pos);}
+\DoxyCodeLine{436 }
+\DoxyCodeLine{440             \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a9bc40c8f2e4f9389cb34a8531c1a6113}{isInWorld}}(\textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} y, \textcolor{keywordtype}{int} z);}
+\DoxyCodeLine{441 }
+\DoxyCodeLine{446             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ae093e95b3f3a67d467cbdda7bcc47264}{recordAction}}(\textcolor{keyword}{const} std::string\& actionName, std::initializer\_list<agentActionArg> args);}
+\DoxyCodeLine{447 }
+\DoxyCodeLine{452             block \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab627553b39e440832bd0ebfc19361f7e}{getLastModifiedBlock}}(agentID agentID, \textcolor{keywordtype}{bool} popBlock = \textcolor{keyword}{false});}
+\DoxyCodeLine{453             }
+\DoxyCodeLine{458             block \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a17bb2ab67db4dbe3dfd9c4453e104ff6}{getFirstModifiedBlock}}(agentID agentID, \textcolor{keywordtype}{bool} popBlock = \textcolor{keyword}{false});}
+\DoxyCodeLine{459 }
+\DoxyCodeLine{463             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_af5bc26f7c838ff40480733fdba4fd11a}{initBlockModRecording}}();}
+\DoxyCodeLine{464 }
+\DoxyCodeLine{469             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a67dd19d165ffd02c1750418a90ae325e}{clearBlockModRecording}}();}
+\DoxyCodeLine{470 }
+\DoxyCodeLine{471             \textcolor{comment}{/*}}
+\DoxyCodeLine{472 \textcolor{comment}{            @brief Same as "{}aiGame::getLastModifiedBlock"{} or "{}aiGame::getFirstModifiedBlock"{}, but}}
+\DoxyCodeLine{473 \textcolor{comment}{            with access to any entry from the list by using their numerical indices.}}
+\DoxyCodeLine{474 \textcolor{comment}{            This method cannot pop out a modified block entry from the agent's record because}}
+\DoxyCodeLine{475 \textcolor{comment}{            it would render said record invalid as it would no longer contain a}}
+\DoxyCodeLine{476 \textcolor{comment}{            sequence of instantly followed block modifications.}}
+\DoxyCodeLine{477 \textcolor{comment}{            */}}
+\DoxyCodeLine{478             block getModifiedBlock(entityID entityID, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} blockIndex);}
+\DoxyCodeLine{479 }
+\DoxyCodeLine{483             \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{blockViewDir}} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6c7821ce83969c86b61a01c60e5a6976}{getBlockViewDir}}(agentID agentID);}
+\DoxyCodeLine{484 }
+\DoxyCodeLine{485 }
+\DoxyCodeLine{486             \textcolor{comment}{// Modifiers: AI agent actions.}}
+\DoxyCodeLine{487             \textcolor{comment}{//}}
+\DoxyCodeLine{488             \textcolor{comment}{// Each AI agent action must be encoded with an unique unsigned integer to}}
+\DoxyCodeLine{489             \textcolor{comment}{// be able to save AI matches' records in files.}}
+\DoxyCodeLine{490             \textcolor{comment}{// In order to implement new agent actions for a AI game derived from the API classes,}}
+\DoxyCodeLine{491             \textcolor{comment}{// use aiGame::nAPIActionsInRecord() as the starting code for your new actions.}}
+\DoxyCodeLine{492             \textcolor{comment}{// If your AI game is deriving from a AI game class not from the official API classes,}}
+\DoxyCodeLine{493             \textcolor{comment}{// then you should use baseAIgameClass::actionCodeForDerived() as all classes}}
+\DoxyCodeLine{494             \textcolor{comment}{// that derive from aiGame must implement them.}}
+\DoxyCodeLine{495             \textcolor{comment}{// Every AI agent action method implemented must be a static method inside the class}}
+\DoxyCodeLine{496             \textcolor{comment}{// representing your AI game and it's fist parameter must always we the object}}
+\DoxyCodeLine{497             \textcolor{comment}{// that represents the AI game instance.}}
+\DoxyCodeLine{498             \textcolor{comment}{// WARNING. If an implemented AI agent action behaves differently when playing it backwards at }}
+\DoxyCodeLine{499             \textcolor{comment}{// least the first parameter must be the same when playing said action forward and backwards.}}
+\DoxyCodeLine{500             \textcolor{comment}{// Otherwise the program's execution falls on undefined behaviour.}}
+\DoxyCodeLine{501 }
+\DoxyCodeLine{510             block \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8ba6bcc94d172ec6c29f8c26831a5618}{setBlock}}(entityID entityID, \textcolor{keyword}{const} vec3\& pos, block blockID, \textcolor{keywordtype}{bool} record);}
+\DoxyCodeLine{511 }
+\DoxyCodeLine{520             block \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8ba6bcc94d172ec6c29f8c26831a5618}{setBlock}}(entityID entityID, \textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} y, \textcolor{keywordtype}{int} z, block blockID, \textcolor{keywordtype}{bool} record);}
+\DoxyCodeLine{521 }
+\DoxyCodeLine{525             std::vector<block> \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a5f6db48b606d57ada1524532920a4bec}{getBlocksBox}}(\textcolor{keyword}{const} vec3\& pos1, \textcolor{keyword}{const} vec3\& pos2);}
+\DoxyCodeLine{526 }
+\DoxyCodeLine{530             std::vector<block> \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a5f6db48b606d57ada1524532920a4bec}{getBlocksBox}}(\textcolor{keywordtype}{int} x1, \textcolor{keywordtype}{int} y1, \textcolor{keywordtype}{int} z1, \textcolor{keywordtype}{int} x2, \textcolor{keywordtype}{int} y2, \textcolor{keywordtype}{int} z2);}
+\DoxyCodeLine{531 }
+\DoxyCodeLine{535             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a2caa3bb6a8f8fee253741502f43afefa}{moveEntity}}(entityID entityID, \textcolor{keyword}{const} vec3\& movement);}
+\DoxyCodeLine{536 }
+\DoxyCodeLine{540             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a2caa3bb6a8f8fee253741502f43afefa}{moveEntity}}(entityID entityID, \textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} y, \textcolor{keywordtype}{int} z);}
+\DoxyCodeLine{541 }
+\DoxyCodeLine{545             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab890985bd3ee2b92c16c5cd6e89f101d}{setEntityPos}}(\textcolor{keywordtype}{unsigned} entityID, \textcolor{keyword}{const} vec3\& pos);}
+\DoxyCodeLine{546 }
+\DoxyCodeLine{550             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab890985bd3ee2b92c16c5cd6e89f101d}{setEntityPos}}(\textcolor{keywordtype}{unsigned} entityID, \textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} y, \textcolor{keywordtype}{int} z);}
+\DoxyCodeLine{551 }
+\DoxyCodeLine{556             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aecdf991ca323368f686e9b2ab30df07b}{rotateAgentViewDir}}(agentID agentID, \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{blockViewDir}} direction);}
+\DoxyCodeLine{557 }
+\DoxyCodeLine{562             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6ce8be74b405c29d7087f1f647c7c75b}{rotateEntity}}(entityID entityID, \textcolor{keyword}{const} vec3\& rot);}
+\DoxyCodeLine{563 }
+\DoxyCodeLine{568             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6ce8be74b405c29d7087f1f647c7c75b}{rotateEntity}}(\textcolor{keywordtype}{unsigned} entityID, \textcolor{keywordtype}{float} rotX, \textcolor{keywordtype}{float} rotY, \textcolor{keywordtype}{float} rotZ);}
+\DoxyCodeLine{569 }
+\DoxyCodeLine{574             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a62e4f7fa78d797a745eb8720f1bf30fe}{inverseRotateEntity}}(\textcolor{keywordtype}{unsigned} entityID, \textcolor{keyword}{const} vec3\& rot);}
+\DoxyCodeLine{575 }
+\DoxyCodeLine{580             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a62e4f7fa78d797a745eb8720f1bf30fe}{inverseRotateEntity}}(\textcolor{keywordtype}{unsigned} entityID, \textcolor{keywordtype}{float} rotX, \textcolor{keywordtype}{float} rotY, \textcolor{keywordtype}{float} rotZ);}
+\DoxyCodeLine{581 }
+\DoxyCodeLine{585             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ad483d93fd23c87c8742fa72322c42e81}{createEntity}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} entityTypeID, \textcolor{keyword}{const} vec3\& pos, \textcolor{keyword}{const} vec3\& rot);}
+\DoxyCodeLine{586 }
+\DoxyCodeLine{590             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ad483d93fd23c87c8742fa72322c42e81}{createEntity}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} entityTypeID, \textcolor{keywordtype}{int} posX, \textcolor{keywordtype}{int} posY, \textcolor{keywordtype}{int} posZ, \textcolor{keywordtype}{float} rotX, \textcolor{keywordtype}{float} rotY, \textcolor{keywordtype}{float} rotZ);}
+\DoxyCodeLine{591 }
+\DoxyCodeLine{596             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a10ae3b97931c5f2e2d725d05e2a7583e}{createAgent}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} entityTypeID, \textcolor{keyword}{const} vec3\& pos, \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{blockViewDir}} faceViewDir = blockViewDir::PLUSX);}
+\DoxyCodeLine{597 }
+\DoxyCodeLine{602             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a10ae3b97931c5f2e2d725d05e2a7583e}{createAgent}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} entityTypeID, \textcolor{keywordtype}{int} x, \textcolor{keywordtype}{int} y, \textcolor{keywordtype}{int} z, \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{blockViewDir}} faceViewDir = blockViewDir::PLUSX);}
+\DoxyCodeLine{603             }
+\DoxyCodeLine{607             vec3 \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a2455541f93c3a3acb78e16693a79c2fa}{getEntityPos}}(entityID entityID);}
+\DoxyCodeLine{608 }
+\DoxyCodeLine{612             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a59f05ce008e6f71dfa7ed73bc1fe9819}{changeEntityActiveState}}(entityID entityID, \textcolor{keywordtype}{bool} state);}
+\DoxyCodeLine{613 }
+\DoxyCodeLine{617             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a9596654e0561a62cf4e73e9765ae345e}{deleteEntity}}(entityID entityID);}
+\DoxyCodeLine{618 }
+\DoxyCodeLine{622             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a3dfa19934ec8c1a875e3bf69eea7cc20}{deleteAgent}}(agentID agentID);}
+\DoxyCodeLine{623 }
+\DoxyCodeLine{628             \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a39fbde582bbd5131bf3e10c32310acf6}{playRecordTick}}();}
+\DoxyCodeLine{629 }
+\DoxyCodeLine{630 }
+\DoxyCodeLine{631             \textcolor{comment}{// Clean up.}}
+\DoxyCodeLine{632 }
+\DoxyCodeLine{638             \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a161245fd8bcd7585ebeede6408280c6c}{cleanUp}}();}
+\DoxyCodeLine{639 }
+\DoxyCodeLine{640         \textcolor{keyword}{protected}:}
+\DoxyCodeLine{641 }
+\DoxyCodeLine{642             \textcolor{comment}{/*}}
+\DoxyCodeLine{643 \textcolor{comment}{            Attributes.}}
+\DoxyCodeLine{644 \textcolor{comment}{            */}}
+\DoxyCodeLine{645 }
+\DoxyCodeLine{646             \textcolor{keyword}{static} std::atomic<bool> recording\_,}
+\DoxyCodeLine{647                                      recordAgentModifiedBlocks\_,}
+\DoxyCodeLine{648                                      gameInProgress\_;}
+\DoxyCodeLine{649             \textcolor{keyword}{static} std::ofstream saveFile\_;}
+\DoxyCodeLine{650             \textcolor{keyword}{static} std::string saveDataBuffer\_, }
+\DoxyCodeLine{651                                saveFileName\_;}
+\DoxyCodeLine{652             \textcolor{keyword}{static} \mbox{\hyperlink{_a_i_a_p_i_8h_ae762db48ef500f736f7460e77249c24e}{recordPlayMode}} recordPlayMode\_;}
+\DoxyCodeLine{653 }
+\DoxyCodeLine{654             \textcolor{comment}{// Stores a sequence of instantly followed block modifications done to each AI agent's level by the agent itself.}}
+\DoxyCodeLine{655             \textcolor{keyword}{static} std::vector<std::deque<block>> agentModifiedBlocks\_;}
+\DoxyCodeLine{656 }
+\DoxyCodeLine{657             \textcolor{comment}{// Stores the entity's ID in order of creation to, for example, properly delete them when playing a record in backwards mode.}}
+\DoxyCodeLine{658             \textcolor{keyword}{static} std::list<entityID> entityIDcreationOrder\_;}
+\DoxyCodeLine{659             \textcolor{comment}{// Stores the agent's ID in order of creation to, for example, properly delete them when playing a record in backwards mode.}}
+\DoxyCodeLine{660             \textcolor{keyword}{static} std::list<agentID> agentIDcreationOrder\_;}
+\DoxyCodeLine{661 }
+\DoxyCodeLine{662             std::string name\_;}
+\DoxyCodeLine{663 }
+\DoxyCodeLine{664             \textcolor{comment}{// Set of entities' ID who are also AI agents.  }}
+\DoxyCodeLine{665             std::unordered\_set<entityID> entityIDIsAgent;}
+\DoxyCodeLine{666 }
+\DoxyCodeLine{667             std::vector<agentID> AIagentEntityID\_; \textcolor{comment}{// Map between AI agent ID and entity ID.}}
+\DoxyCodeLine{668             std::vector<blockViewDir> AIagentLookDirection\_; \textcolor{comment}{// Map between AI agent ID and the direction its looking at.}}
+\DoxyCodeLine{669             std::unordered\_set<agentID> freeAIagentID\_;}
+\DoxyCodeLine{670 }
+\DoxyCodeLine{671 }
+\DoxyCodeLine{672             \textcolor{comment}{/*}}
+\DoxyCodeLine{673 \textcolor{comment}{            Methods.}}
+\DoxyCodeLine{674 \textcolor{comment}{            */}}
+\DoxyCodeLine{675 }
+\DoxyCodeLine{676 }
+\DoxyCodeLine{677             \textcolor{comment}{// Modifiers: general.}}
+\DoxyCodeLine{678 }
+\DoxyCodeLine{679             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} generalSetUp\_() = 0;}
+\DoxyCodeLine{680 }
+\DoxyCodeLine{681             \textcolor{comment}{/*}}
+\DoxyCodeLine{682 \textcolor{comment}{            User should be able to select any of the options that the AI game offers}}
+\DoxyCodeLine{683 \textcolor{comment}{            (train the ai agents (if able), test the ai agents, generate a record from a match...)}}
+\DoxyCodeLine{684 \textcolor{comment}{            from the menu displayed in the terminal with this method.}}
+\DoxyCodeLine{685 \textcolor{comment}{            */}}
+\DoxyCodeLine{686             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} displayMenu\_() = 0;}
+\DoxyCodeLine{687 }
+\DoxyCodeLine{688             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} setUpTest\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nAgents, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nEpochs) = 0;}
+\DoxyCodeLine{689 }
+\DoxyCodeLine{690             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} test\_() = 0;}
+\DoxyCodeLine{691 }
+\DoxyCodeLine{692             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} setUpRecord\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nAgents) = 0;}
+\DoxyCodeLine{693 }
+\DoxyCodeLine{694             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} record\_() = 0;}
+\DoxyCodeLine{695 }
+\DoxyCodeLine{696             \textcolor{comment}{/*}}
+\DoxyCodeLine{697 \textcolor{comment}{            Used when creating the AI agents for the first time or}}
+\DoxyCodeLine{698 \textcolor{comment}{            resetting them to their initial state.}}
+\DoxyCodeLine{699 \textcolor{comment}{            If 'nAgents' has a different value than the one}}
+\DoxyCodeLine{700 \textcolor{comment}{            in the last call made to this method, then it will}}
+\DoxyCodeLine{701 \textcolor{comment}{            delete or create AI agents depending on the difference.}}
+\DoxyCodeLine{702 \textcolor{comment}{            */}}
+\DoxyCodeLine{703             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} spawnAgents\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nAgents) = 0;}
+\DoxyCodeLine{704 }
+\DoxyCodeLine{705             \textcolor{comment}{/*}}
+\DoxyCodeLine{706 \textcolor{comment}{            It returns 1 if 'recordPath' is invalid.}}
+\DoxyCodeLine{707 \textcolor{comment}{            It returns 2 if 'recordFilename' is invalid.}}
+\DoxyCodeLine{708 \textcolor{comment}{            It returns 3 if there is already a file at 'recordPath' + 'recordFilename' + "{}.rec"{}.}}
+\DoxyCodeLine{709 \textcolor{comment}{            If any of the parameters is invalid an error message will be printed to the terminal.}}
+\DoxyCodeLine{710 \textcolor{comment}{            Otherwise it returns 0 and plays and generates the record of said AI match.}}
+\DoxyCodeLine{711 \textcolor{comment}{            If this method does not return 0 that means that the record has not}}
+\DoxyCodeLine{712 \textcolor{comment}{            been generated and the match has not been played.}}
+\DoxyCodeLine{713 \textcolor{comment}{            The extension "{}.rec"{} is automatically appended to 'filename'.}}
+\DoxyCodeLine{714 \textcolor{comment}{            */}}
+\DoxyCodeLine{715             \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} generateRecord\_(\textcolor{keyword}{const} std::string\& path, \textcolor{keyword}{const} std::string\& filename);}
+\DoxyCodeLine{716 }
+\DoxyCodeLine{717             \textcolor{comment}{/*}}
+\DoxyCodeLine{718 \textcolor{comment}{            Returns 1 if 'path' is invalid.}}
+\DoxyCodeLine{719 \textcolor{comment}{            Otherwise returns 0 and plays the recorded AI match using the engine's graphical mode.}}
+\DoxyCodeLine{720 \textcolor{comment}{            The extension "{}.rec"{} is automatically appended to 'filename'.}}
+\DoxyCodeLine{721 \textcolor{comment}{            The record must be executed in ticks inside the game's graphical mode.}}
+\DoxyCodeLine{722 \textcolor{comment}{            To go forward or backwards in the record, use aiGame::playRecordTick()}}
+\DoxyCodeLine{723 \textcolor{comment}{            */}}
+\DoxyCodeLine{724             \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} playRecord\_(\textcolor{keyword}{const} std::string\& path);}
+\DoxyCodeLine{725 }
+\DoxyCodeLine{726 }
+\DoxyCodeLine{727             \textcolor{comment}{// Clean up.}}
+\DoxyCodeLine{728 }
+\DoxyCodeLine{729             \textcolor{comment}{/*}}
+\DoxyCodeLine{730 \textcolor{comment}{            Clean up any resources for the last AI game loaded.}}
+\DoxyCodeLine{731 \textcolor{comment}{            */}}
+\DoxyCodeLine{732             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} cleanUpGame\_() = 0;}
+\DoxyCodeLine{733 }
+\DoxyCodeLine{734             \textcolor{comment}{/*}}
+\DoxyCodeLine{735 \textcolor{comment}{            Clean up any resources for the last AI game match.}}
+\DoxyCodeLine{736 \textcolor{comment}{            */}}
+\DoxyCodeLine{737             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} cleanUpMatch\_() = 0;}
+\DoxyCodeLine{738 }
+\DoxyCodeLine{739         \textcolor{keyword}{private}:}
+\DoxyCodeLine{740 }
+\DoxyCodeLine{741             \textcolor{comment}{/*}}
+\DoxyCodeLine{742 \textcolor{comment}{            Attributes.}}
+\DoxyCodeLine{743 \textcolor{comment}{            */}}
+\DoxyCodeLine{744             }
+\DoxyCodeLine{745             \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialised\_,}
+\DoxyCodeLine{746                         canForwardReplay\_,}
+\DoxyCodeLine{747                         canBackwardReplay\_,}
+\DoxyCodeLine{748                         backwardAIactionFound\_;}
+\DoxyCodeLine{749             \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{aiGame}}* selectedGame\_;}
+\DoxyCodeLine{750             \textcolor{keyword}{static} std::unordered\_map<std::string, aiGame*> aiGames\_;}
+\DoxyCodeLine{751             \textcolor{keyword}{static} std::vector<aiGame*> gamesRegisterOrder\_;}
+\DoxyCodeLine{752             \textcolor{keyword}{static} std::vector<AIagentAction> aiRecordActions\_;}
+\DoxyCodeLine{753             \textcolor{keyword}{static} std::unordered\_map<std::string, unsigned int> AIactionsName\_;}
+\DoxyCodeLine{754             }
+\DoxyCodeLine{755             \textcolor{comment}{// Specific to recording file parsing.}}
+\DoxyCodeLine{756             \textcolor{keyword}{static} std::ifstream loadedFile\_;}
+\DoxyCodeLine{757             \textcolor{keyword}{static} std::string readFileData\_,}
+\DoxyCodeLine{758                                readWord\_;}
+\DoxyCodeLine{759             \textcolor{keyword}{static} \textcolor{keywordtype}{char} readCharacter\_;}
+\DoxyCodeLine{760             \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} readActionCode\_,}
+\DoxyCodeLine{761                                 readParamTypeInd\_,}
+\DoxyCodeLine{762                                 readState\_, \textcolor{comment}{// 0 = Reading aigame line.}}
+\DoxyCodeLine{763                                             \textcolor{comment}{// 1 = Reading level line.}}
+\DoxyCodeLine{764                                             \textcolor{comment}{// 2 = Reading actions.}}
+\DoxyCodeLine{765                                 lastParamInd\_, \textcolor{comment}{// ID of the entity that has the tick function that executes a tick from the record playing process.}}
+\DoxyCodeLine{766                                 lastRawParamInd\_;}
+\DoxyCodeLine{767             \textcolor{keyword}{static} \textcolor{keywordtype}{double} oldActualTime\_;}
+\DoxyCodeLine{768 }
+\DoxyCodeLine{769             \textcolor{comment}{// Here are allocated the parameters available for the agent actions that are going to be executed as part of a record of an AI game.}}
+\DoxyCodeLine{770             \textcolor{comment}{// The parameters are used the following way.}}
+\DoxyCodeLine{771             \textcolor{comment}{// First, parameters should be allocated right before calling aiGame::playActionRecordForward(unsigned int actionCode)}}
+\DoxyCodeLine{772             \textcolor{comment}{// or aiGame::playActionRecordForward(unsigned int actionCode) with the action code that corresponds}}
+\DoxyCodeLine{773             \textcolor{comment}{// to the AI agent action that needs the parameters we are allocating.}}
+\DoxyCodeLine{774             \textcolor{comment}{// Second, those parameters should be allocated in the first indices of these vectors. For example, if we need to execute the AI}}
+\DoxyCodeLine{775             \textcolor{comment}{// agent action with code 2 and that action needs 2 floats and 1 unsigned integer as parameters, we will}}
+\DoxyCodeLine{776             \textcolor{comment}{// allocate said 2 float parameters in the first and second indices of the float input parameters vector, replacing any old values if they exist.}}
+\DoxyCodeLine{777             \textcolor{comment}{// The unsigned integer parameter will be allocated in the third index, overwriting any previous existing value.}}
+\DoxyCodeLine{778             \textcolor{comment}{// Third, only basic data types are supported (VoxelEng::block is a typedef of a basic data type).}}
+\DoxyCodeLine{779             \textcolor{comment}{// Last, only alphanumeric characters are allowed as char type parameteres.}}
+\DoxyCodeLine{780             \textcolor{keyword}{static} std::vector<agentActionArg> params\_;}
+\DoxyCodeLine{781             \textcolor{keyword}{static} std::deque<std::string> rawParams\_;}
+\DoxyCodeLine{782 }
+\DoxyCodeLine{783             \textcolor{comment}{// Specific to recording file parsing ends.}}
+\DoxyCodeLine{784 }
+\DoxyCodeLine{785 }
+\DoxyCodeLine{786             \textcolor{comment}{/*}}
+\DoxyCodeLine{787 \textcolor{comment}{            Methods.}}
+\DoxyCodeLine{788 \textcolor{comment}{            */}}
+\DoxyCodeLine{789 }
+\DoxyCodeLine{790             \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{791 }
+\DoxyCodeLine{792             \textcolor{keywordtype}{bool} actionRegistered\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} actionCode) \textcolor{keyword}{const};}
+\DoxyCodeLine{793 }
+\DoxyCodeLine{794 }
+\DoxyCodeLine{795             \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{796 }
+\DoxyCodeLine{797             \textcolor{comment}{/*}}
+\DoxyCodeLine{798 \textcolor{comment}{            Push the parameter in raw string form provided by 'param' and parses it to the corresponding type depending}}
+\DoxyCodeLine{799 \textcolor{comment}{            on the 'actionCode' provided and the parameter type index related to said action code.}}
+\DoxyCodeLine{800 \textcolor{comment}{            */}}
+\DoxyCodeLine{801             \textcolor{keywordtype}{void} pushParam\_(\textcolor{keyword}{const} std::string\& param, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} actionCode, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} paramTypeInd);}
+\DoxyCodeLine{802 }
+\DoxyCodeLine{803             \textcolor{comment}{/*}}
+\DoxyCodeLine{804 \textcolor{comment}{            Same as pushParam\_() but it is used to push and parse all the parameters related to the specified action}}
+\DoxyCodeLine{805 \textcolor{comment}{            in 'actionCode'. The parameters (in std::string raw format as they are directly read from a recording file)}}
+\DoxyCodeLine{806 \textcolor{comment}{            that are going to be pushed and parsed need to be stored in order (the first parameter in}}
+\DoxyCodeLine{807 \textcolor{comment}{            the queue is the first one to be pushed and parsed) in the deque rawParams\_.}}
+\DoxyCodeLine{808 \textcolor{comment}{            */}}
+\DoxyCodeLine{809             \textcolor{keywordtype}{void} pushParams\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} actionCode);}
+\DoxyCodeLine{810 }
+\DoxyCodeLine{811             \textcolor{keywordtype}{void} playActionRecordForward\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} actionCode);}
+\DoxyCodeLine{812 }
+\DoxyCodeLine{813             \textcolor{keywordtype}{void} playActionRecordBackwards\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} actionCode);}
+\DoxyCodeLine{814 }
+\DoxyCodeLine{815         \};}
+\DoxyCodeLine{816 }
+\DoxyCodeLine{817         \textcolor{keyword}{inline} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a134bd672878d2689cac37dd5e1fc5b41}{aiGame::aiGame}}()}
+\DoxyCodeLine{818         \{\}}
+\DoxyCodeLine{819 }
+\DoxyCodeLine{820         \textcolor{keyword}{inline} \textcolor{keyword}{const} std::string\& \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a27c9d7408015ff41259ee16d03f5ecaa}{aiGame::recordFilename}}() \{}
+\DoxyCodeLine{821 }
+\DoxyCodeLine{822             \textcolor{keywordflow}{return} saveFileName\_;}
+\DoxyCodeLine{823 }
+\DoxyCodeLine{824         \}}
+\DoxyCodeLine{825 }
+\DoxyCodeLine{826         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa8a0a5615124b0af74af0056d6cf86c7}{aiGame::recording}}() \{}
+\DoxyCodeLine{827         }
+\DoxyCodeLine{828             \textcolor{keywordflow}{return} recording\_;}
+\DoxyCodeLine{829         }
+\DoxyCodeLine{830         \}}
+\DoxyCodeLine{831 }
+\DoxyCodeLine{832         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a972af3a73b389a9cbe1b936909c2bdaf}{aiGame::playingRecord}}() \{}
+\DoxyCodeLine{833 }
+\DoxyCodeLine{834             \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1game_adb43cda9cea85b3a5280a8046395e3fb}{game::selectedEngineMode}}() == engineMode::PLAYINGRECORD;}
+\DoxyCodeLine{835 }
+\DoxyCodeLine{836         \}}
+\DoxyCodeLine{837 }
+\DoxyCodeLine{838         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a07716c35f1aa85e38b8fd6b737f6d26d}{aiGame::playingRecordForward}}() \{}
+\DoxyCodeLine{839 }
+\DoxyCodeLine{840             \textcolor{keywordflow}{return} recordPlayMode\_ == recordPlayMode::FORWARD;}
+\DoxyCodeLine{841 }
+\DoxyCodeLine{842         \}}
+\DoxyCodeLine{843 }
+\DoxyCodeLine{844         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6b12f1f548fc73d492543ff698f30f01}{aiGame::recordPaused}}() \{}
+\DoxyCodeLine{845         }
+\DoxyCodeLine{846             \textcolor{keywordflow}{return} recordPlayMode\_ == recordPlayMode::PAUSE;}
+\DoxyCodeLine{847         }
+\DoxyCodeLine{848         \}}
+\DoxyCodeLine{849 }
+\DoxyCodeLine{850         \textcolor{keyword}{inline} \textcolor{keyword}{const} std::string\& \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a4b89903410df7c2832fa4c9f6ad5c2e4}{aiGame::name}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{851         }
+\DoxyCodeLine{852             \textcolor{keywordflow}{return} name\_;}
+\DoxyCodeLine{853         }
+\DoxyCodeLine{854         \}}
+\DoxyCodeLine{855 }
+\DoxyCodeLine{856         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a611fab249bfc8d3b72559d1d193d9db2}{aiGame::isAgentRegistered}}(agentID agentID)\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{857 }
+\DoxyCodeLine{858             \textcolor{keywordflow}{return} agentID < AIagentEntityID\_.size() \&\& freeAIagentID\_.find(agentID) == freeAIagentID\_.cend();}
+\DoxyCodeLine{859 }
+\DoxyCodeLine{860         \}}
+\DoxyCodeLine{861 }
+\DoxyCodeLine{862         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a0c3413fb92c2f3a49efe0bbcfe7785fe}{aiGame::recordAgentModifiedBlocks}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{863         }
+\DoxyCodeLine{864             \textcolor{keywordflow}{return} recordAgentModifiedBlocks\_;}
+\DoxyCodeLine{865         }
+\DoxyCodeLine{866         \}}
+\DoxyCodeLine{867 }
+\DoxyCodeLine{868         \textcolor{keyword}{template} <\textcolor{keyword}{class} T>}
+\DoxyCodeLine{869         \textcolor{keyword}{requires} std::derived\_from<T, aiGame>}
+\DoxyCodeLine{870         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_aa86993a5085293e32ab0d2103d547cfc}{aiGame::registerGame}}(\textcolor{keyword}{const} std::string\& gameName) \{}
+\DoxyCodeLine{871         }
+\DoxyCodeLine{872             \textcolor{keywordflow}{if} (aiGames\_.find(gameName) == aiGames\_.cend()) \{}
+\DoxyCodeLine{873             }
+\DoxyCodeLine{874                 T* newGame = \textcolor{keyword}{new} T();}
+\DoxyCodeLine{875 }
+\DoxyCodeLine{876                 aiGames\_.insert(\{ gameName, newGame \});}
+\DoxyCodeLine{877                 gamesRegisterOrder\_.push\_back(newGame);}
+\DoxyCodeLine{878 }
+\DoxyCodeLine{879                 \textcolor{comment}{// Create the directories for the records and AI data for these games}}
+\DoxyCodeLine{880                 \textcolor{comment}{// if not already created.}}
+\DoxyCodeLine{881                 std::string recordsPath = \textcolor{stringliteral}{"{}records/"{}} + gameName,}
+\DoxyCodeLine{882                             AIDataPath = \textcolor{stringliteral}{"{}AIData/"{}} + gameName,}
+\DoxyCodeLine{883                             terrainPath = \textcolor{stringliteral}{"{}saves/recordingWorlds/"{}} + gameName;}
+\DoxyCodeLine{884                 \textcolor{keywordflow}{if} (std::filesystem::exists(recordsPath)) \{}
+\DoxyCodeLine{885                     }
+\DoxyCodeLine{886                     \textcolor{keywordflow}{if} (!std::filesystem::is\_directory(recordsPath))}
+\DoxyCodeLine{887                         \mbox{\hyperlink{class_voxel_eng_1_1logger_a71bf58e041bae58e2ff5be50cd11e382}{logger::errorLog}}(recordsPath + \textcolor{stringliteral}{"{} is occupied by a file. Please move it."{}});}
+\DoxyCodeLine{888 }
+\DoxyCodeLine{889                 \}}
+\DoxyCodeLine{890                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{891                     std::filesystem::create\_directory(recordsPath);}
+\DoxyCodeLine{892 }
+\DoxyCodeLine{893                 \textcolor{keywordflow}{if} (std::derived\_from<T, trainingGame>) \{}
+\DoxyCodeLine{894                 }
+\DoxyCodeLine{895                     \textcolor{keywordflow}{if} (std::filesystem::exists(AIDataPath)) \{}
+\DoxyCodeLine{896 }
+\DoxyCodeLine{897                         \textcolor{keywordflow}{if} (!std::filesystem::is\_directory(AIDataPath))}
+\DoxyCodeLine{898                             \mbox{\hyperlink{class_voxel_eng_1_1logger_a71bf58e041bae58e2ff5be50cd11e382}{logger::errorLog}}(AIDataPath + \textcolor{stringliteral}{"{} is occupied by a file. Please move it."{}});}
+\DoxyCodeLine{899 }
+\DoxyCodeLine{900                     \}}
+\DoxyCodeLine{901                     \textcolor{keywordflow}{else}}
+\DoxyCodeLine{902                         std::filesystem::create\_directory(AIDataPath);}
+\DoxyCodeLine{903                 }
+\DoxyCodeLine{904                 \}}
+\DoxyCodeLine{905 }
+\DoxyCodeLine{906                 \textcolor{keywordflow}{if} (std::filesystem::exists(terrainPath)) \{}
+\DoxyCodeLine{907 }
+\DoxyCodeLine{908                     \textcolor{keywordflow}{if} (!std::filesystem::is\_directory(terrainPath))}
+\DoxyCodeLine{909                         \mbox{\hyperlink{class_voxel_eng_1_1logger_a71bf58e041bae58e2ff5be50cd11e382}{logger::errorLog}}(terrainPath + \textcolor{stringliteral}{"{} is occupied by a file. Please move it."{}});}
+\DoxyCodeLine{910 }
+\DoxyCodeLine{911                 \}}
+\DoxyCodeLine{912                 \textcolor{keywordflow}{else}}
+\DoxyCodeLine{913                     std::filesystem::create\_directory(\textcolor{stringliteral}{"{}saves/recordingWorlds/"{}} + gameName);}
+\DoxyCodeLine{914 }
+\DoxyCodeLine{915             \}}
+\DoxyCodeLine{916             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{917                 \mbox{\hyperlink{class_voxel_eng_1_1logger_a71bf58e041bae58e2ff5be50cd11e382}{logger::errorLog}}(\textcolor{stringliteral}{"{}An AI game with the name "{}} + gameName + \textcolor{stringliteral}{"{} is already registered"{}});}
+\DoxyCodeLine{918         }
+\DoxyCodeLine{919         \}}
+\DoxyCodeLine{920 }
+\DoxyCodeLine{921         \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a1f0febc8a123d529a297cca6029615be}{aiGame::selectOriginalWorld}}() \{}
+\DoxyCodeLine{922 }
+\DoxyCodeLine{923             \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_a04c1f10f13aab327b7a7a888be4015ad}{chunkManager::selectOriginalWorld}}();}
+\DoxyCodeLine{924 }
+\DoxyCodeLine{925         \}}
+\DoxyCodeLine{926 }
+\DoxyCodeLine{927         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a9bc40c8f2e4f9389cb34a8531c1a6113}{aiGame::isInWorld}}(\textcolor{keyword}{const} VoxelEng::vec3\& pos) \{}
+\DoxyCodeLine{928 }
+\DoxyCodeLine{929             \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a9bc40c8f2e4f9389cb34a8531c1a6113}{isInWorld}}(pos.x, pos.y, pos.z);}
+\DoxyCodeLine{930 }
+\DoxyCodeLine{931         \}}
+\DoxyCodeLine{932 }
+\DoxyCodeLine{933         \textcolor{keyword}{inline} block \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8ba6bcc94d172ec6c29f8c26831a5618}{aiGame::setBlock}}(agentID agentID, \textcolor{keyword}{const} vec3\& pos, VoxelEng::block blockID, \textcolor{keywordtype}{bool} record) \{}
+\DoxyCodeLine{934 }
+\DoxyCodeLine{935             \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a8ba6bcc94d172ec6c29f8c26831a5618}{setBlock}}(agentID, pos.x, pos.y, pos.z, blockID, record);}
+\DoxyCodeLine{936 }
+\DoxyCodeLine{937         \}}
+\DoxyCodeLine{938 }
+\DoxyCodeLine{939         \textcolor{keyword}{inline} std::vector<block> \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a5f6db48b606d57ada1524532920a4bec}{aiGame::getBlocksBox}}(\textcolor{keywordtype}{int} x1, \textcolor{keywordtype}{int} y1, \textcolor{keywordtype}{int} z1, \textcolor{keywordtype}{int} x2, \textcolor{keywordtype}{int} y2, \textcolor{keywordtype}{int} z2) \{}
+\DoxyCodeLine{940 }
+\DoxyCodeLine{941             \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager_af990d211978fa0e1fcf934b7bde38aa3}{chunkManager::getBlocksBox}}(x1, y1, z1, x2, y2, z2);}
+\DoxyCodeLine{942 }
+\DoxyCodeLine{943         \}}
+\DoxyCodeLine{944 }
+\DoxyCodeLine{945         \textcolor{keyword}{inline} std::vector<block> \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a5f6db48b606d57ada1524532920a4bec}{aiGame::getBlocksBox}}(\textcolor{keyword}{const} vec3\& pos1, \textcolor{keyword}{const} vec3\& pos2) \{}
+\DoxyCodeLine{946 }
+\DoxyCodeLine{947             \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a5f6db48b606d57ada1524532920a4bec}{getBlocksBox}}(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);}
+\DoxyCodeLine{948 }
+\DoxyCodeLine{949         \}}
+\DoxyCodeLine{950 }
+\DoxyCodeLine{951         \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a2caa3bb6a8f8fee253741502f43afefa}{aiGame::moveEntity}}(entityID entityID, \textcolor{keyword}{const} vec3\& movement) \{}
+\DoxyCodeLine{952 }
+\DoxyCodeLine{953             \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a2caa3bb6a8f8fee253741502f43afefa}{moveEntity}}(entityID, movement.x, movement.y, movement.z);}
+\DoxyCodeLine{954 }
+\DoxyCodeLine{955         \}}
+\DoxyCodeLine{956 }
+\DoxyCodeLine{957         \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab890985bd3ee2b92c16c5cd6e89f101d}{aiGame::setEntityPos}}(\textcolor{keywordtype}{unsigned} entityID, \textcolor{keyword}{const} vec3\& pos) \{}
+\DoxyCodeLine{958 }
+\DoxyCodeLine{959             \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ab890985bd3ee2b92c16c5cd6e89f101d}{setEntityPos}}(entityID, pos.x, pos.y, pos.z);}
+\DoxyCodeLine{960 }
+\DoxyCodeLine{961         \}}
+\DoxyCodeLine{962 }
+\DoxyCodeLine{963         \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6ce8be74b405c29d7087f1f647c7c75b}{aiGame::rotateEntity}}(entityID entityID, \textcolor{keyword}{const} vec3\& rot) \{}
+\DoxyCodeLine{964         }
+\DoxyCodeLine{965             \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a6ce8be74b405c29d7087f1f647c7c75b}{rotateEntity}}(entityID, rot.x, rot.y, rot.z);}
+\DoxyCodeLine{966         }
+\DoxyCodeLine{967         \}}
+\DoxyCodeLine{968 }
+\DoxyCodeLine{969         \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a62e4f7fa78d797a745eb8720f1bf30fe}{aiGame::inverseRotateEntity}}(\textcolor{keywordtype}{unsigned} entityID, \textcolor{keyword}{const} vec3\& rot) \{}
+\DoxyCodeLine{970         }
+\DoxyCodeLine{971             \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a62e4f7fa78d797a745eb8720f1bf30fe}{inverseRotateEntity}}(entityID, rot.x, rot.y, rot.z);}
+\DoxyCodeLine{972         }
+\DoxyCodeLine{973         \}}
+\DoxyCodeLine{974 }
+\DoxyCodeLine{975         \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ad483d93fd23c87c8742fa72322c42e81}{aiGame::createEntity}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} entityTypeID, \textcolor{keyword}{const} vec3\& pos, \textcolor{keyword}{const} vec3\& rot) \{}
+\DoxyCodeLine{976 }
+\DoxyCodeLine{977             \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_ad483d93fd23c87c8742fa72322c42e81}{createEntity}}(entityTypeID, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z);}
+\DoxyCodeLine{978 }
+\DoxyCodeLine{979         \}}
+\DoxyCodeLine{980 }
+\DoxyCodeLine{981         \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a10ae3b97931c5f2e2d725d05e2a7583e}{aiGame::createAgent}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} entityTypeID, \textcolor{keyword}{const} vec3\& pos, \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{blockViewDir}} faceViewDir) \{}
+\DoxyCodeLine{982 }
+\DoxyCodeLine{983             \textcolor{keywordflow}{return} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a10ae3b97931c5f2e2d725d05e2a7583e}{createAgent}}(entityTypeID, pos.x, pos.y, pos.z, faceViewDir);}
+\DoxyCodeLine{984 }
+\DoxyCodeLine{985         \}}
+\DoxyCodeLine{986 }
+\DoxyCodeLine{987         \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} aiGame::actionRegistered\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} actionCode)\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{988         }
+\DoxyCodeLine{989             \textcolor{keywordflow}{return} actionCode < aiRecordActions\_.size();}
+\DoxyCodeLine{990         }
+\DoxyCodeLine{991         \}}
+\DoxyCodeLine{992 }
+\DoxyCodeLine{993         \textcolor{comment}{// 'trainingGame' class.}}
+\DoxyCodeLine{994 }
+\DoxyCodeLine{995         \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1training_game}{trainingGame}} : \textcolor{keyword}{public} \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game}{aiGame}} \{}
+\DoxyCodeLine{996 }
+\DoxyCodeLine{997         \textcolor{keyword}{public}:}
+\DoxyCodeLine{998 }
+\DoxyCodeLine{999             \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{1000 }
+\DoxyCodeLine{1001         \textcolor{keyword}{protected}:}
+\DoxyCodeLine{1002 }
+\DoxyCodeLine{1003             \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{1004 }
+\DoxyCodeLine{1005             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} setUpTraining\_(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} nAgents, \textcolor{keywordtype}{unsigned} nEpochs) = 0;}
+\DoxyCodeLine{1006 }
+\DoxyCodeLine{1007             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} train\_() = 0;}
+\DoxyCodeLine{1008 }
+\DoxyCodeLine{1009             \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} trainLoadedAgents\_(\textcolor{keyword}{const} std::string\& path) = 0;}
+\DoxyCodeLine{1010 }
+\DoxyCodeLine{1011             \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} testLoadedAgents\_(\textcolor{keyword}{const} std::string\& path) = 0;}
+\DoxyCodeLine{1012 }
+\DoxyCodeLine{1013             \textcolor{keyword}{virtual} \textcolor{keywordtype}{bool} recordLoadedAgents\_(\textcolor{keyword}{const} std::string\& path) = 0;}
+\DoxyCodeLine{1014 }
+\DoxyCodeLine{1015             \textcolor{comment}{/*}}
+\DoxyCodeLine{1016 \textcolor{comment}{            Returns the number of loaded agents or 0 if an error ocurred.}}
+\DoxyCodeLine{1017 \textcolor{comment}{            */}}
+\DoxyCodeLine{1018             \textcolor{keyword}{virtual} \textcolor{keywordtype}{int} loadAgentsData\_(\textcolor{keyword}{const} std::string\& path) = 0;}
+\DoxyCodeLine{1019 }
+\DoxyCodeLine{1020             \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} saveAgentsData\_(\textcolor{keyword}{const} std::string\& path) = 0;}
+\DoxyCodeLine{1021 }
+\DoxyCodeLine{1022             \textcolor{comment}{/*}}
+\DoxyCodeLine{1023 \textcolor{comment}{            It returns 1 if 'recordPath' is invalid.}}
+\DoxyCodeLine{1024 \textcolor{comment}{            It returns 2 if 'recordFilename' is invalid.}}
+\DoxyCodeLine{1025 \textcolor{comment}{            It returns 3 if there is already a file at 'recordPath' + 'recordFilename' + "{}.rec"{}.}}
+\DoxyCodeLine{1026 \textcolor{comment}{            It returns 4 if 'agentsPath' is invalid.}}
+\DoxyCodeLine{1027 \textcolor{comment}{            If any of the parameters is invalid an error message will be printed to the terminal.}}
+\DoxyCodeLine{1028 \textcolor{comment}{            Otherwise it returns 0 and plays and generates the record of said AI match.}}
+\DoxyCodeLine{1029 \textcolor{comment}{            If this method does not return 0 that means that the record has not}}
+\DoxyCodeLine{1030 \textcolor{comment}{            been generated and the match has not been played.}}
+\DoxyCodeLine{1031 \textcolor{comment}{            The extension "{}.rec"{} is automatically appended to 'filename'.}}
+\DoxyCodeLine{1032 \textcolor{comment}{            */}}
+\DoxyCodeLine{1033             \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} generateRecordLoadedAgents\_(\textcolor{keyword}{const} std::string\& recordPath, \textcolor{keyword}{const} std::string\& \mbox{\hyperlink{class_voxel_eng_1_1_a_i_a_p_i_1_1ai_game_a27c9d7408015ff41259ee16d03f5ecaa}{recordFilename}},    }
+\DoxyCodeLine{1034                                                      \textcolor{keyword}{const} std::string\& agentsPath);}
+\DoxyCodeLine{1035 }
+\DoxyCodeLine{1036         \};}
+\DoxyCodeLine{1037 }
+\DoxyCodeLine{1038     \}}
+\DoxyCodeLine{1039 }
+\DoxyCodeLine{1040 \}}
+\DoxyCodeLine{1041 }
+\DoxyCodeLine{1042 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

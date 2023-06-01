@@ -1,0 +1,55 @@
+\hypertarget{class_voxel_eng_1_1thread_pool}{}\doxysection{Voxel\+Eng\+::thread\+Pool Class Reference}
+\label{class_voxel_eng_1_1thread_pool}\index{VoxelEng::threadPool@{VoxelEng::threadPool}}
+
+
+A collection of threads that are commonly used to divide the workload of one heavy task in terms of computational power into several smaller tasks that can be completed in parallel by those threads.  
+
+
+
+
+{\ttfamily \#include $<$thread\+Pool.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1thread_pool_ad8fd40e4c43fee7ed6e90af130346fea}\label{class_voxel_eng_1_1thread_pool_ad8fd40e4c43fee7ed6e90af130346fea}} 
+{\bfseries thread\+Pool} (unsigned int n\+Threads)
+\begin{DoxyCompactList}\small\item\em Class constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1thread_pool_aa8edb61bd1cfcd9edba1a0c141aa9fee}\label{class_voxel_eng_1_1thread_pool_aa8edb61bd1cfcd9edba1a0c141aa9fee}} 
+void {\bfseries wait\+For\+Task} ()
+\begin{DoxyCompactList}\small\item\em The caller thread will be blocked until a task to complete can be assigned to it. Then that thread will process said task and, if there are no other tasks to do, wait until a new task is given or the corresponding \mbox{\hyperlink{class_voxel_eng_1_1thread_pool}{thread\+Pool}} object is shutdown or terminated. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1thread_pool_ac6fc36ca7318e43b09417760e466393e}\label{class_voxel_eng_1_1thread_pool_ac6fc36ca7318e43b09417760e466393e}} 
+void {\bfseries submit\+Job} (\mbox{\hyperlink{class_voxel_eng_1_1job}{job}} $\ast$\mbox{\hyperlink{class_voxel_eng_1_1job}{job}})
+\begin{DoxyCompactList}\small\item\em Submit a job to complete to the thread pool. WARNING. Be sure to properly manage the heap memory assigned to the \textquotesingle{}job\textquotesingle{} objects. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1thread_pool_a6a997e73c30360a368aaac8f28da15e6}\label{class_voxel_eng_1_1thread_pool_a6a997e73c30360a368aaac8f28da15e6}} 
+void {\bfseries shutdown} ()
+\begin{DoxyCompactList}\small\item\em The thread pool will no longer accept submitted jobs. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1thread_pool_a7d447df970571daf226d813e9acb8f03}\label{class_voxel_eng_1_1thread_pool_a7d447df970571daf226d813e9acb8f03}} 
+void {\bfseries await\+No\+Jobs} ()
+\begin{DoxyCompactList}\small\item\em Locks the caller thread until this \textquotesingle{}threadpool\textquotesingle{} object has no jobs left to process. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1thread_pool_af7c3b4ced40ef03ab8393ac7a0401e41}\label{class_voxel_eng_1_1thread_pool_af7c3b4ced40ef03ab8393ac7a0401e41}} 
+void {\bfseries await\+Termination} ()
+\begin{DoxyCompactList}\small\item\em Locks the caller thread until the thread pool is terminated, that is, until the thread pool is shutdown and all the threads of the pool have joined properly. WARNING. Call \mbox{\hyperlink{class_voxel_eng_1_1thread_pool_a6a997e73c30360a368aaac8f28da15e6}{shutdown()}} before this method. The resources allocated by the thread pool are freed when it is terminated. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{class_voxel_eng_1_1thread_pool_a920fca8a41774821b3f7c1d68b6691d0}{terminated}} () const
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1thread_pool_a834e3b40eb8c8bb72cae6f5aa6af4cbc}\label{class_voxel_eng_1_1thread_pool_a834e3b40eb8c8bb72cae6f5aa6af4cbc}} 
+{\bfseries $\sim$thread\+Pool} ()
+\begin{DoxyCompactList}\small\item\em Class destructor. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A collection of threads that are commonly used to divide the workload of one heavy task in terms of computational power into several smaller tasks that can be completed in parallel by those threads. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_voxel_eng_1_1thread_pool_a920fca8a41774821b3f7c1d68b6691d0}\label{class_voxel_eng_1_1thread_pool_a920fca8a41774821b3f7c1d68b6691d0}} 
+\index{VoxelEng::threadPool@{VoxelEng::threadPool}!terminated@{terminated}}
+\index{terminated@{terminated}!VoxelEng::threadPool@{VoxelEng::threadPool}}
+\doxysubsubsection{\texorpdfstring{terminated()}{terminated()}}
+{\footnotesize\ttfamily bool Voxel\+Eng\+::thread\+Pool\+::terminated (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+Returns true if the thread pool is terminated or false otherwise. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{thread_pool_8h}{thread\+Pool.\+h}}\item 
+code/thread\+Pool.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,132 @@
+\hypertarget{class_voxel_eng_1_1_g_u_imanager}{}\doxysection{Voxel\+Eng\+::GUImanager Class Reference}
+\label{class_voxel_eng_1_1_g_u_imanager}\index{VoxelEng::GUImanager@{VoxelEng::GUImanager}}
+
+
+Manages everything related to GUIelements.  
+
+
+
+
+{\ttfamily \#include $<$gui.\+h$>$}
+
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a7da83b17a9301c6551724c242f92f23b}\label{class_voxel_eng_1_1_g_u_imanager_a7da83b17a9301c6551724c242f92f23b}} 
+static void {\bfseries init} (\mbox{\hyperlink{class_voxel_eng_1_1window}{window}} \&\mbox{\hyperlink{class_voxel_eng_1_1window}{window}}, \mbox{\hyperlink{class_voxel_eng_1_1shader}{shader}} \&\mbox{\hyperlink{class_voxel_eng_1_1shader}{shader}}, \mbox{\hyperlink{class_voxel_eng_1_1renderer}{renderer}} \&\mbox{\hyperlink{class_voxel_eng_1_1renderer}{renderer}})
+\begin{DoxyCompactList}\small\item\em Initialise the GUI management system. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a1b957ad0bfd21f1ee17893d7f3301fd0}\label{class_voxel_eng_1_1_g_u_imanager_a1b957ad0bfd21f1ee17893d7f3301fd0}} 
+static bool {\bfseries is\+MMGUIElement\+Registered} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Returns true if the specified \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} with the graphical main menu execution phase as its GUIcontainer is registered or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a034117f33c4f63cdd7a0841b03b02e3f}\label{class_voxel_eng_1_1_g_u_imanager_a034117f33c4f63cdd7a0841b03b02e3f}} 
+static bool {\bfseries is\+Level\+GUIElement\+Registered} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Returns true if the specified \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} with the level execution phase as its GUIcontainer is registered or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a66fb9836d065ca80aef8ae927b8b2f94}\label{class_voxel_eng_1_1_g_u_imanager_a66fb9836d065ca80aef8ae927b8b2f94}} 
+static bool {\bfseries level\+GUIOpened} ()
+\begin{DoxyCompactList}\small\item\em Returns true if the in-\/level menu is being displayed or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a6c686b6d83b14db7022625079e944cc6}\label{class_voxel_eng_1_1_g_u_imanager_a6c686b6d83b14db7022625079e944cc6}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} $\ast$ {\bfseries last\+Checked\+GUIElement} ()
+\begin{DoxyCompactList}\small\item\em Returns a pointer to the last \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} that was processed by the GUI input processing thread. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_aaa9e611f4023885c6a8a7860ac631502}\label{class_voxel_eng_1_1_g_u_imanager_aaa9e611f4023885c6a8a7860ac631502}} 
+static bool {\bfseries some\+MMGUIChanged} ()
+\begin{DoxyCompactList}\small\item\em Returns true if any \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} with the graphical main menu execution phase as its GUIcontainer was modified in any way or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_af5227ca4a877fe63fa393f5f912a16bd}\label{class_voxel_eng_1_1_g_u_imanager_af5227ca4a877fe63fa393f5f912a16bd}} 
+static bool {\bfseries some\+Level\+GUIChanged} ()
+\begin{DoxyCompactList}\small\item\em Returns true if any \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} with the level execution phase as its GUIcontainer was modified in any way or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_aa07b05ea693bb3d4fae1309e4158abee}\label{class_voxel_eng_1_1_g_u_imanager_aa07b05ea693bb3d4fae1309e4158abee}} 
+static const \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} \& {\bfseries c\+Get\+GUIElement} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Returns the specified \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a2b93142fc7b81bdfd50cfd25429be517}\label{class_voxel_eng_1_1_g_u_imanager_a2b93142fc7b81bdfd50cfd25429be517}} 
+static void {\bfseries set\+Level\+GUIOpened} (bool value)
+\begin{DoxyCompactList}\small\item\em Sets the flag that tells if the in-\/level menu is being displayed or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a7f291adde6e329f906a63653f4f6edee}\label{class_voxel_eng_1_1_g_u_imanager_a7f291adde6e329f906a63653f4f6edee}} 
+static void {\bfseries switch\+Level\+GUIOpened} ()
+\begin{DoxyCompactList}\small\item\em Switches the value of the flag that tells if the in-\/level menu is being displayed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a77de29d9bc68612d46a7c17213f340f8}\label{class_voxel_eng_1_1_g_u_imanager_a77de29d9bc68612d46a7c17213f340f8}} 
+static void {\bfseries set\+MMGUIChanged} (bool value)
+\begin{DoxyCompactList}\small\item\em Sets the flag that tells if any \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} with the graphical main menu execution phase as its GUIcontainer was modified in any way. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a296fb69c733c1a6163b1c580322305e5}\label{class_voxel_eng_1_1_g_u_imanager_a296fb69c733c1a6163b1c580322305e5}} 
+static void {\bfseries set\+Level\+GUIChanged} (bool value)
+\begin{DoxyCompactList}\small\item\em Sets the flag that tells if any \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} with the level execution phase as its GUIcontainer was modified in any way. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a188a384b6d42f00c9747ce88a87d771e}\label{class_voxel_eng_1_1_g_u_imanager_a188a384b6d42f00c9747ce88a87d771e}} 
+static void {\bfseries update\+Ortho\+Matrix} ()
+\begin{DoxyCompactList}\small\item\em Updates the orthographic matrix that is used to render the GUIelements with the newest value of the parameters that it uses. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a52ff59c6377b3679c2d618508071457b}\label{class_voxel_eng_1_1_g_u_imanager_a52ff59c6377b3679c2d618508071457b}} 
+static void {\bfseries bind\+Act\+Key} (const std\+::string \&GUIElement\+Name, \mbox{\hyperlink{controls_8h_af550b48700d4b033518ac433ba6c72bc}{control\+Code}} key)
+\begin{DoxyCompactList}\small\item\em Binds an user input key to activate its assigned GUI function (if any) to a \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. Replaces the last bound key if there was already one. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a65f624c6cf36771a1ad795b75363be9d}\label{class_voxel_eng_1_1_g_u_imanager_a65f624c6cf36771a1ad795b75363be9d}} 
+static void {\bfseries bind\+Act\+Key\+Function} (const std\+::string \&GUIElement\+Name, void($\ast$func)())
+\begin{DoxyCompactList}\small\item\em Binds a GUI function activated with a user input key to a \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. Replaces the last bound function if there was already one. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a1c3a23f5567748d9ba08095602ded7ce}\label{class_voxel_eng_1_1_g_u_imanager_a1c3a23f5567748d9ba08095602ded7ce}} 
+static void {\bfseries bind\+Act\+Key\+Function} (const std\+::string \&GUIElement\+Name, void($\ast$func)(), \mbox{\hyperlink{controls_8h_af550b48700d4b033518ac433ba6c72bc}{control\+Code}} key)
+\begin{DoxyCompactList}\small\item\em Binds a GUI function and the corresponding user input key to activate it to a \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. Replaces the last bound key and function if there was already a bound key or function respectively. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a8128ad2142b76a348ac73894ec1dcbea}\label{class_voxel_eng_1_1_g_u_imanager_a8128ad2142b76a348ac73894ec1dcbea}} 
+static void {\bfseries bind\+Act\+Mouse\+Button} (const std\+::string \&GUIElement\+Name, \mbox{\hyperlink{controls_8h_af550b48700d4b033518ac433ba6c72bc}{control\+Code}} mouse\+Button)
+\begin{DoxyCompactList}\small\item\em Binds an user input mouse button to activate its assigned GUI function (if any) to a \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. Replaces the last bound mouse button if there was already one. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a2ae7abeabc7121ebb5a1be4b6c192442}\label{class_voxel_eng_1_1_g_u_imanager_a2ae7abeabc7121ebb5a1be4b6c192442}} 
+static void {\bfseries bind\+Act\+Mouse\+Button\+Function} (const std\+::string \&GUIElement\+Name, void($\ast$func)())
+\begin{DoxyCompactList}\small\item\em Binds a GUI function activated with mouse button input to a \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. Replaces the last bound function if there was already one. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_af7828a0bbeb042a49a4b2b7431a2587e}\label{class_voxel_eng_1_1_g_u_imanager_af7828a0bbeb042a49a4b2b7431a2587e}} 
+static void {\bfseries bind\+Act\+Mouse\+Button\+Function} (const std\+::string \&GUIElement\+Name, void($\ast$func)(), \mbox{\hyperlink{controls_8h_af550b48700d4b033518ac433ba6c72bc}{control\+Code}} mouse\+Button)
+\begin{DoxyCompactList}\small\item\em Binds a GUI function and the corresponding user input mouse button to activate it to a \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. Replaces the last bound mouse button and function if there was already a bound key or function respectively. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a4ab4cc3ba99981ef44ffdf220776d55e}\label{class_voxel_eng_1_1_g_u_imanager_a4ab4cc3ba99981ef44ffdf220776d55e}} 
+static void {\bfseries change\+GUIState} (const std\+::string \&GUIElement\+Name, bool is\+Enabled)
+\begin{DoxyCompactList}\small\item\em Changes the active state of the specified \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a0f536ab445562c24990dc0d689a8f6b9}\label{class_voxel_eng_1_1_g_u_imanager_a0f536ab445562c24990dc0d689a8f6b9}} 
+static void {\bfseries change\+GUIState} (const std\+::string \&GUIElement\+Name)
+\begin{DoxyCompactList}\small\item\em Changes the active state of the specified \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a970771562df114c6bbb74779bfb79cef}\label{class_voxel_eng_1_1_g_u_imanager_a970771562df114c6bbb74779bfb79cef}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} \& {\bfseries get\+GUIElement} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Returns the specified \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a1a5b0caaaac7a39a60fca3fbd50426b8}\label{class_voxel_eng_1_1_g_u_imanager_a1a5b0caaaac7a39a60fca3fbd50426b8}} 
+static void {\bfseries process\+Level\+GUIInputs} ()
+\begin{DoxyCompactList}\small\item\em Get and process all GUI-\/related inputs that happen inside a game level. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_abe5fb9a9b39051207a7660b5c86b59f9}\label{class_voxel_eng_1_1_g_u_imanager_abe5fb9a9b39051207a7660b5c86b59f9}} 
+static void {\bfseries process\+Main\+Menu\+GUIInputs} ()
+\begin{DoxyCompactList}\small\item\em Get and process all GUI-\/related inputs that happen inside the main menu. WARNING. Must be called in a thread with valid graphics API context. \end{DoxyCompactList}\item 
+static void \mbox{\hyperlink{class_voxel_eng_1_1_g_u_imanager_a4904bdb4e7d02dd449ec985e449c20f3}{add\+GUIBox}} (const std\+::string \&name, float posX, float posY, float sizeX, float sizeY, unsigned int texture\+ID, bool is\+Enabled=true, \mbox{\hyperlink{gui_8h_add5159333ccf3fc175fbf39b02502127}{GUIcontainer}} container=GUIcontainer\+::level, const std\+::string \&parent\+Name=\char`\"{}\char`\"{}, unsigned int layer=0)
+\begin{DoxyCompactList}\small\item\em Screen coordinates range from 0 to 1 in both edges and start at (0, 0) in the lower left corner. If is\+GUIOn\+Main\+Menu is false, then the GUI will only appear inside a game level. WARNING. GUIElements can only be added when loading the game! \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a7dce3064c65089f275afeecf8aef275e}\label{class_voxel_eng_1_1_g_u_imanager_a7dce3064c65089f275afeecf8aef275e}} 
+static void {\bfseries add\+GUIButton} (const std\+::string \&name, float posX, float posY, float sizeX, float sizeY, unsigned int texture\+ID, bool is\+Enabled=true, \mbox{\hyperlink{gui_8h_add5159333ccf3fc175fbf39b02502127}{GUIcontainer}} container=GUIcontainer\+::level, const std\+::string \&parent\+Name=\char`\"{}\char`\"{}, unsigned int layer=0)
+\begin{DoxyCompactList}\small\item\em Screen coordinates range from 0 to 1 in both edges and start at (0, 0) in the lower left corner. WARNING. GUIElements can only be added when loading the game! \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_ad75dd6f7df9843e63e01bc52aacab42e}\label{class_voxel_eng_1_1_g_u_imanager_ad75dd6f7df9843e63e01bc52aacab42e}} 
+static void {\bfseries draw\+GUI} (bool render\+Main\+Menu=false)
+\begin{DoxyCompactList}\small\item\em Draws all active GUI elements. If \char`\"{}render\+Main\+Menu\char`\"{} is equal to true, only GUIElements that correspond to the game level will be drawn if they are active. If it is equal to false, only GUIElements that correspond to the main menu will be drawn if they are active. WARNING. Must be called in a thread with valid graphics API context. WARNING. Must be called with the graphic rendering mode set to 2D and depth test disabled. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a42852e5dadd7074c1e2f034b90fd8395}\label{class_voxel_eng_1_1_g_u_imanager_a42852e5dadd7074c1e2f034b90fd8395}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em Deinitialise the system and clean any resources (heap memory, files...) allocated to it. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manages everything related to GUIelements. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_voxel_eng_1_1_g_u_imanager_a4904bdb4e7d02dd449ec985e449c20f3}\label{class_voxel_eng_1_1_g_u_imanager_a4904bdb4e7d02dd449ec985e449c20f3}} 
+\index{VoxelEng::GUImanager@{VoxelEng::GUImanager}!addGUIBox@{addGUIBox}}
+\index{addGUIBox@{addGUIBox}!VoxelEng::GUImanager@{VoxelEng::GUImanager}}
+\doxysubsubsection{\texorpdfstring{addGUIBox()}{addGUIBox()}}
+{\footnotesize\ttfamily void Voxel\+Eng\+::\+GUImanager\+::add\+GUIBox (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name,  }\item[{float}]{posX,  }\item[{float}]{posY,  }\item[{float}]{sizeX,  }\item[{float}]{sizeY,  }\item[{unsigned int}]{texture\+ID,  }\item[{bool}]{is\+Enabled = {\ttfamily true},  }\item[{\mbox{\hyperlink{gui_8h_add5159333ccf3fc175fbf39b02502127}{GUIcontainer}}}]{container = {\ttfamily GUIcontainer\+:\+:level},  }\item[{const std\+::string \&}]{parent\+Name = {\ttfamily \char`\"{}\char`\"{}},  }\item[{unsigned int}]{layer = {\ttfamily 0} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Screen coordinates range from 0 to 1 in both edges and start at (0, 0) in the lower left corner. If is\+GUIOn\+Main\+Menu is false, then the GUI will only appear inside a game level. WARNING. GUIElements can only be added when loading the game! 
+
+
+\begin{DoxyParams}{Parameters}
+{\em The} & \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}\textquotesingle{}s name. \\
+\hline
+{\em The} & position of the CENTER of the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} in the X axis. \\
+\hline
+{\em The} & position of the CENTER of the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} in the Y axis. \\
+\hline
+{\em How} & much is the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} going to expand from its CENTER in the X axis in both directions. \\
+\hline
+{\em How} & much is the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} going to expand from its CENTER in the Y axis in both directions. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{gui_8h}{gui.\+h}}\item 
+code/gui.\+cpp\end{DoxyCompactItemize}

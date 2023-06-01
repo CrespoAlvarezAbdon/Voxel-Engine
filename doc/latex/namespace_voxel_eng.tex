@@ -1,0 +1,1448 @@
+\hypertarget{namespace_voxel_eng}{}\doxysection{Voxel\+Eng Namespace Reference}
+\label{namespace_voxel_eng}\index{VoxelEng@{VoxelEng}}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+namespace \mbox{\hyperlink{namespace_voxel_eng_1_1_a_i_a_p_i}{AIAPI}}
+\item 
+namespace \mbox{\hyperlink{namespace_voxel_eng_1_1_g_u_i_functions}{GUIFunctions}}
+\item 
+namespace \mbox{\hyperlink{namespace_voxel_eng_1_1_tick_functions}{Tick\+Functions}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1batch}{batch}}
+\begin{DoxyCompactList}\small\item\em Collection of vertex data from the models of many entities. All the models which have their vertices in the same batch will be rendered in one draw call. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1camera}{camera}}
+\begin{DoxyCompactList}\small\item\em Abstraction of an object capable of \char`\"{}viewing\char`\"{} a portion of a simulated 3D world and provide several utilities to later get that vision into a 2D screen. For now it is considered that there is only one camera and that it is attached to the user. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}
+\begin{DoxyCompactList}\small\item\em Represents a section of the voxel world, with its blocks, mesh, position and other infomation. Chunks that are marked as \textquotesingle{}dirty\textquotesingle{} or \textquotesingle{}changed\textquotesingle{} will have their mesh regenerated. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1chunk_manager}{chunk\+Manager}}
+\begin{DoxyCompactList}\small\item\em Used for managing the chunks\textquotesingle{} life cycle, level loading... \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{struct_voxel_eng_1_1chunk_rendering_data}{chunk\+Rendering\+Data}}
+\begin{DoxyCompactList}\small\item\em Wraps up data used to render a chunk. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1color}{color}}
+\begin{DoxyCompactList}\small\item\em Represents the diffent color formats supported by the engine. Only RGBA colour supported for now. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1controls}{controls}}
+\begin{DoxyCompactList}\small\item\em Provides mappings between the control codes supported by the game engine and the control codes supported by the APIs that are currently used to get the user input. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1default_world_gen}{default\+World\+Gen}}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1entity}{entity}}
+\begin{DoxyCompactList}\small\item\em An entity possess a custom 3D model as its representation inside a level and is capable of being associated with actions that affect other entities or the level itself. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1entity_manager}{entity\+Manager}}
+\begin{DoxyCompactList}\small\item\em This class is in charge of encapsulating and abstracting all related to the management of entities in the engine, including the entity part of the AI agents. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1game}{game}}
+\begin{DoxyCompactList}\small\item\em Game engine API responsible for all the basic engines operations (startup, menu/level/\+AI mode loops, access to save slots...). This class also serves as a way to abstract classes that directly implement the engine. For example, instead of storing a reference to the player camera for the engines\textquotesingle{} graphical mode and polluting the code, said camera can be accessed by calling \mbox{\hyperlink{class_voxel_eng_1_1game_a9bc668bc15d84ec26c574c7427cfeafe}{game\+::player\+Camera()}}. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1graphics}{graphics}}
+\begin{DoxyCompactList}\small\item\em Class used to abstract the graphics operations independently of the underlying graphics API (directX, Open\+GL...) that is being used. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1_g_u_i_box}{GUIBox}}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1_g_u_i_button}{GUIButton}}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}}
+\begin{DoxyCompactList}\small\item\em Base class that defines everything that a GUI element should at least have. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1_g_u_imanager}{GUImanager}}
+\begin{DoxyCompactList}\small\item\em Manages everything related to GUIelements. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1index_buffer}{index\+Buffer}}
+\begin{DoxyCompactList}\small\item\em Abstraction of an IBO (index buffer object) that holds indices to vertices. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1input}{input}}
+\begin{DoxyCompactList}\small\item\em Responsible for managing and providing all aspects related to how the engine accepts and process the user input from keyboard and mouse (except standard input). In the case of user input that affects GUIelements, the GUIfunctions and the \mbox{\hyperlink{class_voxel_eng_1_1_g_u_imanager}{GUImanager}} are responsible for managing those cases. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1input_functions}{input\+Functions}}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1job}{job}}
+\begin{DoxyCompactList}\small\item\em Jobs are computational steps that solve some small tasks that are to be processed in a parallel fashion in order to divide the workload of completing a heavy task in terms of computational cost between many threads. That is, said heavy task is divided into smaller tasks that can be completed in parallel. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1logger}{logger}}
+\begin{DoxyCompactList}\small\item\em Utility class to log information and report execution errors to the standard output. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1models}{models}}
+\begin{DoxyCompactList}\small\item\em Provides all utilities required for managing the models that represent the entities inside a level. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1noise}{noise}}
+\begin{DoxyCompactList}\small\item\em Contains some noise generators. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1player}{player}}
+\begin{DoxyCompactList}\small\item\em Abstraction containing everything that defines the entity that represents the user inside the engine. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1renderer}{renderer}}
+\begin{DoxyCompactList}\small\item\em Responsible of properly issuing the draw calls and clearing the window for the next frame. The vertices to draw must be sent using properly bound and prepared VBOs, along with other data structures that they could need. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1shader}{shader}}
+\begin{DoxyCompactList}\small\item\em Abstraction of a graphics API shader. It is usually described as a program executed by the graphics API in order to properly process the vertex data that is sent to the GPU. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1texture}{texture}}
+\begin{DoxyCompactList}\small\item\em Represents a texture, a 2D image usually applied to vertex data in order to give their models an alternative to using solid colors to draw them. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1thread_pool}{thread\+Pool}}
+\begin{DoxyCompactList}\small\item\em A collection of threads that are commonly used to divide the workload of one heavy task in terms of computational power into several smaller tasks that can be completed in parallel by those threads. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1time}{time}}
+\begin{DoxyCompactList}\small\item\em Used to represent time points in the engine. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1timer}{timer}}
+\begin{DoxyCompactList}\small\item\em Provides the capability of measuring the duration of fragments of the engine\textquotesingle{}s code. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{struct_voxel_eng_1_1vertex}{vertex}}
+\begin{DoxyCompactList}\small\item\em Represents a 3D vertex with texture coordinates. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{struct_voxel_eng_1_1vertex2_d}{vertex2D}}
+\begin{DoxyCompactList}\small\item\em Represents a 2D vertex (usually used for drawing GUI). \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1vertex_array}{vertex\+Array}}
+\begin{DoxyCompactList}\small\item\em A vertex array is responsible for collecting the data from the used vertex buffers and the format of this data (stored in \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout}{vertex\+Buffer\+Layout}} objects). \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer}{vertex\+Buffer}}
+\begin{DoxyCompactList}\small\item\em Buffer to store vertex\textquotesingle{}s data to send to the GPU. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{struct_voxel_eng_1_1vertex_buffer_element}{vertex\+Buffer\+Element}}
+\begin{DoxyCompactList}\small\item\em Represents an element of a vertex buffer layout. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout}{vertex\+Buffer\+Layout}}
+\begin{DoxyCompactList}\small\item\em Represents a vertex buffer\textquotesingle{}s layout. This layout gives information about how the data sent to the GPU is formed. For example, it could tell that the first 32bits of a vertex\textquotesingle{}s data is a float that represents the position of said vertex in the x-\/axis. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1window}{window}}
+\begin{DoxyCompactList}\small\item\em Abstraction of the engine\textquotesingle{}s graphical part window. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1world}{world}}
+\begin{DoxyCompactList}\small\item\em Worlds are the greatest level of terrain organization in the engine and are a synonym of level. This class provides capalities that apply globally to an entire world in this engine. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}
+\begin{DoxyCompactList}\small\item\em Provides a basic API for defining custom world generator to create new levels. In order to create one, create a class derived from this one or from another that ultimately has this class as a super class. WARNING. Calling \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{}s constructor or the constructor of any class that derives from \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}} results in undefined behaviour. Use \mbox{\hyperlink{class_voxel_eng_1_1world_gen_abb56ec96cff364a36b739debcde05599}{world\+Gen\+::register\+Gen}} to create a new world generator object from any derived class. The \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{} class auto registers itself into the world generator system, providing a default world generator for performance-\/testing purposes. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef void($\ast$ \mbox{\hyperlink{namespace_voxel_eng_a696b8f3aafebe71e9fc3290288c7ea60}{tick\+Func}}) ()
+\item 
+typedef glm\+::vec3 \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}}
+\item 
+typedef glm\+::vec2 \mbox{\hyperlink{namespace_voxel_eng_aac9fe1393c02a61c2260dac6e23020fb}{vec2}}
+\item 
+typedef unsigned int \mbox{\hyperlink{namespace_voxel_eng_ac318027043a2a1059934dccd47531430}{agent\+ID}}
+\item 
+typedef unsigned int \mbox{\hyperlink{namespace_voxel_eng_a335767f4052c05f566ed810304e5966b}{entity\+ID}}
+\item 
+typedef unsigned short \mbox{\hyperlink{namespace_voxel_eng_af8fc5fb3a5a34d18467d0b412c884a8b}{block}}
+\item 
+typedef unsigned char \mbox{\hyperlink{namespace_voxel_eng_a47a36b96c39f7448714b31bd9a2640e0}{byte}}
+\item 
+typedef float \mbox{\hyperlink{namespace_voxel_eng_a35a52ecafddecf3aadc61ee55fdb144e}{vertex\+Coord}}
+\item 
+typedef float \mbox{\hyperlink{namespace_voxel_eng_a10a827f40f2fd3564e6912ade484827d}{texture\+Coord}}
+\item 
+typedef float \mbox{\hyperlink{namespace_voxel_eng_a485dbed284f61e02ce683e48903a349e}{angle}}
+\item 
+typedef GLint \mbox{\hyperlink{namespace_voxel_eng_a18187b9727a5583b2f354911b06ded42}{normal\+Vec}}
+\item 
+typedef GLFWwindow \mbox{\hyperlink{namespace_voxel_eng_a0b377bf3160ff2b43556c879f1e82a48}{Graphics\+APIWindow}}
+\item 
+typedef std\+::chrono\+::time\+\_\+point$<$ std\+::chrono\+::high\+\_\+resolution\+\_\+clock $>$ \mbox{\hyperlink{namespace_voxel_eng_a43730e42a373d31c3c77701f03e7029c}{time\+Point}}
+\item 
+typedef long long \mbox{\hyperlink{namespace_voxel_eng_abba3512d49474c636a1471035860abaf}{duration}}
+\item 
+typedef std\+::vector$<$ \mbox{\hyperlink{struct_voxel_eng_1_1vertex}{vertex}} $>$ \mbox{\hyperlink{namespace_voxel_eng_aafab33c84de18d9caa6981b47086a2da}{model}}
+\begin{DoxyCompactList}\small\item\em An entity\textquotesingle{}s model is simply a ordered collection of vertices, so that the first one connects with the next, and that one with the next one, etc... in order for the engine to properly draw it. \end{DoxyCompactList}\item 
+typedef std\+::vector$<$ unsigned short $>$ \mbox{\hyperlink{namespace_voxel_eng_a58c826751230d1f562a527403b64e3b4}{triangle}}
+\begin{DoxyCompactList}\small\item\em A triangle is a collection of three vertex indices that correspond to the ones that form it. \end{DoxyCompactList}\item 
+typedef std\+::vector$<$ \mbox{\hyperlink{namespace_voxel_eng_a58c826751230d1f562a527403b64e3b4}{triangle}} $>$ \mbox{\hyperlink{namespace_voxel_eng_afdcf9098e108168832a050a8bcba12db}{model\+Triangles}}
+\begin{DoxyCompactList}\small\item\em Representation of the collection of triangles that forms up an entity\textquotesingle{}s model. \end{DoxyCompactList}\item 
+typedef \mbox{\hyperlink{class_voxel_eng_1_1color}{color}} \mbox{\hyperlink{namespace_voxel_eng_a26a0f71865c5345dfc629c4e5b0039cf}{skybox}}
+\begin{DoxyCompactList}\small\item\em The plain colour that the sky that boxes the entire level. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum class \mbox{\hyperlink{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457}{chunk\+Load\+Level}} \{ \mbox{\hyperlink{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457a7edf0a450fb951533f8733676ffbf712}{NOTLOADED}} = 0
+, \mbox{\hyperlink{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457a07f385f086509a4fa701c6dd09dd293c}{BASICTERRAIN}} = 1
+, \mbox{\hyperlink{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457a5dbbf9237dfcc4f9ee5caad7d493f12d}{DECORATED}} = 2
+ \}
+\begin{DoxyCompactList}\small\item\em The different stages of the chunk\textquotesingle{}s loading process. \end{DoxyCompactList}\item 
+enum class \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bc}{control\+Code}} \{ \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcac8985300acb3e2e90e1fc58827546eda}{no\+Key}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8dbc2828a56856fc152437bd551628b5}{alpha1}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae155e9e3166af131136a8fcb84eb9462}{alpha2}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca90569dfd20790019d5e815cc2577f42a}{alpha3}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaa00d66d273a7795157eb5edc210327fc}{alpha4}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca92d07ab272ab696b42704ac5e7df73bf}{alpha5}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae6e04fef35ddea56a74565a1f083ef3b}{alpha6}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcab26454c1a551ff6f8acfba3bcb48080a}{alpha7}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca81bba878f4e86708deb30cf02137e1e3}{alpha8}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca6a8193fc8c8ac702549b5aa674830e65}{alpha9}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca3be08c609ae7595e3867a29ed8db3519}{alpha0}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7694f4a66316e53c8cdd9d9954bd611d}{q}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaf1290186a5d0b1ceab27f4e77c0c5d68}{w}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae1671797c52e15f763380b45e841ec32}{e}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca4b43b0aee35624cd95b910189b3dc231}{r}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae358efa489f58062f10dd7316b65649e}{t}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca415290769594460e2e485922904f345d}{y}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7b774effe4a349c6dd82ad4f4f21d34c}{u}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca865c0c0b4ab0e063e5caa3387c1a8741}{i}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcad95679752134a2d9eb61dbd7b91c4bcc}{o}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca83878c91171338902e0fe0fb97a8c47a}{p}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca0cc175b9c0f1b6a831c399e269772661}{a}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca03c7c0ace395d80182db07ae2c30f034}{s}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8277e0910d750195b448797616e091ad}{d}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8fa14cdd754f91cc6554c9e71929cce7}{f}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcab2f5ff47436671b6e533d8dc3614845d}{g}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2510c39011c5be704182423e3a695e91}{h}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca363b122c528f54df4a0446b6bab05515}{j}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8ce4b16b22b58894aa86c421e8759df3}{k}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2db95e8e1a9267b7a1188556b2013b33}{l}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaedb907361219fb8d50279eabab0b83b1}{ñ}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcafbade9e36a3f36d3d676c1b808451dd7}{z}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca9dd4e461268c8034f5c8564e155c67a6}{x}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca4a8a08f09d37b73795649038408b5f33}{c}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca9e3669d19b675bd57058fd4664205d2a}{v}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca92eb5ffee6ae2fec3ad71c777531578f}{b}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7b8b965ad4bca0e41ab51de7b31363a1}{n}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca6f8f57715090da2632453988d9a1501b}{m}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcab6d00dc1ba038e5901cd6c06b2daa192}{comma}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaa0acfa46d86f7610b2c73dbb28f64701}{period}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca98db250f900ce3cb56c7443c8e551acf}{left\+Shift}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca0c0bc12d401652c550b80b27512b7adf}{right\+Shift}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2c11d27214b2b923705a9085cc05b497}{left\+Control}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca9c3cd155974fe8246ff10dcd4318ca27}{right\+Control}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca6d48226d32af430641eb3bfc76310a5c}{left\+Alt}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca16ad622e3d5cb16a9a9254a5e0edc492}{right\+Alt}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca187d5088ff41425d18f581b274515f36}{question\+Mark\+Up}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae2d9d3a46186cfe01b885be4e768a00c}{question\+Mark\+Down}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2d6e52450bc237e8664273c10c7c912e}{excl\+Mark\+Up}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcafd21a333bea77a59b03f67afb2b4f4fb}{exck\+Mark\+Down}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaff2364a0be3d20e46cc69efb36afe9a5}{space}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca5bb3d7fe3608daf56c6301d00c582897}{apostrophe}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7dda0fb14261325841bc3140841ecfec}{up\+Arrow}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca749574394f2fe8de9a7494d04785eb05}{down\+Arrow}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca07fb9bf7b5ce76ce6cb6b8097385223f}{left\+Arrow}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca279ed35099b07322cf4fb6cd9b03c5ec}{right\+Arrow}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca44cc1566b35519f8ae4b5236904866f9}{left\+Button}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7ba77e07634c1ae9c78ef6c9f59d0872}{right\+Button}}
+, \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca59e8c53657d70e986ae28d9b71f90b6f}{middle\+Button}}
+ \}
+\begin{DoxyCompactList}\small\item\em Control key codes accepted and supported by the engine. \end{DoxyCompactList}\item 
+enum class \mbox{\hyperlink{namespace_voxel_eng_a928223d21827269f0f31ec25a182169f}{graphics\+API}} \{ \mbox{\hyperlink{namespace_voxel_eng_a928223d21827269f0f31ec25a182169fac0ad831a34c4633bee584066cfcc5040}{OPENGL}}
+ \}
+\begin{DoxyCompactList}\small\item\em The different graphics APIs supported by the engine. \end{DoxyCompactList}\item 
+enum class \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} \{ \newline
+\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceab50339a10e1de285ac99d4c3990b8693}{NONE}}
+, \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43cea6c4a232d0331ac5ab121c030c0ace62b}{PLUSY}}
+, \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceae58179ad2677b22d98b6b2657307f0c9}{NEGY}}
+, \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceac447b2bbde4adb16e40e0148e8c7c639}{PLUSX}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceaeb79e3abe8de90be131ea42b56b797b5}{NEGX}}
+, \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceaac3759f4c63778ef809a00cbe317918c}{PLUSZ}}
+, \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43cea91f53aadb28e6650a3489823b284f688}{NEGZ}}
+ \}
+\begin{DoxyCompactList}\small\item\em Viewing directions expressed in a discrete and simple way. It could be seen as a \char`\"{}blocky\char`\"{} viewing direction if it could be compared to block coordinates, which are only integer coordinates compared to global coordinates. \end{DoxyCompactList}\item 
+enum class \mbox{\hyperlink{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdec}{engine\+Mode}} \{ \newline
+\mbox{\hyperlink{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecaa42b2fb0e720a080e79a92f4ca97d927}{EXIT}}
+, \mbox{\hyperlink{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecabe7f9883041a321fb302e7a276bdee77}{AIMENULOOP}}
+, \mbox{\hyperlink{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecaab9e689845630a4d2d548c9d497d703e}{GRAPHICALMENU}}
+, \mbox{\hyperlink{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdeca0eaf6053f9bf87683ad0a5b9e71473cf}{INITLEVEL}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdeca2f1850e9e964c8588fb50ef8c629094e}{EDITLEVEL}}
+, \mbox{\hyperlink{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdeca8ea1c331dc065ceb86cabc03d8704dd5}{EXITLEVEL}}
+, \mbox{\hyperlink{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecaff66daff8e6c3aafb52a5c26a2c7684a}{INITRECORD}}
+, \mbox{\hyperlink{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecab3694f79fcc700d0a0c6f14b2ba970d5}{PLAYINGRECORD}}
+, \newline
+\mbox{\hyperlink{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecae5229420759a76b839cf77839abf4d7d}{EXITRECORD}}
+ \}
+\item 
+enum class \mbox{\hyperlink{namespace_voxel_eng_abab5b0cdd4fb53ef9713d75f8502808c}{slot\+Access\+Type}} \{ \mbox{\hyperlink{namespace_voxel_eng_abab5b0cdd4fb53ef9713d75f8502808ca43781db5c40ecc39fd718685594f0956}{save}}
+, \mbox{\hyperlink{namespace_voxel_eng_abab5b0cdd4fb53ef9713d75f8502808caec4d1eb36b22d19728e9d1d23ca84d1c}{load}}
+ \}
+\item 
+enum class \mbox{\hyperlink{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127}{GUIcontainer}} \{ \mbox{\hyperlink{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127a47723635cbd99534ea4d6f33c6158443}{main\+Menu}}
+, \mbox{\hyperlink{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127ac9e9a848920877e76685b2e4e76de38d}{level}}
+, \mbox{\hyperlink{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127af6cb3e816496528d4187db53bc66567f}{both}}
+ \}
+\begin{DoxyCompactList}\small\item\em GUIcontainers are a way to group GUIelements into sets that are only usable in different circumstances of the engine\textquotesingle{}s execution. \end{DoxyCompactList}\item 
+enum class \mbox{\hyperlink{namespace_voxel_eng_a2d30bf2f4c2f5b5884b9ecb415c510b8}{time\+Scale}} \{ \mbox{\hyperlink{namespace_voxel_eng_a2d30bf2f4c2f5b5884b9ecb415c510b8aee33e909372d935d190f4fcb2a92d542}{ms}}
+, \mbox{\hyperlink{namespace_voxel_eng_a2d30bf2f4c2f5b5884b9ecb415c510b8a03c7c0ace395d80182db07ae2c30f034}{s}}
+ \}
+\begin{DoxyCompactList}\small\item\em The different time scales supported by the engine. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \mbox{\hyperlink{namespace_voxel_eng_a2506ebd6b1f69d4514021cc72a9b6080}{vec3\+Zero}} (0, 0, 0)
+\begin{DoxyCompactList}\small\item\em vec3 constant of the zero vector. \end{DoxyCompactList}\item 
+const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \mbox{\hyperlink{namespace_voxel_eng_a44d1aef28ea19f487fc170379f945759}{vec3\+Fixed\+Up}} (0, 1, 0)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed up direction. \end{DoxyCompactList}\item 
+const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \mbox{\hyperlink{namespace_voxel_eng_a1004d23c076b2ca7ddbd4af3dada87d0}{vec3\+Fixed\+Down}} (0, -\/1, 0)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed down direction. \end{DoxyCompactList}\item 
+const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \mbox{\hyperlink{namespace_voxel_eng_aa0e1382e5a1f527203e304b3844a105e}{vec3\+Fixed\+North}} (1, 0, 0)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed north direction. \end{DoxyCompactList}\item 
+const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \mbox{\hyperlink{namespace_voxel_eng_ad2bcc3dd0a11308558946604babecbae}{vec3\+Fixed\+South}} (-\/1, 0, 0)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed south direction. \end{DoxyCompactList}\item 
+const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \mbox{\hyperlink{namespace_voxel_eng_a19fc56ea6bff80bce866b6c39a2742dd}{vec3\+Fixed\+East}} (0, 0, 1)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed east direction. \end{DoxyCompactList}\item 
+const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \mbox{\hyperlink{namespace_voxel_eng_a7625d5a0b4b5c1d7bb93971b8aa72576}{vec3\+Fixed\+West}} (0, 0, -\/1)
+\begin{DoxyCompactList}\small\item\em vec3 constant poiting to the fixed west direction. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{namespace_voxel_eng_a604fe2501582e254caeef089b831e3d7}{ind\+Max\+Abs\+Vec}} (const glm\+::vec3 vec)
+\item 
+unsigned int \mbox{\hyperlink{namespace_voxel_eng_afe416129c1ccf1dba5268a792d95c2d8}{ind\+Max\+Vec}} (const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \&vector)
+\begin{DoxyCompactList}\small\item\em Returns the index of the first maximum value in \textquotesingle{}vector\textquotesingle{}. For example, if vector = 1.\+0f, 1.\+0f, 1.\+0f, index\+Max(vector) will return 0, but if vector = 0.\+0f, 1.\+0f, 1.\+0f, it will return 1. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \mbox{\hyperlink{namespace_voxel_eng_a348f0d98fcf9602c4bc70126c92f22fe}{u\+Direction\+To\+Vec3}} (\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} direction)
+\begin{DoxyCompactList}\small\item\em Returns \textquotesingle{}direction\textquotesingle{} in a vec3. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} \mbox{\hyperlink{namespace_voxel_eng_ab46f8699d461b0cd10b1a0d4debbe3ef}{vec3\+To\+UDirection}} (const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \&direction)
+\begin{DoxyCompactList}\small\item\em Returns \textquotesingle{}direction\textquotesingle{} in as a Block View Direction by rounding to the nearest direction. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} \mbox{\hyperlink{namespace_voxel_eng_a7097ce6da8621fa3bc272f5bcd8fb530}{rotate\+UDirection}} (\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} dir, \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} rot)
+\begin{DoxyCompactList}\small\item\em Returns the rotated direction. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} \mbox{\hyperlink{namespace_voxel_eng_aa6a37c8fea488d892ac54b7e580d22f2}{inverse\+UDirection}} (\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} dir)
+\begin{DoxyCompactList}\small\item\em Returns the inverse direction. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{namespace_voxel_eng_a570310427631fce811a9a2ce44d49802}{isalnum}} (const std\+::string \&string)
+\begin{DoxyCompactList}\small\item\em Returns true if \textquotesingle{}string\textquotesingle{} only contains alphanumeric characters or false otherwise. \end{DoxyCompactList}\item 
+template$<$$>$ unsigned int \mbox{\hyperlink{namespace_voxel_eng_ab41b71f3ab12c5213c896f9d0e4273b5}{sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ char \mbox{\hyperlink{namespace_voxel_eng_a7662d56f1641d465df3b5c0c5ed32d39}{sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ \mbox{\hyperlink{namespace_voxel_eng_af8fc5fb3a5a34d18467d0b412c884a8b}{block}} \mbox{\hyperlink{namespace_voxel_eng_ae245d765dc929ece0dd8bf67da46aa7c}{sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} \mbox{\hyperlink{namespace_voxel_eng_a446a7e705c726475870afd23d706059b}{sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ bool \mbox{\hyperlink{namespace_voxel_eng_a3d9bac29669406cb6e9dfda031d1c45c}{validated\+Cin\+Input}} (std\+::string \&var)
+\begin{DoxyCompactList}\small\item\em Inserts user input into the desirable value. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{namespace_voxel_eng_a167e92f056637e9db216e99d66f3274e}{floor\+Mod}} (int \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca0cc175b9c0f1b6a831c399e269772661}{a}}, int \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca92eb5ffee6ae2fec3ad71c777531578f}{b}})
+\begin{DoxyCompactList}\small\item\em Computes a \% b using floor modulo operations. The equation computed is r = a -\/ b $\ast$ q where q = (int)((double)a / b) \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{namespace_voxel_eng_a2a6599f42c10c6d8607954d98660946d}{sign}} (float real)
+\begin{DoxyCompactList}\small\item\em Returns +1 if \textquotesingle{}real\textquotesingle{} \texorpdfstring{$>$}{>}= 0 and -\/1 otherwise. \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename T $>$ }\\T \mbox{\hyperlink{namespace_voxel_eng_a75b331a6e21575026c34ad6b8c661844}{sto}} (const std\+::string \&str)=delete
+\item 
+template$<$$>$ int \mbox{\hyperlink{namespace_voxel_eng_a12e97dd744b84cb2d51a43bed545beb7}{sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ unsigned int \mbox{\hyperlink{namespace_voxel_eng_ab41b71f3ab12c5213c896f9d0e4273b5}{sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ float \mbox{\hyperlink{namespace_voxel_eng_a0e01401475207ff6266121e723aacc84}{sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into a float. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ char \mbox{\hyperlink{namespace_voxel_eng_a7662d56f1641d465df3b5c0c5ed32d39}{sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ bool \mbox{\hyperlink{namespace_voxel_eng_acce2e8e7fd683ba330449ece591e8014}{sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into a bool. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ \mbox{\hyperlink{namespace_voxel_eng_af8fc5fb3a5a34d18467d0b412c884a8b}{block}} \mbox{\hyperlink{namespace_voxel_eng_ae245d765dc929ece0dd8bf67da46aa7c}{sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} \mbox{\hyperlink{namespace_voxel_eng_a446a7e705c726475870afd23d706059b}{sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename T $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$T$>$}\\\+::value T \mbox{\hyperlink{namespace_voxel_eng_ab39f547935db9c5f143eea25d7727d74}{translate\+Range}} (T value, T r1\+Min, T r1\+Max, T r2\+Min, T r2\+Max)
+\begin{DoxyCompactList}\small\item\em Returns \textquotesingle{}value\textquotesingle{} translated from the range defined in \mbox{[}r1\+Min, r1\+Max\mbox{]} to the one defined in \mbox{[}r2\+Min, r2\+Max\mbox{]}. \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename T $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$T$>$}\\\+::value std\+::is\+\_\+same$<$ T, std\+::string $>$\+::value bool \mbox{\hyperlink{namespace_voxel_eng_a021135b9aa3f03b6dd6b637f43af6c17}{validated\+Cin\+Input}} (T \&var)
+\begin{DoxyCompactList}\small\item\em Inserts user input into the desirable value. Requires T to satisfy std\+::is\+\_\+arithmetic$<$\+T$>$\+::value $\vert$$\vert$ std\+::is\+\_\+same$<$\+T, std\+::string$>$\+::value. \end{DoxyCompactList}\item 
+template$<$$>$ bool \mbox{\hyperlink{namespace_voxel_eng_a3d9bac29669406cb6e9dfda031d1c45c}{validated\+Cin\+Input}} (std\+::string \&var)
+\begin{DoxyCompactList}\small\item\em Inserts user input into the desirable value. \end{DoxyCompactList}\item 
+unsigned int \mbox{\hyperlink{namespace_voxel_eng_a3bbc255b083bb48159ec707db51f3385}{graphics\+APISize\+Of}} (unsigned int type)
+\begin{DoxyCompactList}\small\item\em Get the size of the graphics API types. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const unsigned int \mbox{\hyperlink{namespace_voxel_eng_a8a8cc162f6b60de951f8c5c52ded94a8}{BATCH\+\_\+\+MAX\+\_\+\+VERTEX\+\_\+\+COUNT}} = 10000
+\begin{DoxyCompactList}\small\item\em The maximum number of vertices a batch can hold. \end{DoxyCompactList}\item 
+const \mbox{\hyperlink{namespace_voxel_eng_a928223d21827269f0f31ec25a182169f}{graphics\+API}} \mbox{\hyperlink{namespace_voxel_eng_a4f2ff64448774d5ecdd34bc4903008f4}{graphics\+APIUsed}} = \mbox{\hyperlink{namespace_voxel_eng_a928223d21827269f0f31ec25a182169fac0ad831a34c4633bee584066cfcc5040}{graphics\+API\+::\+OPENGL}}
+\begin{DoxyCompactList}\small\item\em The graphics API currently used by the engine during it\textquotesingle{}s execution. \end{DoxyCompactList}\item 
+const unsigned int \mbox{\hyperlink{namespace_voxel_eng_af60c4d1aab8a8d8d762c22b6b31c5080}{MIN\+\_\+\+TEX\+\_\+\+RES}} = 16
+\begin{DoxyCompactList}\small\item\em Minimal block texture size in pixels. \end{DoxyCompactList}\item 
+const int \mbox{\hyperlink{namespace_voxel_eng_a9c9f34f9c7e9c5abffafdba162c2d34f}{SCX}} = 16
+\begin{DoxyCompactList}\small\item\em Chunk size (in blocks) in X axis. \end{DoxyCompactList}\item 
+const int \mbox{\hyperlink{namespace_voxel_eng_ada54a66531ebf97036138412933b093a}{SCY}} = 16
+\begin{DoxyCompactList}\small\item\em Chunk size (in blocks) in Y axis. \end{DoxyCompactList}\item 
+const int \mbox{\hyperlink{namespace_voxel_eng_ac6b1ebceb207d8869690065097b574c6}{SCZ}} = 16
+\begin{DoxyCompactList}\small\item\em Chunk size (in blocks) in Z axis. \end{DoxyCompactList}\item 
+const unsigned int \mbox{\hyperlink{namespace_voxel_eng_a7d834d8858ded4bc469a50b0db8eca70}{DEF\+\_\+\+WIDTH}} = 800
+\begin{DoxyCompactList}\small\item\em Default width for a game window. \end{DoxyCompactList}\item 
+const unsigned int \mbox{\hyperlink{namespace_voxel_eng_afe330da91441bf605dabbcbe83e46078}{DEF\+\_\+\+HEIGHT}} = 600
+\begin{DoxyCompactList}\small\item\em Default height for a game window. \end{DoxyCompactList}\item 
+const unsigned int \mbox{\hyperlink{namespace_voxel_eng_afe7a66d1b2b8f3ba46acc2bd275c8796}{DEF\+\_\+\+N\+\_\+\+CHUNKS\+\_\+\+TO\+\_\+\+COMPUTE}} = 10
+\begin{DoxyCompactList}\small\item\em Default total number of chunks to compute in the X and Z axes. \end{DoxyCompactList}\item 
+const unsigned int \mbox{\hyperlink{namespace_voxel_eng_af19a54d1769112d801ffad30b5d4d4fb}{N\+\_\+\+GUI\+\_\+\+LAYERS}} = 3
+\begin{DoxyCompactList}\small\item\em Number of \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} layers in which to organize the graphical user interface. \end{DoxyCompactList}\item 
+const int \mbox{\hyperlink{namespace_voxel_eng_a4c7407b1517302cc403a931427aab650}{y\+Chunks\+Range}} = 12
+\begin{DoxyCompactList}\small\item\em Number of chunks to compute in the Y axis (only in the +Y direction or the -\/Y direction). \end{DoxyCompactList}\item 
+const int \mbox{\hyperlink{namespace_voxel_eng_a6e187eeaffc3134934223d0c86c594a6}{total\+YChunks}} = \mbox{\hyperlink{namespace_voxel_eng_a4c7407b1517302cc403a931427aab650}{y\+Chunks\+Range}} $\ast$ 2
+\begin{DoxyCompactList}\small\item\em Total number of chunks to compute in the Y axis (both in the +Y direction and the -\/Y direction). \end{DoxyCompactList}\item 
+const unsigned int \mbox{\hyperlink{namespace_voxel_eng_a5b5059b20862626d40ce527b2f754281}{VERTEX\+\_\+\+PER\+\_\+\+FACE}} = 3
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{namespace_voxel_eng_ac318027043a2a1059934dccd47531430}\label{namespace_voxel_eng_ac318027043a2a1059934dccd47531430}} 
+\index{VoxelEng@{VoxelEng}!agentID@{agentID}}
+\index{agentID@{agentID}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{agentID}{agentID}}
+{\footnotesize\ttfamily typedef unsigned int \mbox{\hyperlink{namespace_voxel_eng_ac318027043a2a1059934dccd47531430}{Voxel\+Eng\+::agent\+ID}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_a485dbed284f61e02ce683e48903a349e}\label{namespace_voxel_eng_a485dbed284f61e02ce683e48903a349e}} 
+\index{VoxelEng@{VoxelEng}!angle@{angle}}
+\index{angle@{angle}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{angle}{angle}}
+{\footnotesize\ttfamily typedef float \mbox{\hyperlink{namespace_voxel_eng_a485dbed284f61e02ce683e48903a349e}{Voxel\+Eng\+::angle}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_af8fc5fb3a5a34d18467d0b412c884a8b}\label{namespace_voxel_eng_af8fc5fb3a5a34d18467d0b412c884a8b}} 
+\index{VoxelEng@{VoxelEng}!block@{block}}
+\index{block@{block}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{block}{block}}
+{\footnotesize\ttfamily typedef unsigned short \mbox{\hyperlink{namespace_voxel_eng_af8fc5fb3a5a34d18467d0b412c884a8b}{Voxel\+Eng\+::block}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_a47a36b96c39f7448714b31bd9a2640e0}\label{namespace_voxel_eng_a47a36b96c39f7448714b31bd9a2640e0}} 
+\index{VoxelEng@{VoxelEng}!byte@{byte}}
+\index{byte@{byte}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{byte}{byte}}
+{\footnotesize\ttfamily typedef unsigned char \mbox{\hyperlink{namespace_voxel_eng_a47a36b96c39f7448714b31bd9a2640e0}{Voxel\+Eng\+::byte}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_abba3512d49474c636a1471035860abaf}\label{namespace_voxel_eng_abba3512d49474c636a1471035860abaf}} 
+\index{VoxelEng@{VoxelEng}!duration@{duration}}
+\index{duration@{duration}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{duration}{duration}}
+{\footnotesize\ttfamily typedef long long \mbox{\hyperlink{namespace_voxel_eng_abba3512d49474c636a1471035860abaf}{Voxel\+Eng\+::duration}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_a335767f4052c05f566ed810304e5966b}\label{namespace_voxel_eng_a335767f4052c05f566ed810304e5966b}} 
+\index{VoxelEng@{VoxelEng}!entityID@{entityID}}
+\index{entityID@{entityID}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{entityID}{entityID}}
+{\footnotesize\ttfamily typedef unsigned int \mbox{\hyperlink{namespace_voxel_eng_a335767f4052c05f566ed810304e5966b}{Voxel\+Eng\+::entity\+ID}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_a0b377bf3160ff2b43556c879f1e82a48}\label{namespace_voxel_eng_a0b377bf3160ff2b43556c879f1e82a48}} 
+\index{VoxelEng@{VoxelEng}!GraphicsAPIWindow@{GraphicsAPIWindow}}
+\index{GraphicsAPIWindow@{GraphicsAPIWindow}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{GraphicsAPIWindow}{GraphicsAPIWindow}}
+{\footnotesize\ttfamily typedef GLFWwindow \mbox{\hyperlink{namespace_voxel_eng_a0b377bf3160ff2b43556c879f1e82a48}{Voxel\+Eng\+::\+Graphics\+APIWindow}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_aafab33c84de18d9caa6981b47086a2da}\label{namespace_voxel_eng_aafab33c84de18d9caa6981b47086a2da}} 
+\index{VoxelEng@{VoxelEng}!model@{model}}
+\index{model@{model}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{model}{model}}
+{\footnotesize\ttfamily typedef std\+::vector$<$\mbox{\hyperlink{struct_voxel_eng_1_1vertex}{vertex}}$>$ \mbox{\hyperlink{namespace_voxel_eng_aafab33c84de18d9caa6981b47086a2da}{Voxel\+Eng\+::model}}}
+
+
+
+An entity\textquotesingle{}s model is simply a ordered collection of vertices, so that the first one connects with the next, and that one with the next one, etc... in order for the engine to properly draw it. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_afdcf9098e108168832a050a8bcba12db}\label{namespace_voxel_eng_afdcf9098e108168832a050a8bcba12db}} 
+\index{VoxelEng@{VoxelEng}!modelTriangles@{modelTriangles}}
+\index{modelTriangles@{modelTriangles}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{modelTriangles}{modelTriangles}}
+{\footnotesize\ttfamily typedef std\+::vector$<$\mbox{\hyperlink{namespace_voxel_eng_a58c826751230d1f562a527403b64e3b4}{triangle}}$>$ \mbox{\hyperlink{namespace_voxel_eng_afdcf9098e108168832a050a8bcba12db}{Voxel\+Eng\+::model\+Triangles}}}
+
+
+
+Representation of the collection of triangles that forms up an entity\textquotesingle{}s model. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a18187b9727a5583b2f354911b06ded42}\label{namespace_voxel_eng_a18187b9727a5583b2f354911b06ded42}} 
+\index{VoxelEng@{VoxelEng}!normalVec@{normalVec}}
+\index{normalVec@{normalVec}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{normalVec}{normalVec}}
+{\footnotesize\ttfamily typedef GLint \mbox{\hyperlink{namespace_voxel_eng_a18187b9727a5583b2f354911b06ded42}{Voxel\+Eng\+::normal\+Vec}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_a26a0f71865c5345dfc629c4e5b0039cf}\label{namespace_voxel_eng_a26a0f71865c5345dfc629c4e5b0039cf}} 
+\index{VoxelEng@{VoxelEng}!skybox@{skybox}}
+\index{skybox@{skybox}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{skybox}{skybox}}
+{\footnotesize\ttfamily typedef \mbox{\hyperlink{class_voxel_eng_1_1color}{color}} \mbox{\hyperlink{namespace_voxel_eng_a26a0f71865c5345dfc629c4e5b0039cf}{Voxel\+Eng\+::skybox}}}
+
+
+
+The plain colour that the sky that boxes the entire level. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a10a827f40f2fd3564e6912ade484827d}\label{namespace_voxel_eng_a10a827f40f2fd3564e6912ade484827d}} 
+\index{VoxelEng@{VoxelEng}!textureCoord@{textureCoord}}
+\index{textureCoord@{textureCoord}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{textureCoord}{textureCoord}}
+{\footnotesize\ttfamily typedef float \mbox{\hyperlink{namespace_voxel_eng_a10a827f40f2fd3564e6912ade484827d}{Voxel\+Eng\+::texture\+Coord}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_a696b8f3aafebe71e9fc3290288c7ea60}\label{namespace_voxel_eng_a696b8f3aafebe71e9fc3290288c7ea60}} 
+\index{VoxelEng@{VoxelEng}!tickFunc@{tickFunc}}
+\index{tickFunc@{tickFunc}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{tickFunc}{tickFunc}}
+{\footnotesize\ttfamily typedef void($\ast$ Voxel\+Eng\+::tick\+Func) ()}
+
+\mbox{\Hypertarget{namespace_voxel_eng_a43730e42a373d31c3c77701f03e7029c}\label{namespace_voxel_eng_a43730e42a373d31c3c77701f03e7029c}} 
+\index{VoxelEng@{VoxelEng}!timePoint@{timePoint}}
+\index{timePoint@{timePoint}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{timePoint}{timePoint}}
+{\footnotesize\ttfamily typedef std\+::chrono\+::time\+\_\+point$<$std\+::chrono\+::high\+\_\+resolution\+\_\+clock$>$ \mbox{\hyperlink{namespace_voxel_eng_a43730e42a373d31c3c77701f03e7029c}{Voxel\+Eng\+::time\+Point}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_a58c826751230d1f562a527403b64e3b4}\label{namespace_voxel_eng_a58c826751230d1f562a527403b64e3b4}} 
+\index{VoxelEng@{VoxelEng}!triangle@{triangle}}
+\index{triangle@{triangle}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{triangle}{triangle}}
+{\footnotesize\ttfamily typedef std\+::vector$<$unsigned short$>$ \mbox{\hyperlink{namespace_voxel_eng_a58c826751230d1f562a527403b64e3b4}{Voxel\+Eng\+::triangle}}}
+
+
+
+A triangle is a collection of three vertex indices that correspond to the ones that form it. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_aac9fe1393c02a61c2260dac6e23020fb}\label{namespace_voxel_eng_aac9fe1393c02a61c2260dac6e23020fb}} 
+\index{VoxelEng@{VoxelEng}!vec2@{vec2}}
+\index{vec2@{vec2}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{vec2}{vec2}}
+{\footnotesize\ttfamily typedef glm\+::vec2 \mbox{\hyperlink{namespace_voxel_eng_aac9fe1393c02a61c2260dac6e23020fb}{Voxel\+Eng\+::vec2}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}\label{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}} 
+\index{VoxelEng@{VoxelEng}!vec3@{vec3}}
+\index{vec3@{vec3}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{vec3}{vec3}}
+{\footnotesize\ttfamily typedef glm\+::vec3 \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{Voxel\+Eng\+::vec3}}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_a35a52ecafddecf3aadc61ee55fdb144e}\label{namespace_voxel_eng_a35a52ecafddecf3aadc61ee55fdb144e}} 
+\index{VoxelEng@{VoxelEng}!vertexCoord@{vertexCoord}}
+\index{vertexCoord@{vertexCoord}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{vertexCoord}{vertexCoord}}
+{\footnotesize\ttfamily typedef float \mbox{\hyperlink{namespace_voxel_eng_a35a52ecafddecf3aadc61ee55fdb144e}{Voxel\+Eng\+::vertex\+Coord}}}
+
+
+
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}\label{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}} 
+\index{VoxelEng@{VoxelEng}!blockViewDir@{blockViewDir}}
+\index{blockViewDir@{blockViewDir}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{blockViewDir}{blockViewDir}}
+{\footnotesize\ttfamily enum class \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{Voxel\+Eng\+::block\+View\+Dir}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+
+
+Viewing directions expressed in a discrete and simple way. It could be seen as a \char`\"{}blocky\char`\"{} viewing direction if it could be compared to block coordinates, which are only integer coordinates compared to global coordinates. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NONE@{NONE}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!NONE@{NONE}}}\mbox{\Hypertarget{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceab50339a10e1de285ac99d4c3990b8693}\label{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceab50339a10e1de285ac99d4c3990b8693}} 
+NONE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PLUSY@{PLUSY}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!PLUSY@{PLUSY}}}\mbox{\Hypertarget{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43cea6c4a232d0331ac5ab121c030c0ace62b}\label{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43cea6c4a232d0331ac5ab121c030c0ace62b}} 
+PLUSY&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NEGY@{NEGY}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!NEGY@{NEGY}}}\mbox{\Hypertarget{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceae58179ad2677b22d98b6b2657307f0c9}\label{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceae58179ad2677b22d98b6b2657307f0c9}} 
+NEGY&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PLUSX@{PLUSX}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!PLUSX@{PLUSX}}}\mbox{\Hypertarget{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceac447b2bbde4adb16e40e0148e8c7c639}\label{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceac447b2bbde4adb16e40e0148e8c7c639}} 
+PLUSX&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NEGX@{NEGX}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!NEGX@{NEGX}}}\mbox{\Hypertarget{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceaeb79e3abe8de90be131ea42b56b797b5}\label{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceaeb79e3abe8de90be131ea42b56b797b5}} 
+NEGX&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PLUSZ@{PLUSZ}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!PLUSZ@{PLUSZ}}}\mbox{\Hypertarget{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceaac3759f4c63778ef809a00cbe317918c}\label{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ceaac3759f4c63778ef809a00cbe317918c}} 
+PLUSZ&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NEGZ@{NEGZ}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!NEGZ@{NEGZ}}}\mbox{\Hypertarget{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43cea91f53aadb28e6650a3489823b284f688}\label{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43cea91f53aadb28e6650a3489823b284f688}} 
+NEGZ&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457}\label{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457}} 
+\index{VoxelEng@{VoxelEng}!chunkLoadLevel@{chunkLoadLevel}}
+\index{chunkLoadLevel@{chunkLoadLevel}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{chunkLoadLevel}{chunkLoadLevel}}
+{\footnotesize\ttfamily enum class \mbox{\hyperlink{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457}{Voxel\+Eng\+::chunk\+Load\+Level}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+
+
+The different stages of the chunk\textquotesingle{}s loading process. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NOTLOADED@{NOTLOADED}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!NOTLOADED@{NOTLOADED}}}\mbox{\Hypertarget{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457a7edf0a450fb951533f8733676ffbf712}\label{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457a7edf0a450fb951533f8733676ffbf712}} 
+NOTLOADED&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{BASICTERRAIN@{BASICTERRAIN}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!BASICTERRAIN@{BASICTERRAIN}}}\mbox{\Hypertarget{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457a07f385f086509a4fa701c6dd09dd293c}\label{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457a07f385f086509a4fa701c6dd09dd293c}} 
+BASICTERRAIN&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DECORATED@{DECORATED}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!DECORATED@{DECORATED}}}\mbox{\Hypertarget{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457a5dbbf9237dfcc4f9ee5caad7d493f12d}\label{namespace_voxel_eng_a4a390346ea4255bb4664ccdad7a31457a5dbbf9237dfcc4f9ee5caad7d493f12d}} 
+DECORATED&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bc}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bc}} 
+\index{VoxelEng@{VoxelEng}!controlCode@{controlCode}}
+\index{controlCode@{controlCode}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{controlCode}{controlCode}}
+{\footnotesize\ttfamily enum class \mbox{\hyperlink{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bc}{Voxel\+Eng\+::control\+Code}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+
+
+Control key codes accepted and supported by the engine. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{noKey@{noKey}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!noKey@{noKey}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcac8985300acb3e2e90e1fc58827546eda}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcac8985300acb3e2e90e1fc58827546eda}} 
+no\+Key&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{alpha1@{alpha1}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!alpha1@{alpha1}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8dbc2828a56856fc152437bd551628b5}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8dbc2828a56856fc152437bd551628b5}} 
+alpha1&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{alpha2@{alpha2}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!alpha2@{alpha2}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae155e9e3166af131136a8fcb84eb9462}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae155e9e3166af131136a8fcb84eb9462}} 
+alpha2&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{alpha3@{alpha3}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!alpha3@{alpha3}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca90569dfd20790019d5e815cc2577f42a}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca90569dfd20790019d5e815cc2577f42a}} 
+alpha3&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{alpha4@{alpha4}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!alpha4@{alpha4}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaa00d66d273a7795157eb5edc210327fc}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaa00d66d273a7795157eb5edc210327fc}} 
+alpha4&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{alpha5@{alpha5}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!alpha5@{alpha5}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca92d07ab272ab696b42704ac5e7df73bf}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca92d07ab272ab696b42704ac5e7df73bf}} 
+alpha5&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{alpha6@{alpha6}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!alpha6@{alpha6}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae6e04fef35ddea56a74565a1f083ef3b}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae6e04fef35ddea56a74565a1f083ef3b}} 
+alpha6&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{alpha7@{alpha7}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!alpha7@{alpha7}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcab26454c1a551ff6f8acfba3bcb48080a}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcab26454c1a551ff6f8acfba3bcb48080a}} 
+alpha7&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{alpha8@{alpha8}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!alpha8@{alpha8}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca81bba878f4e86708deb30cf02137e1e3}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca81bba878f4e86708deb30cf02137e1e3}} 
+alpha8&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{alpha9@{alpha9}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!alpha9@{alpha9}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca6a8193fc8c8ac702549b5aa674830e65}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca6a8193fc8c8ac702549b5aa674830e65}} 
+alpha9&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{alpha0@{alpha0}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!alpha0@{alpha0}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca3be08c609ae7595e3867a29ed8db3519}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca3be08c609ae7595e3867a29ed8db3519}} 
+alpha0&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{q@{q}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!q@{q}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7694f4a66316e53c8cdd9d9954bd611d}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7694f4a66316e53c8cdd9d9954bd611d}} 
+q&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{w@{w}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!w@{w}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaf1290186a5d0b1ceab27f4e77c0c5d68}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaf1290186a5d0b1ceab27f4e77c0c5d68}} 
+w&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{e@{e}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!e@{e}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae1671797c52e15f763380b45e841ec32}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae1671797c52e15f763380b45e841ec32}} 
+e&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{r@{r}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!r@{r}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca4b43b0aee35624cd95b910189b3dc231}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca4b43b0aee35624cd95b910189b3dc231}} 
+r&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{t@{t}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!t@{t}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae358efa489f58062f10dd7316b65649e}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae358efa489f58062f10dd7316b65649e}} 
+t&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{y@{y}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!y@{y}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca415290769594460e2e485922904f345d}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca415290769594460e2e485922904f345d}} 
+y&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{u@{u}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!u@{u}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7b774effe4a349c6dd82ad4f4f21d34c}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7b774effe4a349c6dd82ad4f4f21d34c}} 
+u&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{i@{i}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!i@{i}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca865c0c0b4ab0e063e5caa3387c1a8741}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca865c0c0b4ab0e063e5caa3387c1a8741}} 
+i&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{o@{o}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!o@{o}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcad95679752134a2d9eb61dbd7b91c4bcc}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcad95679752134a2d9eb61dbd7b91c4bcc}} 
+o&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{p@{p}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!p@{p}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca83878c91171338902e0fe0fb97a8c47a}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca83878c91171338902e0fe0fb97a8c47a}} 
+p&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{a@{a}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!a@{a}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca0cc175b9c0f1b6a831c399e269772661}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca0cc175b9c0f1b6a831c399e269772661}} 
+a&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{s@{s}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!s@{s}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca03c7c0ace395d80182db07ae2c30f034}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca03c7c0ace395d80182db07ae2c30f034}} 
+s&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{d@{d}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!d@{d}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8277e0910d750195b448797616e091ad}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8277e0910d750195b448797616e091ad}} 
+d&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{f@{f}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!f@{f}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8fa14cdd754f91cc6554c9e71929cce7}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8fa14cdd754f91cc6554c9e71929cce7}} 
+f&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{g@{g}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!g@{g}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcab2f5ff47436671b6e533d8dc3614845d}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcab2f5ff47436671b6e533d8dc3614845d}} 
+g&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{h@{h}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!h@{h}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2510c39011c5be704182423e3a695e91}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2510c39011c5be704182423e3a695e91}} 
+h&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{j@{j}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!j@{j}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca363b122c528f54df4a0446b6bab05515}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca363b122c528f54df4a0446b6bab05515}} 
+j&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{k@{k}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!k@{k}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8ce4b16b22b58894aa86c421e8759df3}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca8ce4b16b22b58894aa86c421e8759df3}} 
+k&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{l@{l}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!l@{l}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2db95e8e1a9267b7a1188556b2013b33}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2db95e8e1a9267b7a1188556b2013b33}} 
+l&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ñ@{ñ}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!ñ@{ñ}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaedb907361219fb8d50279eabab0b83b1}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaedb907361219fb8d50279eabab0b83b1}} 
+ñ&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{z@{z}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!z@{z}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcafbade9e36a3f36d3d676c1b808451dd7}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcafbade9e36a3f36d3d676c1b808451dd7}} 
+z&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{x@{x}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!x@{x}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca9dd4e461268c8034f5c8564e155c67a6}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca9dd4e461268c8034f5c8564e155c67a6}} 
+x&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{c@{c}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!c@{c}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca4a8a08f09d37b73795649038408b5f33}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca4a8a08f09d37b73795649038408b5f33}} 
+c&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{v@{v}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!v@{v}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca9e3669d19b675bd57058fd4664205d2a}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca9e3669d19b675bd57058fd4664205d2a}} 
+v&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{b@{b}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!b@{b}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca92eb5ffee6ae2fec3ad71c777531578f}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca92eb5ffee6ae2fec3ad71c777531578f}} 
+b&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{n@{n}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!n@{n}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7b8b965ad4bca0e41ab51de7b31363a1}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7b8b965ad4bca0e41ab51de7b31363a1}} 
+n&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{m@{m}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!m@{m}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca6f8f57715090da2632453988d9a1501b}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca6f8f57715090da2632453988d9a1501b}} 
+m&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{comma@{comma}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!comma@{comma}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcab6d00dc1ba038e5901cd6c06b2daa192}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcab6d00dc1ba038e5901cd6c06b2daa192}} 
+comma&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{period@{period}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!period@{period}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaa0acfa46d86f7610b2c73dbb28f64701}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaa0acfa46d86f7610b2c73dbb28f64701}} 
+period&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{leftShift@{leftShift}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!leftShift@{leftShift}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca98db250f900ce3cb56c7443c8e551acf}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca98db250f900ce3cb56c7443c8e551acf}} 
+left\+Shift&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{rightShift@{rightShift}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!rightShift@{rightShift}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca0c0bc12d401652c550b80b27512b7adf}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca0c0bc12d401652c550b80b27512b7adf}} 
+right\+Shift&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{leftControl@{leftControl}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!leftControl@{leftControl}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2c11d27214b2b923705a9085cc05b497}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2c11d27214b2b923705a9085cc05b497}} 
+left\+Control&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{rightControl@{rightControl}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!rightControl@{rightControl}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca9c3cd155974fe8246ff10dcd4318ca27}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca9c3cd155974fe8246ff10dcd4318ca27}} 
+right\+Control&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{leftAlt@{leftAlt}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!leftAlt@{leftAlt}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca6d48226d32af430641eb3bfc76310a5c}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca6d48226d32af430641eb3bfc76310a5c}} 
+left\+Alt&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{rightAlt@{rightAlt}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!rightAlt@{rightAlt}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca16ad622e3d5cb16a9a9254a5e0edc492}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca16ad622e3d5cb16a9a9254a5e0edc492}} 
+right\+Alt&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{questionMarkUp@{questionMarkUp}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!questionMarkUp@{questionMarkUp}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca187d5088ff41425d18f581b274515f36}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca187d5088ff41425d18f581b274515f36}} 
+question\+Mark\+Up&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{questionMarkDown@{questionMarkDown}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!questionMarkDown@{questionMarkDown}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae2d9d3a46186cfe01b885be4e768a00c}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcae2d9d3a46186cfe01b885be4e768a00c}} 
+question\+Mark\+Down&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{exclMarkUp@{exclMarkUp}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!exclMarkUp@{exclMarkUp}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2d6e52450bc237e8664273c10c7c912e}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca2d6e52450bc237e8664273c10c7c912e}} 
+excl\+Mark\+Up&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{exckMarkDown@{exckMarkDown}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!exckMarkDown@{exckMarkDown}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcafd21a333bea77a59b03f67afb2b4f4fb}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcafd21a333bea77a59b03f67afb2b4f4fb}} 
+exck\+Mark\+Down&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{space@{space}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!space@{space}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaff2364a0be3d20e46cc69efb36afe9a5}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bcaff2364a0be3d20e46cc69efb36afe9a5}} 
+space&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{apostrophe@{apostrophe}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!apostrophe@{apostrophe}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca5bb3d7fe3608daf56c6301d00c582897}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca5bb3d7fe3608daf56c6301d00c582897}} 
+apostrophe&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{upArrow@{upArrow}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!upArrow@{upArrow}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7dda0fb14261325841bc3140841ecfec}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7dda0fb14261325841bc3140841ecfec}} 
+up\+Arrow&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{downArrow@{downArrow}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!downArrow@{downArrow}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca749574394f2fe8de9a7494d04785eb05}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca749574394f2fe8de9a7494d04785eb05}} 
+down\+Arrow&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{leftArrow@{leftArrow}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!leftArrow@{leftArrow}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca07fb9bf7b5ce76ce6cb6b8097385223f}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca07fb9bf7b5ce76ce6cb6b8097385223f}} 
+left\+Arrow&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{rightArrow@{rightArrow}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!rightArrow@{rightArrow}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca279ed35099b07322cf4fb6cd9b03c5ec}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca279ed35099b07322cf4fb6cd9b03c5ec}} 
+right\+Arrow&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{leftButton@{leftButton}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!leftButton@{leftButton}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca44cc1566b35519f8ae4b5236904866f9}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca44cc1566b35519f8ae4b5236904866f9}} 
+left\+Button&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{rightButton@{rightButton}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!rightButton@{rightButton}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7ba77e07634c1ae9c78ef6c9f59d0872}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca7ba77e07634c1ae9c78ef6c9f59d0872}} 
+right\+Button&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{middleButton@{middleButton}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!middleButton@{middleButton}}}\mbox{\Hypertarget{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca59e8c53657d70e986ae28d9b71f90b6f}\label{namespace_voxel_eng_af550b48700d4b033518ac433ba6c72bca59e8c53657d70e986ae28d9b71f90b6f}} 
+middle\+Button&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdec}\label{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdec}} 
+\index{VoxelEng@{VoxelEng}!engineMode@{engineMode}}
+\index{engineMode@{engineMode}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{engineMode}{engineMode}}
+{\footnotesize\ttfamily enum class \mbox{\hyperlink{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdec}{Voxel\+Eng\+::engine\+Mode}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXIT@{EXIT}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!EXIT@{EXIT}}}\mbox{\Hypertarget{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecaa42b2fb0e720a080e79a92f4ca97d927}\label{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecaa42b2fb0e720a080e79a92f4ca97d927}} 
+EXIT&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{AIMENULOOP@{AIMENULOOP}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!AIMENULOOP@{AIMENULOOP}}}\mbox{\Hypertarget{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecabe7f9883041a321fb302e7a276bdee77}\label{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecabe7f9883041a321fb302e7a276bdee77}} 
+AIMENULOOP&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GRAPHICALMENU@{GRAPHICALMENU}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!GRAPHICALMENU@{GRAPHICALMENU}}}\mbox{\Hypertarget{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecaab9e689845630a4d2d548c9d497d703e}\label{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecaab9e689845630a4d2d548c9d497d703e}} 
+GRAPHICALMENU&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INITLEVEL@{INITLEVEL}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!INITLEVEL@{INITLEVEL}}}\mbox{\Hypertarget{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdeca0eaf6053f9bf87683ad0a5b9e71473cf}\label{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdeca0eaf6053f9bf87683ad0a5b9e71473cf}} 
+INITLEVEL&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EDITLEVEL@{EDITLEVEL}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!EDITLEVEL@{EDITLEVEL}}}\mbox{\Hypertarget{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdeca2f1850e9e964c8588fb50ef8c629094e}\label{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdeca2f1850e9e964c8588fb50ef8c629094e}} 
+EDITLEVEL&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXITLEVEL@{EXITLEVEL}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!EXITLEVEL@{EXITLEVEL}}}\mbox{\Hypertarget{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdeca8ea1c331dc065ceb86cabc03d8704dd5}\label{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdeca8ea1c331dc065ceb86cabc03d8704dd5}} 
+EXITLEVEL&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INITRECORD@{INITRECORD}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!INITRECORD@{INITRECORD}}}\mbox{\Hypertarget{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecaff66daff8e6c3aafb52a5c26a2c7684a}\label{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecaff66daff8e6c3aafb52a5c26a2c7684a}} 
+INITRECORD&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PLAYINGRECORD@{PLAYINGRECORD}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!PLAYINGRECORD@{PLAYINGRECORD}}}\mbox{\Hypertarget{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecab3694f79fcc700d0a0c6f14b2ba970d5}\label{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecab3694f79fcc700d0a0c6f14b2ba970d5}} 
+PLAYINGRECORD&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXITRECORD@{EXITRECORD}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!EXITRECORD@{EXITRECORD}}}\mbox{\Hypertarget{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecae5229420759a76b839cf77839abf4d7d}\label{namespace_voxel_eng_a04b7616f1a2ac83a88296abbb964fdecae5229420759a76b839cf77839abf4d7d}} 
+EXITRECORD&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{namespace_voxel_eng_a928223d21827269f0f31ec25a182169f}\label{namespace_voxel_eng_a928223d21827269f0f31ec25a182169f}} 
+\index{VoxelEng@{VoxelEng}!graphicsAPI@{graphicsAPI}}
+\index{graphicsAPI@{graphicsAPI}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{graphicsAPI}{graphicsAPI}}
+{\footnotesize\ttfamily enum class \mbox{\hyperlink{namespace_voxel_eng_a928223d21827269f0f31ec25a182169f}{Voxel\+Eng\+::graphics\+API}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+
+
+The different graphics APIs supported by the engine. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{OPENGL@{OPENGL}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!OPENGL@{OPENGL}}}\mbox{\Hypertarget{namespace_voxel_eng_a928223d21827269f0f31ec25a182169fac0ad831a34c4633bee584066cfcc5040}\label{namespace_voxel_eng_a928223d21827269f0f31ec25a182169fac0ad831a34c4633bee584066cfcc5040}} 
+OPENGL&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127}\label{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127}} 
+\index{VoxelEng@{VoxelEng}!GUIcontainer@{GUIcontainer}}
+\index{GUIcontainer@{GUIcontainer}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{GUIcontainer}{GUIcontainer}}
+{\footnotesize\ttfamily enum class \mbox{\hyperlink{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127}{Voxel\+Eng\+::\+GUIcontainer}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+
+
+GUIcontainers are a way to group GUIelements into sets that are only usable in different circumstances of the engine\textquotesingle{}s execution. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{mainMenu@{mainMenu}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!mainMenu@{mainMenu}}}\mbox{\Hypertarget{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127a47723635cbd99534ea4d6f33c6158443}\label{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127a47723635cbd99534ea4d6f33c6158443}} 
+main\+Menu&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{level@{level}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!level@{level}}}\mbox{\Hypertarget{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127ac9e9a848920877e76685b2e4e76de38d}\label{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127ac9e9a848920877e76685b2e4e76de38d}} 
+level&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{both@{both}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!both@{both}}}\mbox{\Hypertarget{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127af6cb3e816496528d4187db53bc66567f}\label{namespace_voxel_eng_add5159333ccf3fc175fbf39b02502127af6cb3e816496528d4187db53bc66567f}} 
+both&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{namespace_voxel_eng_abab5b0cdd4fb53ef9713d75f8502808c}\label{namespace_voxel_eng_abab5b0cdd4fb53ef9713d75f8502808c}} 
+\index{VoxelEng@{VoxelEng}!slotAccessType@{slotAccessType}}
+\index{slotAccessType@{slotAccessType}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{slotAccessType}{slotAccessType}}
+{\footnotesize\ttfamily enum class \mbox{\hyperlink{namespace_voxel_eng_abab5b0cdd4fb53ef9713d75f8502808c}{Voxel\+Eng\+::slot\+Access\+Type}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{save@{save}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!save@{save}}}\mbox{\Hypertarget{namespace_voxel_eng_abab5b0cdd4fb53ef9713d75f8502808ca43781db5c40ecc39fd718685594f0956}\label{namespace_voxel_eng_abab5b0cdd4fb53ef9713d75f8502808ca43781db5c40ecc39fd718685594f0956}} 
+save&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{load@{load}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!load@{load}}}\mbox{\Hypertarget{namespace_voxel_eng_abab5b0cdd4fb53ef9713d75f8502808caec4d1eb36b22d19728e9d1d23ca84d1c}\label{namespace_voxel_eng_abab5b0cdd4fb53ef9713d75f8502808caec4d1eb36b22d19728e9d1d23ca84d1c}} 
+load&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{namespace_voxel_eng_a2d30bf2f4c2f5b5884b9ecb415c510b8}\label{namespace_voxel_eng_a2d30bf2f4c2f5b5884b9ecb415c510b8}} 
+\index{VoxelEng@{VoxelEng}!timeScale@{timeScale}}
+\index{timeScale@{timeScale}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{timeScale}{timeScale}}
+{\footnotesize\ttfamily enum class \mbox{\hyperlink{namespace_voxel_eng_a2d30bf2f4c2f5b5884b9ecb415c510b8}{Voxel\+Eng\+::time\+Scale}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+
+
+The different time scales supported by the engine. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ms@{ms}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!ms@{ms}}}\mbox{\Hypertarget{namespace_voxel_eng_a2d30bf2f4c2f5b5884b9ecb415c510b8aee33e909372d935d190f4fcb2a92d542}\label{namespace_voxel_eng_a2d30bf2f4c2f5b5884b9ecb415c510b8aee33e909372d935d190f4fcb2a92d542}} 
+ms&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{s@{s}!VoxelEng@{VoxelEng}}\index{VoxelEng@{VoxelEng}!s@{s}}}\mbox{\Hypertarget{namespace_voxel_eng_a2d30bf2f4c2f5b5884b9ecb415c510b8a03c7c0ace395d80182db07ae2c30f034}\label{namespace_voxel_eng_a2d30bf2f4c2f5b5884b9ecb415c510b8a03c7c0ace395d80182db07ae2c30f034}} 
+s&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{namespace_voxel_eng_a167e92f056637e9db216e99d66f3274e}\label{namespace_voxel_eng_a167e92f056637e9db216e99d66f3274e}} 
+\index{VoxelEng@{VoxelEng}!floorMod@{floorMod}}
+\index{floorMod@{floorMod}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{floorMod()}{floorMod()}}
+{\footnotesize\ttfamily int Voxel\+Eng\+::floor\+Mod (\begin{DoxyParamCaption}\item[{int}]{a,  }\item[{int}]{b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Computes a \% b using floor modulo operations. The equation computed is r = a -\/ b $\ast$ q where q = (int)((double)a / b) 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a3bbc255b083bb48159ec707db51f3385}\label{namespace_voxel_eng_a3bbc255b083bb48159ec707db51f3385}} 
+\index{VoxelEng@{VoxelEng}!graphicsAPISizeOf@{graphicsAPISizeOf}}
+\index{graphicsAPISizeOf@{graphicsAPISizeOf}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{graphicsAPISizeOf()}{graphicsAPISizeOf()}}
+{\footnotesize\ttfamily unsigned int Voxel\+Eng\+::graphics\+APISize\+Of (\begin{DoxyParamCaption}\item[{unsigned int}]{type }\end{DoxyParamCaption})}
+
+
+
+Get the size of the graphics API types. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a604fe2501582e254caeef089b831e3d7}\label{namespace_voxel_eng_a604fe2501582e254caeef089b831e3d7}} 
+\index{VoxelEng@{VoxelEng}!indMaxAbsVec@{indMaxAbsVec}}
+\index{indMaxAbsVec@{indMaxAbsVec}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{indMaxAbsVec()}{indMaxAbsVec()}}
+{\footnotesize\ttfamily int Voxel\+Eng\+::ind\+Max\+Abs\+Vec (\begin{DoxyParamCaption}\item[{const glm\+::vec3}]{vec }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespace_voxel_eng_afe416129c1ccf1dba5268a792d95c2d8}\label{namespace_voxel_eng_afe416129c1ccf1dba5268a792d95c2d8}} 
+\index{VoxelEng@{VoxelEng}!indMaxVec@{indMaxVec}}
+\index{indMaxVec@{indMaxVec}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{indMaxVec()}{indMaxVec()}}
+{\footnotesize\ttfamily unsigned int Voxel\+Eng\+::ind\+Max\+Vec (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \&}]{vector }\end{DoxyParamCaption})}
+
+
+
+Returns the index of the first maximum value in \textquotesingle{}vector\textquotesingle{}. For example, if vector = 1.\+0f, 1.\+0f, 1.\+0f, index\+Max(vector) will return 0, but if vector = 0.\+0f, 1.\+0f, 1.\+0f, it will return 1. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_aa6a37c8fea488d892ac54b7e580d22f2}\label{namespace_voxel_eng_aa6a37c8fea488d892ac54b7e580d22f2}} 
+\index{VoxelEng@{VoxelEng}!inverseUDirection@{inverseUDirection}}
+\index{inverseUDirection@{inverseUDirection}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{inverseUDirection()}{inverseUDirection()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} Voxel\+Eng\+::inverse\+UDirection (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}}}]{dir }\end{DoxyParamCaption})}
+
+
+
+Returns the inverse direction. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a570310427631fce811a9a2ce44d49802}\label{namespace_voxel_eng_a570310427631fce811a9a2ce44d49802}} 
+\index{VoxelEng@{VoxelEng}!isalnum@{isalnum}}
+\index{isalnum@{isalnum}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{isalnum()}{isalnum()}}
+{\footnotesize\ttfamily bool Voxel\+Eng\+::isalnum (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{string }\end{DoxyParamCaption})}
+
+
+
+Returns true if \textquotesingle{}string\textquotesingle{} only contains alphanumeric characters or false otherwise. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a7097ce6da8621fa3bc272f5bcd8fb530}\label{namespace_voxel_eng_a7097ce6da8621fa3bc272f5bcd8fb530}} 
+\index{VoxelEng@{VoxelEng}!rotateUDirection@{rotateUDirection}}
+\index{rotateUDirection@{rotateUDirection}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{rotateUDirection()}{rotateUDirection()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} Voxel\+Eng\+::rotate\+UDirection (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}}}]{dir,  }\item[{\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}}}]{rot }\end{DoxyParamCaption})}
+
+
+
+Returns the rotated direction. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a2a6599f42c10c6d8607954d98660946d}\label{namespace_voxel_eng_a2a6599f42c10c6d8607954d98660946d}} 
+\index{VoxelEng@{VoxelEng}!sign@{sign}}
+\index{sign@{sign}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sign()}{sign()}}
+{\footnotesize\ttfamily int Voxel\+Eng\+::sign (\begin{DoxyParamCaption}\item[{float}]{real }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns +1 if \textquotesingle{}real\textquotesingle{} \texorpdfstring{$>$}{>}= 0 and -\/1 otherwise. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_ab41b71f3ab12c5213c896f9d0e4273b5}\label{namespace_voxel_eng_ab41b71f3ab12c5213c896f9d0e4273b5}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [1/12]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+unsigned int Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})}
+
+
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{namespace_voxel_eng_a7662d56f1641d465df3b5c0c5ed32d39}\label{namespace_voxel_eng_a7662d56f1641d465df3b5c0c5ed32d39}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [2/12]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+char Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})}
+
+
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{namespace_voxel_eng_ae245d765dc929ece0dd8bf67da46aa7c}\label{namespace_voxel_eng_ae245d765dc929ece0dd8bf67da46aa7c}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [3/12]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+\mbox{\hyperlink{namespace_voxel_eng_af8fc5fb3a5a34d18467d0b412c884a8b}{block}} Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})}
+
+
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{namespace_voxel_eng_a446a7e705c726475870afd23d706059b}\label{namespace_voxel_eng_a446a7e705c726475870afd23d706059b}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [4/12]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})}
+
+
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{namespace_voxel_eng_a12e97dd744b84cb2d51a43bed545beb7}\label{namespace_voxel_eng_a12e97dd744b84cb2d51a43bed545beb7}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [5/12]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+int Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into an integer. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{namespace_voxel_eng_ab41b71f3ab12c5213c896f9d0e4273b5}\label{namespace_voxel_eng_ab41b71f3ab12c5213c896f9d0e4273b5}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [6/12]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+unsigned int Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{namespace_voxel_eng_a0e01401475207ff6266121e723aacc84}\label{namespace_voxel_eng_a0e01401475207ff6266121e723aacc84}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [7/12]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+float Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into a float. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{namespace_voxel_eng_a7662d56f1641d465df3b5c0c5ed32d39}\label{namespace_voxel_eng_a7662d56f1641d465df3b5c0c5ed32d39}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [8/12]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+char Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{namespace_voxel_eng_acce2e8e7fd683ba330449ece591e8014}\label{namespace_voxel_eng_acce2e8e7fd683ba330449ece591e8014}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [9/12]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+bool Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into a bool. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{namespace_voxel_eng_ae245d765dc929ece0dd8bf67da46aa7c}\label{namespace_voxel_eng_ae245d765dc929ece0dd8bf67da46aa7c}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [10/12]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+\mbox{\hyperlink{namespace_voxel_eng_af8fc5fb3a5a34d18467d0b412c884a8b}{block}} Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{namespace_voxel_eng_a446a7e705c726475870afd23d706059b}\label{namespace_voxel_eng_a446a7e705c726475870afd23d706059b}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [11/12]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{namespace_voxel_eng_a75b331a6e21575026c34ad6b8c661844}\label{namespace_voxel_eng_a75b331a6e21575026c34ad6b8c661844}} 
+\index{VoxelEng@{VoxelEng}!sto@{sto}}
+\index{sto@{sto}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [12/12]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+\mbox{\Hypertarget{namespace_voxel_eng_ab39f547935db9c5f143eea25d7727d74}\label{namespace_voxel_eng_ab39f547935db9c5f143eea25d7727d74}} 
+\index{VoxelEng@{VoxelEng}!translateRange@{translateRange}}
+\index{translateRange@{translateRange}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{translateRange()}{translateRange()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$T$>$\\
+\+::value T Voxel\+Eng\+::translate\+Range (\begin{DoxyParamCaption}\item[{T}]{value,  }\item[{T}]{r1\+Min,  }\item[{T}]{r1\+Max,  }\item[{T}]{r2\+Min,  }\item[{T}]{r2\+Max }\end{DoxyParamCaption})}
+
+
+
+Returns \textquotesingle{}value\textquotesingle{} translated from the range defined in \mbox{[}r1\+Min, r1\+Max\mbox{]} to the one defined in \mbox{[}r2\+Min, r2\+Max\mbox{]}. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a348f0d98fcf9602c4bc70126c92f22fe}\label{namespace_voxel_eng_a348f0d98fcf9602c4bc70126c92f22fe}} 
+\index{VoxelEng@{VoxelEng}!uDirectionToVec3@{uDirectionToVec3}}
+\index{uDirectionToVec3@{uDirectionToVec3}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{uDirectionToVec3()}{uDirectionToVec3()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} Voxel\+Eng\+::u\+Direction\+To\+Vec3 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}}}]{direction }\end{DoxyParamCaption})}
+
+
+
+Returns \textquotesingle{}direction\textquotesingle{} in a vec3. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a3d9bac29669406cb6e9dfda031d1c45c}\label{namespace_voxel_eng_a3d9bac29669406cb6e9dfda031d1c45c}} 
+\index{VoxelEng@{VoxelEng}!validatedCinInput@{validatedCinInput}}
+\index{validatedCinInput@{validatedCinInput}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{validatedCinInput()}{validatedCinInput()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+bool Voxel\+Eng\+::validated\+Cin\+Input (\begin{DoxyParamCaption}\item[{std\+::string \&}]{var }\end{DoxyParamCaption})}
+
+
+
+Inserts user input into the desirable value. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a3d9bac29669406cb6e9dfda031d1c45c}\label{namespace_voxel_eng_a3d9bac29669406cb6e9dfda031d1c45c}} 
+\index{VoxelEng@{VoxelEng}!validatedCinInput@{validatedCinInput}}
+\index{validatedCinInput@{validatedCinInput}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{validatedCinInput()}{validatedCinInput()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+bool Voxel\+Eng\+::validated\+Cin\+Input (\begin{DoxyParamCaption}\item[{std\+::string \&}]{var }\end{DoxyParamCaption})}
+
+
+
+Inserts user input into the desirable value. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a021135b9aa3f03b6dd6b637f43af6c17}\label{namespace_voxel_eng_a021135b9aa3f03b6dd6b637f43af6c17}} 
+\index{VoxelEng@{VoxelEng}!validatedCinInput@{validatedCinInput}}
+\index{validatedCinInput@{validatedCinInput}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{validatedCinInput()}{validatedCinInput()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$T$>$\\
+\+::value std\+::is\+\_\+same$<$ T, std\+::string $>$\+::value bool Voxel\+Eng\+::validated\+Cin\+Input (\begin{DoxyParamCaption}\item[{T \&}]{var }\end{DoxyParamCaption})}
+
+
+
+Inserts user input into the desirable value. Requires T to satisfy std\+::is\+\_\+arithmetic$<$\+T$>$\+::value $\vert$$\vert$ std\+::is\+\_\+same$<$\+T, std\+::string$>$\+::value. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a1004d23c076b2ca7ddbd4af3dada87d0}\label{namespace_voxel_eng_a1004d23c076b2ca7ddbd4af3dada87d0}} 
+\index{VoxelEng@{VoxelEng}!vec3FixedDown@{vec3FixedDown}}
+\index{vec3FixedDown@{vec3FixedDown}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{vec3FixedDown()}{vec3FixedDown()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} Voxel\+Eng\+::vec3\+Fixed\+Down (\begin{DoxyParamCaption}\item[{0}]{,  }\item[{-\/}]{1,  }\item[{0}]{ }\end{DoxyParamCaption})}
+
+
+
+vec3 constant poiting to the fixed down direction. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a19fc56ea6bff80bce866b6c39a2742dd}\label{namespace_voxel_eng_a19fc56ea6bff80bce866b6c39a2742dd}} 
+\index{VoxelEng@{VoxelEng}!vec3FixedEast@{vec3FixedEast}}
+\index{vec3FixedEast@{vec3FixedEast}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{vec3FixedEast()}{vec3FixedEast()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} Voxel\+Eng\+::vec3\+Fixed\+East (\begin{DoxyParamCaption}\item[{0}]{,  }\item[{0}]{,  }\item[{1}]{ }\end{DoxyParamCaption})}
+
+
+
+vec3 constant poiting to the fixed east direction. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_aa0e1382e5a1f527203e304b3844a105e}\label{namespace_voxel_eng_aa0e1382e5a1f527203e304b3844a105e}} 
+\index{VoxelEng@{VoxelEng}!vec3FixedNorth@{vec3FixedNorth}}
+\index{vec3FixedNorth@{vec3FixedNorth}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{vec3FixedNorth()}{vec3FixedNorth()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} Voxel\+Eng\+::vec3\+Fixed\+North (\begin{DoxyParamCaption}\item[{1}]{,  }\item[{0}]{,  }\item[{0}]{ }\end{DoxyParamCaption})}
+
+
+
+vec3 constant poiting to the fixed north direction. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_ad2bcc3dd0a11308558946604babecbae}\label{namespace_voxel_eng_ad2bcc3dd0a11308558946604babecbae}} 
+\index{VoxelEng@{VoxelEng}!vec3FixedSouth@{vec3FixedSouth}}
+\index{vec3FixedSouth@{vec3FixedSouth}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{vec3FixedSouth()}{vec3FixedSouth()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} Voxel\+Eng\+::vec3\+Fixed\+South (\begin{DoxyParamCaption}\item[{-\/}]{1,  }\item[{0}]{,  }\item[{0}]{ }\end{DoxyParamCaption})}
+
+
+
+vec3 constant poiting to the fixed south direction. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a44d1aef28ea19f487fc170379f945759}\label{namespace_voxel_eng_a44d1aef28ea19f487fc170379f945759}} 
+\index{VoxelEng@{VoxelEng}!vec3FixedUp@{vec3FixedUp}}
+\index{vec3FixedUp@{vec3FixedUp}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{vec3FixedUp()}{vec3FixedUp()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} Voxel\+Eng\+::vec3\+Fixed\+Up (\begin{DoxyParamCaption}\item[{0}]{,  }\item[{1}]{,  }\item[{0}]{ }\end{DoxyParamCaption})}
+
+
+
+vec3 constant poiting to the fixed up direction. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a7625d5a0b4b5c1d7bb93971b8aa72576}\label{namespace_voxel_eng_a7625d5a0b4b5c1d7bb93971b8aa72576}} 
+\index{VoxelEng@{VoxelEng}!vec3FixedWest@{vec3FixedWest}}
+\index{vec3FixedWest@{vec3FixedWest}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{vec3FixedWest()}{vec3FixedWest()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} Voxel\+Eng\+::vec3\+Fixed\+West (\begin{DoxyParamCaption}\item[{0}]{,  }\item[{0}]{,  }\item[{-\/}]{1 }\end{DoxyParamCaption})}
+
+
+
+vec3 constant poiting to the fixed west direction. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_ab46f8699d461b0cd10b1a0d4debbe3ef}\label{namespace_voxel_eng_ab46f8699d461b0cd10b1a0d4debbe3ef}} 
+\index{VoxelEng@{VoxelEng}!vec3ToUDirection@{vec3ToUDirection}}
+\index{vec3ToUDirection@{vec3ToUDirection}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{vec3ToUDirection()}{vec3ToUDirection()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespace_voxel_eng_a11fffface32c2875aa5e660ca00c43ce}{block\+View\+Dir}} Voxel\+Eng\+::vec3\+To\+UDirection (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} \&}]{direction }\end{DoxyParamCaption})}
+
+
+
+Returns \textquotesingle{}direction\textquotesingle{} in as a Block View Direction by rounding to the nearest direction. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a2506ebd6b1f69d4514021cc72a9b6080}\label{namespace_voxel_eng_a2506ebd6b1f69d4514021cc72a9b6080}} 
+\index{VoxelEng@{VoxelEng}!vec3Zero@{vec3Zero}}
+\index{vec3Zero@{vec3Zero}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{vec3Zero()}{vec3Zero()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{namespace_voxel_eng_a6c7264784221a6f00d14887b3d5f4ff5}{vec3}} Voxel\+Eng\+::vec3\+Zero (\begin{DoxyParamCaption}\item[{0}]{,  }\item[{0}]{,  }\item[{0}]{ }\end{DoxyParamCaption})}
+
+
+
+vec3 constant of the zero vector. 
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{namespace_voxel_eng_a8a8cc162f6b60de951f8c5c52ded94a8}\label{namespace_voxel_eng_a8a8cc162f6b60de951f8c5c52ded94a8}} 
+\index{VoxelEng@{VoxelEng}!BATCH\_MAX\_VERTEX\_COUNT@{BATCH\_MAX\_VERTEX\_COUNT}}
+\index{BATCH\_MAX\_VERTEX\_COUNT@{BATCH\_MAX\_VERTEX\_COUNT}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{BATCH\_MAX\_VERTEX\_COUNT}{BATCH\_MAX\_VERTEX\_COUNT}}
+{\footnotesize\ttfamily const unsigned int Voxel\+Eng\+::\+BATCH\+\_\+\+MAX\+\_\+\+VERTEX\+\_\+\+COUNT = 10000}
+
+
+
+The maximum number of vertices a batch can hold. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_afe330da91441bf605dabbcbe83e46078}\label{namespace_voxel_eng_afe330da91441bf605dabbcbe83e46078}} 
+\index{VoxelEng@{VoxelEng}!DEF\_HEIGHT@{DEF\_HEIGHT}}
+\index{DEF\_HEIGHT@{DEF\_HEIGHT}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{DEF\_HEIGHT}{DEF\_HEIGHT}}
+{\footnotesize\ttfamily const unsigned int Voxel\+Eng\+::\+DEF\+\_\+\+HEIGHT = 600}
+
+
+
+Default height for a game window. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_afe7a66d1b2b8f3ba46acc2bd275c8796}\label{namespace_voxel_eng_afe7a66d1b2b8f3ba46acc2bd275c8796}} 
+\index{VoxelEng@{VoxelEng}!DEF\_N\_CHUNKS\_TO\_COMPUTE@{DEF\_N\_CHUNKS\_TO\_COMPUTE}}
+\index{DEF\_N\_CHUNKS\_TO\_COMPUTE@{DEF\_N\_CHUNKS\_TO\_COMPUTE}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{DEF\_N\_CHUNKS\_TO\_COMPUTE}{DEF\_N\_CHUNKS\_TO\_COMPUTE}}
+{\footnotesize\ttfamily const unsigned int Voxel\+Eng\+::\+DEF\+\_\+\+N\+\_\+\+CHUNKS\+\_\+\+TO\+\_\+\+COMPUTE = 10}
+
+
+
+Default total number of chunks to compute in the X and Z axes. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a7d834d8858ded4bc469a50b0db8eca70}\label{namespace_voxel_eng_a7d834d8858ded4bc469a50b0db8eca70}} 
+\index{VoxelEng@{VoxelEng}!DEF\_WIDTH@{DEF\_WIDTH}}
+\index{DEF\_WIDTH@{DEF\_WIDTH}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{DEF\_WIDTH}{DEF\_WIDTH}}
+{\footnotesize\ttfamily const unsigned int Voxel\+Eng\+::\+DEF\+\_\+\+WIDTH = 800}
+
+
+
+Default width for a game window. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a4f2ff64448774d5ecdd34bc4903008f4}\label{namespace_voxel_eng_a4f2ff64448774d5ecdd34bc4903008f4}} 
+\index{VoxelEng@{VoxelEng}!graphicsAPIUsed@{graphicsAPIUsed}}
+\index{graphicsAPIUsed@{graphicsAPIUsed}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{graphicsAPIUsed}{graphicsAPIUsed}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{namespace_voxel_eng_a928223d21827269f0f31ec25a182169f}{graphics\+API}} Voxel\+Eng\+::graphics\+APIUsed = \mbox{\hyperlink{namespace_voxel_eng_a928223d21827269f0f31ec25a182169fac0ad831a34c4633bee584066cfcc5040}{graphics\+API\+::\+OPENGL}}}
+
+
+
+The graphics API currently used by the engine during it\textquotesingle{}s execution. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_af60c4d1aab8a8d8d762c22b6b31c5080}\label{namespace_voxel_eng_af60c4d1aab8a8d8d762c22b6b31c5080}} 
+\index{VoxelEng@{VoxelEng}!MIN\_TEX\_RES@{MIN\_TEX\_RES}}
+\index{MIN\_TEX\_RES@{MIN\_TEX\_RES}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{MIN\_TEX\_RES}{MIN\_TEX\_RES}}
+{\footnotesize\ttfamily const unsigned int Voxel\+Eng\+::\+MIN\+\_\+\+TEX\+\_\+\+RES = 16}
+
+
+
+Minimal block texture size in pixels. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_af19a54d1769112d801ffad30b5d4d4fb}\label{namespace_voxel_eng_af19a54d1769112d801ffad30b5d4d4fb}} 
+\index{VoxelEng@{VoxelEng}!N\_GUI\_LAYERS@{N\_GUI\_LAYERS}}
+\index{N\_GUI\_LAYERS@{N\_GUI\_LAYERS}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{N\_GUI\_LAYERS}{N\_GUI\_LAYERS}}
+{\footnotesize\ttfamily const unsigned int Voxel\+Eng\+::\+N\+\_\+\+GUI\+\_\+\+LAYERS = 3}
+
+
+
+Number of \mbox{\hyperlink{class_voxel_eng_1_1_g_u_ielement}{GUIelement}} layers in which to organize the graphical user interface. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a9c9f34f9c7e9c5abffafdba162c2d34f}\label{namespace_voxel_eng_a9c9f34f9c7e9c5abffafdba162c2d34f}} 
+\index{VoxelEng@{VoxelEng}!SCX@{SCX}}
+\index{SCX@{SCX}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{SCX}{SCX}}
+{\footnotesize\ttfamily const int Voxel\+Eng\+::\+SCX = 16}
+
+
+
+Chunk size (in blocks) in X axis. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_ada54a66531ebf97036138412933b093a}\label{namespace_voxel_eng_ada54a66531ebf97036138412933b093a}} 
+\index{VoxelEng@{VoxelEng}!SCY@{SCY}}
+\index{SCY@{SCY}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{SCY}{SCY}}
+{\footnotesize\ttfamily const int Voxel\+Eng\+::\+SCY = 16}
+
+
+
+Chunk size (in blocks) in Y axis. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_ac6b1ebceb207d8869690065097b574c6}\label{namespace_voxel_eng_ac6b1ebceb207d8869690065097b574c6}} 
+\index{VoxelEng@{VoxelEng}!SCZ@{SCZ}}
+\index{SCZ@{SCZ}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{SCZ}{SCZ}}
+{\footnotesize\ttfamily const int Voxel\+Eng\+::\+SCZ = 16}
+
+
+
+Chunk size (in blocks) in Z axis. 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a6e187eeaffc3134934223d0c86c594a6}\label{namespace_voxel_eng_a6e187eeaffc3134934223d0c86c594a6}} 
+\index{VoxelEng@{VoxelEng}!totalYChunks@{totalYChunks}}
+\index{totalYChunks@{totalYChunks}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{totalYChunks}{totalYChunks}}
+{\footnotesize\ttfamily const int Voxel\+Eng\+::total\+YChunks = \mbox{\hyperlink{namespace_voxel_eng_a4c7407b1517302cc403a931427aab650}{y\+Chunks\+Range}} $\ast$ 2}
+
+
+
+Total number of chunks to compute in the Y axis (both in the +Y direction and the -\/Y direction). 
+
+\mbox{\Hypertarget{namespace_voxel_eng_a5b5059b20862626d40ce527b2f754281}\label{namespace_voxel_eng_a5b5059b20862626d40ce527b2f754281}} 
+\index{VoxelEng@{VoxelEng}!VERTEX\_PER\_FACE@{VERTEX\_PER\_FACE}}
+\index{VERTEX\_PER\_FACE@{VERTEX\_PER\_FACE}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{VERTEX\_PER\_FACE}{VERTEX\_PER\_FACE}}
+{\footnotesize\ttfamily const unsigned int Voxel\+Eng\+::\+VERTEX\+\_\+\+PER\+\_\+\+FACE = 3}
+
+\mbox{\Hypertarget{namespace_voxel_eng_a4c7407b1517302cc403a931427aab650}\label{namespace_voxel_eng_a4c7407b1517302cc403a931427aab650}} 
+\index{VoxelEng@{VoxelEng}!yChunksRange@{yChunksRange}}
+\index{yChunksRange@{yChunksRange}!VoxelEng@{VoxelEng}}
+\doxysubsubsection{\texorpdfstring{yChunksRange}{yChunksRange}}
+{\footnotesize\ttfamily const int Voxel\+Eng\+::y\+Chunks\+Range = 12}
+
+
+
+Number of chunks to compute in the Y axis (only in the +Y direction or the -\/Y direction). 
+

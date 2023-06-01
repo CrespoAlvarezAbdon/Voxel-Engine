@@ -1,0 +1,77 @@
+\hypertarget{class_a_i_example_1_1_genetic_neural_network}{}\doxysection{AIExample\+::Genetic\+Neural\+Network Class Reference}
+\label{class_a_i_example_1_1_genetic_neural_network}\index{AIExample::GeneticNeuralNetwork@{AIExample::GeneticNeuralNetwork}}
+
+
+This neural network implementation is meant to be used alongside with genetic algorithms operators such as fitness function, selection, crossover, mutation and replacement to modify the network\textquotesingle{}s weights. Implementations of some of these operators can be found in Deep dive \mbox{\hyperlink{genetic_8h}{open/code/\+AI/genetic.\+h}} and Deep dive open/code/\+AI/genetic.\+cpp.  
+
+
+
+
+{\ttfamily \#include $<$NN.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_ae6ea48823c3b73a909e83865251d9f28}\label{class_a_i_example_1_1_genetic_neural_network_ae6ea48823c3b73a909e83865251d9f28}} 
+void {\bfseries init\+Network} (const std\+::vector$<$ unsigned int $>$ \&size\+Layer, float range\+Min, float range\+Max)
+\begin{DoxyCompactList}\small\item\em Initialise the neural network with the topology described in layers (number of neurons per layer) and with the respective weights initialized with random values between range\+Min and range\+Max. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_afcbd93370999a776db8e4df1baf06780}\label{class_a_i_example_1_1_genetic_neural_network_afcbd93370999a776db8e4df1baf06780}} 
+{\bfseries Genetic\+Neural\+Network} ()
+\begin{DoxyCompactList}\small\item\em Create an empty neural network(zero neurons). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a798924c4d8a0535c52c2c4ddeaefc59c}\label{class_a_i_example_1_1_genetic_neural_network_a798924c4d8a0535c52c2c4ddeaefc59c}} 
+const std\+::vector$<$ af\+::array $>$ $\ast$ {\bfseries weights} () const
+\begin{DoxyCompactList}\small\item\em Returns the network\textquotesingle{}s weights. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_af931543ff24b54a1151590dad5801b07}\label{class_a_i_example_1_1_genetic_neural_network_af931543ff24b54a1151590dad5801b07}} 
+unsigned int {\bfseries n\+Layers} () const
+\begin{DoxyCompactList}\small\item\em Returns the number of neuron layers in the network. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a5174e0b3f3e9ef32128166d219bf16ac}\label{class_a_i_example_1_1_genetic_neural_network_a5174e0b3f3e9ef32128166d219bf16ac}} 
+af\+::array {\bfseries forward\+Propagation} (const af\+::array \&input)
+\begin{DoxyCompactList}\small\item\em Returns the values corresponding to the output neurons of the network after propagating the \textquotesingle{}input\textquotesingle{} values through it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_aa7125e6ec29c4ac56c52f15b6e41c563}\label{class_a_i_example_1_1_genetic_neural_network_aa7125e6ec29c4ac56c52f15b6e41c563}} 
+unsigned int {\bfseries forward\+Propagation\+Max} (const af\+::array \&input)
+\begin{DoxyCompactList}\small\item\em Returns the index corresponding to the output neuron that has the biggest value of the entire output layer after propagating the \textquotesingle{}input\textquotesingle{} values through it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a520c0899ddc4c34a7f1f427e60c95f84}\label{class_a_i_example_1_1_genetic_neural_network_a520c0899ddc4c34a7f1f427e60c95f84}} 
+unsigned int {\bfseries forward\+Propagation\+Min} (const af\+::array \&input)
+\begin{DoxyCompactList}\small\item\em Returns the index corresponding to the output neuron that has the smallest value of the entire output layer after propagating the \textquotesingle{}input\textquotesingle{} values through it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a5f1c60f548e83fe1fd7ca0a5b0cec6a7}\label{class_a_i_example_1_1_genetic_neural_network_a5f1c60f548e83fe1fd7ca0a5b0cec6a7}} 
+{\footnotesize template$<$typename TInput , typename TOutput $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$TInput$>$}\\\+::value \&\&std\+::is\+\_\+arithmetic$<$ TOutput $>$\+::value void {\bfseries forward\+Propagation} (const std\+::vector$<$ TInput $>$ \&input, TOutput $\ast$output, unsigned int \&output\+Size)
+\begin{DoxyCompactList}\small\item\em Returns in \textquotesingle{}output\textquotesingle{} the values corresponding to the output neurons of the network after propagating the \textquotesingle{}input\textquotesingle{} values through it. WARNING. Do not forget to free the heap memory used to allocate the results in \textquotesingle{}output\textquotesingle{} when it is no longer needed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a8c73b72196f2b6206786924878b70d26}\label{class_a_i_example_1_1_genetic_neural_network_a8c73b72196f2b6206786924878b70d26}} 
+{\footnotesize template$<$typename TInput $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$TInput$>$}\\\+::value unsigned int {\bfseries forward\+Propagation\+Max} (const std\+::vector$<$ TInput $>$ \&input)
+\begin{DoxyCompactList}\small\item\em Returns the index corresponding to the output neuron that has the biggest value of the entire output layer after propagating the \textquotesingle{}input\textquotesingle{} values through it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a2358e031a4311e04afd40b3e06d89cef}\label{class_a_i_example_1_1_genetic_neural_network_a2358e031a4311e04afd40b3e06d89cef}} 
+{\footnotesize template$<$typename TInput $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$TInput$>$}\\\+::value unsigned int {\bfseries forward\+Propagation\+Min} (const std\+::vector$<$ TInput $>$ \&input)
+\begin{DoxyCompactList}\small\item\em Returns the index corresponding to the output neuron that has the smallest value of the entire output layer after propagating the \textquotesingle{}input\textquotesingle{} values through it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a11ca9076c122f78003441f6e17f94f4c}\label{class_a_i_example_1_1_genetic_neural_network_a11ca9076c122f78003441f6e17f94f4c}} 
+std\+::vector$<$ af\+::array $>$ $\ast$ {\bfseries weights} ()
+\begin{DoxyCompactList}\small\item\em Returns the network\textquotesingle{}s weights. Do not forget to call \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network_a048469701ebe5f1e38fae3538ba37254}{Genetic\+Neural\+Network\+::update\+NLayers()}} on the object you called this method on to update the internal counted number of the network\textquotesingle{}s layers if you want to reflect any changes made to said number of layers. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a048469701ebe5f1e38fae3538ba37254}\label{class_a_i_example_1_1_genetic_neural_network_a048469701ebe5f1e38fae3538ba37254}} 
+void {\bfseries update\+NLayers} ()
+\begin{DoxyCompactList}\small\item\em Update the network\textquotesingle{}s number of layers once all modifications to the network\textquotesingle{}s layers are finished. WARNING. Not thread-\/safe. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a3dc9cfa94f185525249a3884df752d0e}\label{class_a_i_example_1_1_genetic_neural_network_a3dc9cfa94f185525249a3884df752d0e}} 
+\mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}} \& {\bfseries operator=} (const \mbox{\hyperlink{class_a_i_example_1_1_genetic_neural_network}{Genetic\+Neural\+Network}} \&source)
+\begin{DoxyCompactList}\small\item\em Overwrites this neural network\textquotesingle{}s topology and weights with the ones from source. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a5f1c60f548e83fe1fd7ca0a5b0cec6a7}\label{class_a_i_example_1_1_genetic_neural_network_a5f1c60f548e83fe1fd7ca0a5b0cec6a7}} 
+{\footnotesize template$<$typename TInput , typename TOutput $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$TInput$>$}\\\+::value \&\&std\+::is\+\_\+arithmetic$<$ TOutput $>$\+::value void {\bfseries forward\+Propagation} (const std\+::vector$<$ TInput $>$ \&input, TOutput $\ast$output, unsigned int \&output\+Size)
+\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a8c73b72196f2b6206786924878b70d26}\label{class_a_i_example_1_1_genetic_neural_network_a8c73b72196f2b6206786924878b70d26}} 
+{\footnotesize template$<$typename TInput $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$TInput$>$}\\\+::value unsigned int {\bfseries forward\+Propagation\+Max} (const std\+::vector$<$ TInput $>$ \&input)
+\item 
+\mbox{\Hypertarget{class_a_i_example_1_1_genetic_neural_network_a2358e031a4311e04afd40b3e06d89cef}\label{class_a_i_example_1_1_genetic_neural_network_a2358e031a4311e04afd40b3e06d89cef}} 
+{\footnotesize template$<$typename TInput $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$TInput$>$}\\\+::value unsigned int {\bfseries forward\+Propagation\+Min} (const std\+::vector$<$ TInput $>$ \&input)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This neural network implementation is meant to be used alongside with genetic algorithms operators such as fitness function, selection, crossover, mutation and replacement to modify the network\textquotesingle{}s weights. Implementations of some of these operators can be found in Deep dive \mbox{\hyperlink{genetic_8h}{open/code/\+AI/genetic.\+h}} and Deep dive open/code/\+AI/genetic.\+cpp. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\+AI/\mbox{\hyperlink{_n_n_8h}{NN.\+h}}\item 
+code/\+AI/NN.\+cpp\end{DoxyCompactItemize}

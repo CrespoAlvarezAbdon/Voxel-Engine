@@ -1,0 +1,95 @@
+\hypertarget{class_voxel_eng_1_1entity_manager}{}\doxysection{Voxel\+Eng\+::entity\+Manager Class Reference}
+\label{class_voxel_eng_1_1entity_manager}\index{VoxelEng::entityManager@{VoxelEng::entityManager}}
+
+
+This class is in charge of encapsulating and abstracting all related to the management of entities in the engine, including the entity part of the AI agents.  
+
+
+
+
+{\ttfamily \#include $<$entity.\+h$>$}
+
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a9d7486b7d759de85423ebc1683995bd6}\label{class_voxel_eng_1_1entity_manager_a9d7486b7d759de85423ebc1683995bd6}} 
+static void {\bfseries init} ()
+\begin{DoxyCompactList}\small\item\em Initialise the entity management system. Allocate any resources that are needed on initialisation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a6fe5f9ffdab776f42dbc6ab8e5a26fba}\label{class_voxel_eng_1_1entity_manager_a6fe5f9ffdab776f42dbc6ab8e5a26fba}} 
+static bool {\bfseries initialised} ()
+\begin{DoxyCompactList}\small\item\em Returns true if the entity management system is initialised. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a6dbcc5ab9a29da1acc052896d149eb1f}\label{class_voxel_eng_1_1entity_manager_a6dbcc5ab9a29da1acc052896d149eb1f}} 
+static bool {\bfseries is\+Entity\+Registered} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em Returns true if the specified entity ID correponds to a registered one or false otherwise. An entity\+ID that belongs to a deleted (or rather \char`\"{}freed\char`\"{}) entity does not count as an registered entity until a new call to any overload of \mbox{\hyperlink{class_voxel_eng_1_1entity_manager_aa7853f264e6d6dd2d878cb4da6918cb5}{entity\+Manager\+::register\+Entity()}} reuses said ID (and returns it as the call\textquotesingle{}s result) to represent another entity. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a46620bf377021a23b782c5f9e0122fd1}\label{class_voxel_eng_1_1entity_manager_a46620bf377021a23b782c5f9e0122fd1}} 
+static bool {\bfseries is\+Entity\+Active\+At} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em Returns true if the specified entity is active (with bounds checking). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_ad75dcb753379592b79fe0f991e382d28}\label{class_voxel_eng_1_1entity_manager_ad75dcb753379592b79fe0f991e382d28}} 
+static bool {\bfseries is\+Entity\+Active} (entity\+ID entity\+ID)
+\begin{DoxyCompactList}\small\item\em Returns true if the specified entity is active (without bounds checking). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a24261e37f70ed333632cd9cfe32d1321}\label{class_voxel_eng_1_1entity_manager_a24261e37f70ed333632cd9cfe32d1321}} 
+static void {\bfseries set\+AImode} (bool on)
+\begin{DoxyCompactList}\small\item\em Sets the entity management system\textquotesingle{}s AI mode on or off. Intended to be use inside the \mbox{\hyperlink{class_voxel_eng_1_1game_a7f0c7b1f76a35b5816407f95f440d85b}{game\+::set\+AImode}} method only. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a7b8cc85aaa8dd5182593ff7b71395e02}\label{class_voxel_eng_1_1entity_manager_a7b8cc85aaa8dd5182593ff7b71395e02}} 
+static void {\bfseries manage\+Entities} ()
+\begin{DoxyCompactList}\small\item\em Function used by a worker thread to manage entities in a world/level. Management includes creating, updating and removing entities from the world. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a0397d245918009c1d147589d07142ab9}\label{class_voxel_eng_1_1entity_manager_a0397d245918009c1d147589d07142ab9}} 
+static unsigned int {\bfseries n\+Entities} ()
+\begin{DoxyCompactList}\small\item\em Return the total number of entity IDs used (even for freed entity objects). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_aa7853f264e6d6dd2d878cb4da6918cb5}\label{class_voxel_eng_1_1entity_manager_aa7853f264e6d6dd2d878cb4da6918cb5}} 
+static entity\+ID {\bfseries register\+Entity} (unsigned int model\+ID, const vec3 \&pos, const vec3 \&rot=\mbox{\hyperlink{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}{vec3\+Zero}}, tick\+Func func=nullptr)
+\begin{DoxyCompactList}\small\item\em Registers a new entity in the entity management system. Returns the ID of the registered entity. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a73bfb086e4332c6e0f2d2d3477db3026}\label{class_voxel_eng_1_1entity_manager_a73bfb086e4332c6e0f2d2d3477db3026}} 
+static entity\+ID {\bfseries register\+Entity} (unsigned int model\+ID, int posX, int posY, int posZ, const vec3 \&rot=\mbox{\hyperlink{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}{vec3\+Zero}}, tick\+Func func=nullptr)
+\begin{DoxyCompactList}\small\item\em Registers a new entity in the entity management system. Returns the ID of the registered entity. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_aeeebb98a82397388501afc27880c40f3}\label{class_voxel_eng_1_1entity_manager_aeeebb98a82397388501afc27880c40f3}} 
+static entity\+ID {\bfseries register\+Entity} (unsigned int model\+ID, int posX, int posY, int posZ, float rotX, float rotY, float rotZ, tick\+Func func=nullptr)
+\begin{DoxyCompactList}\small\item\em Registers a new entity in the entity management system. Returns the ID of the registered entity. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_afde4a6b3b6ee6bb3fc623435d055f2af}\label{class_voxel_eng_1_1entity_manager_afde4a6b3b6ee6bb3fc623435d055f2af}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1entity}{entity}} \& {\bfseries get\+Entity\+At} (entity\+ID ID)
+\begin{DoxyCompactList}\small\item\em Returns the entity with the specified entity ID (with bounds checking). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a0afc8a2422c7111ca01a610b32a5974c}\label{class_voxel_eng_1_1entity_manager_a0afc8a2422c7111ca01a610b32a5974c}} 
+static \mbox{\hyperlink{class_voxel_eng_1_1entity}{entity}} \& {\bfseries get\+Entity} (entity\+ID ID)
+\begin{DoxyCompactList}\small\item\em Returns the entity with the specified entity ID (without bounds checking). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a12676ccea5bd5b03af627c6fa77abef9}\label{class_voxel_eng_1_1entity_manager_a12676ccea5bd5b03af627c6fa77abef9}} 
+static void {\bfseries change\+Entity\+Active\+State\+At} (entity\+ID ID, bool active)
+\begin{DoxyCompactList}\small\item\em Changes the entity\textquotesingle{}s active state (without bounds checking). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a663a8dcaec0b8d87a60856f6df5fa55b}\label{class_voxel_eng_1_1entity_manager_a663a8dcaec0b8d87a60856f6df5fa55b}} 
+static void {\bfseries delete\+Entity\+At} (entity\+ID ID)
+\begin{DoxyCompactList}\small\item\em Deletes an existing entity from the entity management system. The entity ID remains free to be reused for other new entities. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a7a3452b570145da48a0a45f9c9b78109}\label{class_voxel_eng_1_1entity_manager_a7a3452b570145da48a0a45f9c9b78109}} 
+static void {\bfseries delete\+Entity} (entity\+ID ID)
+\begin{DoxyCompactList}\small\item\em Deletes an existing entity from the entity management system. The entity ID remains free to be reused for other new entities. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_aab7ed733e4956d56dba86ca21615050b}\label{class_voxel_eng_1_1entity_manager_aab7ed733e4956d56dba86ca21615050b}} 
+static void {\bfseries swap\+Read\+Write} ()
+\begin{DoxyCompactList}\small\item\em Swaps read-\/only and write-\/only batch rendering data. WARNING. Rendering-\/thread and entity management thread must be synced when calling this function. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a7e1de7040814eb9686a5f9ba41ee12fc}\label{class_voxel_eng_1_1entity_manager_a7e1de7040814eb9686a5f9ba41ee12fc}} 
+static std\+::condition\+\_\+variable \& {\bfseries entity\+Manager\+CV} ()
+\begin{DoxyCompactList}\small\item\em Get condition variable used for syncing the rendering and the batching threads. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a2b8b30705820e78a8e75844cac4e406c}\label{class_voxel_eng_1_1entity_manager_a2b8b30705820e78a8e75844cac4e406c}} 
+static bool {\bfseries sync\+Flag} ()
+\begin{DoxyCompactList}\small\item\em Get condition variable flag used for syncing the rendering and the batching threads. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a7e9344df1ea63d8a66b6025059930050}\label{class_voxel_eng_1_1entity_manager_a7e9344df1ea63d8a66b6025059930050}} 
+static std\+::mutex \& {\bfseries sync\+Mutex} ()
+\begin{DoxyCompactList}\small\item\em Get mutex used for syncing the rendering and the batching threads. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_ab53a877d3f0793c6636a7dd3b650c589}\label{class_voxel_eng_1_1entity_manager_ab53a877d3f0793c6636a7dd3b650c589}} 
+static const std\+::vector$<$ \mbox{\hyperlink{model_8h_aafab33c84de18d9caa6981b47086a2da}{model}} $>$ $\ast$ {\bfseries rendering\+Data} ()
+\begin{DoxyCompactList}\small\item\em Get the readable rendering data necessary for the rendering thread to render the batches properly. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_addcc3aa8a9e0f595d92e427afd804174}\label{class_voxel_eng_1_1entity_manager_addcc3aa8a9e0f595d92e427afd804174}} 
+static void {\bfseries move\+Entity} (entity\+ID entity\+ID, int x, int y, int z)
+\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a0d765f875d12b5063d3a555d2d2ae7cd}\label{class_voxel_eng_1_1entity_manager_a0d765f875d12b5063d3a555d2d2ae7cd}} 
+static void {\bfseries clean} ()
+\begin{DoxyCompactList}\small\item\em Free dynamic memory allocated by the entity manager system and NOT deinitialise it. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_voxel_eng_1_1entity_manager_a18ef63a33a22be1a8f2c807cd372d0fc}\label{class_voxel_eng_1_1entity_manager_a18ef63a33a22be1a8f2c807cd372d0fc}} 
+static void {\bfseries clean\+Up} ()
+\begin{DoxyCompactList}\small\item\em Free dynamic memory allocated by the entity manager system and deinitialise it. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This class is in charge of encapsulating and abstracting all related to the management of entities in the engine, including the entity part of the AI agents. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\mbox{\hyperlink{entity_8h}{entity.\+h}}\item 
+code/entity.\+cpp\end{DoxyCompactItemize}

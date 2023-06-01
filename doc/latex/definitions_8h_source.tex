@@ -1,0 +1,110 @@
+\hypertarget{definitions_8h_source}{}\doxysection{definitions.\+h}
+\label{definitions_8h_source}\index{code/definitions.h@{code/definitions.h}}
+\mbox{\hyperlink{definitions_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_DEFINITIONS\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#define \_VOXELENG\_DEFINITIONS\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <chrono>}}
+\DoxyCodeLine{13 }
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{15 }
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <GL/glew.h>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <GLFW/glfw3.h>}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include <glm.hpp>}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{21 }
+\DoxyCodeLine{22 }
+\DoxyCodeLine{23 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{24 }
+\DoxyCodeLine{26     \textcolor{comment}{//Enum classes.//}}
+\DoxyCodeLine{28 \textcolor{comment}{}}
+\DoxyCodeLine{32     \textcolor{keyword}{enum class} \mbox{\hyperlink{definitions_8h_a928223d21827269f0f31ec25a182169f}{graphicsAPI}} \{OPENGL\};}
+\DoxyCodeLine{33 }
+\DoxyCodeLine{38     \textcolor{keyword}{enum class} \mbox{\hyperlink{definitions_8h_a11fffface32c2875aa5e660ca00c43ce}{blockViewDir}} \{NONE, PLUSY, NEGY, PLUSX, NEGX, PLUSZ, NEGZ\};}
+\DoxyCodeLine{39 }
+\DoxyCodeLine{40 }
+\DoxyCodeLine{42     \textcolor{comment}{//Constants.//}}
+\DoxyCodeLine{44 \textcolor{comment}{}}
+\DoxyCodeLine{48     \textcolor{keyword}{const} \mbox{\hyperlink{definitions_8h_a928223d21827269f0f31ec25a182169f}{graphicsAPI}} \mbox{\hyperlink{definitions_8h_a4f2ff64448774d5ecdd34bc4903008f4}{graphicsAPIUsed}} = graphicsAPI::OPENGL;}
+\DoxyCodeLine{49 }
+\DoxyCodeLine{53     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{definitions_8h_af60c4d1aab8a8d8d762c22b6b31c5080}{MIN\_TEX\_RES}} = 16;}
+\DoxyCodeLine{54 }
+\DoxyCodeLine{58     \textcolor{keyword}{const} \textcolor{keywordtype}{int} \mbox{\hyperlink{definitions_8h_a9c9f34f9c7e9c5abffafdba162c2d34f}{SCX}} = 16;}
+\DoxyCodeLine{59 }
+\DoxyCodeLine{63     \textcolor{keyword}{const} \textcolor{keywordtype}{int} \mbox{\hyperlink{definitions_8h_ada54a66531ebf97036138412933b093a}{SCY}} = 16;}
+\DoxyCodeLine{64 }
+\DoxyCodeLine{68     \textcolor{keyword}{const} \textcolor{keywordtype}{int} \mbox{\hyperlink{definitions_8h_ac6b1ebceb207d8869690065097b574c6}{SCZ}} = 16;}
+\DoxyCodeLine{69 }
+\DoxyCodeLine{73     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{definitions_8h_a7d834d8858ded4bc469a50b0db8eca70}{DEF\_WIDTH}} = 800; \textcolor{comment}{// }}
+\DoxyCodeLine{74 }
+\DoxyCodeLine{78     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{definitions_8h_afe330da91441bf605dabbcbe83e46078}{DEF\_HEIGHT}} = 600;}
+\DoxyCodeLine{79 }
+\DoxyCodeLine{83     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{definitions_8h_afe7a66d1b2b8f3ba46acc2bd275c8796}{DEF\_N\_CHUNKS\_TO\_COMPUTE}} = 10;}
+\DoxyCodeLine{84 }
+\DoxyCodeLine{88     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{definitions_8h_af19a54d1769112d801ffad30b5d4d4fb}{N\_GUI\_LAYERS}} = 3;}
+\DoxyCodeLine{89 }
+\DoxyCodeLine{90 }
+\DoxyCodeLine{92     \textcolor{comment}{//Type definitions.//}}
+\DoxyCodeLine{94 \textcolor{comment}{}}
+\DoxyCodeLine{95     \textcolor{keyword}{typedef} void(*tickFunc)();}
+\DoxyCodeLine{96 }
+\DoxyCodeLine{97 \textcolor{preprocessor}{    \#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{98     }
+\DoxyCodeLine{99         \textcolor{keyword}{typedef} glm::vec3 vec3;}
+\DoxyCodeLine{100         \textcolor{keyword}{typedef} glm::vec2 vec2;}
+\DoxyCodeLine{101 }
+\DoxyCodeLine{102 \textcolor{preprocessor}{    \#else}}
+\DoxyCodeLine{103 }
+\DoxyCodeLine{104     }
+\DoxyCodeLine{105 }
+\DoxyCodeLine{106 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{107 }
+\DoxyCodeLine{108     \textcolor{keyword}{typedef} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} agentID;}
+\DoxyCodeLine{109     \textcolor{keyword}{typedef} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} entityID;}
+\DoxyCodeLine{110 }
+\DoxyCodeLine{111     \textcolor{keyword}{typedef} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{short} block; \textcolor{comment}{// Block's ID.}}
+\DoxyCodeLine{112 }
+\DoxyCodeLine{113     \textcolor{keyword}{typedef} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{char} byte; \textcolor{comment}{// Number with values between 0 and 255.}}
+\DoxyCodeLine{114 }
+\DoxyCodeLine{115     \textcolor{keyword}{typedef} \textcolor{keywordtype}{float} vertexCoord;}
+\DoxyCodeLine{116 }
+\DoxyCodeLine{117     \textcolor{keyword}{typedef} \textcolor{keywordtype}{float} textureCoord;}
+\DoxyCodeLine{118 }
+\DoxyCodeLine{119     \textcolor{keyword}{typedef} \textcolor{keywordtype}{float} angle;}
+\DoxyCodeLine{120 }
+\DoxyCodeLine{121 \textcolor{preprocessor}{    \#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{122 }
+\DoxyCodeLine{123         \textcolor{keyword}{typedef} GLint normalVec;}
+\DoxyCodeLine{124 }
+\DoxyCodeLine{125         \textcolor{keyword}{typedef} GLFWwindow GraphicsAPIWindow;}
+\DoxyCodeLine{126 }
+\DoxyCodeLine{127 \textcolor{preprocessor}{    \#else}}
+\DoxyCodeLine{128 }
+\DoxyCodeLine{129     }
+\DoxyCodeLine{130 \textcolor{preprocessor}{    \#endif}}
+\DoxyCodeLine{131 }
+\DoxyCodeLine{132     \textcolor{keyword}{typedef} std::chrono::time\_point<std::chrono::high\_resolution\_clock> timePoint;}
+\DoxyCodeLine{133     \textcolor{keyword}{typedef} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} duration;}
+\DoxyCodeLine{134 }
+\DoxyCodeLine{135 }
+\DoxyCodeLine{137     \textcolor{comment}{//Constants.//}}
+\DoxyCodeLine{139 \textcolor{comment}{}}
+\DoxyCodeLine{143     \textcolor{keyword}{const} \textcolor{keywordtype}{int} \mbox{\hyperlink{definitions_8h_a4c7407b1517302cc403a931427aab650}{yChunksRange}} = 12;}
+\DoxyCodeLine{144 }
+\DoxyCodeLine{148     \textcolor{keyword}{const} \textcolor{keywordtype}{int} \mbox{\hyperlink{definitions_8h_a6e187eeaffc3134934223d0c86c594a6}{totalYChunks}} = \mbox{\hyperlink{definitions_8h_a4c7407b1517302cc403a931427aab650}{yChunksRange}} * 2;}
+\DoxyCodeLine{149 }
+\DoxyCodeLine{153     \textcolor{keyword}{const} vec3 \mbox{\hyperlink{definitions_8h_a2506ebd6b1f69d4514021cc72a9b6080}{vec3Zero}}(0, 0, 0);}
+\DoxyCodeLine{157     \textcolor{keyword}{const} vec3 \mbox{\hyperlink{definitions_8h_a44d1aef28ea19f487fc170379f945759}{vec3FixedUp}}(0, 1, 0);}
+\DoxyCodeLine{161     \textcolor{keyword}{const} vec3 \mbox{\hyperlink{definitions_8h_a1004d23c076b2ca7ddbd4af3dada87d0}{vec3FixedDown}}(0, -\/1, 0);}
+\DoxyCodeLine{165     \textcolor{keyword}{const} vec3 \mbox{\hyperlink{definitions_8h_aa0e1382e5a1f527203e304b3844a105e}{vec3FixedNorth}}(1, 0, 0);}
+\DoxyCodeLine{169     \textcolor{keyword}{const} vec3 \mbox{\hyperlink{definitions_8h_ad2bcc3dd0a11308558946604babecbae}{vec3FixedSouth}}(-\/1, 0, 0);}
+\DoxyCodeLine{173     \textcolor{keyword}{const} vec3 \mbox{\hyperlink{definitions_8h_a19fc56ea6bff80bce866b6c39a2742dd}{vec3FixedEast}}(0, 0, 1);}
+\DoxyCodeLine{177     \textcolor{keyword}{const} vec3 \mbox{\hyperlink{definitions_8h_a7625d5a0b4b5c1d7bb93971b8aa72576}{vec3FixedWest}}(0, 0, -\/1);}
+\DoxyCodeLine{178 }
+\DoxyCodeLine{179 \}}
+\DoxyCodeLine{180 }
+\DoxyCodeLine{181 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

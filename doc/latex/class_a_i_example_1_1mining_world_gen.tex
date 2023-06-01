@@ -1,0 +1,69 @@
+\hypertarget{class_a_i_example_1_1mining_world_gen}{}\doxysection{AIExample\+::mining\+World\+Gen Class Reference}
+\label{class_a_i_example_1_1mining_world_gen}\index{AIExample::miningWorldGen@{AIExample::miningWorldGen}}
+
+
+Custom world generation for the example AI game.  
+
+
+
+
+{\ttfamily \#include $<$AIGame\+Ex1.\+h$>$}
+
+Inheritance diagram for AIExample\+::mining\+World\+Gen\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_a_i_example_1_1mining_world_gen}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_world_gen_a2dccdef2daec89e59cc25cbee683593f}\label{class_a_i_example_1_1mining_world_gen_a2dccdef2daec89e59cc25cbee683593f}} 
+{\bfseries mining\+World\+Gen} ()
+\begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_world_gen_aa39b85b37e2776d6557b8254d4274fde}\label{class_a_i_example_1_1mining_world_gen_aa39b85b37e2776d6557b8254d4274fde}} 
+const Voxel\+Eng\+::vec3 \& {\bfseries spawn\+Pos} () const
+\begin{DoxyCompactList}\small\item\em Gets a spawn position for players and entities. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_world_gen_a00350ec97d8a0867b2ab3fcaf059aca5}{prepare\+Gen\+\_\+}} ()
+\item 
+void \mbox{\hyperlink{class_a_i_example_1_1mining_world_gen_a836bac754e6a8c73fe9f0836a35c79bd}{generate\+\_\+}} (\mbox{\hyperlink{class_voxel_eng_1_1chunk}{Voxel\+Eng\+::chunk}} \&chunk)
+\item 
+\mbox{\Hypertarget{class_a_i_example_1_1mining_world_gen_a247b1d75c0dfcc335f85e53d94e57d52}\label{class_a_i_example_1_1mining_world_gen_a247b1d75c0dfcc335f85e53d94e57d52}} 
+void {\bfseries cascade\+Ore\+Gen\+\_\+} (const Voxel\+Eng\+::vec3 chunk\+Pos, unsigned int \&n\+Blocks\+Counter, unsigned int n\+Blocks, unsigned int in\+ChunkX, unsigned int in\+ChunkY, unsigned int in\+ChunkZ, Voxel\+Eng\+::block ore\+ID)
+\end{DoxyCompactItemize}
+\doxysubsection*{Additional Inherited Members}
+
+
+\doxysubsection{Detailed Description}
+Custom world generation for the example AI game. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_a_i_example_1_1mining_world_gen_a836bac754e6a8c73fe9f0836a35c79bd}\label{class_a_i_example_1_1mining_world_gen_a836bac754e6a8c73fe9f0836a35c79bd}} 
+\index{AIExample::miningWorldGen@{AIExample::miningWorldGen}!generate\_@{generate\_}}
+\index{generate\_@{generate\_}!AIExample::miningWorldGen@{AIExample::miningWorldGen}}
+\doxysubsubsection{\texorpdfstring{generate\_()}{generate\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+World\+Gen\+::generate\+\_\+ (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_voxel_eng_1_1chunk}{Voxel\+Eng\+::chunk}} \&}]{chunk }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{Voxel\+Eng\+::world\+Gen}}.
+
+\mbox{\Hypertarget{class_a_i_example_1_1mining_world_gen_a00350ec97d8a0867b2ab3fcaf059aca5}\label{class_a_i_example_1_1mining_world_gen_a00350ec97d8a0867b2ab3fcaf059aca5}} 
+\index{AIExample::miningWorldGen@{AIExample::miningWorldGen}!prepareGen\_@{prepareGen\_}}
+\index{prepareGen\_@{prepareGen\_}!AIExample::miningWorldGen@{AIExample::miningWorldGen}}
+\doxysubsubsection{\texorpdfstring{prepareGen\_()}{prepareGen\_()}}
+{\footnotesize\ttfamily void AIExample\+::mining\+World\+Gen\+::prepare\+Gen\+\_\+ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{Voxel\+Eng\+::world\+Gen}}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+code/\+AI/\mbox{\hyperlink{_a_i_game_ex1_8h}{AIGame\+Ex1.\+h}}\item 
+code/\+AI/AIGame\+Ex1.\+cpp\end{DoxyCompactItemize}

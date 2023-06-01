@@ -1,0 +1,46 @@
+\hypertarget{entity_8h}{}\doxysection{code/entity.h File Reference}
+\label{entity_8h}\index{code/entity.h@{code/entity.h}}
+
+
+Contains the player, entity and entity\+Manager classes as well as some auxiliary data structures and types used with them.  
+
+
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$condition\+\_\+variable$>$}\newline
+{\ttfamily \#include $<$list$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+set$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$mutex$>$}\newline
+{\ttfamily \#include $<$GL/glew.\+h$>$}\newline
+{\ttfamily \#include $<$GLFW/glfw3.\+h$>$}\newline
+{\ttfamily \#include $<$glm.\+hpp$>$}\newline
+{\ttfamily \#include \char`\"{}batch.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}camera.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}chunk.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}definitions.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}game\+Window.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}model.\+h\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1player}{Voxel\+Eng\+::player}}
+\begin{DoxyCompactList}\small\item\em Abstraction containing everything that defines the entity that represents the user inside the engine. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1entity}{Voxel\+Eng\+::entity}}
+\begin{DoxyCompactList}\small\item\em An entity possess a custom 3D model as its representation inside a level and is capable of being associated with actions that affect other entities or the level itself. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1entity_manager}{Voxel\+Eng\+::entity\+Manager}}
+\begin{DoxyCompactList}\small\item\em This class is in charge of encapsulating and abstracting all related to the management of entities in the engine, including the entity part of the AI agents. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the player, entity and entity\+Manager classes as well as some auxiliary data structures and types used with them. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+20/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title Entity. 
+\end{DoxyAuthor}
