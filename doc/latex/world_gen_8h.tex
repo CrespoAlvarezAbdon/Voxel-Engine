@@ -1,0 +1,37 @@
+\hypertarget{world_gen_8h}{}\doxysection{code/world\+Gen.h File Reference}
+\label{world_gen_8h}\index{code/worldGen.h@{code/worldGen.h}}
+
+
+Contains the declaration of the world\+Gen class that provides a basic API for defining custom world generators to create new levels.  
+
+
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$concepts$>$}\newline
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$random$>$}\newline
+{\ttfamily \#include $<$limits$>$}\newline
+{\ttfamily \#include \char`\"{}chunk.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}logger.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}definitions.\+h\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{Voxel\+Eng\+::world\+Gen}}
+\begin{DoxyCompactList}\small\item\em Provides a basic API for defining custom world generator to create new levels. In order to create one, create a class derived from this one or from another that ultimately has this class as a super class. WARNING. Calling \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{}s constructor or the constructor of any class that derives from \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}} results in undefined behaviour. Use \mbox{\hyperlink{class_voxel_eng_1_1world_gen_abb56ec96cff364a36b739debcde05599}{world\+Gen\+::register\+Gen}} to create a new world generator object from any derived class. The \textquotesingle{}\mbox{\hyperlink{class_voxel_eng_1_1world_gen}{world\+Gen}}\textquotesingle{} class auto registers itself into the world generator system, providing a default world generator for performance-\/testing purposes. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1default_world_gen}{Voxel\+Eng\+::default\+World\+Gen}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the declaration of the world\+Gen class that provides a basic API for defining custom world generators to create new levels. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+25/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title World generator. 
+\end{DoxyAuthor}

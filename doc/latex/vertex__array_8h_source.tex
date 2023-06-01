@@ -1,0 +1,50 @@
+\hypertarget{vertex__array_8h_source}{}\doxysection{vertex\+\_\+array.\+h}
+\label{vertex__array_8h_source}\index{code/vertex\_array.h@{code/vertex\_array.h}}
+\mbox{\hyperlink{vertex__array_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_VERTEXARRAY\_}}
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#define \_VOXELENG\_VERTEXARRAY\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{vertex__buffer_8h}{vertex\_buffer.h}}"{}}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{vertex__buffer__layout_8h}{vertex\_buffer\_layout.h}}"{}}}
+\DoxyCodeLine{13 }
+\DoxyCodeLine{14 }
+\DoxyCodeLine{15 \textcolor{keyword}{namespace }\mbox{\hyperlink{namespace_voxel_eng}{VoxelEng}} \{}
+\DoxyCodeLine{16 }
+\DoxyCodeLine{18     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{20 \textcolor{comment}{}}
+\DoxyCodeLine{25     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1vertex_array}{vertexArray}} \{}
+\DoxyCodeLine{26 }
+\DoxyCodeLine{27     \textcolor{keyword}{public}:}
+\DoxyCodeLine{28 }
+\DoxyCodeLine{29         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{30 }
+\DoxyCodeLine{35         \mbox{\hyperlink{class_voxel_eng_1_1vertex_array_a4f1925d04fdb72f6d38f02f81cfbbfdd}{vertexArray}}();}
+\DoxyCodeLine{36 }
+\DoxyCodeLine{37 }
+\DoxyCodeLine{38         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{39 }
+\DoxyCodeLine{44         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1vertex_array_a580d4b0ecc5a8cacd742856d628704d4}{bind}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{45 }
+\DoxyCodeLine{50         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1vertex_array_afab90c6096a9458bb21485426a25f212}{unbind}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{51 }
+\DoxyCodeLine{57         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1vertex_array_a8edd720cee72fd5d29b0ec5eff136a9b}{addLayout}}(\textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout}{vertexBufferLayout}}\& layout);}
+\DoxyCodeLine{58 }
+\DoxyCodeLine{64         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1vertex_array_abf690ec45fc86d2ec68013c6dff7c83d}{addDynamicBuffer}}(\textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer}{vertexBuffer}}\& vb, \textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout}{vertexBufferLayout}}\& layout, \textcolor{keywordtype}{size\_t} size, \textcolor{keyword}{const} \textcolor{keywordtype}{void}* data);}
+\DoxyCodeLine{65 }
+\DoxyCodeLine{66 }
+\DoxyCodeLine{67         \textcolor{comment}{// Destructors.}}
+\DoxyCodeLine{68 }
+\DoxyCodeLine{73         \mbox{\hyperlink{class_voxel_eng_1_1vertex_array_a7ce2c8bfdd144e34a916d4097e79ea1f}{\string~vertexArray}}();}
+\DoxyCodeLine{74 }
+\DoxyCodeLine{75     \textcolor{keyword}{private}:}
+\DoxyCodeLine{76 }
+\DoxyCodeLine{77         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} rendererID\_;}
+\DoxyCodeLine{78 }
+\DoxyCodeLine{79     \};}
+\DoxyCodeLine{80 }
+\DoxyCodeLine{81 \}}
+\DoxyCodeLine{82 }
+\DoxyCodeLine{83 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

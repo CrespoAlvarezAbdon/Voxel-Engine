@@ -1,0 +1,38 @@
+\hypertarget{utilities_8cpp}{}\doxysection{code/utilities.cpp File Reference}
+\label{utilities_8cpp}\index{code/utilities.cpp@{code/utilities.cpp}}
+{\ttfamily \#include \char`\"{}utilities.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$cstddef$>$}\newline
+{\ttfamily \#include $<$cctype$>$}\newline
+{\ttfamily \#include \char`\"{}logger.\+h\char`\"{}}\newline
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+namespace \mbox{\hyperlink{namespace_voxel_eng}{Voxel\+Eng}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{namespace_voxel_eng_a604fe2501582e254caeef089b831e3d7}{Voxel\+Eng\+::ind\+Max\+Abs\+Vec}} (const glm\+::vec3 vec)
+\item 
+unsigned int \mbox{\hyperlink{namespace_voxel_eng_afe416129c1ccf1dba5268a792d95c2d8}{Voxel\+Eng\+::ind\+Max\+Vec}} (const vec3 \&vector)
+\begin{DoxyCompactList}\small\item\em Returns the index of the first maximum value in \textquotesingle{}vector\textquotesingle{}. For example, if vector = 1.\+0f, 1.\+0f, 1.\+0f, index\+Max(vector) will return 0, but if vector = 0.\+0f, 1.\+0f, 1.\+0f, it will return 1. \end{DoxyCompactList}\item 
+vec3 \mbox{\hyperlink{namespace_voxel_eng_a348f0d98fcf9602c4bc70126c92f22fe}{Voxel\+Eng\+::u\+Direction\+To\+Vec3}} (block\+View\+Dir direction)
+\begin{DoxyCompactList}\small\item\em Returns \textquotesingle{}direction\textquotesingle{} in a vec3. \end{DoxyCompactList}\item 
+block\+View\+Dir \mbox{\hyperlink{namespace_voxel_eng_ab46f8699d461b0cd10b1a0d4debbe3ef}{Voxel\+Eng\+::vec3\+To\+UDirection}} (const vec3 \&direction)
+\begin{DoxyCompactList}\small\item\em Returns \textquotesingle{}direction\textquotesingle{} in as a Block View Direction by rounding to the nearest direction. \end{DoxyCompactList}\item 
+block\+View\+Dir \mbox{\hyperlink{namespace_voxel_eng_a7097ce6da8621fa3bc272f5bcd8fb530}{Voxel\+Eng\+::rotate\+UDirection}} (block\+View\+Dir dir, block\+View\+Dir rot)
+\begin{DoxyCompactList}\small\item\em Returns the rotated direction. \end{DoxyCompactList}\item 
+block\+View\+Dir \mbox{\hyperlink{namespace_voxel_eng_aa6a37c8fea488d892ac54b7e580d22f2}{Voxel\+Eng\+::inverse\+UDirection}} (block\+View\+Dir dir)
+\begin{DoxyCompactList}\small\item\em Returns the inverse direction. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{namespace_voxel_eng_a570310427631fce811a9a2ce44d49802}{Voxel\+Eng\+::isalnum}} (const std\+::string \&string)
+\begin{DoxyCompactList}\small\item\em Returns true if \textquotesingle{}string\textquotesingle{} only contains alphanumeric characters or false otherwise. \end{DoxyCompactList}\item 
+template$<$$>$ unsigned int \mbox{\hyperlink{namespace_voxel_eng_ab41b71f3ab12c5213c896f9d0e4273b5}{Voxel\+Eng\+::sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ char \mbox{\hyperlink{namespace_voxel_eng_a7662d56f1641d465df3b5c0c5ed32d39}{Voxel\+Eng\+::sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ block \mbox{\hyperlink{namespace_voxel_eng_ae245d765dc929ece0dd8bf67da46aa7c}{Voxel\+Eng\+::sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ block\+View\+Dir \mbox{\hyperlink{namespace_voxel_eng_a446a7e705c726475870afd23d706059b}{Voxel\+Eng\+::sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ bool \mbox{\hyperlink{namespace_voxel_eng_a3d9bac29669406cb6e9dfda031d1c45c}{Voxel\+Eng\+::validated\+Cin\+Input}} (std\+::string \&var)
+\begin{DoxyCompactList}\small\item\em Inserts user input into the desirable value. \end{DoxyCompactList}\end{DoxyCompactItemize}

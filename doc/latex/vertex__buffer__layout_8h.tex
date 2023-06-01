@@ -1,0 +1,22 @@
+\hypertarget{vertex__buffer__layout_8h}{}\doxysection{code/vertex\+\_\+buffer\+\_\+layout.h File Reference}
+\label{vertex__buffer__layout_8h}\index{code/vertex\_buffer\_layout.h@{code/vertex\_buffer\_layout.h}}
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include \char`\"{}definitions.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$GL/glew.\+h$>$}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_voxel_eng_1_1vertex_buffer_element}{Voxel\+Eng\+::vertex\+Buffer\+Element}}
+\begin{DoxyCompactList}\small\item\em Represents an element of a vertex buffer layout. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout}{Voxel\+Eng\+::vertex\+Buffer\+Layout}}
+\begin{DoxyCompactList}\small\item\em Represents a vertex buffer\textquotesingle{}s layout. This layout gives information about how the data sent to the GPU is formed. For example, it could tell that the first 32bits of a vertex\textquotesingle{}s data is a float that represents the position of said vertex in the x-\/axis. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+namespace \mbox{\hyperlink{namespace_voxel_eng}{Voxel\+Eng}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+unsigned int \mbox{\hyperlink{namespace_voxel_eng_a3bbc255b083bb48159ec707db51f3385}{Voxel\+Eng\+::graphics\+APISize\+Of}} (unsigned int type)
+\begin{DoxyCompactList}\small\item\em Get the size of the graphics API types. \end{DoxyCompactList}\end{DoxyCompactItemize}

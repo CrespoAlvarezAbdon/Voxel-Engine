@@ -1,0 +1,215 @@
+\hypertarget{utilities_8h}{}\doxysection{code/utilities.h File Reference}
+\label{utilities_8h}\index{code/utilities.h@{code/utilities.h}}
+
+
+Contains the declaration of some general utility code that is not directly related to the engine and could potentially be used in other projects easily.  
+
+
+{\ttfamily \#include $<$cstddef$>$}\newline
+{\ttfamily \#include $<$concepts$>$}\newline
+{\ttfamily \#include $<$cmath$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$limits$>$}\newline
+{\ttfamily \#include $<$type\+\_\+traits$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$ios$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include \char`\"{}definitions.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}logger.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$glm.\+hpp$>$}\newline
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{utilities_8h_a167e92f056637e9db216e99d66f3274e}\label{utilities_8h_a167e92f056637e9db216e99d66f3274e}} 
+int {\bfseries Voxel\+Eng\+::floor\+Mod} (int a, int b)
+\begin{DoxyCompactList}\small\item\em Computes a \% b using floor modulo operations. The equation computed is r = a -\/ b $\ast$ q where q = (int)((double)a / b) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8h_a2a6599f42c10c6d8607954d98660946d}\label{utilities_8h_a2a6599f42c10c6d8607954d98660946d}} 
+int {\bfseries Voxel\+Eng\+::sign} (float real)
+\begin{DoxyCompactList}\small\item\em Returns +1 if \textquotesingle{}real\textquotesingle{} \texorpdfstring{$>$}{>}= 0 and -\/1 otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8cpp_afe416129c1ccf1dba5268a792d95c2d8}\label{utilities_8cpp_afe416129c1ccf1dba5268a792d95c2d8}} 
+unsigned int {\bfseries Voxel\+Eng\+::ind\+Max\+Vec} (const vec3 \&vector)
+\begin{DoxyCompactList}\small\item\em Returns the index of the first maximum value in \textquotesingle{}vector\textquotesingle{}. For example, if vector = 1.\+0f, 1.\+0f, 1.\+0f, index\+Max(vector) will return 0, but if vector = 0.\+0f, 1.\+0f, 1.\+0f, it will return 1. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8cpp_a348f0d98fcf9602c4bc70126c92f22fe}\label{utilities_8cpp_a348f0d98fcf9602c4bc70126c92f22fe}} 
+vec3 {\bfseries Voxel\+Eng\+::u\+Direction\+To\+Vec3} (block\+View\+Dir direction)
+\begin{DoxyCompactList}\small\item\em Returns \textquotesingle{}direction\textquotesingle{} in a vec3. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8cpp_ab46f8699d461b0cd10b1a0d4debbe3ef}\label{utilities_8cpp_ab46f8699d461b0cd10b1a0d4debbe3ef}} 
+block\+View\+Dir {\bfseries Voxel\+Eng\+::vec3\+To\+UDirection} (const vec3 \&direction)
+\begin{DoxyCompactList}\small\item\em Returns \textquotesingle{}direction\textquotesingle{} in as a Block View Direction by rounding to the nearest direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8cpp_a7097ce6da8621fa3bc272f5bcd8fb530}\label{utilities_8cpp_a7097ce6da8621fa3bc272f5bcd8fb530}} 
+block\+View\+Dir {\bfseries Voxel\+Eng\+::rotate\+UDirection} (block\+View\+Dir dir, block\+View\+Dir rot)
+\begin{DoxyCompactList}\small\item\em Returns the rotated direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8cpp_aa6a37c8fea488d892ac54b7e580d22f2}\label{utilities_8cpp_aa6a37c8fea488d892ac54b7e580d22f2}} 
+block\+View\+Dir {\bfseries Voxel\+Eng\+::inverse\+UDirection} (block\+View\+Dir dir)
+\begin{DoxyCompactList}\small\item\em Returns the inverse direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8cpp_a570310427631fce811a9a2ce44d49802}\label{utilities_8cpp_a570310427631fce811a9a2ce44d49802}} 
+bool {\bfseries Voxel\+Eng\+::isalnum} (const std\+::string \&string)
+\begin{DoxyCompactList}\small\item\em Returns true if \textquotesingle{}string\textquotesingle{} only contains alphanumeric characters or false otherwise. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8h_a75b331a6e21575026c34ad6b8c661844}\label{utilities_8h_a75b331a6e21575026c34ad6b8c661844}} 
+{\footnotesize template$<$typename T $>$ }\\T {\bfseries Voxel\+Eng\+::sto} (const std\+::string \&str)=delete
+\item 
+template$<$$>$ int \mbox{\hyperlink{utilities_8h_a12e97dd744b84cb2d51a43bed545beb7}{Voxel\+Eng\+::sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ unsigned int \mbox{\hyperlink{utilities_8h_ab41b71f3ab12c5213c896f9d0e4273b5}{Voxel\+Eng\+::sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ float \mbox{\hyperlink{utilities_8h_a0e01401475207ff6266121e723aacc84}{Voxel\+Eng\+::sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into a float. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ char \mbox{\hyperlink{utilities_8h_a7662d56f1641d465df3b5c0c5ed32d39}{Voxel\+Eng\+::sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ bool \mbox{\hyperlink{utilities_8h_acce2e8e7fd683ba330449ece591e8014}{Voxel\+Eng\+::sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into a bool. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ block \mbox{\hyperlink{utilities_8h_ae245d765dc929ece0dd8bf67da46aa7c}{Voxel\+Eng\+::sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+template$<$$>$ block\+View\+Dir \mbox{\hyperlink{utilities_8h_a446a7e705c726475870afd23d706059b}{Voxel\+Eng\+::sto}} (const std\+::string \&str)
+\begin{DoxyCompactList}\small\item\em Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8h_ab39f547935db9c5f143eea25d7727d74}\label{utilities_8h_ab39f547935db9c5f143eea25d7727d74}} 
+{\footnotesize template$<$typename T $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$T$>$}\\\+::value T {\bfseries Voxel\+Eng\+::translate\+Range} (T value, T r1\+Min, T r1\+Max, T r2\+Min, T r2\+Max)
+\begin{DoxyCompactList}\small\item\em Returns \textquotesingle{}value\textquotesingle{} translated from the range defined in \mbox{[}r1\+Min, r1\+Max\mbox{]} to the one defined in \mbox{[}r2\+Min, r2\+Max\mbox{]}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8h_a021135b9aa3f03b6dd6b637f43af6c17}\label{utilities_8h_a021135b9aa3f03b6dd6b637f43af6c17}} 
+{\footnotesize template$<$typename T $>$ \newline
+requires std\+::is\+\_\+arithmetic$<$T$>$}\\\+::value std\+::is\+\_\+same$<$ T, std\+::string $>$\+::value bool {\bfseries Voxel\+Eng\+::validated\+Cin\+Input} (T \&var)
+\begin{DoxyCompactList}\small\item\em Inserts user input into the desirable value. Requires T to satisfy std\+::is\+\_\+arithmetic$<$\+T$>$\+::value $\vert$$\vert$ std\+::is\+\_\+same$<$\+T, std\+::string$>$\+::value. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8h_a3d9bac29669406cb6e9dfda031d1c45c}\label{utilities_8h_a3d9bac29669406cb6e9dfda031d1c45c}} 
+template$<$$>$ bool {\bfseries Voxel\+Eng\+::validated\+Cin\+Input} (std\+::string \&var)
+\begin{DoxyCompactList}\small\item\em Inserts user input into the desirable value. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{utilities_8h_a003ff90c93032f5fe061234904aa238e}\label{utilities_8h_a003ff90c93032f5fe061234904aa238e}} 
+template$<$$>$ bool {\bfseries Voxel\+Eng\+::validated\+Cin\+Input} (char \&var)
+\begin{DoxyCompactList}\small\item\em Inserts user input into the desirable value. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the declaration of some general utility code that is not directly related to the engine and could potentially be used in other projects easily. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+25/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title Utilities. 
+\end{DoxyAuthor}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{utilities_8h_a12e97dd744b84cb2d51a43bed545beb7}\label{utilities_8h_a12e97dd744b84cb2d51a43bed545beb7}} 
+\index{utilities.h@{utilities.h}!sto@{sto}}
+\index{sto@{sto}!utilities.h@{utilities.h}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [1/7]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+int Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into an integer. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{utilities_8h_ab41b71f3ab12c5213c896f9d0e4273b5}\label{utilities_8h_ab41b71f3ab12c5213c896f9d0e4273b5}} 
+\index{utilities.h@{utilities.h}!sto@{sto}}
+\index{sto@{sto}!utilities.h@{utilities.h}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [2/7]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+unsigned int Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{utilities_8h_a0e01401475207ff6266121e723aacc84}\label{utilities_8h_a0e01401475207ff6266121e723aacc84}} 
+\index{utilities.h@{utilities.h}!sto@{sto}}
+\index{sto@{sto}!utilities.h@{utilities.h}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [3/7]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+float Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into a float. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{utilities_8h_a7662d56f1641d465df3b5c0c5ed32d39}\label{utilities_8h_a7662d56f1641d465df3b5c0c5ed32d39}} 
+\index{utilities.h@{utilities.h}!sto@{sto}}
+\index{sto@{sto}!utilities.h@{utilities.h}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [4/7]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+char Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{utilities_8h_acce2e8e7fd683ba330449ece591e8014}\label{utilities_8h_acce2e8e7fd683ba330449ece591e8014}} 
+\index{utilities.h@{utilities.h}!sto@{sto}}
+\index{sto@{sto}!utilities.h@{utilities.h}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [5/7]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+bool Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into a bool. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{utilities_8h_ae245d765dc929ece0dd8bf67da46aa7c}\label{utilities_8h_ae245d765dc929ece0dd8bf67da46aa7c}} 
+\index{utilities.h@{utilities.h}!sto@{sto}}
+\index{sto@{sto}!utilities.h@{utilities.h}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [6/7]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+block Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. \mbox{\Hypertarget{utilities_8h_a446a7e705c726475870afd23d706059b}\label{utilities_8h_a446a7e705c726475870afd23d706059b}} 
+\index{utilities.h@{utilities.h}!sto@{sto}}
+\index{sto@{sto}!utilities.h@{utilities.h}}
+\doxysubsubsection{\texorpdfstring{sto()}{sto()}\hspace{0.1cm}{\footnotesize\ttfamily [7/7]}}
+{\footnotesize\ttfamily template$<$$>$ \\
+block\+View\+Dir Voxel\+Eng\+::sto (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert. 
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a Block View Direction. WARNING. It does not convert, for example, a string \char`\"{}\+PLUSX\char`\"{} into its Block View Direction counterpart. It is used to get the numbers that represent said directions inside the enum and convert them to the proper type. The objective of this is to parse the directions into simple number of 1 digit in the recording files and parse those numbers into their appropriate enum values. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a block ID. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into a char. Throws std\+::invalid\+\_\+argument if could not convert.
+
+Returns the string converted into an unsigned integer. Throws std\+::invalid\+\_\+argument if could not convert. 

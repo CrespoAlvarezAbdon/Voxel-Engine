@@ -1,0 +1,85 @@
+\hypertarget{shader_8h_source}{}\doxysection{shader.\+h}
+\label{shader_8h_source}\index{code/shader.h@{code/shader.h}}
+\mbox{\hyperlink{shader_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_SHADER\_}}
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#define \_VOXELENG\_SHADER\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <unordered\_map>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{15 }
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <glm.hpp>}}
+\DoxyCodeLine{17 }
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 }
+\DoxyCodeLine{21 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{24     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{26 \textcolor{comment}{}}
+\DoxyCodeLine{32     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1shader}{shader}} \{}
+\DoxyCodeLine{33 }
+\DoxyCodeLine{34     \textcolor{keyword}{public}:}
+\DoxyCodeLine{35 }
+\DoxyCodeLine{36         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{37 }
+\DoxyCodeLine{43         \mbox{\hyperlink{class_voxel_eng_1_1shader}{shader}}(\textcolor{keyword}{const} std::string\& vertexShaderPath, \textcolor{keyword}{const} std::string\& fragmentShaderPath);}
+\DoxyCodeLine{44 }
+\DoxyCodeLine{45         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{46 }
+\DoxyCodeLine{47 }
+\DoxyCodeLine{48         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{49 }
+\DoxyCodeLine{50 }
+\DoxyCodeLine{56         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1shader_a265e6c9927f1309bb37c8f67287d4b97}{bind}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{57 }
+\DoxyCodeLine{63         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1shader_a593aca853d1c1be8378b956435d17fd4}{unbind}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{64 }
+\DoxyCodeLine{69         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1shader_a29a25086e054598ad5c3f752a01f9bd8}{setUniform1i}}(\textcolor{keyword}{const} std::string\& name, \textcolor{keywordtype}{int} i1);}
+\DoxyCodeLine{70 }
+\DoxyCodeLine{76         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1shader_a800c0d9878068f388bc5bd563a210a38}{setUniform1iv}}(\textcolor{keyword}{const} std::string\& name, \textcolor{keyword}{const} \textcolor{keywordtype}{int} * v, \textcolor{keywordtype}{int} vSize);}
+\DoxyCodeLine{77 }
+\DoxyCodeLine{82         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1shader_a08ebbb7402835387b8f79170320bb2ef}{setUniformVec4f}}(\textcolor{keyword}{const} std::string\& name, \textcolor{keywordtype}{float} f1, \textcolor{keywordtype}{float} f2, \textcolor{keywordtype}{float} f3, \textcolor{keywordtype}{float} f4);}
+\DoxyCodeLine{83 }
+\DoxyCodeLine{88         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1shader_adab13a8f491f546c65304b6fdb7a9e02}{setUniformVec3f}}(\textcolor{keyword}{const} std::string\& name, \textcolor{keyword}{const} vec3\& vec);}
+\DoxyCodeLine{89 }
+\DoxyCodeLine{94         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1shader_a23911f7c52e8882d25b37880d88bbd46}{setUniformMatrix4f}}(\textcolor{keyword}{const} std::string\& name, \textcolor{keyword}{const} glm::mat4\& matrix);}
+\DoxyCodeLine{95 }
+\DoxyCodeLine{96 }
+\DoxyCodeLine{97         \textcolor{comment}{// Destructors.}}
+\DoxyCodeLine{98 }
+\DoxyCodeLine{103         \mbox{\hyperlink{class_voxel_eng_1_1shader_aa88fd36697cd49faf1109f9576e72206}{\string~shader}}();}
+\DoxyCodeLine{104 }
+\DoxyCodeLine{105     \textcolor{keyword}{private}:}
+\DoxyCodeLine{106 }
+\DoxyCodeLine{107         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} rendererID\_;}
+\DoxyCodeLine{108         \textcolor{keyword}{mutable} std::unordered\_map<std::string, GLint> uniformLocationCache\_;}
+\DoxyCodeLine{109 }
+\DoxyCodeLine{110         \textcolor{comment}{/*}}
+\DoxyCodeLine{111 \textcolor{comment}{        Compile a shader shader.}}
+\DoxyCodeLine{112 \textcolor{comment}{        WARNING. Must be called in a thread with valid graphics API context and return the shader's ID.}}
+\DoxyCodeLine{113 \textcolor{comment}{        */}}
+\DoxyCodeLine{114         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} compileShader(\textcolor{keyword}{const} std::string\& shaderSource, \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} type);}
+\DoxyCodeLine{115 }
+\DoxyCodeLine{116         \textcolor{comment}{/*}}
+\DoxyCodeLine{117 \textcolor{comment}{        Actually creates the shader. It's called as the last instruction of the constructor,}}
+\DoxyCodeLine{118 \textcolor{comment}{        when the shader files have been already loaded from disk and return the shader's ID.}}
+\DoxyCodeLine{119 \textcolor{comment}{        WARNING. Must be called in a thread with valid graphics API context.}}
+\DoxyCodeLine{120 \textcolor{comment}{        */}}
+\DoxyCodeLine{121         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} createShader(\textcolor{keyword}{const} std::string\& vertexShaderPath, \textcolor{keyword}{const} std::string\& fragmentShaderPath);}
+\DoxyCodeLine{122 }
+\DoxyCodeLine{123         \textcolor{comment}{/*}}
+\DoxyCodeLine{124 \textcolor{comment}{        Get the location of a uniform in the shader program named 'name'.}}
+\DoxyCodeLine{125 \textcolor{comment}{        WARNING. Must be called in a thread with valid graphics API context.}}
+\DoxyCodeLine{126 \textcolor{comment}{        */}}
+\DoxyCodeLine{127         GLint getUniformLocation(\textcolor{keyword}{const} std::string\& name) \textcolor{keyword}{const};}
+\DoxyCodeLine{128 }
+\DoxyCodeLine{129     \};}
+\DoxyCodeLine{130 }
+\DoxyCodeLine{131 \}}
+\DoxyCodeLine{132 }
+\DoxyCodeLine{133 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

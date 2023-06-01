@@ -1,0 +1,140 @@
+\hypertarget{noise_8h_source}{}\doxysection{noise.\+h}
+\label{noise_8h_source}\index{code/noise.h@{code/noise.h}}
+\mbox{\hyperlink{noise_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_NOISE\_}}
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#define \_VOXELENG\_NOISE\_}}
+\DoxyCodeLine{11 }
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{13     }
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include "{}../glm/gtc/noise.hpp"{}}}
+\DoxyCodeLine{15 }
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{17 }
+\DoxyCodeLine{18 }
+\DoxyCodeLine{19 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{20 }
+\DoxyCodeLine{22     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{24 \textcolor{comment}{}}
+\DoxyCodeLine{28     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1noise}{noise}} \{}
+\DoxyCodeLine{29 }
+\DoxyCodeLine{30     \textcolor{keyword}{public}:}
+\DoxyCodeLine{31 }
+\DoxyCodeLine{32         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{33 }
+\DoxyCodeLine{37         \textcolor{keyword}{static} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_aac1f36853d4b0163d508146cf4ac428c}{perlin2D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y);}
+\DoxyCodeLine{38 }
+\DoxyCodeLine{42         \textcolor{keyword}{static} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_ab54d9bfd728dd28107cd9c9c70eb9d98}{perlin3D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y, \textcolor{keywordtype}{float} z);}
+\DoxyCodeLine{43 }
+\DoxyCodeLine{47         \textcolor{keyword}{static} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_afe3b88607f917012f069a24560909697}{perlin4D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y, \textcolor{keywordtype}{float} z, \textcolor{keywordtype}{float} t);}
+\DoxyCodeLine{48 }
+\DoxyCodeLine{52         \textcolor{keyword}{static} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_afe4fc0a420466b0c0c48c0c0c386a116}{simplex2D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y);}
+\DoxyCodeLine{53 }
+\DoxyCodeLine{57         \textcolor{keyword}{static} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_ab483acbfe6f03cb147266d0826ea3a98}{simplex3D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y, \textcolor{keywordtype}{float} z);}
+\DoxyCodeLine{58 }
+\DoxyCodeLine{62         \textcolor{keyword}{static} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_ad71b5c8bbc829021ae52ae89f50c096b}{simplex4D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y, \textcolor{keywordtype}{float} z, \textcolor{keywordtype}{float} t);}
+\DoxyCodeLine{63 }
+\DoxyCodeLine{64     \textcolor{keyword}{private}:}
+\DoxyCodeLine{65 }
+\DoxyCodeLine{66         \textcolor{comment}{/*}}
+\DoxyCodeLine{67 \textcolor{comment}{        Methods.}}
+\DoxyCodeLine{68 \textcolor{comment}{        */}}
+\DoxyCodeLine{69 }
+\DoxyCodeLine{70         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{71 }
+\DoxyCodeLine{72         \mbox{\hyperlink{class_voxel_eng_1_1noise}{noise}}();}
+\DoxyCodeLine{73 }
+\DoxyCodeLine{74     \};}
+\DoxyCodeLine{75 }
+\DoxyCodeLine{76     \textcolor{keyword}{inline} noise::noise() \{\}}
+\DoxyCodeLine{77 }
+\DoxyCodeLine{78     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_aac1f36853d4b0163d508146cf4ac428c}{noise::perlin2D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y) \{}
+\DoxyCodeLine{79 }
+\DoxyCodeLine{80 \textcolor{preprocessor}{        \#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{81 }
+\DoxyCodeLine{82             \textcolor{keywordflow}{return} glm::perlin(glm::vec2(x, y));}
+\DoxyCodeLine{83 }
+\DoxyCodeLine{84 \textcolor{preprocessor}{        \#else}}
+\DoxyCodeLine{85 }
+\DoxyCodeLine{86 }
+\DoxyCodeLine{87 }
+\DoxyCodeLine{88 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{89 }
+\DoxyCodeLine{90     \}}
+\DoxyCodeLine{91 }
+\DoxyCodeLine{92     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_ab54d9bfd728dd28107cd9c9c70eb9d98}{noise::perlin3D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y, \textcolor{keywordtype}{float} z) \{}
+\DoxyCodeLine{93 }
+\DoxyCodeLine{94 \textcolor{preprocessor}{        \#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{95 }
+\DoxyCodeLine{96             \textcolor{keywordflow}{return} glm::perlin(glm::vec3(x, y, z));}
+\DoxyCodeLine{97 }
+\DoxyCodeLine{98 \textcolor{preprocessor}{        \#else}}
+\DoxyCodeLine{99 }
+\DoxyCodeLine{100 }
+\DoxyCodeLine{101 }
+\DoxyCodeLine{102 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{103 }
+\DoxyCodeLine{104     \}}
+\DoxyCodeLine{105 }
+\DoxyCodeLine{106     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_afe3b88607f917012f069a24560909697}{noise::perlin4D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y, \textcolor{keywordtype}{float} z, \textcolor{keywordtype}{float} t) \{}
+\DoxyCodeLine{107     }
+\DoxyCodeLine{108 \textcolor{preprocessor}{        \#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{109 }
+\DoxyCodeLine{110             \textcolor{keywordflow}{return} glm::perlin(glm::vec4(x, y, z, t));}
+\DoxyCodeLine{111 }
+\DoxyCodeLine{112 \textcolor{preprocessor}{        \#else}}
+\DoxyCodeLine{113 }
+\DoxyCodeLine{114             }
+\DoxyCodeLine{115 }
+\DoxyCodeLine{116 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{117     }
+\DoxyCodeLine{118     \}}
+\DoxyCodeLine{119 }
+\DoxyCodeLine{120     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_afe4fc0a420466b0c0c48c0c0c386a116}{noise::simplex2D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y) \{}
+\DoxyCodeLine{121 }
+\DoxyCodeLine{122 \textcolor{preprocessor}{        \#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{123 }
+\DoxyCodeLine{124             \textcolor{keywordflow}{return} glm::simplex(glm::vec2(x, y));}
+\DoxyCodeLine{125 }
+\DoxyCodeLine{126 \textcolor{preprocessor}{        \#else}}
+\DoxyCodeLine{127 }
+\DoxyCodeLine{128 }
+\DoxyCodeLine{129 }
+\DoxyCodeLine{130 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{131 }
+\DoxyCodeLine{132     \}}
+\DoxyCodeLine{133 }
+\DoxyCodeLine{134     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_ab483acbfe6f03cb147266d0826ea3a98}{noise::simplex3D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y, \textcolor{keywordtype}{float} z) \{}
+\DoxyCodeLine{135 }
+\DoxyCodeLine{136 \textcolor{preprocessor}{        \#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{137 }
+\DoxyCodeLine{138             \textcolor{keywordflow}{return} glm::simplex(glm::vec3(x, y, z));}
+\DoxyCodeLine{139 }
+\DoxyCodeLine{140 \textcolor{preprocessor}{        \#else}}
+\DoxyCodeLine{141 }
+\DoxyCodeLine{142 }
+\DoxyCodeLine{143 }
+\DoxyCodeLine{144 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{145 }
+\DoxyCodeLine{146     \}}
+\DoxyCodeLine{147 }
+\DoxyCodeLine{148     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} \mbox{\hyperlink{class_voxel_eng_1_1noise_ad71b5c8bbc829021ae52ae89f50c096b}{noise::simplex4D}}(\textcolor{keywordtype}{float} x, \textcolor{keywordtype}{float} y, \textcolor{keywordtype}{float} z, \textcolor{keywordtype}{float} t) \{}
+\DoxyCodeLine{149     }
+\DoxyCodeLine{150 \textcolor{preprocessor}{        \#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{151 }
+\DoxyCodeLine{152             \textcolor{keywordflow}{return} glm::simplex(glm::vec4(x, y, z, t));}
+\DoxyCodeLine{153 }
+\DoxyCodeLine{154 \textcolor{preprocessor}{        \#else}}
+\DoxyCodeLine{155 }
+\DoxyCodeLine{156             }
+\DoxyCodeLine{157 }
+\DoxyCodeLine{158 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{159     }
+\DoxyCodeLine{160     \}}
+\DoxyCodeLine{161 }
+\DoxyCodeLine{162 \}}
+\DoxyCodeLine{163 }
+\DoxyCodeLine{164 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

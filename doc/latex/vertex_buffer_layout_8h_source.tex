@@ -1,0 +1,96 @@
+\hypertarget{vertex_buffer_layout_8h_source}{}\doxysection{vertex\+Buffer\+Layout.\+h}
+\label{vertex_buffer_layout_8h_source}\index{code/vertexBufferLayout.h@{code/vertexBufferLayout.h}}
+\mbox{\hyperlink{vertex_buffer_layout_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_VERTEXBUFFERLAYOUT\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#define \_VOXELENG\_VERTEXBUFFERLAYOUT\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{15 }
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <GL/glew.h>}}
+\DoxyCodeLine{17 }
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 }
+\DoxyCodeLine{21 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{24     \textcolor{comment}{//Functions.//}}
+\DoxyCodeLine{26 \textcolor{comment}{}}
+\DoxyCodeLine{30     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} graphicsAPISizeOf(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} type); }
+\DoxyCodeLine{31 }
+\DoxyCodeLine{32 }
+\DoxyCodeLine{34     \textcolor{comment}{//Classes/Structs.//}}
+\DoxyCodeLine{36 \textcolor{comment}{}}
+\DoxyCodeLine{40     \textcolor{keyword}{struct }\mbox{\hyperlink{struct_voxel_eng_1_1vertex_buffer_element}{vertexBufferElement}} \{}
+\DoxyCodeLine{41 }
+\DoxyCodeLine{42         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} type;}
+\DoxyCodeLine{43         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} count;}
+\DoxyCodeLine{44         \textcolor{keywordtype}{bool} is\_normalized;}
+\DoxyCodeLine{45 }
+\DoxyCodeLine{46     \};}
+\DoxyCodeLine{47 }
+\DoxyCodeLine{56     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout}{vertexBufferLayout}} \{}
+\DoxyCodeLine{57 }
+\DoxyCodeLine{58     \textcolor{keyword}{public}:}
+\DoxyCodeLine{59 }
+\DoxyCodeLine{60         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{61 }
+\DoxyCodeLine{65         \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout_a7b3b3813316418602556237a56cfb59a}{vertexBufferLayout}}();}
+\DoxyCodeLine{66 }
+\DoxyCodeLine{67 }
+\DoxyCodeLine{68         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{69 }
+\DoxyCodeLine{73         \textcolor{keyword}{const} std::vector<vertexBufferElement>\& \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout_ac58bd2cb8a947da12101ee0e5f8be48c}{elements}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{74 }
+\DoxyCodeLine{78         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout_ad683c99066dc0d3a342430b34d78ae4f}{stride}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{79 }
+\DoxyCodeLine{80 }
+\DoxyCodeLine{88         \textcolor{keyword}{template} <\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{89         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout_a9f1eab22ef1f307fcc9807da9d6a4c17}{push}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} count);}
+\DoxyCodeLine{90 }
+\DoxyCodeLine{95         \textcolor{keyword}{template} <>}
+\DoxyCodeLine{96         \textcolor{keywordtype}{void} push<GLfloat>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} count);}
+\DoxyCodeLine{97 }
+\DoxyCodeLine{102         \textcolor{keyword}{template} <>}
+\DoxyCodeLine{103         \textcolor{keywordtype}{void} push<unsigned int>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} count);}
+\DoxyCodeLine{104 }
+\DoxyCodeLine{109         \textcolor{keyword}{template} <>}
+\DoxyCodeLine{110         \textcolor{keywordtype}{void} push<unsigned char>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} count);}
+\DoxyCodeLine{111 }
+\DoxyCodeLine{116         \textcolor{keyword}{template} <>}
+\DoxyCodeLine{117         \textcolor{keywordtype}{void} push<GLbyte>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} count);}
+\DoxyCodeLine{118 }
+\DoxyCodeLine{123         \textcolor{keyword}{template} <>}
+\DoxyCodeLine{124         \textcolor{keywordtype}{void} push<normalVec>(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} count);}
+\DoxyCodeLine{125 }
+\DoxyCodeLine{126 }
+\DoxyCodeLine{127         \textcolor{comment}{// Destructors.}}
+\DoxyCodeLine{128 }
+\DoxyCodeLine{129     \textcolor{keyword}{private}:}
+\DoxyCodeLine{130 }
+\DoxyCodeLine{131         std::vector<vertexBufferElement> elements\_;}
+\DoxyCodeLine{132         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} stride\_;}
+\DoxyCodeLine{133 }
+\DoxyCodeLine{134     \};}
+\DoxyCodeLine{135 }
+\DoxyCodeLine{136     \textcolor{keyword}{inline} \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout_a7b3b3813316418602556237a56cfb59a}{vertexBufferLayout::vertexBufferLayout}}() : stride\_(0) \{\}}
+\DoxyCodeLine{137 }
+\DoxyCodeLine{138     \textcolor{keyword}{inline} \textcolor{keyword}{const} std::vector<vertexBufferElement>\& \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout_ac58bd2cb8a947da12101ee0e5f8be48c}{vertexBufferLayout::elements}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{139 }
+\DoxyCodeLine{140         \textcolor{keywordflow}{return} elements\_;}
+\DoxyCodeLine{141 }
+\DoxyCodeLine{142     \}}
+\DoxyCodeLine{143 }
+\DoxyCodeLine{144     \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1vertex_buffer_layout_ad683c99066dc0d3a342430b34d78ae4f}{vertexBufferLayout::stride}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{145 }
+\DoxyCodeLine{146         \textcolor{keywordflow}{return} stride\_;}
+\DoxyCodeLine{147 }
+\DoxyCodeLine{148     \}}
+\DoxyCodeLine{149 }
+\DoxyCodeLine{150 \}}
+\DoxyCodeLine{151 }
+\DoxyCodeLine{152 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

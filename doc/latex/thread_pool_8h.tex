@@ -1,0 +1,36 @@
+\hypertarget{thread_pool_8h}{}\doxysection{code/thread\+Pool.h File Reference}
+\label{thread_pool_8h}\index{code/threadPool.h@{code/threadPool.h}}
+
+
+Contains the declaration of the \textquotesingle{}thread\+Pool\textquotesingle{} class.  
+
+
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$condition\+\_\+variable$>$}\newline
+{\ttfamily \#include $<$deque$>$}\newline
+{\ttfamily \#include $<$thread$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$functional$>$}\newline
+{\ttfamily \#include $<$mutex$>$}\newline
+{\ttfamily \#include $<$glm.\+hpp$>$}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1job}{Voxel\+Eng\+::job}}
+\begin{DoxyCompactList}\small\item\em Jobs are computational steps that solve some small tasks that are to be processed in a parallel fashion in order to divide the workload of completing a heavy task in terms of computational cost between many threads. That is, said heavy task is divided into smaller tasks that can be completed in parallel. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{class_voxel_eng_1_1thread_pool}{Voxel\+Eng\+::thread\+Pool}}
+\begin{DoxyCompactList}\small\item\em A collection of threads that are commonly used to divide the workload of one heavy task in terms of computational power into several smaller tasks that can be completed in parallel by those threads. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the declaration of the \textquotesingle{}thread\+Pool\textquotesingle{} class. 
+
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+25/04/2023 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Abdon Crespo Alvarez @title Thread pool. 
+\end{DoxyAuthor}

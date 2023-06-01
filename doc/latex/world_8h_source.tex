@@ -1,0 +1,89 @@
+\hypertarget{world_8h_source}{}\doxysection{world.\+h}
+\label{world_8h_source}\index{code/world.h@{code/world.h}}
+\mbox{\hyperlink{world_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_VOXELENGWORLD\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#define \_VOXELENG\_VOXELENGWORLD\_}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <unordered\_map>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <unordered\_set>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <mutex>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{graphics_8h}{graphics.h}}"{}}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{21 }
+\DoxyCodeLine{22 \textcolor{preprocessor}{\#include <GL/glew.h>}}
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#include <GLFW/glfw3.h>}}
+\DoxyCodeLine{24 }
+\DoxyCodeLine{25 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{26 }
+\DoxyCodeLine{27 }
+\DoxyCodeLine{28 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{29 }
+\DoxyCodeLine{31     \textcolor{comment}{//Type definitions.//}}
+\DoxyCodeLine{33 \textcolor{comment}{}}
+\DoxyCodeLine{37     \textcolor{keyword}{typedef} \mbox{\hyperlink{class_voxel_eng_1_1color}{color}} \mbox{\hyperlink{class_voxel_eng_1_1color}{skybox}};}
+\DoxyCodeLine{38 }
+\DoxyCodeLine{39 }
+\DoxyCodeLine{41     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{43 \textcolor{comment}{}}
+\DoxyCodeLine{48     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1world}{world}} \{}
+\DoxyCodeLine{49     }
+\DoxyCodeLine{50     \textcolor{keyword}{public}:}
+\DoxyCodeLine{51 }
+\DoxyCodeLine{52         \textcolor{comment}{// Initialisers.}}
+\DoxyCodeLine{53 }
+\DoxyCodeLine{58         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_a756fdfc03044435127a9d96b104ebf2a}{init}}();}
+\DoxyCodeLine{59 }
+\DoxyCodeLine{60 }
+\DoxyCodeLine{61         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{62 }
+\DoxyCodeLine{66         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_a4a1f36528b31c888fae157d89fd971a7}{setSkybox}}(\textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1color}{skybox}}\& \mbox{\hyperlink{class_voxel_eng_1_1color}{skybox}});}
+\DoxyCodeLine{67 }
+\DoxyCodeLine{71         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_a24a539fc0c788756b8fbd64abb68ef38}{addGlobalTickFunction}}(\textcolor{keyword}{const} std::string\& name, tickFunc func, \textcolor{keywordtype}{bool} active = \textcolor{keyword}{true});}
+\DoxyCodeLine{72 }
+\DoxyCodeLine{76         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_a729156a0a987c884924aac7fec5f8d16}{changeStateGlobalTickFunction}}(\textcolor{keyword}{const} std::string\& name);}
+\DoxyCodeLine{77 }
+\DoxyCodeLine{81         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_a729156a0a987c884924aac7fec5f8d16}{changeStateGlobalTickFunction}}(\textcolor{keyword}{const} std::string\& name, \textcolor{keywordtype}{bool} active);}
+\DoxyCodeLine{82 }
+\DoxyCodeLine{86         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_a47c5dbdffa4bd680168ce811512f52f3}{deleteGlobalTickFunction}}(\textcolor{keyword}{const} std::string\& name);}
+\DoxyCodeLine{87 }
+\DoxyCodeLine{94         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_a2f432ae52ba40babb6f8b38c1a2d63e7}{processWorldTicks}}();}
+\DoxyCodeLine{95 }
+\DoxyCodeLine{100         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_acf450563ffe17762f0b4a48fb2109303}{processGlobalTickFunctions}}();}
+\DoxyCodeLine{101 }
+\DoxyCodeLine{102 }
+\DoxyCodeLine{103         \textcolor{comment}{// Clean up.}}
+\DoxyCodeLine{104 }
+\DoxyCodeLine{108         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_a530a54107015dd58b5c8e4391b9363ca}{cleanUp}}();}
+\DoxyCodeLine{109 }
+\DoxyCodeLine{110     \textcolor{keyword}{private}:}
+\DoxyCodeLine{111 }
+\DoxyCodeLine{112         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialised\_;}
+\DoxyCodeLine{113         \textcolor{keyword}{static} std::unordered\_map<std::string, tickFunc> globalTickFunctions\_;}
+\DoxyCodeLine{114         \textcolor{keyword}{static} std::unordered\_set<std::string> activeTickFunctions\_;}
+\DoxyCodeLine{115         \textcolor{keyword}{static} std::mutex tickFunctionsMutex\_;}
+\DoxyCodeLine{116     }
+\DoxyCodeLine{117     \};}
+\DoxyCodeLine{118 }
+\DoxyCodeLine{119     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_a4a1f36528b31c888fae157d89fd971a7}{world::setSkybox}}(\textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1color}{skybox}}\& background) \{}
+\DoxyCodeLine{120 }
+\DoxyCodeLine{121 \textcolor{preprocessor}{        \#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{122 }
+\DoxyCodeLine{123             glClearColor(background.\mbox{\hyperlink{class_voxel_eng_1_1color_a25ac26e494bd6a18bb467fdfdc8875dc}{red}}() / 255.0f, background.\mbox{\hyperlink{class_voxel_eng_1_1color_a35defcf73fdff5afe26fe1601755b106}{green}}() / 255.0f, background.\mbox{\hyperlink{class_voxel_eng_1_1color_a87d801a4fcf4366e40114e99e4693515}{blue}}() / 255.0f, background.\mbox{\hyperlink{class_voxel_eng_1_1color_a719fd53ab1f15a5fe2afe4de931904ce}{alpha}}());}
+\DoxyCodeLine{124 }
+\DoxyCodeLine{125 \textcolor{preprocessor}{        \#else}}
+\DoxyCodeLine{126 }
+\DoxyCodeLine{127             }
+\DoxyCodeLine{128 }
+\DoxyCodeLine{129 \textcolor{preprocessor}{        \#endif}}
+\DoxyCodeLine{130     }
+\DoxyCodeLine{131     \}}
+\DoxyCodeLine{132 }
+\DoxyCodeLine{133 \}}
+\DoxyCodeLine{134 }
+\DoxyCodeLine{135 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

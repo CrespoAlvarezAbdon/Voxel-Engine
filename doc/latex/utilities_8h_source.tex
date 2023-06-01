@@ -1,0 +1,145 @@
+\hypertarget{utilities_8h_source}{}\doxysection{utilities.\+h}
+\label{utilities_8h_source}\index{code/utilities.h@{code/utilities.h}}
+\mbox{\hyperlink{utilities_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#ifndef \_VOXENG\_UTILITIES\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#define \_VOXENG\_UTILITIES\_}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <cstddef>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <concepts>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <cmath>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include <limits>}}
+\DoxyCodeLine{19 \textcolor{preprocessor}{\#include <type\_traits>}}
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{21 \textcolor{preprocessor}{\#include <ios>}}
+\DoxyCodeLine{22 \textcolor{preprocessor}{\#include <stdexcept>}}
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{24 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{logger_8h}{logger.h}}"{}}}
+\DoxyCodeLine{25 }
+\DoxyCodeLine{26 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{27 }
+\DoxyCodeLine{28 \textcolor{preprocessor}{\#include <glm.hpp>}}
+\DoxyCodeLine{29 }
+\DoxyCodeLine{30 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{31 }
+\DoxyCodeLine{32 }
+\DoxyCodeLine{33 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{34 }
+\DoxyCodeLine{36     \textcolor{comment}{//Functions.//}}
+\DoxyCodeLine{38 \textcolor{comment}{}}
+\DoxyCodeLine{39 }
+\DoxyCodeLine{47     \textcolor{keyword}{inline} \textcolor{keywordtype}{int} \mbox{\hyperlink{utilities_8h_a167e92f056637e9db216e99d66f3274e}{floorMod}}(\textcolor{keywordtype}{int} a, \textcolor{keywordtype}{int} b) \{}
+\DoxyCodeLine{48 }
+\DoxyCodeLine{49         \textcolor{keywordflow}{return} a -\/ b * (int)(std::floor((\textcolor{keywordtype}{double})a / b));}
+\DoxyCodeLine{50 }
+\DoxyCodeLine{51     \}}
+\DoxyCodeLine{52 }
+\DoxyCodeLine{53 }
+\DoxyCodeLine{57     \textcolor{keyword}{inline} \textcolor{keywordtype}{int} \mbox{\hyperlink{utilities_8h_a2a6599f42c10c6d8607954d98660946d}{sign}}(\textcolor{keywordtype}{float} real) \{}
+\DoxyCodeLine{58     }
+\DoxyCodeLine{59         \textcolor{keywordflow}{return} real >= 0 ? 1 : -\/1;}
+\DoxyCodeLine{60     }
+\DoxyCodeLine{61     \};}
+\DoxyCodeLine{62 }
+\DoxyCodeLine{63 }
+\DoxyCodeLine{64     \textcolor{comment}{// vec3 utility functions.}}
+\DoxyCodeLine{65 }
+\DoxyCodeLine{71     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} indMaxVec(\textcolor{keyword}{const} vec3\& vector);}
+\DoxyCodeLine{72 }
+\DoxyCodeLine{76     vec3 uDirectionToVec3(blockViewDir direction);}
+\DoxyCodeLine{77 }
+\DoxyCodeLine{82     blockViewDir vec3ToUDirection(\textcolor{keyword}{const} vec3\& direction);}
+\DoxyCodeLine{83 }
+\DoxyCodeLine{87     blockViewDir rotateUDirection(blockViewDir dir, blockViewDir rot);}
+\DoxyCodeLine{88 }
+\DoxyCodeLine{92     blockViewDir inverseUDirection(blockViewDir dir);}
+\DoxyCodeLine{93 }
+\DoxyCodeLine{98     \textcolor{keywordtype}{bool} isalnum(\textcolor{keyword}{const} std::string\& \textcolor{keywordtype}{string});}
+\DoxyCodeLine{99 }
+\DoxyCodeLine{100     \textcolor{keyword}{template} <\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{101     T sto(\textcolor{keyword}{const} std::string\& str) = \textcolor{keyword}{delete};}
+\DoxyCodeLine{102 }
+\DoxyCodeLine{107     \textcolor{keyword}{template} <>}
+\DoxyCodeLine{108     \textcolor{keyword}{inline} \textcolor{keywordtype}{int} sto(\textcolor{keyword}{const} std::string\& str) \{}
+\DoxyCodeLine{109     }
+\DoxyCodeLine{110         \textcolor{keywordflow}{return} std::stoi(str);}
+\DoxyCodeLine{111     }
+\DoxyCodeLine{112     \}}
+\DoxyCodeLine{113 }
+\DoxyCodeLine{118     \textcolor{keyword}{template} <>}
+\DoxyCodeLine{119     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} sto(\textcolor{keyword}{const} std::string\& str);}
+\DoxyCodeLine{120 }
+\DoxyCodeLine{125     \textcolor{keyword}{template} <>}
+\DoxyCodeLine{126     \textcolor{keyword}{inline} \textcolor{keywordtype}{float} sto(\textcolor{keyword}{const} std::string\& str) \{}
+\DoxyCodeLine{127 }
+\DoxyCodeLine{128         \textcolor{keywordflow}{return} std::stof(str);}
+\DoxyCodeLine{129 }
+\DoxyCodeLine{130     \}}
+\DoxyCodeLine{131 }
+\DoxyCodeLine{136     \textcolor{keyword}{template} <>}
+\DoxyCodeLine{137     \textcolor{keywordtype}{char} sto(\textcolor{keyword}{const} std::string\& str);}
+\DoxyCodeLine{138 }
+\DoxyCodeLine{143     \textcolor{keyword}{template} <>}
+\DoxyCodeLine{144     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} sto(\textcolor{keyword}{const} std::string\& str) \{}
+\DoxyCodeLine{145 }
+\DoxyCodeLine{146         \textcolor{keywordflow}{return} std::stoi(str);}
+\DoxyCodeLine{147 }
+\DoxyCodeLine{148     \}}
+\DoxyCodeLine{149 }
+\DoxyCodeLine{154     \textcolor{keyword}{template} <>}
+\DoxyCodeLine{155     block sto(\textcolor{keyword}{const} std::string\& str);}
+\DoxyCodeLine{156 }
+\DoxyCodeLine{166     \textcolor{keyword}{template} <>}
+\DoxyCodeLine{167     blockViewDir sto(\textcolor{keyword}{const} std::string\& str);}
+\DoxyCodeLine{168 }
+\DoxyCodeLine{173     \textcolor{keyword}{template} <\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{174     \textcolor{keyword}{requires} std::is\_arithmetic<T>::value}
+\DoxyCodeLine{175     T \mbox{\hyperlink{utilities_8h_ab39f547935db9c5f143eea25d7727d74}{translateRange}}(T value, T r1Min, T r1Max, T r2Min, T r2Max) \{}
+\DoxyCodeLine{176     }
+\DoxyCodeLine{177         \textcolor{keywordflow}{if} (r1Min < r1Max \&\& r2Min < r2Max)}
+\DoxyCodeLine{178             \textcolor{keywordflow}{return} (value -\/ r1Min) * ((r2Max -\/ r2Min) / (r1Max -\/ r1Min)) + r2Min;}
+\DoxyCodeLine{179         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{180             \mbox{\hyperlink{class_voxel_eng_1_1logger_a71bf58e041bae58e2ff5be50cd11e382}{logger::errorLog}}(\textcolor{stringliteral}{"{}The following condition must be true: r1Min < r1Max \&\& r2Min < r2Max"{}});}
+\DoxyCodeLine{181     }
+\DoxyCodeLine{182     \}}
+\DoxyCodeLine{183 }
+\DoxyCodeLine{188     \textcolor{keyword}{template} <\textcolor{keyword}{typename} T>}
+\DoxyCodeLine{189     \textcolor{keyword}{requires} std::is\_arithmetic<T>::value || std::is\_same<T, std::string>::value}
+\DoxyCodeLine{190     \textcolor{keywordtype}{bool} validatedCinInput(T\& var) \{}
+\DoxyCodeLine{191 }
+\DoxyCodeLine{192         \textcolor{keywordtype}{bool} valid = \textcolor{keyword}{false};}
+\DoxyCodeLine{193 }
+\DoxyCodeLine{194         \textcolor{keywordflow}{try} \{}
+\DoxyCodeLine{195 }
+\DoxyCodeLine{196             std::string s;}
+\DoxyCodeLine{197 }
+\DoxyCodeLine{198             std::getline(std::cin, s);}
+\DoxyCodeLine{199             std::cin.clear();}
+\DoxyCodeLine{200 }
+\DoxyCodeLine{201             \textcolor{keywordflow}{if} (s.find\_first\_not\_of(\textcolor{stringliteral}{"{}-\/+.0123456789"{}}) != std::string::npos)}
+\DoxyCodeLine{202                 \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{203 }
+\DoxyCodeLine{204             var = sto<T>(s);}
+\DoxyCodeLine{205             valid = \textcolor{keyword}{true};}
+\DoxyCodeLine{206 }
+\DoxyCodeLine{207         \}}
+\DoxyCodeLine{208         \textcolor{keywordflow}{catch} (std::invalid\_argument \textcolor{keyword}{const}\& e) \{\}}
+\DoxyCodeLine{209         }
+\DoxyCodeLine{210         \textcolor{keywordflow}{return} valid;}
+\DoxyCodeLine{211     }
+\DoxyCodeLine{212     \}}
+\DoxyCodeLine{213 }
+\DoxyCodeLine{217     \textcolor{keyword}{template} <>}
+\DoxyCodeLine{218     \textcolor{keywordtype}{bool} validatedCinInput(std::string\& var);}
+\DoxyCodeLine{219 }
+\DoxyCodeLine{223     \textcolor{keyword}{template} <>}
+\DoxyCodeLine{224     \textcolor{keywordtype}{bool} validatedCinInput(\textcolor{keywordtype}{char}\& var);}
+\DoxyCodeLine{225 }
+\DoxyCodeLine{226 }
+\DoxyCodeLine{227 \}}
+\DoxyCodeLine{228 }
+\DoxyCodeLine{229 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

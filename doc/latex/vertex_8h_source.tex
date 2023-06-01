@@ -1,0 +1,44 @@
+\hypertarget{vertex_8h_source}{}\doxysection{vertex.\+h}
+\label{vertex_8h_source}\index{code/vertex.h@{code/vertex.h}}
+\mbox{\hyperlink{vertex_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_VERTEX\_}}
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#define \_VOXELENG\_VERTEX\_}}
+\DoxyCodeLine{11 }
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{13 }
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{15 }
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <GL/glew.h>}}
+\DoxyCodeLine{17 }
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 }
+\DoxyCodeLine{21 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{24     \textcolor{comment}{//Classes/Structs//}}
+\DoxyCodeLine{26 \textcolor{comment}{}}
+\DoxyCodeLine{27 }
+\DoxyCodeLine{31     \textcolor{keyword}{struct }\mbox{\hyperlink{struct_voxel_eng_1_1vertex}{vertex}} \{}
+\DoxyCodeLine{32 }
+\DoxyCodeLine{33         vertexCoord positions[3]; \textcolor{comment}{// 0 = coord in X axis, 1 = coord in Y axis and 2 = coord in Z axis.}}
+\DoxyCodeLine{34         textureCoord textureCoords[2];}
+\DoxyCodeLine{35         \textcolor{comment}{// The member 'normals' follows GL\_INT\_2\_10\_10\_10\_REV format. That is, 10 first bits are assigned for first normal coord, }}
+\DoxyCodeLine{36         \textcolor{comment}{// the 10 next for the second normal coord... and the last 2 bits are unused (for now) because of alignment reasons.}}
+\DoxyCodeLine{37         GLint normals = 0;}
+\DoxyCodeLine{38 }
+\DoxyCodeLine{39     \};}
+\DoxyCodeLine{40 }
+\DoxyCodeLine{44     \textcolor{keyword}{struct }\mbox{\hyperlink{struct_voxel_eng_1_1vertex2_d}{vertex2D}} \{}
+\DoxyCodeLine{45 }
+\DoxyCodeLine{46         vertexCoord positions[2];}
+\DoxyCodeLine{47         textureCoord textureCoords[2];}
+\DoxyCodeLine{48 }
+\DoxyCodeLine{49     \};}
+\DoxyCodeLine{50 }
+\DoxyCodeLine{51 \}}
+\DoxyCodeLine{52 }
+\DoxyCodeLine{53 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

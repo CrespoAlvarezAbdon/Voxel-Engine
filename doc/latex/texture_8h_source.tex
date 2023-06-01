@@ -1,0 +1,131 @@
+\hypertarget{texture_8h_source}{}\doxysection{texture.\+h}
+\label{texture_8h_source}\index{code/texture.h@{code/texture.h}}
+\mbox{\hyperlink{texture_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_TEXTURE\_}}
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#define \_VOXELENG\_TEXTURE\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <unordered\_map>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <utility>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#if GRAPHICS\_API == OPENGL}}
+\DoxyCodeLine{15 }
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <GL/glew.h>}}
+\DoxyCodeLine{17 }
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 }
+\DoxyCodeLine{21 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{24     \textcolor{comment}{//Classes.//}}
+\DoxyCodeLine{26 \textcolor{comment}{}}
+\DoxyCodeLine{32     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1texture}{texture}} \{}
+\DoxyCodeLine{33 }
+\DoxyCodeLine{34     \textcolor{keyword}{public}:}
+\DoxyCodeLine{35 }
+\DoxyCodeLine{36         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{37 }
+\DoxyCodeLine{42         \mbox{\hyperlink{class_voxel_eng_1_1texture}{texture}}(\textcolor{keyword}{const} std::string\& filepath);}
+\DoxyCodeLine{43 }
+\DoxyCodeLine{44 }
+\DoxyCodeLine{45         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{46 }
+\DoxyCodeLine{50         \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1texture_a93b62731c2cee24312d947c23bff8d93}{width}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{51 }
+\DoxyCodeLine{55         \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1texture_a5882eaa5ec738b2e6903a8296a323386}{height}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{56 }
+\DoxyCodeLine{60         GLuint \mbox{\hyperlink{class_voxel_eng_1_1texture_a8a6552737dfee763ba9622bdd41d6973}{rendererID}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{61 }
+\DoxyCodeLine{65         \textcolor{keyword}{static} \textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1texture}{texture}}* \mbox{\hyperlink{class_voxel_eng_1_1texture_acef93ddee00aea4d9fbc234f9ca7853a}{blockTextureAtlas}}();}
+\DoxyCodeLine{66 }
+\DoxyCodeLine{70         \textcolor{keyword}{static} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1texture_a057007ef5c9d8239c79da45539a3912a}{blockAtlasResolution}}();}
+\DoxyCodeLine{71 }
+\DoxyCodeLine{75         \textcolor{keyword}{static} \textcolor{keyword}{const} std::pair<int, int>\& \mbox{\hyperlink{class_voxel_eng_1_1texture_ae70ddc7ca83076032888cf3009506b4f}{getTextureWH}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} textureID);}
+\DoxyCodeLine{76 }
+\DoxyCodeLine{77 }
+\DoxyCodeLine{78         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{79 }
+\DoxyCodeLine{83         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1texture_af3d9c68e7ef29c6aa95877eef95b9d27}{setBlockAtlas}}(\textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1texture}{texture}}\& \mbox{\hyperlink{class_voxel_eng_1_1texture_acef93ddee00aea4d9fbc234f9ca7853a}{blockTextureAtlas}});}
+\DoxyCodeLine{84 }
+\DoxyCodeLine{93         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1texture_a6eff4a44da5c668dee20f1f73a396c0a}{setBlockAtlasResolution}}(\textcolor{keywordtype}{int} resolution);}
+\DoxyCodeLine{94 }
+\DoxyCodeLine{95 }
+\DoxyCodeLine{100         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1texture_a345461e5902b311c823fba9e749fac41}{bind}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} slot = 0) \textcolor{keyword}{const};}
+\DoxyCodeLine{101 }
+\DoxyCodeLine{106         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1texture_ad01688ec56b66c94fabe956d6ed468ac}{unbind}}() \textcolor{keyword}{const};}
+\DoxyCodeLine{107 }
+\DoxyCodeLine{108 }
+\DoxyCodeLine{109         \textcolor{comment}{// Destructors.}}
+\DoxyCodeLine{110 }
+\DoxyCodeLine{115         \mbox{\hyperlink{class_voxel_eng_1_1texture_adfcf7bbd5094c22ccd920994bf874e81}{\string~texture}}();}
+\DoxyCodeLine{116 }
+\DoxyCodeLine{117     \textcolor{keyword}{private}:}
+\DoxyCodeLine{118 }
+\DoxyCodeLine{119         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1texture}{texture}} \textcolor{keyword}{const}* blockTextureAtlas\_;}
+\DoxyCodeLine{120         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} blockAtlasResolution\_;}
+\DoxyCodeLine{121         \textcolor{keyword}{static} std::unordered\_map<unsigned int, std::pair<int, int>> GUItexturesHW\_;}
+\DoxyCodeLine{122         \textcolor{keyword}{static} std::pair<int, int> defaultTextureHW\_;}
+\DoxyCodeLine{123 }
+\DoxyCodeLine{124         GLuint rendererID\_;}
+\DoxyCodeLine{125         std::string textureFilepath\_; }
+\DoxyCodeLine{126         \textcolor{comment}{// Local buffer to store the texture data when loading it from disk.}}
+\DoxyCodeLine{127         \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{char}* buffer\_;}
+\DoxyCodeLine{128         \textcolor{keywordtype}{int} width\_,}
+\DoxyCodeLine{129             height\_,}
+\DoxyCodeLine{130             bitsPerPixel\_;}
+\DoxyCodeLine{131 }
+\DoxyCodeLine{132     \};}
+\DoxyCodeLine{133 }
+\DoxyCodeLine{134     \textcolor{keyword}{inline} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1texture_a93b62731c2cee24312d947c23bff8d93}{texture::width}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{135 }
+\DoxyCodeLine{136         \textcolor{keywordflow}{return} width\_;}
+\DoxyCodeLine{137 }
+\DoxyCodeLine{138     \}}
+\DoxyCodeLine{139 }
+\DoxyCodeLine{140     \textcolor{keyword}{inline} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1texture_a5882eaa5ec738b2e6903a8296a323386}{texture::height}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{141 }
+\DoxyCodeLine{142         \textcolor{keywordflow}{return} height\_;}
+\DoxyCodeLine{143 }
+\DoxyCodeLine{144     \}}
+\DoxyCodeLine{145 }
+\DoxyCodeLine{146     \textcolor{keyword}{inline} GLuint \mbox{\hyperlink{class_voxel_eng_1_1texture_a8a6552737dfee763ba9622bdd41d6973}{texture::rendererID}}()\textcolor{keyword}{ const }\{}
+\DoxyCodeLine{147 }
+\DoxyCodeLine{148         \textcolor{keywordflow}{return} rendererID\_;}
+\DoxyCodeLine{149 }
+\DoxyCodeLine{150     \}}
+\DoxyCodeLine{151 }
+\DoxyCodeLine{152     \textcolor{keyword}{inline} \textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1texture}{texture}}* \mbox{\hyperlink{class_voxel_eng_1_1texture_acef93ddee00aea4d9fbc234f9ca7853a}{texture::blockTextureAtlas}}() \{}
+\DoxyCodeLine{153 }
+\DoxyCodeLine{154         \textcolor{keywordflow}{return} blockTextureAtlas\_;}
+\DoxyCodeLine{155 }
+\DoxyCodeLine{156     \}}
+\DoxyCodeLine{157 }
+\DoxyCodeLine{158     \textcolor{keyword}{inline} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1texture_a057007ef5c9d8239c79da45539a3912a}{texture::blockAtlasResolution}}() \{}
+\DoxyCodeLine{159 }
+\DoxyCodeLine{160         \textcolor{keywordflow}{return} blockAtlasResolution\_;}
+\DoxyCodeLine{161 }
+\DoxyCodeLine{162     \}}
+\DoxyCodeLine{163 }
+\DoxyCodeLine{164     \textcolor{keyword}{inline} \textcolor{keyword}{const} std::pair<int, int>\& \mbox{\hyperlink{class_voxel_eng_1_1texture_ae70ddc7ca83076032888cf3009506b4f}{texture::getTextureWH}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} textureID) \{}
+\DoxyCodeLine{165 }
+\DoxyCodeLine{166         \textcolor{keywordflow}{return} GUItexturesHW\_.find(textureID) == GUItexturesHW\_.cend() ? defaultTextureHW\_ : GUItexturesHW\_[textureID];}
+\DoxyCodeLine{167 }
+\DoxyCodeLine{168     \}}
+\DoxyCodeLine{169 }
+\DoxyCodeLine{170     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1texture_af3d9c68e7ef29c6aa95877eef95b9d27}{texture::setBlockAtlas}}(\textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1texture}{texture}}\& blockTextureAtlas) \{}
+\DoxyCodeLine{171 }
+\DoxyCodeLine{172         blockTextureAtlas\_ = \&\mbox{\hyperlink{class_voxel_eng_1_1texture_acef93ddee00aea4d9fbc234f9ca7853a}{blockTextureAtlas}};}
+\DoxyCodeLine{173 }
+\DoxyCodeLine{174     \}}
+\DoxyCodeLine{175 }
+\DoxyCodeLine{176     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1texture_a6eff4a44da5c668dee20f1f73a396c0a}{texture::setBlockAtlasResolution}}(\textcolor{keywordtype}{int} resolution) \{}
+\DoxyCodeLine{177 }
+\DoxyCodeLine{178         blockAtlasResolution\_ = resolution;}
+\DoxyCodeLine{179 }
+\DoxyCodeLine{180     \}}
+\DoxyCodeLine{181 }
+\DoxyCodeLine{182 \}}
+\DoxyCodeLine{183 }
+\DoxyCodeLine{184 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

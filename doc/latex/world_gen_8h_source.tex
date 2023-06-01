@@ -1,0 +1,215 @@
+\hypertarget{world_gen_8h_source}{}\doxysection{world\+Gen.\+h}
+\label{world_gen_8h_source}\index{code/worldGen.h@{code/worldGen.h}}
+\mbox{\hyperlink{world_gen_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#ifndef \_VOXELENG\_WORLDGEN\_}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#define \_VOXELENG\_WORLDGEN\_}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <unordered\_map>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <string>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <concepts>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <atomic>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <random>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <limits>}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{chunk_8h}{chunk.h}}"{}}}
+\DoxyCodeLine{19 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{logger_8h}{logger.h}}"{}}}
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#include "{}\mbox{\hyperlink{definitions_8h}{definitions.h}}"{}}}
+\DoxyCodeLine{21 }
+\DoxyCodeLine{22 }
+\DoxyCodeLine{23 \textcolor{keyword}{namespace }VoxelEng \{}
+\DoxyCodeLine{24 }
+\DoxyCodeLine{26     \textcolor{comment}{//Forward class declaration.//}}
+\DoxyCodeLine{28 \textcolor{comment}{}}
+\DoxyCodeLine{29     \textcolor{keyword}{class }chunk;}
+\DoxyCodeLine{30     \textcolor{keyword}{class }chunkManager;}
+\DoxyCodeLine{31 }
+\DoxyCodeLine{32 }
+\DoxyCodeLine{43     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1world_gen}{worldGen}} \{}
+\DoxyCodeLine{44 }
+\DoxyCodeLine{45     \textcolor{keyword}{public}:}
+\DoxyCodeLine{46 }
+\DoxyCodeLine{47         \textcolor{comment}{// Initialisers.}}
+\DoxyCodeLine{48 }
+\DoxyCodeLine{54         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_aef7e4885305c104cec64af1e6fc9457a}{init}}();}
+\DoxyCodeLine{55 }
+\DoxyCodeLine{56 }
+\DoxyCodeLine{57         \textcolor{comment}{// Observers.}}
+\DoxyCodeLine{58 }
+\DoxyCodeLine{66         \textcolor{keyword}{static} \textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{worldGen}}\& \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a3bbc739768f31f6e7583b41c60a30120}{cSelectedGen}}();}
+\DoxyCodeLine{67 }
+\DoxyCodeLine{71         \textcolor{keyword}{static} \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1world_gen_ae7e30680c9ae04f0de882efb79fe8ad6}{playerSpawnPos}}();}
+\DoxyCodeLine{72 }
+\DoxyCodeLine{77         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a1c73e68c2c37f5d679f3232d939be15a}{isGenRegistered}}(\textcolor{keyword}{const} std::string\& name);}
+\DoxyCodeLine{78 }
+\DoxyCodeLine{83         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a7299675c0fbaa7413b15ae80214b3a01}{getSeed}}();}
+\DoxyCodeLine{84 }
+\DoxyCodeLine{85 }
+\DoxyCodeLine{86         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{87 }
+\DoxyCodeLine{93         \textcolor{keyword}{template} <\textcolor{keyword}{class} T>}
+\DoxyCodeLine{94         \textcolor{keyword}{requires} std::derived\_from<T, worldGen>}
+\DoxyCodeLine{95         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_abeac9eb26673274e44ee0d1bf6b0b1c4}{registerGenAt}}(\textcolor{keyword}{const} std::string\& genName);}
+\DoxyCodeLine{96 }
+\DoxyCodeLine{100         \textcolor{keyword}{template} <\textcolor{keyword}{class} T>}
+\DoxyCodeLine{101         \textcolor{keyword}{requires} std::derived\_from<T, worldGen>}
+\DoxyCodeLine{102         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_abb56ec96cff364a36b739debcde05599}{registerGen}}(\textcolor{keyword}{const} std::string\& genName);}
+\DoxyCodeLine{103 }
+\DoxyCodeLine{107         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_aa49f4c7a8049ea127a96f5607afe0199}{selectGenAt}}(\textcolor{keyword}{const} std::string\& genName);}
+\DoxyCodeLine{108 }
+\DoxyCodeLine{112         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a0b62eaec33296539302628f75cdc0065}{selectGen}}(\textcolor{keyword}{const} std::string\& genName);}
+\DoxyCodeLine{113 }
+\DoxyCodeLine{117         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{worldGen}}\& \mbox{\hyperlink{class_voxel_eng_1_1world_gen_afcf60df6e073e839aff225df8bdf9228}{selectedGen}}();}
+\DoxyCodeLine{118 }
+\DoxyCodeLine{122         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_ab46f460e25933a8b87f6b8553bbb7aad}{unregisterGen}}(\textcolor{keyword}{const} std::string\& genName);}
+\DoxyCodeLine{123 }
+\DoxyCodeLine{128         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a0d99e7c52d0cec28965380f5af68dcd0}{setSeed}}();}
+\DoxyCodeLine{129 }
+\DoxyCodeLine{134         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a0d99e7c52d0cec28965380f5af68dcd0}{setSeed}}(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} seed);}
+\DoxyCodeLine{135 }
+\DoxyCodeLine{139         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a78467f629f56c80946f8e01a48bc76ef}{prepareGen}}();}
+\DoxyCodeLine{140 }
+\DoxyCodeLine{144         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a586602cffa3f2ef08740e4a912e9e3a7}{generate}}(\mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}\& \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}});}
+\DoxyCodeLine{145 }
+\DoxyCodeLine{146 }
+\DoxyCodeLine{147         \textcolor{comment}{// Clean up.}}
+\DoxyCodeLine{148 }
+\DoxyCodeLine{155         \textcolor{keyword}{static} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_ae1e9c6065debbb74a2f0a9235a0674b1}{cleanUp}}();}
+\DoxyCodeLine{156 }
+\DoxyCodeLine{157     \textcolor{keyword}{protected}:}
+\DoxyCodeLine{158 }
+\DoxyCodeLine{159         \textcolor{comment}{/*}}
+\DoxyCodeLine{160 \textcolor{comment}{        Attributes.}}
+\DoxyCodeLine{161 \textcolor{comment}{        */}}
+\DoxyCodeLine{162         \textcolor{keyword}{static} vec3 playerSpawnPos\_;}
+\DoxyCodeLine{163         \textcolor{keyword}{static} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} seed\_;}
+\DoxyCodeLine{164         \textcolor{keyword}{static} std::random\_device RD\_;}
+\DoxyCodeLine{165         \textcolor{keyword}{static} std::mt19937 generator\_;}
+\DoxyCodeLine{166         \textcolor{keyword}{static} std::uniform\_int\_distribution<unsigned int> uDistribution\_;}
+\DoxyCodeLine{167         \textcolor{keyword}{static} std::uniform\_int\_distribution<unsigned int>::param\_type flatWorldBlockDistribution\_;}
+\DoxyCodeLine{168 }
+\DoxyCodeLine{169 }
+\DoxyCodeLine{170         \textcolor{comment}{/*}}
+\DoxyCodeLine{171 \textcolor{comment}{        Methods.}}
+\DoxyCodeLine{172 \textcolor{comment}{        */}}
+\DoxyCodeLine{173 }
+\DoxyCodeLine{174         \textcolor{comment}{//Modifiers.}}
+\DoxyCodeLine{175         }
+\DoxyCodeLine{176         \textcolor{comment}{/*}}
+\DoxyCodeLine{177 \textcolor{comment}{        Any preparations before generating a new level are made here.}}
+\DoxyCodeLine{178 \textcolor{comment}{        */}}
+\DoxyCodeLine{179         \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} prepareGen\_() = 0;}
+\DoxyCodeLine{180 }
+\DoxyCodeLine{181         \textcolor{comment}{/*}}
+\DoxyCodeLine{182 \textcolor{comment}{        Chunk generation is done here.}}
+\DoxyCodeLine{183 \textcolor{comment}{        */}}
+\DoxyCodeLine{184         \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} generate\_(\mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}\& \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}) = 0;}
+\DoxyCodeLine{185 }
+\DoxyCodeLine{186     \textcolor{keyword}{private}:}
+\DoxyCodeLine{187 }
+\DoxyCodeLine{188         \textcolor{keyword}{static} std::atomic<bool> isCreatingAllowed\_; \textcolor{comment}{// To restrict constructor's use.}}
+\DoxyCodeLine{189         \textcolor{keyword}{static} \textcolor{keywordtype}{bool} initialised\_;}
+\DoxyCodeLine{190         \textcolor{keyword}{static} std::unordered\_map<std::string, worldGen*> generators\_;}
+\DoxyCodeLine{191         \textcolor{keyword}{static} \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{worldGen}}* selectedGen\_,}
+\DoxyCodeLine{192                        * defaultGen\_;}
+\DoxyCodeLine{193         }
+\DoxyCodeLine{194     \};}
+\DoxyCodeLine{195 }
+\DoxyCodeLine{196     \textcolor{keyword}{inline} \textcolor{keyword}{const} \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{worldGen}}\& \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a3bbc739768f31f6e7583b41c60a30120}{worldGen::cSelectedGen}}() \{}
+\DoxyCodeLine{197 }
+\DoxyCodeLine{198         \textcolor{keywordflow}{return} *selectedGen\_;}
+\DoxyCodeLine{199     }
+\DoxyCodeLine{200     \}}
+\DoxyCodeLine{201 }
+\DoxyCodeLine{202     \textcolor{keyword}{inline} \textcolor{keyword}{const} vec3\& \mbox{\hyperlink{class_voxel_eng_1_1world_gen_ae7e30680c9ae04f0de882efb79fe8ad6}{worldGen::playerSpawnPos}}() \{}
+\DoxyCodeLine{203     }
+\DoxyCodeLine{204         \textcolor{keywordflow}{return} playerSpawnPos\_;}
+\DoxyCodeLine{205     }
+\DoxyCodeLine{206     \}}
+\DoxyCodeLine{207 }
+\DoxyCodeLine{208     \textcolor{keyword}{inline} \textcolor{keywordtype}{bool} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a1c73e68c2c37f5d679f3232d939be15a}{worldGen::isGenRegistered}}(\textcolor{keyword}{const} std::string\& name) \{}
+\DoxyCodeLine{209     }
+\DoxyCodeLine{210         \textcolor{keywordflow}{return} generators\_.find(name) != generators\_.cend();}
+\DoxyCodeLine{211     }
+\DoxyCodeLine{212     \}}
+\DoxyCodeLine{213 }
+\DoxyCodeLine{214     \textcolor{keyword}{inline} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a7299675c0fbaa7413b15ae80214b3a01}{worldGen::getSeed}}() \{}
+\DoxyCodeLine{215     }
+\DoxyCodeLine{216         \textcolor{keywordflow}{return} seed\_;}
+\DoxyCodeLine{217     }
+\DoxyCodeLine{218     \}}
+\DoxyCodeLine{219 }
+\DoxyCodeLine{220     \textcolor{keyword}{inline} \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{worldGen}}\& \mbox{\hyperlink{class_voxel_eng_1_1world_gen_afcf60df6e073e839aff225df8bdf9228}{worldGen::selectedGen}}() \{}
+\DoxyCodeLine{221 }
+\DoxyCodeLine{222         \textcolor{keywordflow}{return} *selectedGen\_;}
+\DoxyCodeLine{223 }
+\DoxyCodeLine{224     \}}
+\DoxyCodeLine{225 }
+\DoxyCodeLine{226     \textcolor{keyword}{template} <\textcolor{keyword}{class} T>}
+\DoxyCodeLine{227     \textcolor{keyword}{requires} std::derived\_from<T, worldGen>}
+\DoxyCodeLine{228         \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_abeac9eb26673274e44ee0d1bf6b0b1c4}{worldGen::registerGenAt}}(\textcolor{keyword}{const} std::string\& genName) \{}
+\DoxyCodeLine{229 }
+\DoxyCodeLine{230         \textcolor{keywordflow}{if} (generators\_.find(genName) == generators\_.cend())}
+\DoxyCodeLine{231             registerGen<T>(genName);}
+\DoxyCodeLine{232         \textcolor{keywordflow}{else}}
+\DoxyCodeLine{233             \mbox{\hyperlink{class_voxel_eng_1_1logger_a71bf58e041bae58e2ff5be50cd11e382}{logger::errorLog}}(\textcolor{stringliteral}{"{}Another world generator named "{}} + genName + \textcolor{stringliteral}{"{} is already registered"{}});}
+\DoxyCodeLine{234 }
+\DoxyCodeLine{235     \}}
+\DoxyCodeLine{236 }
+\DoxyCodeLine{237     \textcolor{keyword}{template} <\textcolor{keyword}{class} T>}
+\DoxyCodeLine{238     \textcolor{keyword}{requires} std::derived\_from<T, worldGen>}
+\DoxyCodeLine{239     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_abb56ec96cff364a36b739debcde05599}{worldGen::registerGen}}(\textcolor{keyword}{const} std::string\& genName) \{}
+\DoxyCodeLine{240 }
+\DoxyCodeLine{241         generators\_.insert(\{ genName, \textcolor{keyword}{new} T() \});}
+\DoxyCodeLine{242 }
+\DoxyCodeLine{243     \}}
+\DoxyCodeLine{244 }
+\DoxyCodeLine{245     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a0b62eaec33296539302628f75cdc0065}{worldGen::selectGen}}(\textcolor{keyword}{const} std::string\& genName) \{}
+\DoxyCodeLine{246 }
+\DoxyCodeLine{247         selectedGen\_ = generators\_[genName];}
+\DoxyCodeLine{248 }
+\DoxyCodeLine{249     \}}
+\DoxyCodeLine{250 }
+\DoxyCodeLine{251     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a78467f629f56c80946f8e01a48bc76ef}{worldGen::prepareGen}}() \{}
+\DoxyCodeLine{252     }
+\DoxyCodeLine{253         selectedGen\_-\/>prepareGen\_();}
+\DoxyCodeLine{254     }
+\DoxyCodeLine{255     \}}
+\DoxyCodeLine{256 }
+\DoxyCodeLine{257     \textcolor{keyword}{inline} \textcolor{keywordtype}{void} \mbox{\hyperlink{class_voxel_eng_1_1world_gen_a586602cffa3f2ef08740e4a912e9e3a7}{worldGen::generate}}(\mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}\& \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}) \{}
+\DoxyCodeLine{258 }
+\DoxyCodeLine{259         selectedGen\_-\/>generate\_(\mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}});}
+\DoxyCodeLine{260     }
+\DoxyCodeLine{261     \}}
+\DoxyCodeLine{262 }
+\DoxyCodeLine{263     }
+\DoxyCodeLine{264     \textcolor{comment}{// 'defaultWorldGen' class.}}
+\DoxyCodeLine{265 }
+\DoxyCodeLine{266     \textcolor{keyword}{class }\mbox{\hyperlink{class_voxel_eng_1_1default_world_gen}{defaultWorldGen}} : \textcolor{keyword}{public} \mbox{\hyperlink{class_voxel_eng_1_1world_gen}{worldGen}} \{}
+\DoxyCodeLine{267 }
+\DoxyCodeLine{268     \textcolor{keyword}{public}:}
+\DoxyCodeLine{269 }
+\DoxyCodeLine{270         \textcolor{comment}{// Constructors.}}
+\DoxyCodeLine{271 }
+\DoxyCodeLine{272         \mbox{\hyperlink{class_voxel_eng_1_1default_world_gen}{defaultWorldGen}}();}
+\DoxyCodeLine{273 }
+\DoxyCodeLine{274 }
+\DoxyCodeLine{275     \textcolor{keyword}{protected}:}
+\DoxyCodeLine{276 }
+\DoxyCodeLine{277         \textcolor{comment}{// Modifiers.}}
+\DoxyCodeLine{278 }
+\DoxyCodeLine{279         \textcolor{keywordtype}{void} prepareGen\_();}
+\DoxyCodeLine{280 }
+\DoxyCodeLine{281         \textcolor{keywordtype}{void} generate\_(\mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}}\& \mbox{\hyperlink{class_voxel_eng_1_1chunk}{chunk}});}
+\DoxyCodeLine{282 }
+\DoxyCodeLine{283     \textcolor{keyword}{private}:}
+\DoxyCodeLine{284 }
+\DoxyCodeLine{285 }
+\DoxyCodeLine{286     \};}
+\DoxyCodeLine{287 }
+\DoxyCodeLine{288     \textcolor{keyword}{inline} defaultWorldGen::defaultWorldGen() \{\}}
+\DoxyCodeLine{289 }
+\DoxyCodeLine{290 \}}
+\DoxyCodeLine{291 }
+\DoxyCodeLine{292 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}
