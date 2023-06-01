@@ -32,11 +32,11 @@ namespace VoxelEng {
 
 	void logger::errorLog(const std::string& msg) {
 
-		std::string errorMsg = "[ERROR]:" + msg;
+		std::string errorMsg = "[ERROR]: " + msg;
 
 		std::cout << errorMsg << std::endl;
 
-		if (game::loopSelection() == GRAPHICALLEVEL) // Save a separate copy of the level just when the error happened just in case.
+		if (game::selectedEngineMode() == engineMode::EDITLEVEL) // Save a separate copy of the level just when the error happened just in case.
 			chunkManager::saveAllChunks(chunkManager::openedTerrainFileName() + "ERRORED");
 
 		game::cleanUp();
@@ -50,6 +50,9 @@ namespace VoxelEng {
 		std::string errorMsg = "[ERROR]: Out of range. " + msg;
 
 		std::cout << errorMsg << std::endl;
+
+		if (game::selectedEngineMode() == engineMode::EDITLEVEL) // Save a separate copy of the level just when the error happened just in case.
+			chunkManager::saveAllChunks(chunkManager::openedTerrainFileName() + "ERRORED");
 
 		game::cleanUp();
 

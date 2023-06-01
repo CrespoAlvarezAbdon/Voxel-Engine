@@ -1,21 +1,36 @@
+/**
+* @file chunk.h
+* @version 1.0
+* @date 20/04/2023
+* @author Abdon Crespo Alvarez
+* @title Chunk.
+* @brief Contains the chunk and chunkManager classes as well as some
+* auxiliary data structures and types used with them.
+*/
 #ifndef _VOXELENG_CHUNK_
 #define _VOXELENG_CHUNK_
+#include <atomic>
+#include <barrier>
+#include <condition_variable>
+#include <deque>
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
-#include <deque>
 #include <thread>
-#include <atomic>
 #include <mutex>
 #include <shared_mutex>
-#include <condition_variable>
-#include <barrier>
 #include <string>
 #include <hash.hpp>
+
+#if GRAPHICS_API == OPENGL
+
 #include <GL/glew.h>
 #include <glm.hpp>
-#include "vertex_buffer.h"
-#include "vertex_buffer_layout.h"
+
+#endif
+
+#include "vertexBuffer.h"
+#include "vertexBufferLayout.h"
 #include "shader.h"
 #include "vertex.h"
 #include "camera.h"
@@ -28,18 +43,22 @@
 
 namespace VoxelEng {
 
-	//////////////////////////
-	// Forward declarations.//
-	//////////////////////////
+	/////////////////////////
+	//Forward declarations.//
+	/////////////////////////
 
 	class camera;
 	class chunkManager;
 	class worldGen;
 
+
 	/////////////////
 	//Enum classes.//
 	/////////////////
 
+	/**
+	* @brief The different stages of the chunk's loading process.
+	*/
 	enum class chunkLoadLevel { NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2 };
 
 
@@ -47,8 +66,8 @@ namespace VoxelEng {
 	//Classes.//
 	////////////
 
-	/*
-	Wraps up data used to render a chunk.
+	/**
+	* @brief Wraps up data used to render a chunk.
 	*/
 	struct chunkRenderingData {
 
@@ -58,127 +77,186 @@ namespace VoxelEng {
 	};
 
 
-	/*
-	Represents a section of the voxel world, with its blocks, mesh, position and other infomation.
-	Chunks that are marked as 'dirty' or 'changed' will have their mesh regenerated if they are withing
-	a player's view range and they are visibile (W.I.P on that second part of the condition).
+	/**
+	* @brief Represents a section of the voxel world, with its blocks, mesh, position and other infomation.
+	* Chunks that are marked as 'dirty' or 'changed' will have their mesh regenerated.
 	*/
 	class chunk {
 
 	public:
 
-		// Initialisers
+		// Initialisers.
 
+		/**
+		* @brief Initialise static members of the chunk class.
+		* Allocate any resources that are needed on initialisation.
+		*/
 		static void init();
 
 
 		// Constructors.
 
-		/*
-		Construct an empty dirty chunk.
-		If 'empty' is true then the chunk block data will be filled with null block IDs (block ID 0).
-		If 'empty' is false then the chunk block data will be filled with the selected world generator.
+		/**
+		* @brief Construct an empty dirty chunk.
+		* If 'empty' is true then the chunk block data will be filled with null block IDs (block ID 0).
+		* If 'empty' is false then the chunk block data will be filled with the selected world generator.
 		*/
 		chunk(bool empty, const vec3& chunkPos = vec3Zero);
 
+		/**
+		* @brief Copy constructor.
+		*/
 		chunk(const chunk& source);
 
 
 		// Observers.
 
-		/*
-		Get the ID of the cube at chunk coordinates x y z.
+		/**
+		* @brief Returns true if the static members of this class are initialised
+		or false otherwise.
+		*/
+		static bool initialised();
+
+		/**
+		* @brief Get the ID of the cube at the specifeid chunk-local coordinates.
 		*/
 		block getBlock(GLbyte x, GLbyte y, GLbyte z);
 
-		block getBlock(const vec3& pos);
+		/**
+		* @brief Get the ID of the cube at the specifeid chunk-local coordinates.
+		*/
+		block getBlock(const vec3& inChunkPos);
 
-		/*
-		Get chunk's x axis coordinate (chunk relative).
+		/**
+		* @brief Get chunk's x axis coordinate (chunk-grid coordinate system).
 		*/
 		GLbyte x() const;
 
-		/*
-		Get chunk's y axis coordinate (chunk relative).
+		/**
+		* @brief Get chunk's y axis coordinate (chunk-grid coordinate system).
 		*/
 		GLbyte y() const;
 
-		/*
-		Get chunk's z axis coordinate (chunk relative).
+		/**
+		* @brief Get chunk's z axis coordinate (chunk-grid coordinate system).
 		*/
 		GLbyte z() const;
 
-		/*
-		Get this chunk's chunk relative position.
+		/**
+		* @brief Get chunk's coordinate (chunk-grid coordinate systems).
 		*/
 		const vec3& chunkPos() const;
 
-		/*
-		Get this chunk's position.
+		/**
+		* @brief Get this chunk's global position.
 		*/
 		const vec3& pos() const;
 
+		/**
+		* @brief Get this chunk's vertex data.
+		*/
 		const std::vector<vertex>& vertices() const;
 
+		/**
+		* @brief Get this chunk's rendering data object.
+		*/
 		const chunkRenderingData& renderingData() const;
 	
-		/*
-		Get the number of non-null blocks (blocks with ID != 0) that exist in the chunk.
+		/**
+		* @brief Get the number of non-null blocks (blocks with ID != 0) that exist in the chunk.
 		*/
 		unsigned int getNBlocks();
 
+		/**
+		* @brief Returns true if this chunk's terrain has been modified and it's mesh needs
+		* to be regenerated or false otherwise.
+		*/
 		const std::atomic<bool>& changed() const;
 
+		/**
+		* @brief Returns the chunk's load level.
+		*/
 		chunkLoadLevel loadLevel() const;
 
 
 		// Modifiers.
 
-		/*
-		Sets the value of a block within the chunk.
-		The chunk is marked as dirty.
-		Returns the old ID of the modified block.
+		/**
+		* @brief Sets the value of a block within the chunk.
+		* The chunk is marked as dirty.
+		* Returns the old ID of the modified block.
 		*/
 		block setBlock(GLbyte x, GLbyte y, GLbyte z, block block_id);
 
-		/*
-		Sets the value of a block within the chunk.
-		The chunk is marked as dirty.
-		Returns the old ID of the modified block.
+		/**
+		* @brief Sets the value of a block within the chunk.
+		* The chunk is marked as dirty.
+		* Returns the old ID of the modified block.
 		*/
 		block setBlock(const vec3& chunkRelPos, block blockID);
 
-		/*
-		Sets the value of a block within the chunk.
-		The chunk is marked as dirty.
-		Returns the old ID of the modified block.
+		/**
+		* @brief Sets the value of a block within the chunk.
+		* The chunk is marked as dirty.
+		* Returns the old ID of the modified block.
 		*/
 		block setBlock(unsigned int linearIndex, block blockID);
 
+		/**
+		* @brief Returns the chunk's chunk position.
+		*/
 		vec3& chunkPos();
 
+		/**
+		* @brief Returns the chunk's rendering data object.
+		*/
 		chunkRenderingData& renderingData();
 
+		/**
+		* @brief Set the number of non-null blocks in the chunk.
+		*/
 		void setNBlocks(unsigned int nBlocks);
 
+		/**
+		* @brief Returns the chunk's mutex that guards its block data.
+		*/
 		std::shared_mutex& blockDataMutex();
 
+		/**
+		* @brief Returns true if this chunk's terrain has been modified and it's mesh needs
+		* to be regenerated or false otherwise.
+		*/
 		std::atomic<bool>& changed();
 
-		/*
-		Regenerate the chunk's mesh.
+		/**
+		* @brief Regenerate the chunk's mesh.
 		*/
 		void renewMesh();
 
-		/*
-		The chunk's block data will be filled with 0s, leaving the chunk "empty of blocks" or full of null blocks.
+		/**
+		* @brief The chunk's block data will be filled with null blocks, leaving the chunk "empty of blocks".
 		*/
 		void makeEmpty();
 
+		/**
+		* @brief Set the chunk's load level.
+		*/
 		void setLoadLevel(chunkLoadLevel level);
 
+		/**
+		* @brief Reuse a chunk object by assigning it a new chunk position and generating/loading
+		* new terrain on it by previously cleaning any previous data.
+		*/
+		void regenChunk(bool empty, const vec3& chunkPos);
 
-		// Clean up.
+
+		/*
+		Clean up.
+		*/
+
+		/**
+		* @brief Clean up any resources allocated for the class' static methods.
+		*/ 
 		static void cleanUp();
 	
 	private:
@@ -202,6 +280,12 @@ namespace VoxelEng {
 		std::shared_mutex blocksMutex_;
 
 	};
+
+	inline bool chunk::initialised() {
+	
+		return initialised_;
+	
+	}
 
 	inline GLbyte chunk::x() const {
 
@@ -301,8 +385,8 @@ namespace VoxelEng {
 
 	
 
-	/*
-	Used for managing the chunks' life cycle, level loading...
+	/**
+	* @brief Used for managing the chunks' life cycle, level loading...
 	*/
 	class chunkManager {
 
@@ -310,310 +394,479 @@ namespace VoxelEng {
 
 		// Initializers.
 
-		static void init(unsigned int nChunksToCompute = 10);
+		/**
+		* @brief Initialise the chunk management system.
+		*/
+		static void init(unsigned int nChunksToCompute = DEF_N_CHUNKS_TO_COMPUTE);
 
 
 		// Observers.
 
+		/**
+		* @brief Returns true if the system is initialised or false otherwise.
+		*/
 		static bool initialised();
 
+		/**
+		* @brief Returns chunk local coordinates of a global position.
+		*/
 		static vec3 getChunkRelCoords(const vec3& blockPos);
 
+		/**
+		* @brief Returns chunk local coordinates of a global position.
+		*/
 		static vec3 getChunkRelCoords(float globalX, float globalY, float globalZ);
 
+		/**
+		* @brief Returns chunk grid coordinates of a global position.
+		*/
 		static vec3 getChunkCoords(const vec3& blockPos);
 
+		/**
+		* @brief Returns chunk local coordinates of a global position.
+		*/
 		static vec3 getChunkCoords(float globalX, float globalY, float globalZ);
 
+		/**
+		* @brief Returns chunk coordinates in the X and Z axes of a global position in the X and Z axes.
+		*/
 		static vec2 getChunkXZCoords(const vec2& blockXZPos);
 
+		/**
+		* @brief Returns chunk coordinates in the X and Z axes of a global position in the X and Z axes.
+		*/
 		static vec2 getChunkXZCoords(int blockX, int blockZ);
 
+		/**
+		* @brief Returns global coordinates of a local chunk coordinate from a certain chunk position.
+		*/
 		static vec3 getGlobalPos(const vec3& chunkPos, const vec3& inChunkPos);
 
+		/**
+		* @brief Returns global coordinates of a local chunk coordinate from a certain chunk position.
+		*/
 		static vec3 getGlobalPos(int chunkX, int chunkY, int chunkZ, int inChunkX, int inChunkY, int inChunkZ);
 
+		/**
+		* @brief Returns global coordinates in the X and Z axes of a local chunk coordinate from a certain chunk position,
+		* both in the X and Z axes.
+		*/
 		static vec2 getXZGlobalPos(const vec2& chunkPos, const vec2& inChunkPos);
 
+		/**
+		* @brief Returns global coordinates in the X and Z axes of a local chunk coordinate from a certain chunk position,
+		* both in the X and Z axes.
+		*/
 		static vec2 getXZGlobalPos(int chunkX, int chunkZ, int inChunkX, int inChunkZ);
 
+		/**
+		* @brief Returns the system's dictionary of registered chunks.
+		*/
 		static const std::unordered_map<vec3, chunk*>& chunks();
 
+		/**
+		* @brief Returns the system's readable chunk vertex data. That is, it returns the system's chunk
+		* vertex data that is safe to read for the rendering thread in order to render them.
+		*/
 		static std::unordered_map<vec3, std::vector<vertex>> const* drawableChunksRead();
 
 		static unsigned int nChunksToCompute();
 
-		/*
-		'posX', 'posY' and 'posZ' refere to a global position.
+		/**
+		* @brief Get the block ID of a specified global position.
 		*/
 		static block getBlock(int posX, int posY, int posZ);
 
-		/*
-		'pos' holds a global postion.
+		/**
+		* @brief Get the block ID of a specified global position.
 		*/
 		static block getBlock(const vec3& pos);
 
-		/*
-		Get all blocks in the world that are in the box defined with the positions pos1 and pos2 taking into
-		account that pos1.x <= pos2.x ^ pos1.y <= pos2.y ^ pos1.z <= pos2.z.
+		/**
+		* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2
 		*/
 		static std::vector<block> getBlocksBox(const vec3& pos1, const vec3& pos2);
 
+		/**
+		* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2
+		*/
 		static std::vector<block> getBlocksBox(int x1, int y1, int z1, int x2, int y2, int z2);
 
+		/**
+		* @brief Returns the chunk position of the system's freeable chunks.
+		*/
 		static const std::unordered_set<vec3>& cFreeableChunks();
 
+		/**
+		* @brief Returns the flag that is used to force synchronisation between the chunk management
+		* and the rendering thread.
+		*/
 		static const std::atomic<bool>& cForceSyncFlag();
 
-		/*
-		When the chunk manager system is in AI mode it offers special methods such
-		as the ability to create a copy of the loaded level to each AI agent in case they
-		need it.
-		*/
-		static bool AImodeON();
-
-		/*
-		Returns if the given position is currently inside the loaded area around
-		the player.
+		/**
+		* @brief Returns true if the given block position is currently inside the loaded area around
+		* the player or false otherwise.
 		*/
 		static bool isInWorld(const vec3& pos);
 
-		/*
-		Returns if the given position is currently inside the loaded area around
-		the player.
+		/**
+		* @brief Returns true if the given block position is currently inside the loaded area around
+		* the player or false otherwise.
 		*/
 		static bool isInWorld(int x, int y, int z);
 
+		/**
+		* @brief Returns true if the given chunk position is inside the level's boundaries or false otherwise.
+		*/
 		static bool isChunkInWorld(const vec3& chunkPos);
 
+		/**
+		* @brief Returns true if the given chunk position is inside the level's boundaries or false otherwise.
+		*/
 		static bool isChunkInWorld(int chunkX, int chunkY, int chunkZ);
 
+		/**
+		* @brief Returns the chunk's load level.
+		*/
 		static chunkLoadLevel getChunkLoadLevel(const vec3& chunkPos);
 
+		/**
+		* @brief Returns the chunk's load level.
+		*/
 		static chunkLoadLevel getChunkLoadLevel(int chunkX, int chunkY, int chunkZ);
 
+		/**
+		* @brief Returns the currently opened terrain file.
+		*/
 		static const std::string& openedTerrainFileName();
 
+		/**
+		* @brief Returns true if the system is currently using the infinite world type
+		* or false otherwise.
+		*/
 		static bool infiniteWorld();
 
 
 		// Modifiers.
 
-		/*
-		Chunkmanager's AI mode does not generate the graphical part of the terrain to save
-		resources when training or testing AIs (that is, when not playing a record or accessing a
-		level in graphical mode).
+		/**
+		* @brief Turns the system's AI mode on or off.
 		*/
-		static void setAImode(bool ON);
+		static void setAImode(bool on);
 
+		/**
+		* @brief Set the number of chunks to compute in the X and Z axes.
+		*/
 		static void setNChunksToCompute(unsigned int nChunksToCompute);
 
+		/**
+		* @brief Set the block ID of a specfied block position.
+		*/
 		static block setBlock(const vec3& pos, block blockID);
 
+		/**
+		* @brief Set the block ID of a specfied block position.
+		*/
 		static block setBlock(int x, int y, int z, block blockID);
 
-		/*
-		Returns pointer to the created chunk.
+		/**
+		* @brief Returns pointer to the created chunk.
 		*/
 		static chunk* createChunkAt(bool empty, const vec3& chunkPos);
 
-		/*
-		Returns pointer to the created chunk.
+		/**
+		* @brief Returns pointer to the created chunk.
 		*/
 		static chunk* createChunkAt(bool empty, int chunkX, int chunkY, int chunkZ);
 
-		/*
-		Same as createChunkAt() but with no bounds checking.
-		Returns pointer to the created chunk.
+		/**
+		* @brief Same as chunkManager::createChunkAt() but with no bounds checking.
+		* Returns pointer to the created chunk.
 		*/
 		static chunk* createChunk(bool empty, const vec3& chunkPos);
 
-		/*
-		Same as createChunkAt() but with no bounds checking.
-		Returns pointer to the created chunk.
+		/**
+		* @brief Same as chunkManager::createChunkAt() but with no bounds checking.
+		* Returns pointer to the created chunk.
 		*/
 		static chunk* createChunk(bool empty, int chunkX, int chunkY, int chunkZ);
 
-		static chunk* selectChunk(GLbyte x, GLbyte y, GLbyte z);
+		/**
+		* @brief Select a chunk with the specified chunk position.
+		* WARNING. Not meant for use in AI mode.
+		*/
+		static chunk* selectChunk(int x, int y, int z);
 
+		/**
+		* @brief Select a chunk with the specified chunk position.
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static chunk* selectChunkByChunkPos(const vec3& chunkPos);
 
+		/**
+		* @brief Select a chunk with the specified block position.
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static chunk* selectChunkByChunkPos(int x, int y, int z);
 
-		/*
-		Uses real float point world coordinates.
+		/**
+		* @brief Select a chunk with the specified global position.
+		* WARNING. Not meant for use in AI mode.
 		*/
 		static chunk* selectChunkByRealPos(const vec3& pos);
 
+		/**
+		* @brief Select the neighbor -X chunk for the chunk with the specified chunk position
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static chunk* neighborMinusX(const vec3& chunkPos);
 
+		/**
+		* @brief Select the neighbor +X chunk for the chunk with the specified chunk position
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static chunk* neighborPlusX(const vec3& chunkPos);
 
+		/**
+		* @brief Select the neighbor -Y chunk for the chunk with the specified chunk position
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static chunk* neighborMinusY(const vec3& chunkPos);
 
+		/**
+		* @brief Select the neighbor +Y chunk for the chunk with the specified chunk position
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static chunk* neighborPlusY(const vec3& chunkPos);
 
+		/**
+		* @brief Select the neighbor -Z chunk for the chunk with the specified chunk position
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static chunk* neighborMinusZ(const vec3& chunkPos);
 
+		/**
+		* @brief Select the neighbor +Z chunk for the chunk with the specified chunk position
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static chunk* neighborPlusZ(const vec3& chunkPos);
 
-		/*
-		WARNING. This operation is not thread-safe.
-		To push back a chunk's rendering data into this deque,
-		use chunkManager::pushDrawableChunks(...) method to prevent
-		race conditions when using multiple threads in the
-		chunk management system.
+		/**
+		* @brief Returns the system's writeable chunk vertex data. That is,
+		* it returns the system's chunk vertex data that can be modified by the chunk
+		* management thread and chunk meshing threads and that it is not safe for
+		* reading.
+		* WARNING. This operation is not thread-safe.
+		* To push back a chunk's rendering data into this deque,
+		* use chunkManager::pushDrawableChunks(...) method to prevent
+		* race conditions when using multiple threads in the
+		* chunk management system.
 		*/
 		static std::unordered_map<vec3, std::vector<vertex>>* drawableChunksWrite();
 
+		/**
+		* @brief Returns the mutex that guards the registered chunks dictionary.
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static std::recursive_mutex& chunksMutex();
 
+		/**
+		* @brief Returns the mutex that guards the chunk high priority update list.
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static std::recursive_mutex& highPriorityListMutex();
 
+		/**
+		* @brief Returns the list of freeable chunks.
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static std::unordered_set<vec3>& freeableChunks();
 
+		/**
+		* @brief Returns the mutex that guards the freeable chunk list.
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static std::mutex& freeableChunksMutex();
 
+		/**
+		* @brief Returns the mutex associated with the chunk management thread.
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static std::mutex& managerThreadMutex();
 
+		/**
+		* @brief Returns the condition variable associated with the chunk management thread.
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static std::condition_variable& managerThreadCV();
-
+		
+		/**
+		* @brief Returns the flag used to force synchronisation the rendering
+		* and chunk management threads.
+		* WARNING. Not meant for use in AI mode.
+		*/
 		static std::atomic<bool>& forceSyncFlag();
 
-		/*
-		Locks the calling thread until:
-		- Minimal terrain has been loaded (infinite world).
-		- The entire level has been loaded (finite world).
+		/**
+		* @brief Locks the calling thread until:
+		* - Minimal terrain has been loaded around the player (infinite world).
+		* - The entire level has been loaded (finite world).
 		*/
 		static void waitTerrainLoaded();
 
-		/*
-		Atomically pushes back a chunk's rendering data into the write drawable chunks deque.
+		/**
+		* @brief Atomically pushes back a chunk's rendering data into the write drawable chunks deque.
 		*/
 		static void pushDrawableChunks(const chunkRenderingData& renderingData);
 
-		/*
-		WARNING. ONLY CALL THIS METHOD WHEN THE RENDERER THREAD AND THE CHUNK MANAGER THREAD ARE SYNCED.
-		Swaps the buffers of chunks' vertices. The one used for reading in the renderer thread becomes
-		the one used for writing in the chunk manager thread and vice versa.
+		/**
+		* @brief Swaps the buffers of chunks' vertices. The one used for reading in the renderer thread becomes
+		* the one used for writing in the chunk manager thread and vice versa.
+		* Sets the meshes updated flag to false and should be called only if it is set to true (check
+		* with chunkManager::meshesUpdated().
+		* WARNING. ONLY CALL THIS METHOD WHEN THE RENDERER THREAD AND THE CHUNK MANAGER THREAD ARE SYNCED.
 		*/
 		static void swapDrawableChunksLists();
 
-		/*
-		WARNING. ONLY CALL THIS METHOD WHEN THE RENDERER THREAD AND THE CHUNK MANAGER THREAD ARE SYNCED.
-		Update vertex data of all chunks that have a pending hign priority update.
+		/**
+		* @brief Update vertex data of all chunks that have a pending hign priority update.
+		* WARNING. ONLY CALL THIS METHOD WHEN THE RENDERER THREAD AND THE CHUNK MANAGER THREAD ARE SYNCED.
 		*/
 		static void updatePriorityChunks();
 
-		/*
-		WARNING. This method is used in with an infinite world.
-		Atomically loads a new chunk at the specified 'chunkPos' chunk position,
-		overwriting any chunks that were already at that position, if any.
+		/**
+		* @brief Atomically loads a new chunk at the specified 'chunkPos' chunk position,
+		* overwriting any chunks that were already at that position, if any.
+		* WARNING. This method is used in with an infinite world.
 		*/
 		static void loadChunk(const vec3& chunkPos);
 
-		/*
-		WARNING. Non-atomic operation! Must be called when all meshing threads are synced with
-		the chunk management thread.
-		Unloads the chunk at chunk position 'chunkPos', pushing it into a free chunks deque
-		to be reused later for another chunk position of the world.
+		/**
+		* @brief Unloads the chunk at chunk position 'chunkPos', pushing it into a free chunks deque
+		* to be reused later for another chunk position of the world.
+		* WARNING. Non-atomic operation! Must be called when all meshing threads are synced with
+		* the chunk management thread.
+		* WARNING. This method is used in with an infinite world.
 		*/
 		static void unloadChunk(const vec3& chunkPos);
 
-		/*
-		Function called by meshing threads to generate
-		meshes for chunks that are close to the player.
+		/**
+		* @brief Function called by meshing threads to generate
+		* meshes for chunks that are close to the player.
 		*/
 		static void meshChunks(const std::atomic<int>& chunkRange, int rangeStart, int rangeEnd,
 						       std::shared_mutex& syncMutex, std::condition_variable_any& meshingThreadsCV,
 						       std::atomic<bool>& meshingTsCVFlag, std::barrier<>& syncPoint);
 
-		/*
-		Function called by the chunk management thread.
-		It coordinates all meshing threads and manages the chunk unloading process
-		in order to prevent any race condition between said threads, among other things
-		such as synchronization and data transfering with the rendering thread.
+		/**
+		* @brief Function called by the chunk management thread to use with infinite world types.
+		* It coordinates all meshing threads and manages the chunk unloading process
+		* in order to prevent any race condition between said threads, among other things
+		* such as synchronization and data transfering with the rendering thread.
+		* WARNING. CURRENTLY NOT TESTED, ONLY PROOF OF CONCEPT.
 		*/
 		static void manageChunks(unsigned int nMeshingThreads);
 
-		/*
-		Legacy finite world loading.
-		Playing AI match records is only supported by this world loading type.
-		If 'terrainFile' is equal to "", then either a new level will be generated or
-        a level from a slot will be loaded (depending on the selected save slot).
+		/**
+		* @brief Finite world loading function for the chunk management thread.
+		* Playing AI match records is only supported by this world loading type.
+		* If 'terrainFile' is equal to "", then either a new level will be generated or
+        * a level from a slot will be loaded (depending on the selected save slot).
 		*/
 		static void finiteWorldLoading(const std::string& terrainFile = "");
 
-		/*
-		Generates only block data without the 3D graphics side.
-		Intended to be used when testing or training AI agents
-		without displaying the matches in the engine's graphical mode
-		to save CPU and GPU processing power.
-		This generated world is the original copy. Copies for each
-		AI agent will be generated in chunks as they are needed by
-		their respective agents.
-		If 'path' is equal to "" then a randomly generated world will
-		be created. Otherwise it will load de .terrain file
-		located at 'path' + ".terrain".
+		/**
+		* @brief Generates only block data without the 3D graphics side.
+		* Intended to be used when testing or training AI agents
+		* without displaying the matches in the engine's graphical mode
+		* to save CPU and GPU processing power.
+		* This generated world is the original copy. Copies for each
+		* AI agent will be generated in chunks as they are needed by
+		* their respective agents.
+		* If 'path' is equal to "" then a randomly generated world will
+		* be created. Otherwise it will load de .terrain file
+		* located at 'path' + ".terrain".
 		*/
 		static void generateAIWorld(const std::string& path = "");
 
-		/*
-		Saves all loaded chunks.
-		This is intended to be used along with finite world loading.
-		The .terrain file extension is automatically appended.
+		/**
+		* @brief Saves all loaded chunks.
+		* This is intended to be used along with finite world loading.
+		* The .terrain file extension is automatically appended.
 		*/
 		static void saveAllChunks(const std::string& path);
 
-		/*
-		Loads all chunks from the specified TERRAIN file.
-		This is intended to be used along with finite world loading.
-		The .terrain file extension is automatically appended.
+		/**
+		* @brief Loads all chunks from the specified TERRAIN file.
+		* This is intended to be used along with finite world loading.
+		* The .terrain file extension is automatically appended.
 		*/
 		static void loadAllChunks(const std::string& path);
 
-		/*
-		Queue a chunk in the high priority update list.
-		Only chunks with high priority for being remeshed
-		(such as chunks modified by the player) should be
-		queued into this list.
+		/**
+		* @brief Queue a chunk in the high priority update list.
+		* Only chunks with high priority for being remeshed
+		* (such as chunks modified by the player) should be
+		* queued into this list.
 		*/
 		static void highPriorityUpdate(const vec3& chunkPos);
 
-		/*
-		Get block and set block operations in the chunk manager system will now
-		be performed on the AI world/level of AI agent with ID 'individualID'.
-		AI mode must be turned on in the chunk manager system.
-		WARNING. This method is not thread safe.
+		/**
+		* @brief Get block and set block operations in the chunk manager system will now
+		* be performed on the AI world/level of AI agent with ID 'individualID'.
+		* AI mode must be turned on in the chunk manager system.
+		* WARNING. This method is not thread safe.
 		*/
 		static void selectAIworld(unsigned int individualID);
 
-		/*
-		ONLY get block operations in the chunk manager system will now
-		be performed on the original copy of the level that is being used for the AI game.
-		AI mode must be turned on in the chunk manager system.
-		Set block operations will use the latest AI world selected (the one corresponding to
-		the AI agent with ID 0 by default).
-		WARNING. This method is not thread safe.
+		/**
+		* @brief ONLY get block operations in the chunk manager system will now
+		* be performed on the original copy of the level that is being used for the AI game.
+		* AI mode must be turned on in the chunk manager system.
+		* Set block operations will use the latest AI world selected (the one corresponding to
+		* the AI agent with ID 0 by default).
+		* WARNING. This method is not thread safe.
 		*/
 		static void selectOriginalWorld();
 
+		/**
+		* @brief Sets all copies of chunks owned by AI agents as they never existed (AIChunksAvailable[Any AI World copy][Any chunkCoord] will return false after this).
+		*/
+		static void resetAIChunks();
 
-		// Clean Up.
+		/**
+		* @brief Set 'newName' to "" to clear the opened terrain file name.
+		*/
+		static void openedTerrainFileName(const std::string& newName);
+
 
 		/*
-		Frees any memory allocated in the process of generating the world, like
-		all the Chunk objects created to load it.
+		Clean Up.
+		*/
+
+		/**
+		* @brief Only cleans any resources like chunks created but it does not de-initialise
+		* the chunk management system.
+		*/
+		static void clean();
+
+		/**
+		* @brief Frees any memory allocated in the process of generating the world, like
+		* all the Chunk objects created to load it.
 		*/
 		static void cleanUp();
 
 	private:
 
+		/*
+		Attributes.
+		*/
+
 		static bool initialised_,
 					infiniteWorld_;
 		static int nChunksToCompute_;
 		static std::unordered_map<vec3, chunk*> chunks_;
-		static std::unordered_map<vec3, std::vector<vertex>>* drawableChunksWrite_,
+		static std::unordered_map<vec3, model>* drawableChunksWrite_,
 															* drawableChunksRead_;
 		static std::deque<chunk*> freeChunks_;
 		static std::unordered_set<vec3> freeableChunks_;
@@ -653,11 +906,17 @@ namespace VoxelEng {
 		static const unsigned int parseChunkPosStates_;
 		static std::string openedTerrainFileName_;
 
+		static std::unordered_map<unsigned int, std::unordered_map<vec3, bool>> AIChunkAvailable_;
 		static std::unordered_map<unsigned int, std::unordered_map<vec3, chunk*>> AIagentChunks_;
 		static unsigned int selectedAIWorld_;
 
-		static bool AImodeON_,
-			        originalWorldAccess_;
+		static bool originalWorldAccess_;
+
+
+		/*
+		Methods.
+		*/
+		static block getBlockOGWorld_(int posX, int posY, int posZ);
 
 	};
 
@@ -770,12 +1029,6 @@ namespace VoxelEng {
 
 	}
 
-	inline bool chunkManager::AImodeON() {
-	
-		return AImodeON_;
-	
-	}
-
 	inline bool chunkManager::isInWorld(const vec3& pos) {
 	
 		return isInWorld(pos.x, pos.y, pos.z);
@@ -784,9 +1037,9 @@ namespace VoxelEng {
 
 	inline bool chunkManager::isInWorld(int x, int y, int z) {
 
-		return x >= -nChunksToCompute_ * SCX && x < (nChunksToCompute_ - 1) * SCX &&
-			   y >= yChunksRange * SCY && y < (yChunksRange - 1) * SCY &&
-			   z >= -nChunksToCompute_ * SCZ && x < (nChunksToCompute_ - 1) * SCZ;
+		return x >= -nChunksToCompute_ * VoxelEng::SCX && x < (nChunksToCompute_ - 1) * VoxelEng::SCX &&
+			   y >= -yChunksRange * VoxelEng::SCY && y < (yChunksRange - 1) * VoxelEng::SCY &&
+			   z >= -nChunksToCompute_ * VoxelEng::SCZ && z < (nChunksToCompute_ - 1) * VoxelEng::SCZ;
 	
 	}
 

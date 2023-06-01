@@ -1,3 +1,13 @@
+/**
+* @file genetic.h
+* @version 1.0
+* @date 20/04/2023
+* @author Abdon Crespo Alvarez
+* @title Genetic algorithms.
+* @brief Contains the implementation of the genetic algorithms used
+* in the example AI game along with the training, testing and recording
+* processes and auxiliary data structures and functions.
+*/
 #ifndef _AIEXAMPLE_GENETIC_
 #define _AIEXAMPLE_GENETIC_
 #include <vector>
@@ -5,21 +15,48 @@
 #include <cstddef>
 #include <arrayfire.h>
 #include "NN.h"
-#include "threadPool.h"
+#include "../threadPool.h"
 
 
 namespace AIExample {
 
-	/* 
-	Derives from 'job' class at AI / threadPool.
-	h*/
-	class geneticJob : public job {
+	/////////////////////////
+	//Forward declarations.//
+	/////////////////////////
+
+	class miningAIGame;
+
+
+	/**
+	* @brief Derives from 'job' class at threadPool.h. Used
+	* to represent jobs related to the heavy processing parts
+	* of the training process that will be completed
+	* by worker threads. In this particular case, this class is created
+	* for processing a fitness function applied to the individuals.
+	*/
+	class geneticJob : public VoxelEng::job {
 
 	public:
 
+		/**
+		* @brief Class constructor.
+		* @param The beginning of the range of individuals to process.
+		* @param The end of the range of individuals to process.
+		* @param The start of the array that holds the fitness value of the individuals.
+		* @param The start of the array that holds the individuals indices for accessing their neural networks.
+		*/
 		geneticJob(std::size_t rangeStart, std::size_t rangeEnd, float* fitness, unsigned int* indices,
 				   float (*evaluationFunction)(unsigned int individualID));
 
+		/**
+		* @brief Instead of creating and deleting geneticJob objects, this method allows to reassing
+		* the object's attributes in order to reuse objects.
+		* @brief Class constructor.
+		* @param The beginning of the range of individuals to process.
+		* @param The end of the range of individuals to process.
+		* @param The start of the array that holds the fitness value of the individuals.
+		* @param The start of the array that holds the individuals indices for accessing their neural networks.
+		*/
 		void setAttributes(std::size_t rangeStart, std::size_t rangeEnd, float* fitness, unsigned int* indices,
 						   float (*evaluationFunction)(unsigned int individualID));
 
@@ -50,109 +87,212 @@ namespace AIExample {
 	};
 
 
+	/**
+	* @brief Derives from 'job' class at threadPool.h. Used
+	* to represent jobs related to the heavy processing parts
+	* of the training process that will be completed
+	* by worker threads. In this particular case, this class is created
+	* for processing the copy of individuals.
+	*/
+	class copyJob : public VoxelEng::job {
+
+	public:
+
+		/**
+		* @brief Class constructor.
+		* @param The beginning of the range of individuals to process.
+		* @param The end of the range of individuals to process.
+		* @param The start of the array that holds the fitness value of the individuals.
+		* @param The start of the array that holds the individuals indices for accessing their neural networks.
+		*/
+		copyJob(std::size_t rangeStart, std::size_t rangeEnd, const GeneticNeuralNetwork* parent,
+				std::vector<GeneticNeuralNetwork>* individuals, unsigned int* newbornInds);
+
+		/**
+		* @brief Instead of creating and deleting copyJob objects, this method allows to reassing
+		* the object's attributes in order to reuse objects.
+		* @param The beginning of the range of individuals to process.
+		* @param The end of the range of individuals to process.
+		* @param The start of the array that holds the fitness value of the individuals.
+		* @param The start of the array that holds the individuals indices for accessing their neural networks.
+		*/
+		void setAttributes(std::size_t rangeStart, std::size_t rangeEnd, const GeneticNeuralNetwork* parent,
+						   std::vector<GeneticNeuralNetwork>* individuals, unsigned int* newbornInds);
+
+	private:
+
+		/*
+		Attributes.
+		*/
+
+		std::size_t rangeStart_,
+					rangeEnd_;
+		const GeneticNeuralNetwork* parent_;
+		std::vector<GeneticNeuralNetwork>* individuals_;
+		unsigned int* newbornInds_;
+
+
+		/*
+		Methods.
+		*/
+
+		void process();
+
+	};
+
+
+	/**
+	* @brief Manages everything related to the genetic algorithms part of the
+	* example AI game, including the training, testing and record generation
+	* processes as well as the implementation of the genetic operators and the
+	* modification of the neural networks that are associated with the individuals.
+	*/
 	class genetic {
 
 	public:
 
 		// Constructors.
 
+		/**
+		* @brief Class constructor.
+		*/
 		genetic();
 
 
 		// Observers.
 
-		/*
-		WARNING. Not thread-safe.
+		/**
+		* @brief Returns true if a simulation (training, testing or recording process)
+		* is currently in progress or false otherwise.
+		* WARNING. Not thread-safe.
 		*/
 		bool simInProgress() const;
 
-		/*
-		WARNING. Not thread-safe.
+		/**
+		* @brief Returns the number of individuals.
+		* WARNING. Not thread-safe.
 		*/
 		unsigned int nIndividuals() const;
 
 
 		// Modifiers.
 
-		/*
-		Generate an initial population of 'nIndividuals' individuals with random weights.
-		Said weights will be randomly generated in range [rangeMin, rangeMax].
+		/**
+		* @brief Generate an initial population of 'nIndividuals' individuals with random weights.
+		* Said weights will be randomly generated in range [rangeMin, rangeMax].
+		* If 'training' is true, then the restrictions to the paremeters in case of AI training will be applied (nIndividuals must be
+		* divisible by 2 for example). If false, then they will not be applied.
 		*/
-		void genInitPop(unsigned int nIndividuals, const std::vector<unsigned int>& sizeLayer, float rangeMin, float rangeMax);
+		void genInitPop(unsigned int nIndividuals, float rangeMin, float rangeMax, bool training);
 
+		/**
+		* @brief Sets the loaded AI game as the set game for the 'genetic' object.
+		* Said loaded AI game must be loaded and selected using the 'aiGame' class
+		* and said game must be represented by an 'miningAIGame' object.
+		*/
+		void setGame();
+
+		/**
+		* @brief Sets the network topology that all the individuals will follow for the
+		* simulation.
+		*/
+		void setNetworkTaxonomy(const std::initializer_list<unsigned int>& sizeLayer);
+
+		/**
+		* @brief Sets the fitness function that will be used when training AI agents.
+		*/
 		void setFitnessFunction(float (*fitnessFunction)(unsigned int individualID));
 
-		/*
-		WARNING. Must be called before startSimulation().
-		This hyperparameter is unused in implementation 1 of the crossover operator.
-		Example: if we have a neural network with 5 hidden layers and the split point is set at point 2, the weights that connect the input layer (layer 0)
-		to the first hidden layer (layer 1), the ones that connect the first hidden layer to the second hidden layer (layer 2) and the ones that connect the second hidden layer
-		to the third hidden layer (layer 3) will be exchanged between the parents to create the new offspring.
+		/**
+		* @brief Set the crossover operator's split point.
+		* It is unused in implementation 1 of the crossover operator.
+		* Example: if we have a neural network with 5 hidden layers and the split point is set at point 2, the weights that connect the input layer (layer 0)
+		* to the first hidden layer (layer 1), the ones that connect the first hidden layer to the second hidden layer (layer 2) and the ones that connect the second hidden layer
+		* to the third hidden layer (layer 3) will be exchanged between the parents to create the new offspring.
+		* WARNING. Must be called before startSimulation().
 		*/
 		void setCrossoverSplitPoint(unsigned int point);
 
-		/*
-		WARNING. Must be called before startSimulation().
-		This settings are used in mutation operator 0.
+		/**
+		* @brief Set the mutation operator's parameters
+		* WARNING. Must be called before startSimulation().
 		*/
 		void setMutationParameters(float rate, float mutationVariationMin, float mutationVariationMax);
 
-		/*
-		WARNING. Must be called before startSimulation().
-		Set the number of thread jobs that will parallelize the workload of various sections of the learning process
-		that are computationally expensive.
-		If nJobs is set to zero, the number of jobs will be equal to the number of total CPU cores available (this is the default value).
+		/**
+		* @brief Set the number of thread that will parallelize the workload of various sections of the learning process
+		* that are computationally expensive.
+		* If nJobs is set to 0, the number of jobs will be equal to the number returned by std::thread::hardware_concurrency (this is the default value).
+		* WARNING. Must be called before startSimulation().
 		*/
-		void setNJobs(unsigned int nJobs);
+		void setNThreads(unsigned int nJobs = 0);
 
-		/*
-		WARNING. There cannot be two simulations running at the same time for the same 'genetic' object.
-		WARNING. No individual data is saved by this method.
-		A call to genetic::genInitPop() must be made first to generate the initial population.
+		/**
+		* @brief Begin the training process.
+		* WARNING. There cannot be two simulations running at the same time for the same 'genetic' object.
+		* No individual data is saved by this method.
+		* A call to genetic::genInitPop() must be made first to generate the initial population.
 		*/
 		void train(unsigned int nEpochs);
 
-		/*
-		WARNING. There cannot be two simulations running at the same time for the same 'genetic' object.
-		If 'nEpochsPerSave' is 0, the individuals' data will be saved once all the epochs have been processed.
-		A call to genetic::genInitPop() must be made first to generate the initial population.
+		/**
+		* @brief Begin the training process.
+		* WARNING. There cannot be two simulations running at the same time for the same 'genetic' object.
+		* If 'nEpochsPerSave' is 0, the individuals' data will be saved once all the epochs have been processed.
+		* If 'nEpochsForNewWorld' is 0, a new world will be generated per epoch.
+		* A call to genetic::genInitPop() must be made first to generate the initial population.
 		*/
-		void train(unsigned int nEpochs, unsigned int nEpochsPerSave);
+		void train(unsigned int nEpochs, unsigned int nEpochsPerSave = 0, unsigned int nEpochsForNewWorld = 0);
 
-		/*
-		The average fitness of all individuals is returned.
-		The array's size is equal to the number of individuals in this object's population.
-		WARNING. Heap memory allocated in 'output' must be freed.
+		/**
+		* @brief Begin the testing process.
+		* The average fitness of all individuals is returned.
+		* The array's size is equal to the number of individuals in this object's population.
+		* If 'nEpochsForNewWorld' is 0, a new world will be generated per epoch.
+		* WARNING. Heap memory allocated in 'output' must be freed.
 		*/
-		void test(unsigned int nEpochs, float* output, unsigned int& outputSize);
+		void test(unsigned int nEpochs, float*& output, unsigned int& outputSize, unsigned int nEpochsForNewWorld = 0);
 
-		/*
-		Same as void genetic::test(unsigned int nEpochs, float* output, unsigned int& outputSize) but
-		without returning the average fitnees of all individuals.
+		/**
+		* @brief Begin the testing process.
+		* Same as void genetic::test(unsigned int nEpochs, float* output, unsigned int& outputSize) but
+		* without returning the average fitness of all individuals.
 		*/
 		void test(unsigned int nEpochs);
 
-		/*
-		Saves the current individuals stored in this 'genetic' object to disk in the specified directory.
-		The file extension ".aidata" is automatically appended to 'path'.
+		/**
+		* @brief Performs one epoch without training and saves the world used for the epoch in 
+		* "saves/recordingsWorlds/" + AI game name + recordName + ".terrain" along with 
+		* the recording of said epoch in "records/" + AI game name + recordName + ".rec".
+		*/
+		void record(const std::string& recordName);
+
+		/**
+		* @brief Saves the current individuals stored in this 'genetic' object to disk in the specified directory.
+		* The file extension ".aidata" is automatically appended to 'path'.
 		*/
 		void saveIndividualsData(const std::string& path);
 
-		/*
-		Loads the data directly for being used in training/testing on this 'genetic' object.
-		WARNING. Replaces other individual data store on this object.
-		Doesn't load data and returns false if a file in 'savePath' already exists. Loads data and returns true otherwise.
-		Returns false and does not load any data if the file specified in 'savePath' is not found.
-		Otherwise it loads the individuals' data and returns true.
-		The file extension ".aidata" is automatically appended to 'path'.
+		/**
+		* @brief Loads the data directly from the specified file for being used in the simulation.
+		* WARNING. Replaces other individual data store on this object.
+		* Doesn't load data and returns false if a file in 'savePath' already exists. Loads data and returns true otherwise.
+		* Returns 0 and if the file specified in 'savePath' is not found or could not be loaded properly.
+		* Otherwise it loads the individuals' data and returns the number of loaded individuals.
+		* The file extension ".aidata" is automatically appended to 'path'.
+		* It will ask the user to specify a limit to the number of individuals to load from the file,
+		* if it is equal to 0 then all the individuals found in the file will be loaded.
 		*/
-		bool loadIndividualsData(const std::string& path);
+		int loadIndividualsData(const std::string& path);
 
-		AI::GeneticNeuralNetwork& individual(unsigned int individualID);
+		GeneticNeuralNetwork& individual(unsigned int individualID);
 
 
 		// Destructors.
 
+		/**
+		* @brief Class destructor.
+		*/
 		~genetic();
 
 	private:
@@ -163,17 +303,17 @@ namespace AIExample {
 
 		bool simInProgress_,
 		     saveIndsData_;
+		miningAIGame* aiGame_;
 		float (*evaluationFunction_)(unsigned int individualID);
+		std::vector<unsigned int> sizeLayer_;
 		unsigned int nIndividuals_,
 					 crossoverSplitPoint_,
-					 nLayers_,
-					 nThreads_,
 					 nJobs_;
 		float mutationRate_, // Probability for a single gene (weight) to mutate.
 			  mutationVariationMin_,
 			  mutationVariationMax_;
 
-		std::vector<AI::GeneticNeuralNetwork> individuals_;
+		std::vector<GeneticNeuralNetwork> individuals_;
 		af::array fitness_,
 				  selected_,
 			     * popInds_,
@@ -183,8 +323,9 @@ namespace AIExample {
 					* hostPopInds_,
 					* hostNewbornInds_;
 
-		threadPool* threadPool_;
-		std::vector<geneticJob> jobs_;
+		VoxelEng::threadPool* threadPool_;
+		std::vector<geneticJob> geneticJobs_;
+		std::vector<copyJob> copyJobs_;
 
 
 		/*
@@ -218,12 +359,13 @@ namespace AIExample {
 
 		/*
 		0 = Roulette - wheel implementation. 
+		1 = Select the fittest in the population.
 		*/
 		void selectionOperator(unsigned int implementation);
 
 		/*
 		0 = 1-point crossover implementation.
-		1 = copy implementation.
+		1 = copy the selected individual in the population.
 		*/
 		void crossoverOperator(unsigned int implementation);
 
@@ -238,7 +380,11 @@ namespace AIExample {
 		*/
 		void replacementOperator(unsigned int implementation);
 
-		void trainAgents(unsigned int nEpochs, unsigned int nEpochsPerSave = 0);
+		/*
+		If 'nEpochsPerSave' is 0, the individuals' data will be saved once all the epochs have been processed.
+		If 'nEpochsForNewWorld' is 0, a new world will be generated per epoch.
+		*/
+		void trainAgents(unsigned int nEpochs, unsigned int nEpochsPerSave = 0, unsigned int nEpochsForNewWorld = 0);
 
 	};
 

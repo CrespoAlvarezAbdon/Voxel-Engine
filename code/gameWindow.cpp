@@ -92,12 +92,16 @@ namespace VoxelEng {
 
 	void window::resize(unsigned int width, unsigned int height) {
 
-		width_ = width;
-		height_ = height;
+		if (width != 0 && height != 0) {
+		
+			width_ = width;
+			height_ = height;
 
-		aspectRatio_ = (float)width_ / height_;
+			aspectRatio_ = (float)width_ / height_;
 
-		wasResized_ = true;
+			wasResized_ = true;
+		
+		}
 
 	}
 
@@ -108,9 +112,6 @@ namespace VoxelEng {
 	}
 
 	void window::resizeHeavyProcessing() {
-	
-		width_ += width_ % 2 != 0;
-		height_ += height_ % 2 != 0;
 
 		#if GRAPHICS_API == OPENGL
 
@@ -124,7 +125,7 @@ namespace VoxelEng {
 
 		playerCamera_->updateProjectionMatrix();
 
-		GUIManager::updateOrthoMatrix();
+		GUImanager::updateOrthoMatrix();
 
 		wasResized_ = false;
 	

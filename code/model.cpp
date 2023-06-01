@@ -15,11 +15,11 @@
 
 namespace VoxelEng {
 
-    ////////////
-    //Defines.//
-    ////////////
+    //////////////
+    //Constants.//
+    //////////////
 
-    #define NUMBER_PER_FACE_ELEMENT 3;
+    const unsigned int VERTEX_PER_FACE = 3;
 
 
     ////////////
@@ -106,19 +106,19 @@ namespace VoxelEng {
 
                     model* newModel = new model;
                     std::vector<unsigned short> verticesInds,
-                        uvsInds,
-                        normalInds;
+                                                uvsInds,
+                                                normalInds;
                     std::vector<vec3> tempVerticesCoords,
-                        tempNormals;
+                                      tempNormals;
                     std::vector<vec2> tempUVs;
                     std::string lineRead;
                     std::istringstream lineReadStream;
                     vec3 tempVertexCoords,
-                        tempNormal;
+                         tempNormal;
                     vec2 tempUV;
                     unsigned short vertexInd,
-                        uvInd,
-                        normalInd;
+                                   uvInd,
+                                   normalInd;
                     char discardedChar;
                     vertex tempVertex;
 
@@ -149,7 +149,6 @@ namespace VoxelEng {
                                 lineReadStream >> tempNormal.z;
 
                                 tempNormals.push_back(tempNormal);
-
 
                             }
                             else // If a vertex line was read.
@@ -186,7 +185,6 @@ namespace VoxelEng {
                     // File reading completed.
                     modelFile.close();
 
-
                     for (unsigned int i = 0; i < verticesInds.size(); i++) {
 
                         // Note: OBJ indexing starts at 1.
@@ -196,6 +194,8 @@ namespace VoxelEng {
 
                         tempVertex.textureCoords[0] = tempUVs[uvsInds[i] - 1].x;
                         tempVertex.textureCoords[1] = tempUVs[uvsInds[i] - 1].y;
+
+                        // Normals will not be implemented for now.
 
                         newModel->push_back(tempVertex);
 
@@ -214,7 +214,6 @@ namespace VoxelEng {
         else
             logger::errorLog("Models system is not initialised");
         
-
     }
 
     const model& models::getModelAt(unsigned int modelID) {
@@ -242,7 +241,7 @@ namespace VoxelEng {
 			  textureWidth = texture::blockAtlasResolution(), // This will depend on blockID in the future.
 			  textureHeight = texture::blockAtlasResolution(), // This will depend on blockID in the future.
 			  texCoordX = (textureID % (int)(atlasWidth / textureWidth)) / (atlasWidth / textureWidth),
-			  texCoordY = ceil(textureID / (atlasHeight / textureHeight)) / (atlasHeight / textureHeight),
+			  texCoordY = std::ceil(textureID / (atlasHeight / textureHeight)) / (atlasHeight / textureHeight),
 		      texCoordX2 = texCoordX - 1 / (atlasWidth / textureWidth),
 			  texCoordY2 = texCoordY - 1 / (atlasHeight / textureHeight);
 		
@@ -252,7 +251,6 @@ namespace VoxelEng {
             unsigned int modelSize = m.size();
 
             if (modelSize >= 6) {
-
 
                 m[modelSize - 6].textureCoords[0] = texCoordX2;
                 m[modelSize - 6].textureCoords[1] = texCoordY2;

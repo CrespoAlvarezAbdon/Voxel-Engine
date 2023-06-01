@@ -40,7 +40,7 @@ namespace VoxelEng {
 
 	}
 
-	bool batch::isEntityInBatchAt(unsigned int entityID) {
+	bool batch::isEntityInBatchAt(entityID entityID) {
 	
 		std::unique_lock<std::recursive_mutex> lock(mutex_);
 
@@ -52,7 +52,7 @@ namespace VoxelEng {
 	
 	}
 
-	bool batch::isEntityInBatch(unsigned int entityID) {
+	bool batch::isEntityInBatch(entityID entityID) {
 
 		std::unique_lock<std::recursive_mutex> lock(mutex_);
 
@@ -61,7 +61,7 @@ namespace VoxelEng {
 
 	}
 
-	bool batch::addEntityAt(unsigned int entityID) {
+	bool batch::addEntityAt(entityID entityID) {
 
 		if (entityManager::isEntityRegistered(entityID)) {
 		
@@ -76,7 +76,7 @@ namespace VoxelEng {
 
 	}
 
-	bool batch::addEntity(unsigned int entityID) {
+	bool batch::addEntity(entityID entityID) {
 
 		std::unique_lock<std::recursive_mutex> lock(mutex_);
 
@@ -93,7 +93,18 @@ namespace VoxelEng {
 
 	}
 
-	bool batch::changeActiveStateAt(unsigned int entityID, bool active) {
+	bool batch::doesEntityFitInside(entityID entityID) {
+
+		std::unique_lock<std::recursive_mutex> lock(mutex_);
+
+		if (model_.size() + entityManager::getEntity(entityID).entityModel().size() <= BATCH_MAX_VERTEX_COUNT)
+			return true;
+		else
+			return false;
+
+	}
+
+	bool batch::changeActiveStateAt(entityID entityID, bool active) {
 
 		if (entityManager::isEntityRegistered(entityID))
 			if (isEntityInBatch(entityID))
@@ -105,7 +116,7 @@ namespace VoxelEng {
 
 	}
 
-	bool batch::changeActiveState(unsigned int entityID, bool active) {
+	bool batch::changeActiveState(entityID entityID, bool active) {
 
 		if (active) {
 
@@ -123,7 +134,7 @@ namespace VoxelEng {
 		return !activeEntityID_.size();
 	}
 
-	bool batch::deleteEntityAt(unsigned int entityID) {
+	bool batch::deleteEntityAt(entityID entityID) {
 
 		if (entityManager::isEntityRegistered(entityID))
 			logger::errorLog("No entity with ID: " + std::to_string(entityID) + " is registered");
@@ -138,10 +149,9 @@ namespace VoxelEng {
 
 	}
 
-	bool batch::deleteEntity(unsigned int entityID) {
+	bool batch::deleteEntity(entityID entityID) {
 
 		std::unique_lock<std::recursive_mutex> lock(mutex_);
-
 
 		if (entityManager::isEntityActive(entityID))
 			activeEntityID_.erase(entityID);
@@ -152,10 +162,9 @@ namespace VoxelEng {
 
 		return !(activeEntityID_.size() + inactiveEntityID_.size());
 
-
 	}
 	
-	const model* batch::generateVertices() {
+	const model& batch::generateVertices() {
 
 		float sinAngleX,
 			  cosAngleX,
@@ -246,7 +255,7 @@ namespace VoxelEng {
 
 		dirty_ = false;
 
-		return &model_;
+		return model_;
 
 	}
 

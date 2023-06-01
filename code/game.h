@@ -1,16 +1,28 @@
+/**
+* @file game.h
+* @version 1.0
+* @date 04/10/2022
+* @author Abdon Crespo Alvarez
+* @title Game Engine API.
+* @brief Game Engine API that contains the most basic and important members for the game engine.
+*/
+
 #ifndef _VOXELENG_GAME_
 #define _VOXELENG_GAME_
 #include <atomic>
-#include "gameWindow.h"
-#include "world.h"
-#include "vertex_buffer.h"
-#include "index_buffer.h"
-#include "vertex_array.h"
-#include "vertex_buffer_layout.h"
-#include "renderer.h"
-#include "definitions.h"
-#include "logger.h"
+#include <condition_variable>
+#include <thread>
+#include <mutex>
 #include "chunk.h"
+#include "definitions.h"
+#include "gameWindow.h"
+#include "indexBuffer.h"
+#include "vertexBuffer.h"
+#include "vertexArray.h"
+#include "vertexBufferLayout.h"
+#include "renderer.h"
+#include "logger.h"
+#include "world.h"
 
 
 namespace VoxelEng {
@@ -22,23 +34,18 @@ namespace VoxelEng {
     class chunkManager;
 
 
-     ////////////
-    //Defines.//
-    ////////////
-
-    #define EXIT 0
-    #define AIMENULOOP 1
-    #define GRAPHICALMENU 2
-    #define GRAPHICALLEVEL 3
-
-
     ////////////////////
     //Classes & enums.//
     ////////////////////
 
-    // This enum class will enable us to add more functionality that affects the save slots
-    // change slot name (if slot names are added), delete slot, 
-    // create new slot (if support for an 'infinite' number of save slots is supported)...
+    /**
+    * @brief The execution modes of the engine.
+    */
+    enum class engineMode {EXIT, AIMENULOOP, GRAPHICALMENU, INITLEVEL, EDITLEVEL, EXITLEVEL, INITRECORD, PLAYINGRECORD, EXITRECORD};
+
+    /**
+    * @brief The different access modes when accessing a level save slot.
+    */
     enum class slotAccessType {
 
         save,
@@ -46,91 +53,182 @@ namespace VoxelEng {
 
     };
 
-
-    /*
-    This class serves as an API to abstract classes that directly implement the engine.
-    For example, instead of going to the camera class and directly modifying its attributes to update it
-    according to the player input, a transparent updatePlayerCamera() method is provided.
+    /**
+    * @brief Game engine API responsible for all the basic engines operations (startup, menu/level/AI mode loops, access to save slots...).
+    * This class also serves as a way to abstract classes that directly implement the engine.
+    * For example, instead of storing a reference to the player camera for the engines' graphical mode and polluting the code,
+    * said camera can be accessed by calling game::playerCamera().
     */
 	class game {
 
 	public:
 
+        /*
+        Attributes.
+        */
+
+        /**
+        * @brief Auxiliary threads' flags that tell if they can be executed or not or if
+        * they should stop their execution or not.
+        */
+        static std::atomic<bool> threadsExecute[3];
+
+
+        /*
+        Methods.
+        */
+
         // Initialisers.
 
+        /**
+        * @brief Initialise the game engine and allocate any resources that are needed on initialisation.
+        */
         static void init();
 
+        /**
+        * @brief Initialise the game engine's graphical part and allocate any resources that are needed on initialisation.
+        */
         static void initGraphicalMode();
 
 
         // Observers.
 
+        /**
+        * @brief Get the engine's current level save slot access type.
+        */
         static slotAccessType getSlotAccessType();
 
+        /**
+        * @brief Get the currently selected save slot.
+        */
         static unsigned int selectedSaveSlot();
 
-        static bool mainWindowClosed();
-
+        /**
+        * @brief Get the actual time step.
+        */
         static double timeStep();
 
-        static unsigned int loopSelection();
+        /**
+        * @brief Get the currently selected engine mode.
+        */
+        static engineMode selectedEngineMode();
+
+        /**
+        * @brief Returns whether the engine is in AI mode (training, testing AIs, generating a record of an AI game match...
+        * without the need for the graphical capabilities of the engine to save resources) or not.
+        */
+        static bool AImodeON();
 
 
 		// Modifiers.
 
+        /**
+        * @brief The engine's main loop.
+        */
         static void mainLoop();
 
+        /**
+        * @brief The engine's AI menu loop.
+        */
         static void aiMenuLoop();
 
+        /**
+        * @brief The engine's graphical main menu loop.
+        */
 		static void mainMenuLoop();
 
-        /*
-        If 'terrainFile' is equal to "", then either a new level will be generated or
-        a level from a slot will be loaded (depending on the selected save slot).
+        /**
+        * @brief Graphical mode main loop when in a level.
+        * @param terrainFile The file from where to load the terrain for the level. If terrainFile is equal to "", then either a new level will be generated or
+        * a level from a slot will be loaded (depending on the selected save slot).
         */
-		static void gameLoop(bool playingAIRecord, const std::string& terrainFile = "");
+		static void gameLoop(const std::string& terrainFile = "");
 
-        static void goToGraphicalMenu();
+        /**
+        * @brief Set the engine's current execution mode.
+        * If the specified mode is equal to the one currently selected, 
+        * then this function does nothing.
+        */
+        static void setLoopSelection(engineMode mode);
 
-        static void goToAIMenu();
-
-        /*
-        If slot = 0, then a new level will be generated (unless a terrain file is specificated
-        in the corresponding code that generates the level's terrain).
-        Otherwise, the level will contain the save data of the specified save slot.
-        If the specified slot doesn't have any data or doesn't exists, a new level will be generated.
+        /**
+        * @brief Set the currently selected level save slot.
+        * If slot = 0, then a new level will be generated (unless a terrain file is specificated
+        * in the corresponding code that generates the level's terrain).
+        * Otherwise, the level will contain the save data of the specified save slot.
+        * If the specified slot doesn't have any data or doesn't exists, a new level will be generated.
         */
         static void setSaveSlot(unsigned int saveSlot);
 
+        /**
+        * @brief Set the engine's current level save slot mode.
+        */
         static void setSlotAccessType(slotAccessType type);
 
+        /**
+        * @brief Returns the user's camera.
+        */
         static camera& playerCamera();
 
+        /**
+        * @brief Returns the graphics API context window.
+        * WARNING. Locks the mutex guarding said window. Check if locked
+        * with game::isWindowMutexLocked() and unlock when finished
+        * using it with game::unlockWindowMutex().
+        */
         static window& getWindow();
 
-        static void enterLevel();
-
+        /**
+        * @brief Switch between using the shader lighting test or not (disabled by default).
+        */
         static void switchComplexLighting();
+
+        /**
+        * @brief Set the engine's AI mode.
+        */
+        static void setAImode(bool ON);
+
+        /**
+        * @brief Safely stop all auxiliary threads used for world generation, rendering, tick/player input processing, etc...
+        */
+        static void stopAuxiliaryThreads();
 
 
         // Clean up.
 
-        /*
-        To be called when closing the engine.
-        Cleans up the heap memory allocated by this system.
+        /**
+        * @brief Cleaning up special data structures allocated only for use
+        * when the user is in a level and blocks the caller thread
+        * until the function that executes the level game loop
+        * has finished it's execution.
+        */
+        static void cleanUpLevel();
+
+        /**
+        * @brief To be called when closing the engine.
+        * Cleans up the heap memory allocated and deinitialises it.
         */
         static void cleanUp();
-
+        
+        /**
+        * @brief Cleans up the heap memory allocated for the engine's graphical part and deinitialises it.
+        */
         static void cleanUpGraphicalMode();
 
 	private:
 
         static bool initialised_,
-                    graphicalModeInitialised_;
+                    graphicalModeInitialised_,
+                    AImodeON_,
+                    useComplexLighting_;
         
 		static window* mainWindow_;
 
-        static std::atomic<unsigned int> loopSelection_;
+        static std::thread* chunkManagementThread_,
+                          * playerInputThread_,
+                          * tickManagementThread_;
+
+        static std::atomic<engineMode> loopSelection_;
 		static std::atomic<double> timeStep_; // How much time has passed since the last frame was drawn. Use this to move entities without caring about FPS.
 
         static world* world_; // A world defines things as the sky background or other level-related properties.
@@ -145,11 +243,9 @@ namespace VoxelEng {
 
         static camera* playerCamera_;
 
-        static bool useComplexLighting_;
-        
         static texture* blockTextureAtlas_;
         static std::unordered_map<vec3, std::vector<vertex>> const* chunksToDraw_;
-        static const std::vector<const model*>* batchesToDraw_;
+        static const std::vector<model>* batchesToDraw_;
         static shader* defaultShader_;
         static vertexBuffer* vbo_;
         static vertexArray* va_;
@@ -160,13 +256,8 @@ namespace VoxelEng {
 
             static glm::mat4 MVPmatrix_;
 
-        #else
-
-
-
         #endif
         
-
         static slotAccessType slotAccessType_;
 
 	};
@@ -183,22 +274,22 @@ namespace VoxelEng {
     
     }
 
-    inline bool game::mainWindowClosed() {
-    
-        return mainWindow_->isClosing();
-    
-    }
-
     inline double game::timeStep() {
     
         return timeStep_;
     
     }
 
-    inline unsigned int game::loopSelection() {
+    inline engineMode game::selectedEngineMode() {
     
         return loopSelection_;
     
+    }
+
+    inline bool game::AImodeON() {
+
+        return AImodeON_;
+
     }
 
     inline void game::setSaveSlot(unsigned int slot) {
@@ -220,9 +311,9 @@ namespace VoxelEng {
     }
 
     inline window& game::getWindow() {
-    
+
         return *mainWindow_;
-    
+
     }
 
 }

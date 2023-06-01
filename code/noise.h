@@ -1,14 +1,17 @@
+/**
+* @file noise.h
+* @version 1.0
+* @date 25/04/2023
+* @author Abdon Crespo Alvarez
+* @title Noise generators.
+* @brief Contains the declarations of some noise generators.
+*/
 #ifndef _VOXELENG_NOISE_
 #define _VOXELENG_NOISE_
-
 
 #if GRAPHICS_API == OPENGL
 	
 #include "../glm/gtc/noise.hpp"
-
-#else
-	
-	
 
 #endif
 
@@ -19,39 +22,42 @@ namespace VoxelEng {
 	//Classes.//
 	////////////
 
+	/**
+	* @brief Contains some noise generators.
+	*/
 	class noise {
 
 	public:
 
 		// Observers.
 
-		/*
-		Returned number is in range [-1, 1].
+		/**
+		* @brief Returned number is in range [-1, 1].
 		*/
 		static float perlin2D(float x, float y);
 
-		/*
-		Returned number is in range [-1, 1].
+		/**
+		* @brief Returned number is in range [-1, 1].
 		*/
 		static float perlin3D(float x, float y, float z);
 
-		/*
-		Returned number is in range [-1, 1].
+		/**
+		* @brief Returned number is in range [-1, 1].
 		*/
 		static float perlin4D(float x, float y, float z, float t);
 
-		/*
-		Returned number is in range [-1, 1].
+		/**
+		* @brief Returned number is in range [-1, 1].
 		*/
 		static float simplex2D(float x, float y);
 
-		/*
-		Returned number is in range [-1, 1].
+		/**
+		* @brief Returned number is in range [-1, 1].
 		*/
 		static float simplex3D(float x, float y, float z);
 
-		/*
-		Returned number is in range [-1, 1].
+		/**
+		* @brief Returned number is in range [-1, 1].
 		*/
 		static float simplex4D(float x, float y, float z, float t);
 

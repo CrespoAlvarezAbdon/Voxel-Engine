@@ -20,7 +20,7 @@ namespace VoxelEng {
 
 	}
 
-	void timer::clean() {
+	void timer::finish() {
 
 		if (hasStarted_) {
 		

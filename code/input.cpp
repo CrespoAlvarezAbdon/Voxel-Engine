@@ -9,14 +9,15 @@ namespace VoxelEng {
 
 	std::unordered_map<controlCode, void (*)()> input::controlActions_;
 	std::unordered_map<controlCode, bool> input::oldActivationEvent_;
-	std::mutex input::inputMutex_;
+	std::recursive_mutex input::inputMutex_;
 	window* input::window_ = nullptr;
-	bool input::initialised_ = false;
+	bool input::initialised_ = false,
+		 input::shouldProcessInputs_ = true;
 
 
 	void input::init() {
 
-		std::unique_lock<std::mutex> lock(inputMutex_);
+		std::unique_lock<std::recursive_mutex> lock(inputMutex_);
 
 		if (initialised_)
 			logger::errorLog("Input system already initialized");
@@ -33,7 +34,7 @@ namespace VoxelEng {
 
 		if (initialised_) {
 
-			std::unique_lock<std::mutex> lock(inputMutex_);
+			std::unique_lock<std::recursive_mutex> lock(inputMutex_);
 
 			controlActions_[control] = action;
 
@@ -48,26 +49,30 @@ namespace VoxelEng {
 
 	void input::handleInputs() {
 
-		std::unique_lock<std::mutex> lock(inputMutex_);
+		std::unique_lock<std::recursive_mutex> lock(inputMutex_);
 
-		if (game::loopSelection() == GRAPHICALLEVEL) {
+		bool shouldProcess;
+		engineMode loop = game::selectedEngineMode();
+		if (loop == engineMode::EDITLEVEL || loop == engineMode::PLAYINGRECORD) {
 
 			// Handle user inputs related to player controls.
 			bool activationEventReceived;
-			for (auto it = controlActions_.cbegin(); it != controlActions_.cend(); it++) {
+			for (auto it = controlActions_.cbegin(); (loop == engineMode::EDITLEVEL ||
+				 loop == engineMode::PLAYINGRECORD) && it != controlActions_.cend(); it++) {
 			
 				activationEventReceived = isControlCodePressed(it->first);
+				shouldProcess = input::shouldProcessInputs();
 
 				// This ensures that we only process the action once when the mouse button is pressed.
 				if (oldActivationEvent_.find(it->first) == oldActivationEvent_.cend()) {
 
-					if (activationEventReceived)
+					if (shouldProcess && activationEventReceived)
 						it->second();
 
 				}
 				else {
 				
-					if (!oldActivationEvent_[it->first] && activationEventReceived) {
+					if (shouldProcess && !oldActivationEvent_[it->first] && activationEventReceived) {
 
 						oldActivationEvent_[it->first] = activationEventReceived;
 						it->second();
@@ -78,15 +83,26 @@ namespace VoxelEng {
 
 				}
 
+				loop = game::selectedEngineMode();
+
 			}
 				
 			// Handle user inputs related to interaction with GUI elements.
-			GUIManager::processLevelGUIInputs();
+			if (loop == engineMode::EDITLEVEL || loop == engineMode::PLAYINGRECORD) 
+				GUImanager::processLevelGUIInputs();
 
 		}
-		else
-			GUIManager::processMainMenuGUIInputs();
+		else if (loop == engineMode::GRAPHICALMENU)
+			GUImanager::processMainMenuGUIInputs();
 	
+	}
+
+	void input::shouldProcessInputs(bool newValue) {
+
+		std::unique_lock<std::recursive_mutex> lock(inputMutex_);
+
+		shouldProcessInputs_ = newValue;
+
 	}
 
 	void input::cleanUp() {

@@ -7,7 +7,7 @@ namespace VoxelEng {
 
 	// 'texture' class.
 
-	std::unordered_map<unsigned int, std::pair<int, int>> texture::GUItexturesHW_ = { 
+	std::unordered_map<unsigned int, std::pair<int, int>> texture::GUItexturesHW_ = {
 
 		{929, {32, 16}},
 		{961, {32, 16}},
@@ -59,22 +59,19 @@ namespace VoxelEng {
 
 	}
 
-	void texture::bind(unsigned int slot) const
-	{
+	void texture::bind(unsigned int slot) const {
 
 		glBindTextureUnit(slot, rendererID_);
 
 	}
 
-	void texture::unbind() const
-	{
+	void texture::unbind() const {
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 	}
 
-	texture::~texture()
-	{
+	texture::~texture() {
 
 		glDeleteTextures(1, &rendererID_);
 

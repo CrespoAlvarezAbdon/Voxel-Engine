@@ -28,26 +28,26 @@ namespace VoxelEng {
 	
 	}
 
-	vec3 uDirectionToVec3(unsigned int direction) {
+	vec3 uDirectionToVec3(blockViewDir direction) {
 
 		switch (direction) {
 
-			case PLUSY:
+			case blockViewDir::PLUSY:
 				return vec3FixedUp;
 				break;
-			case NEGY:
+			case blockViewDir::NEGY:
 				return vec3FixedDown;
 				break;
-			case PLUSX:
+			case blockViewDir::PLUSX:
 				return vec3FixedNorth;
 				break;
-			case NEGX:
+			case blockViewDir::NEGX:
 				return vec3FixedSouth;
 				break;
-			case PLUSZ:
+			case blockViewDir::PLUSZ:
 				return vec3FixedEast;
 				break;
-			case NEGZ:
+			case blockViewDir::NEGZ:
 				return vec3FixedWest;
 				break;
 			default:
@@ -58,41 +58,42 @@ namespace VoxelEng {
 	
 	}
 
-	unsigned int vec3ToUDirection(const vec3& direction) {
+	blockViewDir vec3ToUDirection(const vec3& direction) {
 	
 		unsigned int iMax = indMaxVec(direction);
 
 		if (iMax == 0) // x
-			return direction.x >= 0 ? PLUSX : NEGX;
+			return direction.x >= 0 ? blockViewDir::PLUSX : blockViewDir::NEGX;
 		else if (iMax == 1) // y
-			return direction.y >= 0 ? PLUSY : NEGY;
+			return direction.y >= 0 ? blockViewDir::PLUSY : blockViewDir::NEGY;
 		else // z
-			return direction.z >= 0 ? PLUSZ : NEGZ;
+			return direction.z >= 0 ? blockViewDir::PLUSZ : blockViewDir::NEGZ;
 	
 	}
 
-	unsigned int rotateUDirection(unsigned int dir, unsigned int rot) {
+	// Básate aquí para hacer el rotateView
+	blockViewDir rotateUDirection(blockViewDir dir, blockViewDir rot) {
 	
 		switch (dir) {
 
-		case PLUSX:
+		case blockViewDir::PLUSX:
 
 			switch (rot) {
 
-			case PLUSX:
-				return PLUSZ;
+			case blockViewDir::PLUSX:
+				return blockViewDir::PLUSZ;
 				break;
 
-			case NEGX:
-				return NEGZ;
+			case blockViewDir::NEGX:
+				return blockViewDir::NEGZ;
 				break;
 
-			case PLUSY:
-				return PLUSY;
+			case blockViewDir::PLUSY:
+				return blockViewDir::PLUSY;
 				break;
 
-			case NEGY:
-				return NEGY;
+			case blockViewDir::NEGY:
+				return blockViewDir::NEGY;
 				break;
 
 			default:
@@ -103,24 +104,24 @@ namespace VoxelEng {
 
 			break;
 
-		case NEGX:
+		case blockViewDir::NEGX:
 
 			switch (rot) {
 
-			case PLUSX:
-				return NEGZ;
+			case blockViewDir::PLUSX:
+				return blockViewDir::NEGZ;
 				break;
 
-			case NEGX:
-				return PLUSZ;
+			case blockViewDir::NEGX:
+				return blockViewDir::PLUSZ;
 				break;
 
-			case PLUSY:
-				return PLUSY;
+			case blockViewDir::PLUSY:
+				return blockViewDir::PLUSY;
 				break;
 
-			case NEGY:
-				return NEGY;
+			case blockViewDir::NEGY:
+				return blockViewDir::NEGY;
 				break;
 
 			default:
@@ -131,24 +132,24 @@ namespace VoxelEng {
 
 			break;
 
-		case PLUSY:
+		case blockViewDir::PLUSY:
 
 			switch (rot) {
 
-			case PLUSX:
-				return PLUSZ;
+			case blockViewDir::PLUSX:
+				return blockViewDir::PLUSZ;
 				break;
 
-			case NEGX:
-				return NEGZ;
+			case blockViewDir::NEGX:
+				return blockViewDir::NEGZ;
 				break;
 
-			case PLUSY:
-				return NEGX;
+			case blockViewDir::PLUSY:
+				return blockViewDir::NEGX;
 				break;
 
-			case NEGY:
-				return PLUSX;
+			case blockViewDir::NEGY:
+				return blockViewDir::PLUSX;
 				break;
 
 			default:
@@ -159,24 +160,24 @@ namespace VoxelEng {
 
 			break;
 
-		case NEGY:
+		case blockViewDir::NEGY:
 
 			switch (rot) {
 
-			case PLUSX:
-				return PLUSZ;
+			case blockViewDir::PLUSX:
+				return blockViewDir::PLUSZ;
 				break;
 
-			case NEGX:
-				return NEGZ;
+			case blockViewDir::NEGX:
+				return blockViewDir::NEGZ;
 				break;
 
-			case PLUSY:
-				return PLUSX;
+			case blockViewDir::PLUSY:
+				return blockViewDir::PLUSX;
 				break;
 
-			case NEGY:
-				return NEGX;
+			case blockViewDir::NEGY:
+				return blockViewDir::NEGX;
 				break;
 
 			default:
@@ -187,24 +188,24 @@ namespace VoxelEng {
 
 			break;
 
-		case PLUSZ:
+		case blockViewDir::PLUSZ:
 
 			switch (rot) {
 
-			case PLUSX:
-				return NEGX;
+			case blockViewDir::PLUSX:
+				return blockViewDir::NEGX;
 				break;
 
-			case NEGX:
-				return PLUSX;
+			case blockViewDir::NEGX:
+				return blockViewDir::PLUSX;
 				break;
 
-			case PLUSY:
-				return PLUSY;
+			case blockViewDir::PLUSY:
+				return blockViewDir::PLUSY;
 				break;
 
-			case NEGY:
-				return NEGY;
+			case blockViewDir::NEGY:
+				return blockViewDir::NEGY;
 				break;
 
 			default:
@@ -215,24 +216,24 @@ namespace VoxelEng {
 
 			break;
 
-		case NEGZ:
+		case blockViewDir::NEGZ:
 
 			switch (rot) {
 
-			case PLUSX:
-				return PLUSX;
+			case blockViewDir::PLUSX:
+				return blockViewDir::PLUSX;
 				break;
 
-			case NEGX:
-				return NEGX;
+			case blockViewDir::NEGX:
+				return blockViewDir::NEGX;
 				break;
 
-			case PLUSY:
-				return PLUSY;
+			case blockViewDir::PLUSY:
+				return blockViewDir::PLUSY;
 				break;
 
-			case NEGY:
-				return NEGY;
+			case blockViewDir::NEGY:
+				return blockViewDir::NEGY;
 				break;
 
 			default:
@@ -251,38 +252,38 @@ namespace VoxelEng {
 	
 	}
 
-	unsigned int inverseUDirection(unsigned int dir) {
+	blockViewDir inverseUDirection(blockViewDir dir) {
 	
 		switch (dir) {
 
-		case PLUSX:
+		case blockViewDir::PLUSX:
 
-			return NEGX;
+			return blockViewDir::NEGX;
 			break;
 
-		case NEGX:
+		case blockViewDir::NEGX:
 
-			return PLUSX;
+			return blockViewDir::PLUSX;
 			break;
 
-		case PLUSY:
+		case blockViewDir::PLUSY:
 
-			return NEGY;
+			return blockViewDir::NEGY;
 			break;
 
-		case NEGY:
+		case blockViewDir::NEGY:
 
-			return PLUSY;
+			return blockViewDir::PLUSY;
 			break;
 
-		case PLUSZ:
+		case blockViewDir::PLUSZ:
 
-			return NEGZ;
+			return blockViewDir::NEGZ;
 			break;
 
-		case NEGZ:
+		case blockViewDir::NEGZ:
 
-			return PLUSZ;
+			return blockViewDir::PLUSZ;
 			break;
 
 		}
@@ -336,5 +337,53 @@ namespace VoxelEng {
 
 	}
 
+	template <>
+	blockViewDir sto(const std::string& str) {
+
+		unsigned long value = std::stoul(str);
+
+		if (value > std::numeric_limits<block>::max())
+			logger::errorOutOfRange(" Thrown when trying to convert '" + str + "' into an blockViewDir");
+
+		return static_cast<blockViewDir>(value);
+
+	}
+
+	/*
+	Inserts user input into the desirable value.
+	Requires T to satisfy std::is_arithmetic<T>::value || std::is_same<T, std::string>::value
+	*/
+	template <>
+	bool validatedCinInput(std::string& var) {
+
+		std::getline(std::cin, var);
+		std::cin.clear();
+
+		return true;
+
+	}
+
+	/*
+	Inserts user input into the desirable value.
+	Requires T to satisfy std::is_arithmetic<T>::value || std::is_same<T, std::string>::value
+	*/
+	template <>
+	bool validatedCinInput(char& var) {
+
+		std::string s;
+		std::getline(std::cin, s);
+		std::cin.clear();
+
+		if (s.size() != 1)
+			return false;
+		else
+		{
+
+			var = s[0];
+
+			return true;
+
+		}
+	}
 
 }

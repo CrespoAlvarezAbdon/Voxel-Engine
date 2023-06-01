@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <ios>
 #include "utilities.h"
-#include "game.h"
+#include "gui.h"
 
 
 namespace VoxelEng {
@@ -51,32 +51,45 @@ namespace VoxelEng {
 		: tag(type::BLOCK), bl(value)
 		{}
 
+		agentActionArg::agentActionArg(blockViewDir value)
+		: tag(type::BLOCKVIEWDIR), bvd(value)
+		{}
+
 
 		// 'aiGame' class.
 
-		std::atomic<bool>aiGame::recording_ = false;
+		// protected
+		std::atomic<bool> aiGame::recording_ = false,
+						  aiGame::recordAgentModifiedBlocks_ = false,
+						  aiGame::gameInProgress_ = false;
 		std::ofstream aiGame::saveFile_;
 		std::string aiGame::saveDataBuffer_;
+		std::string aiGame::saveFileName_;
+		recordPlayMode aiGame::recordPlayMode_ = recordPlayMode::FORWARD;
+		std::vector<std::deque<block>> aiGame::agentModifiedBlocks_;
+		std::list<unsigned int> aiGame::entityIDcreationOrder_;
+		std::list<unsigned int> aiGame::agentIDcreationOrder_;
 
-		bool aiGame::initialised_ = false;
+		// private
+		bool aiGame::initialised_ = false,
+			 aiGame::canForwardReplay_ = true,
+			 aiGame::canBackwardReplay_ = false,
+			 aiGame::backwardAIactionFound_ = true;
 		aiGame* aiGame::selectedGame_ = nullptr;
-		std::atomic<bool> aiGame::gameInProgress_ = false,
-						  aiGame::playingRecord_ = false;
 		std::unordered_map<std::string, aiGame*> aiGame::aiGames_;
 		std::vector<aiGame*> aiGame::gamesRegisterOrder_;
 		std::vector<AIagentAction> aiGame::aiRecordActions_;
 		std::unordered_map<std::string, unsigned int> aiGame::AIactionsName_;
-		std::string aiGame::playbackTerrainFile_;
 		std::ifstream aiGame::loadedFile_;
 		std::string aiGame::readFileData_,
 					aiGame::readWord_;
 		char aiGame::readCharacter_;
-		unsigned int aiGame::nFileCharsRead_ = 0,
-					 aiGame::readActionCode_ = 0,
+		unsigned int aiGame::readActionCode_ = 0,
 					 aiGame::readParamTypeInd_ = 0,
 					 aiGame::readState_ = 0,
 					 aiGame::lastParamInd_ = 0,
-					 aiGame::recordingPlayerEntity_ = 0;
+			         aiGame::lastRawParamInd_ = 0;
+		double aiGame::oldActualTime_ = 0;
 		std::vector<agentActionArg> aiGame::params_;
 		std::deque<std::string> aiGame::rawParams_;
 
@@ -86,99 +99,129 @@ namespace VoxelEng {
 			if (initialised_)
 				logger::errorLog("AI game system already initialised");
 			else {
-			
-				registerAction("blockViewDir", AIagentAction([]() {
 
-					aiGame* game = aiGame::selectedGame();
-
-					game->blockViewDir(game->getParam<unsigned int>(0));
-
-				}, {agentActionArg::type::UINT}));
+				recording_ = false;
+				canForwardReplay_ = true;
+				canBackwardReplay_ = false;
+				recordPlayMode_ = recordPlayMode::FORWARD;
+				recordAgentModifiedBlocks_ = false;
+				gameInProgress_ = false;
 
 				registerAction("setBlock", AIagentAction([]() {
 
 					aiGame* game = aiGame::selectedGame();
-
 					if (game->playingRecordForward()) {
 
 						if (!game->recordAgentModifiedBlocks())
 							logger::errorLog("The recording of agents' terrain modification is disabled");
 
+						VoxelEng::logger::debugLog("Agent removes block on " + std::to_string(game->getParam<int>(1)) + '|' + std::to_string(game->getParam<int>(2)) + '|' + std::to_string(game->getParam<int>(3)));
 						game->setBlock(game->getParam<unsigned int>(0), game->getParam<int>(1), game->getParam<int>(2), game->getParam<int>(3), game->getParam<block>(4), true);
 
 					}
 					else {
 
-						unsigned int agentID = game->getParam<unsigned int>(0);
+						agentID agentID = game->getParam<unsigned int>(0);
 						game->setBlock(agentID, game->getParam<int>(1), game->getParam<int>(2), game->getParam<int>(3), game->getLastModifiedBlock(agentID, true), false);
+						VoxelEng::logger::debugLog("Agent places block back in " + std::to_string(game->getParam<int>(1)) + '|' + std::to_string(game->getParam<int>(2)) + '|' + std::to_string(game->getParam<int>(3)));
 
 					}
 
 				}, {agentActionArg::type::UINT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::BLOCK }));
 
-				registerAction("getBlocksBox", AIagentAction([]() {
-
-					aiGame* game = aiGame::selectedGame();
-
-					game->getBlocksBox(game->getParam<int>(0), game->getParam<int>(1), game->getParam<int>(2),
-									  game->getParam<int>(3), game->getParam<int>(4), game->getParam<int>(5));
-
-				}, {agentActionArg::type::INT, agentActionArg::type::INT,  agentActionArg::type::INT,
-					agentActionArg::type::INT,  agentActionArg::type::INT,  agentActionArg::type::INT }));
-
 				registerAction("moveEntity", AIagentAction([]() {
 
 					aiGame* game = aiGame::selectedGame();
-
-					if (game->playingRecordForward())
+					if (game->playingRecordForward()) {
+					
+						VoxelEng::logger::debugLog("Moving entity " + std::to_string(game->getParam<int>(1)) + '|' + std::to_string(game->getParam<int>(2)) + '|' + std::to_string(game->getParam<int>(3)));
 						game->moveEntity(game->getParam<unsigned int>(0), game->getParam<int>(1), game->getParam<int>(2), game->getParam<int>(3));
-					else
+					
+					}
+					else {
+					
+						VoxelEng::logger::debugLog("Moving entity " + std::to_string(-game->getParam<int>(1)) + '|' + std::to_string(-game->getParam<int>(2)) + '|' + std::to_string(-game->getParam<int>(3)));
 						game->moveEntity(game->getParam<unsigned int>(0), -game->getParam<int>(1), -game->getParam<int>(2), -game->getParam<int>(3));
+					
+					}
 
 				}, {agentActionArg::type::UINT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::INT }));
 
 				registerAction("rotateAgentViewDir", AIagentAction([]() {
 
 					aiGame* game = aiGame::selectedGame();
+					
+					if (game->playingRecordForward()) {
+					
+						VoxelEng::logger::debugLog("Rotating view dir " + std::to_string(game->getParam<int>(1)));
+						game->rotateAgentViewDir(game->getParam<unsigned int>(0), game->getParam<blockViewDir>(1));
+					
+					}
+					else {
+					
+						VoxelEng::logger::debugLog("Inversely Rotating view dir " + std::to_string(game->getParam<int>(1)));
+						game->rotateAgentViewDir(game->getParam<unsigned int>(0), inverseUDirection(game->getParam<blockViewDir>(1)));
+					
+					}
 
-					if (game->playingRecordForward())
-						game->rotateAgentViewDir(game->getParam<unsigned int>(0), game->getParam<unsigned int>(1));
-					else
-						game->rotateAgentViewDir(game->getParam<unsigned int>(0), inverseUDirection(game->getParam<unsigned int>(1)));
-
-				}, {agentActionArg::type::UINT, agentActionArg::type::UINT }));
+				}, {agentActionArg::type::UINT, agentActionArg::type::BLOCKVIEWDIR }));
 
 				registerAction("rotateEntity", AIagentAction([]() {
 				
 					aiGame* game = aiGame::selectedGame();
-
-					if (game->playingRecordForward())
+					
+					if (game->playingRecordForward()) {
+					
+						VoxelEng::logger::debugLog("Rotating entity model");
 						game->rotateEntity(game->getParam<unsigned int>(0), game->getParam<float>(1), game->getParam<float>(2), game->getParam<float>(3));
-					else
+					
+					}
+					else {
+					
+						VoxelEng::logger::debugLog("Inversely rotating entity model");
 						game->inverseRotateEntity(game->getParam<unsigned int>(0), -game->getParam<float>(1), -game->getParam<float>(2), -game->getParam<float>(3));
-				
+					
+					}
+						
 				}, {agentActionArg::type::UINT, agentActionArg::type::FLOAT, agentActionArg::type::FLOAT, agentActionArg::type::FLOAT}));
 
 				registerAction("inverseRotateEntity", AIagentAction([]() {
 
 					aiGame* game = aiGame::selectedGame();
-
-					if (game->playingRecordForward())
+					if (game->playingRecordForward()) {
+					
+						VoxelEng::logger::debugLog("Inversely rotating entity model");
 						game->inverseRotateEntity(game->getParam<unsigned int>(0), game->getParam<float>(1), game->getParam<float>(2), game->getParam<float>(3));
-					else
+
+					}
+					else {
+					
+						VoxelEng::logger::debugLog("Rotating entity model");
 						game->rotateEntity(game->getParam<unsigned int>(0), -game->getParam<float>(1), -game->getParam<float>(2), -game->getParam<float>(3));
+					
+					}	
 
 				}, {agentActionArg::type::UINT, agentActionArg::type::FLOAT, agentActionArg::type::FLOAT, agentActionArg::type::FLOAT}));
 
 				registerAction("createEntity", AIagentAction([]() {
 
 					aiGame* game = aiGame::selectedGame();
+					
+					if (game->playingRecordForward()) {
 
-					if (game->playingRecordForward())
-						game->createEntity(game->getParam<unsigned int>(0), game->getParam<int>(1), game->getParam<int>(2), game->getParam<int>(3),
-										  game->getParam<float>(4), game->getParam<float>(5), game->getParam<float>(6));
-					else
-						game->deleteEntity(game->getParam<unsigned int>(0));
+						VoxelEng::logger::debugLog("Creating entity");
+						unsigned int ID = game->createEntity(game->getParam<unsigned int>(0), game->getParam<int>(1), game->getParam<int>(2), game->getParam<int>(3),
+																game->getParam<float>(4), game->getParam<float>(5), game->getParam<float>(6));
+						entityIDcreationOrder_.push_back(ID);
+
+					}
+					else {
+
+						VoxelEng::logger::debugLog("Deleting entity");
+						game->deleteEntity(entityIDcreationOrder_.back());
+						entityIDcreationOrder_.pop_back();
+
+					}
 
 				}, {agentActionArg::type::UINT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::INT,
 					agentActionArg::type::FLOAT, agentActionArg::type::FLOAT, agentActionArg::type::FLOAT}));
@@ -186,30 +229,41 @@ namespace VoxelEng {
 				registerAction("createAgent", AIagentAction([]() {
 
 					aiGame* game = aiGame::selectedGame();
+					if (game->playingRecordForward()) {
+					
+						VoxelEng::logger::debugLog("Creating AI agent");
+						agentID agentID = game->createAgent(game->getParam<unsigned int>(0), game->getParam<int>(1), game->getParam<int>(2), game->getParam<int>(3), game->getParam<blockViewDir>(4));
+						agentIDcreationOrder_.push_back(agentID);
+					
+					}
+					else {
+					
+						VoxelEng::logger::debugLog("Deleting AI agent");
+						game->deleteAgent(agentIDcreationOrder_.back());
+						agentIDcreationOrder_.pop_back();
+					
+					}
+						
 
-					if (game->playingRecordForward())
-						game->createAgent(game->getParam<unsigned int>(0), game->getParam<int>(1), game->getParam<int>(2), game->getParam<int>(3), game->getParam<unsigned int>(4));
-					else
-						game->deleteAgent(game->getParam<unsigned int>(0));
-
-				}, {agentActionArg::type::UINT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::UINT}));
-
-				registerAction("getEntityPos", AIagentAction([]() {
-
-					aiGame* game = aiGame::selectedGame();
-
-					game->getEntityPos(game->getParam<unsigned int>(0));
-
-				}, {agentActionArg::type::UINT}));
+				}, {agentActionArg::type::UINT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::BLOCKVIEWDIR}));
 
 				registerAction("changeActiveState", AIagentAction([]() {
 
 					aiGame* game = aiGame::selectedGame();
-
-					if (game->playingRecordForward())
+					
+					if (game->playingRecordForward()) {
+					
+						VoxelEng::logger::debugLog("Changing entity's active state");
 						game->changeEntityActiveState(game->getParam<unsigned int>(0), game->getParam<bool>(1));
-					else
+					
+					}
+					else {
+					
+						VoxelEng::logger::debugLog("Changing entity's active state (reverse)");
 						game->changeEntityActiveState(game->getParam<unsigned int>(0), !game->getParam<bool>(1));
+					
+					}
+						
 
 				}, {agentActionArg::type::UINT, agentActionArg::type::BOOL}));
 
@@ -226,13 +280,38 @@ namespace VoxelEng {
 
 		}
 
-		bool aiGame::entityIsAgent(unsigned int entityID) const {
+		bool aiGame::entityIsAgent(entityID entityID) const {
 
 			if (entityManager::isEntityRegistered(entityID))
-				return activeEntityID_.find(entityID) != activeEntityID_.cend();
+				return entityIDIsAgent.find(entityID) != entityIDIsAgent.cend();
 			else
-				logger::errorLog("Entity with ID " + std::to_string(entityID) + " was not found");
+				logger::errorLog("Entity with ID " + std::to_string(entityID) + " is not registered");
 
+		}
+
+		unsigned int aiGame::getAgentEntityID(agentID agentID) const {
+		
+			if (isAgentRegistered(agentID))
+				return AIagentEntityID_[agentID];
+			else
+				logger::errorLog("There is no registered agent with agent ID " + std::to_string(agentID));
+		
+		}
+
+		unsigned int aiGame::getEntityAgentID(entityID entityID) const {
+		
+			if (entityManager::isEntityRegistered(entityID)) {
+			
+				auto it = entityIDIsAgent.find(entityID);
+				if (it != entityIDIsAgent.cend())
+					return *it;
+				else
+					logger::errorLog("Entity with ID " + std::to_string(entityID) + " is not an AI agent");
+			
+			}
+			else
+				logger::errorLog("Entity with ID " + std::to_string(entityID) + " is not registered");
+		
 		}
 
 		template <>
@@ -295,7 +374,17 @@ namespace VoxelEng {
 
 		}
 
-		bool aiGame::hasModifiedLevel(unsigned int agentID) const {
+		template <>
+		blockViewDir aiGame::getParam<blockViewDir>(unsigned int index) const {
+
+			if (index < lastParamInd_)
+				return params_[index].bvd;
+			else
+				VoxelEng::logger::errorLog("Invalid index " + std::to_string(index) + " for an AI agent action parameter");
+
+		}
+
+		bool aiGame::hasModifiedLevel(agentID agentID) const {
 
 			if (isAgentRegistered(agentID))
 				return !agentModifiedBlocks_[agentID].empty();
@@ -345,8 +434,14 @@ namespace VoxelEng {
 				if (selectedGame_) {
 
 					gameInProgress_ = true;
+					game::setAImode(true);
+				
 					selectedGame_->generalSetUp_();
 					selectedGame_->displayMenu_();
+
+					game::setAImode(false);
+					selectedGame_->cleanUpGame_();
+					gameInProgress_ = false;
 
 				}
 				else
@@ -368,6 +463,52 @@ namespace VoxelEng {
 
 		}
 
+		void aiGame::changeRecordPlayMode(recordPlayMode mode) {
+		
+			if (mode != recordPlayMode_) {
+			
+				GUIelement& element = GUImanager::getGUIElement("pauseIcon");
+				element.lockMutex();
+				switch (mode) {
+
+				case recordPlayMode::FORWARD:
+					element.changeTextureID(1021);
+					break;
+
+				case recordPlayMode::PAUSE:
+					element.changeTextureID(1022);
+					break;
+
+				case recordPlayMode::BACKWARDS:
+					element.changeTextureID(1023);
+					break;
+
+				default:
+					logger::errorLog("Unsupported current record play mode");
+					break;
+
+				}
+				element.unlockMutex();
+				recordPlayMode_ = mode;
+			
+			}
+		
+		}
+
+		void aiGame::stopPlayingRecord() {
+
+			if (playingRecord()) {
+			
+				selectedGame_->clearBlockModRecording();
+				loadedFile_.close();
+
+				game::setLoopSelection(engineMode::EXITRECORD);
+				game::setLoopSelection(engineMode::AIMENULOOP);
+			
+			}
+
+		}
+
 		unsigned int aiGame::listAIGames() {
 
 			unsigned int i = 1;
@@ -384,9 +525,11 @@ namespace VoxelEng {
 				logger::errorLog("A recording is already being made");
 			else {
 			
+				recording_ = true;
 				if (path.empty()) {
 				
 					logger::say("Recording's file path is empty");
+					recording_ = false;
 					return 1;
 				
 				}
@@ -395,6 +538,7 @@ namespace VoxelEng {
 					if (path.back() != '/') {
 					
 						logger::say("The last character of the recording's file path is not \'/\'");
+						recording_ = false;
 						return 1;
 					
 					}	
@@ -403,6 +547,7 @@ namespace VoxelEng {
 						if (filename.empty()) {
 						
 							logger::say("Recording's file name is empty");
+							recording_ = false;
 							return 2;
 						
 						}	
@@ -415,6 +560,7 @@ namespace VoxelEng {
 								if (std::filesystem::exists(recordingPath)) {
 								
 									logger::say("There is already a file named " + recordingPath);
+									recording_ = false;
 									return 3;
 								
 								}
@@ -423,12 +569,20 @@ namespace VoxelEng {
 									recording_ = true;
 									saveFile_.open(recordingPath);
 
-									saveDataBuffer_ += name_ + '|';
-									saveDataBuffer_ += "saves/recordings/" + filename + "Recording.terrain|";
-									saveDataBuffer_ += std::to_string(chunkManager::nChunksToCompute()) + '|';
+									// Initialise chunk manager system earlier in order to set the number of chunks to compute.
+									if (chunkManager::initialised())
+										chunkManager::setNChunksToCompute(DEF_N_CHUNKS_TO_COMPUTE);
+									else
+										chunkManager::init(DEF_N_CHUNKS_TO_COMPUTE);
 
-									setUpRecord_();
-									record_();
+									saveDataBuffer_ += selectedGame_->name_ + '|';
+									saveDataBuffer_ += "saves/recordingWorlds/" + selectedGame_->name_ + '/' + filename + '|';
+									saveDataBuffer_ += std::to_string(chunkManager::nChunksToCompute()) + "|@";
+
+									saveFileName_ = filename;
+
+									selectedGame_->setUpRecord_(1);
+									selectedGame_->record_();
 
 									saveFile_ << saveDataBuffer_;
 									saveDataBuffer_.clear();
@@ -443,6 +597,7 @@ namespace VoxelEng {
 							else {
 							
 								logger::say("Recording's file name contains no alphanumeric characters");
+								recording_ = false;
 								return 2;
 							
 							}
@@ -458,18 +613,21 @@ namespace VoxelEng {
 		}
 
 		unsigned int aiGame::playRecord_(const std::string& path) {
-		
+
 			if (path.find('|') == std::string::npos) {
 
 				std::string truePath = path + ".rec";
 				if (std::filesystem::exists(truePath)) {
+
+					game::setLoopSelection(engineMode::INITRECORD);
+					recordPlayMode_ = recordPlayMode::FORWARD;
 
 					loadedFile_.open(truePath);
 
 					bool readFirstLines = false;
 					while (!readFirstLines) {
 
-						if (readCharacter_ = loadedFile_.get()) {
+						if (loadedFile_.get(readCharacter_)) {
 
 							if (readCharacter_ == '|') { // End of action code/action parameter.
 
@@ -477,15 +635,16 @@ namespace VoxelEng {
 
 								case 0: // End of aiGame line.
 
-									if (readWord_ != name_)
-										logger::errorLog("The loaded recording file belongs to the AI game " + readWord_ + ". It does not belong to " + name_);
+									if (readWord_ != selectedGame_->name_)
+										logger::errorLog("The loaded recording file belongs to the AI game " + readWord_ + 
+											". It does not belong to " + selectedGame_->name_);
 
 									readState_++;
 									break;
 
 								case 1: // End of terrain line.
 
-									playbackTerrainFile_ = readWord_;
+									chunkManager::openedTerrainFileName(readWord_);
 
 									readState_++;
 									break;
@@ -512,17 +671,32 @@ namespace VoxelEng {
 					}
 					readState_ = 0;
 
-					initBlockModRecording();
+					selectedGame_->initBlockModRecording();
 
-					// Prepare variables that are used in aiGame::playRecordTick_().
-					nFileCharsRead_ = 0; // Use this as and Beginning Of File indicator and use seekg with negative numbers and std::ios::end, std::ios::current to start with
-					playingRecord_ = true;
+					// Initialise required engine systems.
+					if (!VoxelEng::chunkManager::initialised()) {
 
-					// Execute engine's graphical mode and play the record with the specified level.
-					game::gameLoop(true, playbackTerrainFile_);
+						VoxelEng::chunkManager::init(VoxelEng::DEF_N_CHUNKS_TO_COMPUTE);
+						VoxelEng::entityManager::init();
 
-					clearBlockModRecording();
-					loadedFile_.close();
+					}
+
+					// Initialisation of the elements that are used in aiGame::playRecordTick().
+					canForwardReplay_ = true;
+					canBackwardReplay_ = false;
+					GUImanager::changeGUIState("mainMenu", false);
+					GUImanager::changeGUIState("mainMenu.saveButton", false);
+					GUImanager::changeGUIState("mainMenu.newButton", false);
+					GUImanager::changeGUIState("mainMenu.loadButton", false);
+					GUImanager::changeGUIState("mainMenu.exitButton", false);
+					GUImanager::bindActKeyFunction("mainMenu", nullptr, controlCode::noKey);
+
+					game::gameLoop(chunkManager::openedTerrainFileName());
+
+					stopPlayingRecord();
+					oldActualTime_ = 0;
+
+					selectedGame_->cleanUpMatch_();
 
 					return 0;
 
@@ -544,123 +718,165 @@ namespace VoxelEng {
 
 		}
 
-		bool aiGame::playRecordTick() {
+		void aiGame::playRecordTick() {
 		
-			if (playingRecord_) {
+			if (game::selectedEngineMode() == engineMode::PLAYINGRECORD) {
 
-				// Starting from the last played action (or the beginning of the record file)...
+				if (oldActualTime_ == 0)
+					oldActualTime_ = time::actualTime<timeScale::s>();
 
-				bool continuePlaying = true;
-				if (playingRecordForward_) { // Play the next action forward.
-				
-					bool readingActionCode = true;
-					do {
+				if (recordPlayMode_ != recordPlayMode::PAUSE && time::actualTime<timeScale::s>() - oldActualTime_ >= 0.5f) {
 
-						readCharacter_ = loadedFile_.peek();
+					// Starting from the last played action (or the beginning of the record file)...
+					bool continuePlaying = true;
+					if (recordPlayMode_ == recordPlayMode::FORWARD) { // Play the next action forward.
 
-						if (readCharacter_ == EOF) // End of AI action lines reached. Do not advance and return.
-							return true;
-						else {
+						if (canForwardReplay_) {
+						
+							bool readingActionCode = true;
+							do {
 
-							if (readCharacter_ == '#') { // New action found.
+								readCharacter_ = loadedFile_.peek();
 
-								if (!readingActionCode) { // Finished reading the parameters of a previously found action. Execute said action and return. 
+								if (readCharacter_ == EOF) { // End of AI action lines reached. Do not advance and return.
 
-									playActionRecordForward_(readActionCode_);
+									changeRecordPlayMode(recordPlayMode::PAUSE);
+									canForwardReplay_ = false;
+									canBackwardReplay_ = true;
+									continuePlaying = false;
+									loadedFile_.seekg(-1, std::ios::cur);
+									backwardAIactionFound_ = true;
+
+								}
+								else {
+
+									if (readCharacter_ == '#') { // New action found.
+
+										if (!readingActionCode) { // Finished reading the parameters of a previously found action. Execute said action and return. 
+
+											playActionRecordForward_(readActionCode_);
+											continuePlaying = false;
+
+											canBackwardReplay_ = true; // Now the engine can play backwards at least one action.
+											backwardAIactionFound_ = false;
+
+										}
+
+										readingActionCode = true;
+										readParamTypeInd_ = 0;
+										lastParamInd_ = 0;
+
+									}
+									else if (readCharacter_ == '|') { // End of action code/action parameter.
+
+										if (readingActionCode) { // End of action code.
+
+											readActionCode_ = sto<unsigned int>(readWord_);
+
+											readingActionCode = false;
+
+										}
+										else // End of action parameter.
+											pushParam_(readWord_, readActionCode_, readParamTypeInd_++);
+
+										readWord_ = "";
+
+									}
+									else if (readCharacter_ != '@')
+										readWord_ += readCharacter_;
+
+									if (continuePlaying)
+										loadedFile_.seekg(1, std::ios::cur);
+
+								}
+
+							} while (continuePlaying && game::threadsExecute[1]);
+						
+						}
+						else
+							changeRecordPlayMode(recordPlayMode::PAUSE);
+
+						oldActualTime_ = time::actualTime<timeScale::s>();
+
+						return;
+
+					}
+					else {
+					
+						if (canBackwardReplay_) { // Play the previous action backwards.
+
+							bool readingAction = false;
+							do {
+
+								readCharacter_ = loadedFile_.peek();
+
+								if (readCharacter_ == '#') { // New action found.
+
+									if (backwardAIactionFound_) {
+
+										// "Clear" last parsed parameters. Reuse already allocated memory.
+										readParamTypeInd_ = 0;
+										lastParamInd_ = 0;
+
+										readActionCode_ = sto<unsigned int>(readWord_);
+										pushParams_(readActionCode_);
+										playActionRecordBackwards_(readActionCode_);
+										continuePlaying = false;
+										readWord_ = "";
+
+										rawParams_.clear(); // Clear last parsed parameters.
+
+										canForwardReplay_ = true; // Now the engine can play at least one action in forward mode again.
+
+										backwardAIactionFound_ = false;
+
+									}
+									else
+										backwardAIactionFound_ = true;
+
+								}
+								else if (readCharacter_ == '|') { // End of action code/action parameter.
+
+									if (readingAction) {
+
+										// We are reading the parameters in reverse order so we need to use push_front().
+										rawParams_.push_front(std::string(readWord_.rbegin(), readWord_.rend()));
+										readWord_ = "";
+
+									}
+									else
+										readingAction = true;
+
+								}
+								else if (readCharacter_ == '@') {
+
+									changeRecordPlayMode(recordPlayMode::PAUSE);
+									canForwardReplay_ = true;
+									canBackwardReplay_ = false;
 									continuePlaying = false;
 
 								}
+								else if (readCharacter_ != EOF)
+									readWord_ += readCharacter_;
 
-								readingActionCode = true;
-								readParamTypeInd_ = 0;
-								lastParamInd_ = 0;
+								if (continuePlaying) // As we need to continue playing, go back one position in the recording file.
+									loadedFile_.seekg(-1, std::ios::cur);
 
-							}
-							else if (readCharacter_ == '|') { // End of action code/action parameter.
-
-								if (readingActionCode) { // End of action code.
-
-									readActionCode_ = sto<unsigned int>(readWord_);
-
-									readingActionCode = false;
-
-								}
-								else // End of action parameter.
-									pushParam_(readWord_, readActionCode_, readParamTypeInd_++);
-
-								readWord_ = "";
-
-							}
-							else
-								readWord_ += readCharacter_;
-
-							if (continuePlaying) {
-							
-								loadedFile_.seekg(1, std::ios::cur);
-								nFileCharsRead_++;
-							
-							}
-							
-						}
-
-					} while (continuePlaying);
-				
-				}
-				else { // Play the previous action backwards.
-				
-					nFileCharsRead_ = 0;
-					bool readActionEnd = false,
-						 readingAction = false;
-					do {
-
-						readCharacter_ = loadedFile_.peek();
-
-						if (nFileCharsRead_ == 0) // Beginning of file reached. Do not go back and return.
-							return true;
-						else {
-
-							if (readCharacter_ == '#') { // New action found.
-
-								if (readActionEnd) {
-
-									readActionCode_ = sto<unsigned int>(readWord_);
-									pushParams_(readActionCode_);
-									playActionRecordBackwards_(readActionCode_);
-									continuePlaying = false;
-									readWord_ = "";
-									rawParams_.clear(); // The parsed parameters are no longer needed.
-
-								}
-								else
-									readActionEnd = true;
-
-							}
-							else if (readCharacter_ == '|') { // End of action code/action parameter.
-
-								if (readingAction) {
-
-									rawParams_.push_front(readWord_); // We are reading the parameters in reverse order so we need to use push_front().
-									readWord_ = "";
-
-								}
-								else
-									readingAction = true;
-
-							}
-							else
-								readWord_ += readCharacter_;
-
-							// As we are not at beginning of file, go back one position in the recording file.
-							loadedFile_.seekg(-1, std::ios::cur);
-							nFileCharsRead_--;
+							} while (continuePlaying && game::threadsExecute[1]);
 
 						}
+						else
+							changeRecordPlayMode(recordPlayMode::PAUSE);
 
-					} while (continuePlaying);
+						oldActualTime_ = time::actualTime<timeScale::s>();
+
+						return;
+
+					}
 				
 				}
 
-				return false;
+				return;
 
 			}
 			else
@@ -685,7 +901,7 @@ namespace VoxelEng {
 
 			if (recording_) {
 
-				if (AIactionsName_.find(actionName) == AIactionsName_.cend()) {
+				if (AIactionsName_.find(actionName) != AIactionsName_.cend()) {
 
 					saveDataBuffer_ += "#" + std::to_string(AIactionsName_[actionName]) + "|";
 
@@ -731,6 +947,12 @@ namespace VoxelEng {
 
 								break;
 
+							case agentActionArg::type::BLOCKVIEWDIR:
+
+								saveDataBuffer_ += std::to_string(static_cast<unsigned int>(arg.bvd)) + "|";
+
+								break;
+
 						}
 					
 					}
@@ -764,7 +986,7 @@ namespace VoxelEng {
 
 					case agentActionArg::type::UINT:
 						if (lastParamInd_ < params_.size())
-							params_[lastParamInd_].i = sto<unsigned int>(param);
+							params_[lastParamInd_].ui = sto<unsigned int>(param);
 						else
 							params_.emplace_back(sto<unsigned int>(param));
 
@@ -774,7 +996,7 @@ namespace VoxelEng {
 
 					case agentActionArg::type::FLOAT:
 						if (lastParamInd_ < params_.size())
-							params_[lastParamInd_].i = sto<float>(param);
+							params_[lastParamInd_].f = sto<float>(param);
 						else
 							params_.emplace_back(sto<float>(param));
 
@@ -784,7 +1006,7 @@ namespace VoxelEng {
 
 					case agentActionArg::type::CHAR:
 						if (lastParamInd_ < params_.size())
-							params_[lastParamInd_].i = sto<char>(param);
+							params_[lastParamInd_].c = sto<char>(param);
 						else
 							params_.emplace_back(sto<char>(param));
 
@@ -794,7 +1016,7 @@ namespace VoxelEng {
 
 					case agentActionArg::type::BOOL:
 						if (lastParamInd_ < params_.size())
-							params_[lastParamInd_].i = sto<bool>(param);
+							params_[lastParamInd_].b = sto<bool>(param);
 						else
 							params_.emplace_back(sto<bool>(param));
 
@@ -804,9 +1026,19 @@ namespace VoxelEng {
 
 					case agentActionArg::type::BLOCK:
 						if (lastParamInd_ < params_.size())
-							params_[lastParamInd_].i = sto<block>(param);
+							params_[lastParamInd_].bl = sto<block>(param);
 						else
-							params_.emplace_back(sto<bool>(param));
+							params_.emplace_back(sto<block>(param));
+
+						lastParamInd_++;
+
+						break;
+
+					case agentActionArg::type::BLOCKVIEWDIR:
+						if (lastParamInd_ < params_.size())
+							params_[lastParamInd_].bvd = sto<blockViewDir>(param);
+						else
+							params_.emplace_back(sto<blockViewDir>(param));
 
 						lastParamInd_++;
 
@@ -842,7 +1074,7 @@ namespace VoxelEng {
 
 						case agentActionArg::type::UINT:
 							if (lastParamInd_ < params_.size())
-								params_[lastParamInd_].i = sto<unsigned int>(rawParams_[i]);
+								params_[lastParamInd_].ui = sto<unsigned int>(rawParams_[i]);
 							else
 								params_.emplace_back(sto<unsigned int>(rawParams_[i]));
 
@@ -852,7 +1084,7 @@ namespace VoxelEng {
 
 						case agentActionArg::type::FLOAT:
 							if (lastParamInd_ < params_.size())
-								params_[lastParamInd_].i = sto<float>(rawParams_[i]);
+								params_[lastParamInd_].f = sto<float>(rawParams_[i]);
 							else
 								params_.emplace_back(sto<float>(rawParams_[i]));
 
@@ -862,7 +1094,7 @@ namespace VoxelEng {
 
 						case agentActionArg::type::CHAR:
 							if (lastParamInd_ < params_.size())
-								params_[lastParamInd_].i = sto<char>(rawParams_[i]);
+								params_[lastParamInd_].c = sto<char>(rawParams_[i]);
 							else
 								params_.emplace_back(sto<char>(rawParams_[i]));
 
@@ -872,7 +1104,7 @@ namespace VoxelEng {
 
 						case agentActionArg::type::BOOL:
 							if (lastParamInd_ < params_.size())
-								params_[lastParamInd_].i = sto<bool>(rawParams_[i]);
+								params_[lastParamInd_].b = sto<bool>(rawParams_[i]);
 							else
 								params_.emplace_back(sto<bool>(rawParams_[i]));
 
@@ -882,9 +1114,19 @@ namespace VoxelEng {
 
 						case agentActionArg::type::BLOCK:
 							if (lastParamInd_ < params_.size())
-								params_[lastParamInd_].i = sto<block>(rawParams_[i]);
+								params_[lastParamInd_].bl = sto<block>(rawParams_[i]);
 							else
-								params_.emplace_back(sto<bool>(rawParams_[i]));
+								params_.emplace_back(sto<block>(rawParams_[i]));
+
+							lastParamInd_++;
+
+							break;
+
+						case agentActionArg::type::BLOCKVIEWDIR:
+							if (lastParamInd_ < params_.size())
+								params_[lastParamInd_].bvd = sto<blockViewDir>(rawParams_[i]);
+							else
+								params_.emplace_back(sto<blockViewDir>(rawParams_[i]));
 
 							lastParamInd_++;
 
@@ -909,12 +1151,15 @@ namespace VoxelEng {
 
 			aiGames_.clear();
 			gamesRegisterOrder_.clear();
+			agentModifiedBlocks_.clear();
+			entityIDcreationOrder_.clear();
+			agentIDcreationOrder_.clear();
 
 			initialised_ = false;
 		
 		}
 
-		block aiGame::getLastModifiedBlock(unsigned int agentID, bool popBlock) {
+		block aiGame::getLastModifiedBlock(agentID agentID, bool popBlock) {
 		
 			if (isAgentRegistered(agentID)) {
 
@@ -943,7 +1188,7 @@ namespace VoxelEng {
 		
 		}
 
-		block aiGame::getFirstModifiedBlock(unsigned int agentID, bool popBlock) {
+		block aiGame::getFirstModifiedBlock(agentID agentID, bool popBlock) {
 		
 			if (isAgentRegistered(agentID)) {
 
@@ -972,19 +1217,22 @@ namespace VoxelEng {
 		
 		}
 
-		block aiGame::getModifiedBlock(unsigned int agentID, unsigned int blockIndex) {
+		block aiGame::getModifiedBlock(agentID agentID, unsigned int blockIndex) {
 		
 			if (isAgentRegistered(agentID)) {
 
 				if (recordAgentModifiedBlocks_) {
 
-					if (agentModifiedBlocks_[agentID].empty())
+					auto& modifiedBlocks = agentModifiedBlocks_[agentID];
+
+					if (modifiedBlocks.empty())
 						logger::errorLog("The AI agent has not made any modifications to the level's terrain");
 					else {
 
-						block b = agentModifiedBlocks_[agentID][blockIndex];
-
-						return b;
+						if (blockIndex < modifiedBlocks.size())
+							return modifiedBlocks[blockIndex];
+						else
+							logger::errorLog("Specified block index is invalid");
 
 					}
 
@@ -1004,7 +1252,7 @@ namespace VoxelEng {
 
 		}
 
-		void aiGame::selectAIworld(unsigned int agentID) {
+		void aiGame::selectAIworld(agentID agentID) {
 
 			if (isAgentRegistered(agentID))
 				chunkManager::selectAIworld(agentID);
@@ -1013,23 +1261,16 @@ namespace VoxelEng {
 
 		}
 
-		unsigned int aiGame::blockViewDir(unsigned int agentID) {
+		blockViewDir aiGame::getBlockViewDir(agentID agentID) {
 
-			if (isAgentRegistered(agentID)) {
-			
-				if (recording_)
-					recordAction("blockViewDir", {agentID});
-
-
+			if (isAgentRegistered(agentID))
 				return AIagentLookDirection_[agentID];
-			
-			}
 			else
 				logger::errorLog("AI agent with ID " + std::to_string(agentID) + " was not found");
 
 		}
 
-		block aiGame::setBlock(unsigned int agentID, int x, int y, int z, VoxelEng::block blockID, bool record) {
+		block aiGame::setBlock(agentID agentID, int x, int y, int z, VoxelEng::block blockID, bool record) {
 
 			if (isAgentRegistered(agentID)) {
 			
@@ -1047,28 +1288,27 @@ namespace VoxelEng {
 				logger::errorLog("AI agent with ID " + std::to_string(agentID) + " was not found");
 		}
 
-		std::vector<block> aiGame::getBlocksBox(int x1, int y1, int z1, int x2, int y2, int z2) {
+		void aiGame::moveEntity(entityID entityID, int x, int y, int z) {
+
+			entityManager::moveEntity(entityID, x, y, z);
 
 			if (recording_)
-				recordAction("getBlocksBox", { x1, y1, z1, x2, y2, z2 });
-
-
-			return chunkManager::getBlocksBox(x1, y1, z1, x2, y2, z2);
+				recordAction("moveEntity", { entityID, x, y, z });
 
 		}
 
-		void aiGame::moveEntity(unsigned int entityID, int x, int y, int z) {
+		void aiGame::setEntityPos(unsigned entityID, int x, int y, int z) {
 
-			if (entityManager::isEntityRegistered(entityID)){
+			if (entityManager::isEntityRegistered(entityID)) {
 
 				if (recording_)
-					recordAction("moveEntity", {entityID, x, y, z});
+					recordAction("setEntityPos", { entityID, x, y, z });
 
 
 				vec3& pos = entityManager::getEntity(entityID).pos();
-				pos.x += x;
-				pos.y += y;
-				pos.z += z;
+				pos.x = x;
+				pos.y = y;
+				pos.z = z;
 
 			}
 			else
@@ -1076,35 +1316,26 @@ namespace VoxelEng {
 
 		}
 
-		void aiGame::rotateAgentViewDir(unsigned int agentID, unsigned int direction) {
+		void aiGame::rotateAgentViewDir(agentID agentID, blockViewDir direction) {
 
-			if (isAgentRegistered(agentID))
-				logger::errorLog("AI agent with ID " + std::to_string(AIagentID_[agentID]) + " was not found");
-			else {
-			
-				if (direction != PLUSX && direction != NEGX && direction != PLUSY && direction != NEGY)
+			if (isAgentRegistered(agentID)) {
+
+				if (direction != blockViewDir::PLUSX && direction != blockViewDir::NEGX && direction != blockViewDir::PLUSY && direction != blockViewDir::NEGY)
 					logger::errorLog("Rotation direction specified is not valid");
 				else {
-				
+
 					if (recording_)
-						recordAction("rotateAgentViewDir", { agentID, direction});
+						recordAction("rotateAgentViewDir", { agentID, direction });
 
-
-					vec3 rot = uDirectionToVec3(direction) * 90.0f;
-
-					entity& agent = entityManager::getEntity(AIagentID_[agentID]);
-
-					agent.rotate(rot);
-
-					logger::debugLog("Rotating view from: " + std::to_string(AIagentLookDirection_[agentID]));
+					entityManager::getEntity(AIagentEntityID_[agentID]).rotateView(uDirectionToVec3(direction) * 90.0f);
 
 					AIagentLookDirection_[agentID] = rotateUDirection(AIagentLookDirection_[agentID], direction);
 
-					logger::debugLog("to " + std::to_string(AIagentLookDirection_[agentID]) + " using " + std::to_string(direction));
-				
 				}
 
 			}
+			else 
+				logger::errorLog("AI agent with ID " + std::to_string(AIagentEntityID_[agentID]) + " was not found");
 
 		}
 
@@ -1152,52 +1383,49 @@ namespace VoxelEng {
 
 		}
 
-		unsigned int aiGame::createAgent(unsigned int entityTypeID, int x, int y, int z, unsigned int direction) {
+		unsigned int aiGame::createAgent(unsigned int entityTypeID, int x, int y, int z, blockViewDir direction) {
 
-			unsigned int ID = entityManager::registerEntity(entityTypeID, x, y, z, uDirectionToVec3(direction) * 90.0f);
+			unsigned int ID = entityManager::registerEntity(entityTypeID, x, y, z, uDirectionToVec3(direction));
 
-			
 			if (recording_)
 				recordAction("createAgent", {entityTypeID, x, y, z, direction});
 
+			entityIDIsAgent.insert(ID);
+			if (freeAIagentID_.empty()) {
 
-			activeEntityID_.insert(ID);
-			if (freeAIAgentID_.empty()) {
-
-				AIagentID_.push_back(ID);
+				AIagentEntityID_.push_back(ID);
 				AIagentLookDirection_.push_back(direction);
+
+				if (game::selectedEngineMode() == engineMode::PLAYINGRECORD && ID >= agentModifiedBlocks_.size())
+					agentModifiedBlocks_.emplace_back();
+
+				return AIagentEntityID_.size() - 1;
 
 			}
 			else {
 
-				unsigned int agentID = *freeAIAgentID_.begin();
-				AIagentID_[agentID] = ID;
+				agentID agentID = *freeAIagentID_.begin();
+				AIagentEntityID_[agentID] = ID;
 				AIagentLookDirection_[agentID] = direction;
 
-				freeAIAgentID_.erase(agentID);
+				freeAIagentID_.erase(agentID);
+
+				return agentID;
 
 			}
-
-			return ID;
 
 		}
 
-		vec3 aiGame::getEntityPos(unsigned int entityID) {
+		vec3 aiGame::getEntityPos(entityID entityID) {
 
-			if (entityManager::isEntityRegistered(entityID)) {
-			
-				if (recording_)
-					recordAction("getEntityPos", {entityID});
-
+			if (entityManager::isEntityRegistered(entityID))
 				return entityManager::getEntity(entityID).pos();
-			
-			}
 			else
 				logger::errorLog("AI agent with ID " + std::to_string(entityID) + " was not found");
 
 		}
 
-		void aiGame::changeEntityActiveState(unsigned int entityID, bool state) {
+		void aiGame::changeEntityActiveState(entityID entityID, bool state) {
 
 			if (entityManager::isEntityRegistered(entityID)) {
 			
@@ -1212,7 +1440,7 @@ namespace VoxelEng {
 
 		}
 
-		void aiGame::deleteEntity(unsigned int entityID) {
+		void aiGame::deleteEntity(entityID entityID) {
 
 			if (entityManager::isEntityRegistered(entityID)) {
 			
@@ -1228,7 +1456,7 @@ namespace VoxelEng {
 
 		}
 
-		void aiGame::deleteAgent(unsigned int agentID) {
+		void aiGame::deleteAgent(agentID agentID) {
 
 			if (isAgentRegistered(agentID)) {
 			
@@ -1236,11 +1464,11 @@ namespace VoxelEng {
 					recordAction("deleteEntity", {agentID});
 
 
-				unsigned int entityID = AIagentID_[agentID];
+				entityID entityID = AIagentEntityID_[agentID];
 
 				entityManager::deleteEntity(entityID);
-				freeAIAgentID_.insert(agentID);
-				activeEntityID_.erase(entityID);
+				freeAIagentID_.insert(agentID);
+				entityIDIsAgent.erase(entityID);
 			
 			}
 			else
@@ -1249,8 +1477,6 @@ namespace VoxelEng {
 		}
 
 		void aiGame::playActionRecordForward_(unsigned int actionCode) {
-		
-			playingRecordForward_ = true;
 			
 			if (actionRegistered_(actionCode))
 				aiRecordActions_[actionCode].playRecordedAction();
@@ -1260,8 +1486,6 @@ namespace VoxelEng {
 		}
 
 		void aiGame::playActionRecordBackwards_(unsigned int actionCode) {
-		
-			playingRecordForward_ = false;
 
 			if (actionRegistered_(actionCode))
 				aiRecordActions_[actionCode].playRecordedAction();
@@ -1273,7 +1497,7 @@ namespace VoxelEng {
 		void aiGame::initBlockModRecording() {
 		
 			recordAgentModifiedBlocks_ = true;
-			agentModifiedBlocks_.resize(AIagentID_.size());
+			agentModifiedBlocks_.resize(AIagentEntityID_.size());
 		
 		}
 
@@ -1281,11 +1505,22 @@ namespace VoxelEng {
 		
 			recordAgentModifiedBlocks_ = false;
 			agentModifiedBlocks_.clear();
+			entityIDcreationOrder_.clear();
+			agentIDcreationOrder_.clear();
 		
 		}
 
+		void aiGame::generateAIWorld(const std::string& path) {
 
-		// 'traininGame' class.
+			if (!chunkManager::initialised())
+				logger::errorLog("Chunk management system is not initialised");
+
+			chunkManager::generateAIWorld(path);
+
+		}
+
+
+		// 'trainingGame' class.
 
 		unsigned int trainingGame::generateRecordLoadedAgents_(const std::string& recordPath, const std::string& recordFilename,
 															   const std::string& agentsPath) {
@@ -1294,10 +1529,12 @@ namespace VoxelEng {
 				logger::errorLog("A recording is already being made");
 			else {
 
+				recording_ = true;
 				if (recordPath.empty()) {
 				
 					logger::say("Recording's file path is empty");
-					return 1;
+					recording_ = false;
+					return 2;
 				
 				}	
 				else {
@@ -1305,7 +1542,8 @@ namespace VoxelEng {
 					if (recordPath.back() != '/') {
 					
 						logger::say("The last character of the recording's file path is not \'/\'");
-						return 1;
+						recording_ = false;
+						return 2;
 					
 					}
 					else {
@@ -1313,6 +1551,7 @@ namespace VoxelEng {
 						if (recordFilename.empty()) {
 						
 							logger::say("Recording's file name is empty");
+							recording_ = false;
 							return 2;
 						
 						}
@@ -1322,20 +1561,31 @@ namespace VoxelEng {
 
 								std::string recordingPath = recordPath + recordFilename + ".rec";
 
-								if (std::filesystem::exists(recordingPath))
+								if (std::filesystem::exists(recordingPath)) {
+
+									recording_ = false;
 									return 3;
+
+								}	
 								else {
 
-									recording_ = true;
 									saveFile_.open(recordingPath);
 
-									saveDataBuffer_ += name_ + "|";
-									saveDataBuffer_ += "saves / recordings / " + recordFilename + "Recording.terrain | ";
+									saveDataBuffer_ += name_ + '|';
+									saveDataBuffer_ += "saves/recordingWorlds/" + name_ + '/' + recordFilename + '|';
+									saveDataBuffer_ += std::to_string(chunkManager::nChunksToCompute()) + "|@";
 
-									setUpRecord_();
+									saveFileName_ = recordFilename;
+
 									if (!recordLoadedAgents_(agentsPath)) {
 									
 										logger::say("No file located at " + agentsPath);
+
+										saveFile_.close();
+										saveDataBuffer_.clear();
+										std::filesystem::remove(recordingPath);
+
+										recording_ = false;
 										return 4;
 									
 									}	
@@ -1353,6 +1603,7 @@ namespace VoxelEng {
 							else {
 							
 								logger::say("Recording's file name contains no alphanumeric characters");
+								recording_ = false;
 								return 2;
 							
 							}
@@ -1364,8 +1615,6 @@ namespace VoxelEng {
 				}
 
 			}
-
-			return 2;
 
 		}
 

@@ -1,15 +1,13 @@
-#include <string>
+#include "entity.h"
 #include <cmath>
 #include <cstddef>
-#include "entity.h"
+#include <string>
+#include "game.h"
 #include "graphics.h"
-#include "utilities.h"
 #include "gui.h"
 #include "logger.h"
-#include "game.h"
-#include "entity.h"
+#include "utilities.h"
 #include "worldGen.h"
-
 
 namespace VoxelEng {
 
@@ -20,8 +18,8 @@ namespace VoxelEng {
     camera* player::camera_ = nullptr;
     float player::blockReachRange_ = 0.0f,
           player::blockSearchIncrement_ = 0.0f;
-    block player::selectedBlock_ = 0,
-          player::blockToPlace_ = 0;
+    block player::selectedBlock_ = 0;
+    std::atomic<block> player::blockToPlace_ = 1;
     vec3 player::selectedBlockPos_ = vec3Zero,
          player::oldSelectedBlockPos_ = vec3Zero;
     std::atomic<bool> player::destroyBlock_ = false,
@@ -34,16 +32,17 @@ namespace VoxelEng {
             logger::errorLog("Player system is already initialised");
         else {
         
-            if (game::loopSelection() != GRAPHICALMENU)
-                logger::errorLog("The engine is not in the graphical main menu loop");
-            else {
+            engineMode mode = game::selectedEngineMode();
+            if (mode == engineMode::AIMENULOOP) {
 
                 window_ = window.windowAPIpointer();
                 camera_ = new camera(FOV, zNear, zFar, window, true);
                 blockReachRange_ = blockReachRange;
-                blockSearchIncrement_ = 0.10f;
+                blockSearchIncrement_ = 0.01f;
 
-            }
+            }  
+            else 
+                logger::errorLog("The player class must be initialised in the AI menu loop");
         
         }
             
@@ -68,7 +67,7 @@ namespace VoxelEng {
             selectedBlock_ = (chunkManager::getChunkLoadLevel(chunkManager::getChunkCoords(blockPos)) == VoxelEng::chunkLoadLevel::DECORATED) ? chunkManager::getBlock(blockPos) : 0;
 
             if (!selectedBlock_) { // No non-null block found. Continue searching.
-            
+
                 oldSelectedBlockPos_ = selectedBlockPos_;
 
                 step += blockSearchIncrement_;
@@ -91,7 +90,7 @@ namespace VoxelEng {
 
     void player::destroySelectedBlock() {
 
-        if (!GUIManager::levelGUIOpened()) {
+        if (!GUImanager::levelGUIOpened()) {
 
             std::unique_lock<std::recursive_mutex> lock(chunkManager::chunksMutex());
 
@@ -132,64 +131,67 @@ namespace VoxelEng {
 
     void player::placeSelectedBlock() {
 
-        if (!GUIManager::levelGUIOpened()) {
+        if (!GUImanager::levelGUIOpened()) {
 
-            block blockToPlace = 2;
+            float xOld = std::floor(oldSelectedBlockPos_.x),
+                  yOld = std::floor(oldSelectedBlockPos_.y),
+                  zOld = std::floor(oldSelectedBlockPos_.z),
+                  x = std::floor(selectedBlockPos_.x),
+                  y = std::floor(selectedBlockPos_.y),
+                  z = std::floor(selectedBlockPos_.z);
 
-            int x = floor(selectedBlockPos_.x),
-                y = floor(selectedBlockPos_.y),
-                z = floor(selectedBlockPos_.z),
-                hasXChanged = floor(oldSelectedBlockPos_.x) != x,
-                hasYChanged = floor(oldSelectedBlockPos_.y) != y,
-                hasZChanged = floor(oldSelectedBlockPos_.z) != z;
+            // Only one coordinate may differ between the two positions.
+            if (xOld != x) {
+            
+                if (yOld != y)
+                    yOld = y;
 
-            // Avoid placing blocks not in the south, north, east, west, up or down directions of the selected block.
-            if (hasXChanged + hasYChanged + hasZChanged > 1)
-                x -= 1 * sign(camera_->direction().x);
-            else
-                if (hasXChanged)
-                    x -= 1 * sign(camera_->direction().x);
-                else
-                    if (hasYChanged)
-                        y -= 1 * sign(camera_->direction().y);
-                    else
-                        if (hasZChanged)
-                            z -= 1 * sign(camera_->direction().z);
+                if (zOld != z)
+                    zOld = z;
+            
+            }
+            else if (yOld != y) { // xOld == x
+            
+                if (zOld != z)
+                    zOld = z;
+            
+            } // else xOld == x && yOld == y
 
-            // Select appropiate chunk and modify the selected block if possible.
-            std::unique_lock<std::recursive_mutex> lock(chunkManager::chunksMutex());
+            if (chunkManager::isInWorld(xOld, yOld, zOld) && !chunkManager::getBlock(xOld, yOld, zOld)) {
+            
+                chunk* selectedChunk = chunkManager::selectChunkByChunkPos(xOld, yOld, zOld),
+                     * neighbor = nullptr;
 
-            chunk* selectedChunk = chunkManager::selectChunkByChunkPos(x, y, z),
-                * neighbor = nullptr;
+                if (selectedChunk && selectedBlock_) {
 
-            if (selectedChunk && selectedBlock_) {
+                    vec3 chunkRelPos(floorMod(xOld, SCX),
+                                     floorMod(yOld, SCY),
+                                     floorMod(zOld, SCZ));
 
-                vec3 chunkRelPos(floorMod(x, SCX),
-                    floorMod(y, SCY),
-                    floorMod(z, SCZ));
+                    selectedChunk->setBlock(chunkRelPos, blockToPlace_);
 
-                selectedChunk->setBlock(chunkRelPos, blockToPlace);
+                    chunkManager::highPriorityUpdate(selectedChunk->chunkPos());
 
-                chunkManager::highPriorityUpdate(selectedChunk->chunkPos());
+                    if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(selectedChunk->chunkPos())))
+                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
 
-                if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                    if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(selectedChunk->chunkPos())))
+                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
 
-                if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                    if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(selectedChunk->chunkPos())))
+                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
 
-                if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                    if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(selectedChunk->chunkPos())))
+                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
 
-                if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                    if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(selectedChunk->chunkPos())))
+                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
 
-                if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                    if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(selectedChunk->chunkPos())))
+                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
 
-                if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
-
+                }
+            
             }
 
         }
@@ -198,10 +200,7 @@ namespace VoxelEng {
 
     void player::processSelectionRaycast() {
 
-        if (game::loopSelection() == GRAPHICALLEVEL)
-            chunkManager::waitTerrainLoaded();
-
-        while (game::loopSelection() == GRAPHICALLEVEL) {
+        while (game::threadsExecute[0]) {
 
             selectBlock();
 
@@ -226,6 +225,63 @@ namespace VoxelEng {
                 std::this_thread::sleep_for(1ms);
 
             }
+
+        }
+
+    }
+
+    void player::setBlockToPlace(block blockID) {
+
+        if (blockID != blockToPlace_) {
+
+            blockToPlace_ = blockID;
+
+            GUIelement& element = GUImanager::getGUIElement("blockPreview");
+            element.lockMutex();
+            switch (blockID) { // This could use a map for associating texture ID with block ID in the future.
+
+            case 1:
+                element.changeTextureID(1);
+                break;
+
+            case 2:
+                element.changeTextureID(2);
+                break;
+
+            case 3:
+                element.changeTextureID(3);
+                break;
+
+            case 4:
+                element.changeTextureID(4);
+                break;
+
+            case 10:
+                element.changeTextureID(10);
+                break;
+
+            case 6:
+                element.changeTextureID(6);
+                break;
+
+            case 7:
+                element.changeTextureID(7);
+                break;
+
+            case 8:
+                element.changeTextureID(8);
+                break;
+
+            case 9:
+                element.changeTextureID(9);
+                break;
+
+            default:
+                logger::errorLog("Invalid ID for user's selected block to place");
+                break;
+
+            }
+            element.unlockMutex();
 
         }
 
@@ -262,31 +318,25 @@ namespace VoxelEng {
     
     }
 
-    void entity::rotate(const vec3& rot) {
-    
-        rotate(rot.x, rot.y, rot.z);
-    
-    }
-
     void entity::rotate(float x, float y, float z) {
     
-        if (x) {
+        if (x != 0) {
         
-            rot_.x = x;
+            rot_.x += x;
             updateXRotation_ = true;
         
         }
 
-        if (y) {
+        if (y != 0) {
 
-            rot_.y = y;
+            rot_.y += y;
             updateYRotation_ = true;
 
         }
 
-        if (z) {
+        if (z != 0) {
 
-            rot_.z = z;
+            rot_.z += z;
             updateZRotation_ = true;
 
         }
@@ -297,7 +347,7 @@ namespace VoxelEng {
 
         if (angle) {
 
-            rot_.x = angle;
+            rot_.x += angle;
             updateXRotation_ = true;
 
         }
@@ -308,7 +358,7 @@ namespace VoxelEng {
 
         if (angle) {
 
-            rot_.y = angle;
+            rot_.y += angle;
             updateYRotation_ = true;
 
         }
@@ -319,21 +369,80 @@ namespace VoxelEng {
 
         if (angle) {
 
-            rot_.z = angle;
+            rot_.z += angle;
             updateZRotation_ = true;
 
         }
 
     }
 
+    void entity::rotateView(float roll, float pitch, float yaw) {
+
+        if (roll != 0) {
+
+            rot_.z += roll;
+            updateZRotation_ = true;
+
+        }
+
+        if (pitch != 0) {
+
+            rot_.x += pitch;
+            updateXRotation_ = true;
+
+        }
+
+        if (yaw != 0) {
+
+            rot_.y += yaw;
+            updateYRotation_ = true;
+
+        }
+
+    }
+
+    void entity::rotateViewRoll(float angle) {
+    
+        if (angle != 0) {
+
+            rot_.z += angle;
+            updateZRotation_ = true;
+
+        }
+    
+    }
+
+    void entity::rotateViewPitch(float angle) {
+    
+        if (angle != 0) {
+
+            rot_.x += angle;
+            updateXRotation_ = true;
+
+        }
+    
+    }
+
+    void entity::rotateViewYaw(float angle) {
+    
+        if (angle != 0) {
+
+            rot_.y += angle;
+            updateYRotation_ = true;
+
+        }
+    
+    }
+
 
     // 'entityManager' class.
 
-    bool entityManager::initialised_ = false;
+    bool entityManager::initialised_ = false,
+         entityManager::firstManagementIteration_ = true;
     std::vector<entity> entityManager::entities_;
     std::vector<batch> entityManager::batches_;
-    std::vector<const model*>* entityManager::renderingDataWrite_ = nullptr,
-                             * entityManager::renderingDataRead_ = nullptr;
+    std::vector<model>* entityManager::renderingDataWrite_ = nullptr,
+                      * entityManager::renderingDataRead_ = nullptr;
     std::unordered_set<unsigned int> entityManager::activeEntityID_,
                                      entityManager::activeBatchID_,
                                      entityManager::freeEntityID_,
@@ -348,6 +457,7 @@ namespace VoxelEng {
     std::condition_variable entityManager::entityManagerCV_;
     std::atomic<bool> entityManager::entityMngCVContinue_ = false;
     std::mutex entityManager::syncMutex_;
+    std::unique_lock<std::mutex> entityManager::syncLock_(entityManager::syncMutex_, std::defer_lock);
     unsigned int entityManager::ticksPerFrame_ = 0;
 
     
@@ -357,8 +467,17 @@ namespace VoxelEng {
             logger::errorLog("Entity management system is already initialised");
         else {
         
-            renderingDataWrite_ = new std::vector<const model*>();
-            renderingDataRead_ = new std::vector<const model*>();
+            firstManagementIteration_ = true;
+
+            if (!game::AImodeON()) {
+            
+                if (!renderingDataWrite_)
+                    renderingDataWrite_ = new std::vector<model>();
+                if (!renderingDataRead_)
+                    renderingDataRead_ = new std::vector<model>();
+            
+            }
+            
             ticksPerFrame_ = 30;
 
             initialised_ = true;
@@ -367,7 +486,7 @@ namespace VoxelEng {
     
     }
 
-    bool entityManager::isEntityRegistered(unsigned int entityID) {
+    bool entityManager::isEntityRegistered(entityID entityID) {
 
         std::unique_lock<std::recursive_mutex> lockEntities(entitiesMutex_);
 
@@ -375,7 +494,7 @@ namespace VoxelEng {
 
     }
 
-    bool entityManager::isEntityActiveAt(unsigned int entityID) {
+    bool entityManager::isEntityActiveAt(entityID entityID) {
 
         if (isEntityRegistered(entityID))
             return isEntityActive(entityID);
@@ -384,7 +503,7 @@ namespace VoxelEng {
 
     }
 
-    bool entityManager::isEntityActive(unsigned int entityID) {
+    bool entityManager::isEntityActive(entityID entityID) {
 
         std::unique_lock<std::recursive_mutex> lockEntities(entitiesMutex_);
 
@@ -392,7 +511,7 @@ namespace VoxelEng {
 
     }
 
-    unsigned int entityManager::registerBatch() {
+    unsigned int entityManager::registerBatch_() {
 
         std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
 
@@ -402,58 +521,84 @@ namespace VoxelEng {
 
     }
 
-    void entityManager::manageEntities(std::atomic<double>& timeStep) {
+    void entityManager::setAImode(bool on) {
+    
+        if (on) {
+        
+            if (renderingDataWrite_) {
 
-        if (game::loopSelection() == GRAPHICALLEVEL)
-            chunkManager::waitTerrainLoaded();
-
-        player::changePosition(worldGen::playerSpawnPos());
-
-        {
-
-            std::unique_lock<std::mutex> syncLock(syncMutex_);
-
-            unsigned int ID;
-            while (game::loopSelection() == GRAPHICALLEVEL) {
-
-                // Process active entities that have a corresponding tick function.
-                entitiesMutex_.lock();
-
-                for (unsigned int i = 0; i < ticksPerFrame_ && i < tickingEntityID_.size(); i++) { // It processes min(ticksPerFrame_, tickingEntityID_.size()) ticks.
-                
-                    ID = tickingEntityID_.front();
-                    entities_[ID].tickFunc_();
-                    tickingEntityID_.push_back(ID);
-                    tickingEntityID_.pop_front();
-
-                }
-
-                // Delete all unused entities.
-                for (auto it = deleteableEntityID_.cbegin(); it != deleteableEntityID_.cend(); it++)
-                    deleteEntity(*it);
-                deleteableEntityID_.clear();
-
-                entitiesMutex_.unlock();
-
-
-                // Regenerate all batches that need to be.
-                batchesMutex_.lock();
-
-                for (unsigned int i = 0; i < batches_.size(); i++)
-                    if (batches_[i].isDirty())
-                        renderingDataWrite_->push_back(batches_[i].generateVertices());
-
-                batchesMutex_.unlock();
-
-
-                // Sync with rendering thread and reset some structures for next iteration.
-                entityManagerCV_.wait(syncLock);
-
-                renderingDataWrite_->clear();
+                delete renderingDataWrite_;
+                renderingDataWrite_ = nullptr;
 
             }
 
+            if (renderingDataRead_) {
+
+                delete renderingDataRead_;
+                renderingDataRead_ = nullptr;
+
+            }
+        
         }
+        else {
+
+            if (!renderingDataWrite_)
+                renderingDataWrite_ = new std::vector<model>();
+
+            if (!renderingDataRead_)
+                renderingDataRead_ = new std::vector<model>();
+        
+        }
+    
+    }
+
+    void entityManager::manageEntities() {
+
+        // If the generated level is new use the spawn position
+        // provided by the selected world generator as the player's.
+        if (firstManagementIteration_ && chunkManager::openedTerrainFileName() == "")
+            player::changePosition(worldGen::playerSpawnPos());
+        firstManagementIteration_ = false;
+
+        // Process active entities that have a corresponding tick function ...
+        entitiesMutex_.lock();
+        unsigned int ID;
+        for (unsigned int i = 0; i < ticksPerFrame_ && i < tickingEntityID_.size(); i++) { // It processes min(ticksPerFrame_, tickingEntityID_.size()) ticks.
+
+            ID = tickingEntityID_.front();
+            entities_[ID].tickFunc_();
+            tickingEntityID_.push_back(ID);
+            tickingEntityID_.pop_front();
+
+        }
+
+        // ... and delete all unused entities.
+        for (auto it = deleteableEntityID_.cbegin(); it != deleteableEntityID_.cend(); it++)
+            deleteEntity(*it);
+        deleteableEntityID_.clear();
+
+        entitiesMutex_.unlock();
+
+
+        // Regenerate all batches that need to be.
+        batchesMutex_.lock();
+        bool synchronise = false;
+        for (unsigned int i = 0; i < batches_.size(); i++)
+            if (batches_[i].isDirty()) {
+                    
+                if (renderingDataWrite_->size() <= i)
+                    renderingDataWrite_->push_back(batches_[i].generateVertices());
+                else
+                    renderingDataWrite_->operator[](i) = batches_[i].generateVertices();
+                synchronise = true;
+                    
+            }  
+
+        batchesMutex_.unlock();
+
+        // Sync with rendering thread if necessary to update the models being drawn.
+        if (synchronise)
+            entityManagerCV_.wait(syncLock_);
 
     }
 
@@ -465,10 +610,10 @@ namespace VoxelEng {
 
     }
 
-    unsigned int entityManager::registerEntity(unsigned int modelID, int posX, int posY, int posZ, float rotX, float rotY, float rotZ, tickFunc func) {
+    entityID entityManager::registerEntity(unsigned int modelID, int posX, int posY, int posZ, float rotX, float rotY, float rotZ, tickFunc func) {
 
-        unsigned int entityID = 0,
-                     batchID = 0;
+        entityID entityID = 0,
+                 batchID = 0;
 
 
         std::unique_lock<std::recursive_mutex> lockEntities(entitiesMutex_);
@@ -485,7 +630,7 @@ namespace VoxelEng {
             entityID = *freeEntityID_.begin();
             freeEntityID_.erase(entityID);
             
-            entities_[entityID].setModelID(entityID);
+            entities_[entityID].setModelID(modelID);
             entities_[entityID].pos_ = vec3(posX, posY, posZ);
             entities_[entityID].rotate(rotX, rotY, rotZ);
             entities_[entityID].tickFunc_ = func;
@@ -496,68 +641,73 @@ namespace VoxelEng {
         if (func)
             tickingEntityID_.push_back(entityID);
 
-        // Register the new entity inside a batch.
-        std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
-        if (batches_.empty()) { // If no batch is registered.
+        if (!game::AImodeON()) { // Register the new entity inside a batch only if AI mode is disabled.
+            
+            std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
 
-            batchID = registerBatch();
+            if (batches_.empty()) { // If no batch is registered.
 
-            if (!batches_[batches_.size() - 1].addEntity(entityID))
-                logger::errorLog("Entity with ID: " + std::to_string(entityID) + " has a model too big for a batch!");
+                batchID = registerBatch_();
 
-        }
-        else {
-        
-            if (freeBatchID_.empty()) {
-
-                if (!batches_[batches_.size() - 1].addEntity(entityID)) { // If last created batch cannot store the entity's model, then create another batch.
-
-                    batchID = registerBatch();
-
-                    if (!batches_[batches_.size() - 1].addEntity(entityID))
-                        logger::errorLog("Entity with ID " + std::to_string(entityID) + " has a model with too many vertices for a batch.");
-
-                }
-                else
-                    batchID = batches_.size() - 1;
+                if (!batches_[batches_.size() - 1].addEntity(entityID))
+                    logger::errorLog("Entity with ID: " + std::to_string(entityID) + " has a model too big for a batch!");
 
             }
             else {
 
-                bool found = false;
-                auto it = freeBatchID_.cbegin();
-                for (it; it != freeBatchID_.cend() && !found; it++) // Check if new entity's model fits into one of the already created batches.
-                    found = batches_[*it].addEntity(entityID);
+                if (freeBatchID_.empty()) {
 
-                if (found) {
+                    if (!batches_[batches_.size() - 1].addEntity(entityID)) { // If last created batch cannot store the entity's model, then create another batch.
 
-                    if (batches_[*it].size() == BATCH_MAX_VERTEX_COUNT)
-                        freeBatchID_.erase(*it);
+                        batchID = registerBatch_();
 
-                    batchID = *it;
+                        if (!batches_[batches_.size() - 1].addEntity(entityID))
+                            logger::errorLog("Entity with ID " + std::to_string(entityID) + " has a model with too many vertices for a batch.");
+
+                    }
+                    else
+                        batchID = batches_.size() - 1;
 
                 }
                 else {
 
-                    batchID = registerBatch();
+                    bool found = false;
+                    auto it = freeBatchID_.cbegin();
+                    for (it; it != freeBatchID_.cend() && !found;) // Check if new entity's model fits into one of the already created batches.
+                        if (!(found = batches_[*it].addEntity(entityID)))
+                            it++;
 
-                    if (!batches_[batches_.size() - 1].addEntity(entityID))
-                        logger::errorLog("Entity with ID: " + std::to_string(entityID) + " has a model too big for a batch!");
+                    if (found) {
+
+                        if (batches_[*it].size() == BATCH_MAX_VERTEX_COUNT)
+                            freeBatchID_.erase(*it);
+
+                        batchID = *it;
+
+                    }
+                    else {
+
+                        batchID = registerBatch_();
+
+                        if (!batches_[batches_.size() - 1].addEntity(entityID))
+                            logger::errorLog("Entity with ID: " + std::to_string(entityID) + " has a model too big for a batch!");
+
+                    }
 
                 }
 
             }
-        
+
+            // Associate entity and corresponding batch.
+            entityBatch_[entityID] = batchID;
+
         }
-        
-        // Associate entity and corresponding batch.
-        entityBatch_[entityID] = batchID;
 
         return entityID;
 
     }
 
-    entity& entityManager::getEntityAt(unsigned int entityID) {
+    entity& entityManager::getEntityAt(entityID entityID) {
 
         if (isEntityRegistered(entityID))
             return getEntity(entityID);
@@ -566,18 +716,18 @@ namespace VoxelEng {
     
     }
 
-    entity& entityManager::getEntity(unsigned int entityID) {
+    entity& entityManager::getEntity(entityID entityID) {
 
         std::unique_lock<std::recursive_mutex> lockEntities(entitiesMutex_);
         return entities_[entityID];
 
     }
 
-    void entityManager::changeEntityActiveStateAt(unsigned int entityID, bool active) {
+    void entityManager::changeEntityActiveStateAt(entityID entityID, bool active) {
 
         if (isEntityRegistered(entityID)) {
-        
-            if (active) {
+
+            if (active && inactiveEntityID_.find(entityID) != inactiveEntityID_.cend()) {
 
                 std::unique_lock<std::recursive_mutex> lockEntities(entitiesMutex_);
 
@@ -589,7 +739,7 @@ namespace VoxelEng {
                 
 
             }
-            else {
+            else if(!active && activeEntityID_.find(entityID) != activeEntityID_.cend()) {
 
                 std::unique_lock<std::recursive_mutex> lockEntities(entitiesMutex_);
 
@@ -610,7 +760,7 @@ namespace VoxelEng {
 
     }
 
-    void entityManager::deleteEntityAt(unsigned int entityID) {
+    void entityManager::deleteEntityAt(entityID entityID) {
 
         if (isEntityRegistered(entityID))
             deleteEntity(entityID);
@@ -619,7 +769,7 @@ namespace VoxelEng {
 
     }
 
-    void entityManager::deleteEntity(unsigned int entityID) {
+    void entityManager::deleteEntity(entityID entityID) {
 
         std::unique_lock<std::recursive_mutex> lockEntities(entitiesMutex_);
 
@@ -634,25 +784,82 @@ namespace VoxelEng {
         else
             inactiveEntityID_.erase(entityID);
 
-
         // Remove entity from its corresponding batch and
         // mark batch as free if no more entities are related to it.
         // Also reflect changes in said batch.
-        std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
-        unsigned int batchID = entityBatch_[entityID];
-        if (batches_[batchID].deleteEntity(entityID))
-            deleteBatch_(batchID);
+        if (!game::AImodeON()) {
+        
+            std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
+            unsigned int batchID = entityBatch_[entityID];
+            if (batches_[batchID].deleteEntity(entityID))
+                deleteBatch_(batchID);
 
-        entityBatch_.erase(entityID);
+            entityBatch_.erase(entityID);
+        
+        }
 
+        // Reset entity's attributes here.
+        entities_[entityID].rot_ = vec3Zero;
+        
     }
 
     void entityManager::swapReadWrite() {
 
-        std::vector<const model*>* aux = renderingDataRead_;
+        std::vector<model>* aux = renderingDataRead_;
 
         renderingDataRead_ = renderingDataWrite_;
         renderingDataWrite_ = aux;
+
+    }
+
+    void entityManager::moveEntity(entityID entityID, int x, int y, int z) {
+    
+        if (entityManager::isEntityRegistered(entityID)) {
+
+            vec3& pos = entityManager::getEntity(entityID).pos();
+            pos.x += x;
+            pos.y += y;
+            pos.z += z;
+
+            if (y != 0)
+                y = y - 1 + 1;
+
+            if (!game::AImodeON())
+                batches_[entityBatch_[entityID]].isDirty() = true;
+
+        }
+        else
+            logger::errorLog("Entity with ID " + std::to_string(entityID) + " was not found");
+    
+    }
+
+    void entityManager::clean() {
+
+        std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
+        std::unique_lock<std::recursive_mutex> lockEntities(entitiesMutex_);
+        std::unique_lock<std::mutex> syncLock(syncMutex_);
+
+        entities_.clear();
+
+        batches_.clear();
+
+        entityBatch_.clear();
+
+        activeEntityID_.clear();
+
+        activeBatchID_.clear();
+
+        freeEntityID_.clear();
+
+        freeBatchID_.clear();
+
+        tickingEntityID_.clear();
+
+        if (renderingDataWrite_)
+            renderingDataWrite_->clear();
+
+        if (renderingDataRead_)
+            renderingDataRead_->clear();
 
     }
 
@@ -678,12 +885,21 @@ namespace VoxelEng {
 
         tickingEntityID_.clear();
 
-        renderingDataWrite_->clear();
+        if (renderingDataWrite_) {
+        
+            renderingDataWrite_->clear();
+            renderingDataWrite_ = nullptr;
+        
+        }
 
-        renderingDataRead_->clear();
+        if (renderingDataRead_) {
+
+            renderingDataRead_->clear();
+            renderingDataRead_ = nullptr;
+
+        }
 
         initialised_ = false;
-
 
     }
 

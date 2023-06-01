@@ -3,34 +3,38 @@
 #include "chunk.h"
 #include "gui.h"
 #include "graphics.h"
-#include "GUIFunctions.h"
+#include "GUIfunctions.h"
 #include "logger.h"
 
 
 namespace VoxelEng {
 
-	namespace GUIFunctions {
+	namespace GUIfunctions {
 
 		void changeStateMainMenu() {
 
-			GUIManager::changeGUIState("mainMenu");
-			if (game::loopSelection() == GRAPHICALLEVEL)
-				GUIManager::changeGUIState("mainMenu.saveButton");
-			else {
+			GUImanager::changeGUIState("mainMenu");
+			if (game::selectedEngineMode() == VoxelEng::engineMode::EDITLEVEL) {
 
-				GUIManager::changeGUIState("mainMenu.newButton");
-				GUIManager::changeGUIState("mainMenu.loadButton");
+				GUImanager::changeGUIState("mainMenu.saveButton");
+				GUImanager::changeGUIState("mainMenu.loadButton");
 
 			}
-			GUIManager::changeGUIState("mainMenu.exitButton");
+			else {
+
+				GUImanager::changeGUIState("mainMenu.newButton");
+				GUImanager::changeGUIState("mainMenu.loadButton");
+
+			}
+			GUImanager::changeGUIState("mainMenu.exitButton");
 
 		}
 
 		void changeStateLevelMenu() {
 
-			if (game::loopSelection() == GRAPHICALLEVEL) {
+			if (game::selectedEngineMode() == VoxelEng::engineMode::EDITLEVEL) {
 			
-				GUIManager::switchLevelGUIOpened();
+				GUImanager::switchLevelGUIOpened();
 				changeStateMainMenu();
 				graphics::getMainWindow()->changeStateMouseLock();
 			
@@ -40,17 +44,21 @@ namespace VoxelEng {
 
 		void changeStateMainMenu(bool isEnabled) {
 		
-			GUIManager::changeGUIState("mainMenu", isEnabled);
-			GUIManager::changeGUIState("mainMenu.loadButton", isEnabled);
-			if (game::loopSelection() == GRAPHICALLEVEL)
-				GUIManager::changeGUIState("mainMenu.saveButton", isEnabled);
+			GUImanager::changeGUIState("mainMenu", isEnabled);
+			GUImanager::changeGUIState("mainMenu.loadButton", isEnabled);
+			if (game::selectedEngineMode() == VoxelEng::engineMode::EDITLEVEL) {
+			
+				GUImanager::changeGUIState("mainMenu.saveButton", isEnabled);
+				GUImanager::changeGUIState("mainMenu.loadButton", isEnabled);
+			
+			}
 			else {
 
-				GUIManager::changeGUIState("mainMenu.newButton", isEnabled);
-				GUIManager::changeGUIState("mainMenu.loadButton", isEnabled);
+				GUImanager::changeGUIState("mainMenu.newButton", isEnabled);
+				GUImanager::changeGUIState("mainMenu.loadButton", isEnabled);
 
 			}
-			GUIManager::changeGUIState("mainMenu.exitButton", isEnabled);
+			GUImanager::changeGUIState("mainMenu.exitButton", isEnabled);
 		
 		}
 
@@ -59,21 +67,21 @@ namespace VoxelEng {
 			game::setSlotAccessType(slotAccessType::load);
 
 			changeStateMainMenu(false);
-			GUIManager::changeGUIState("loadMenu", true);
-			GUIManager::changeGUIState("loadMenu.exitButton", true);
+			GUImanager::changeGUIState("loadMenu", true);
+			GUImanager::changeGUIState("loadMenu.exitButton", true);
 
 			for (int i = 1; i <= 5; i++)
-				GUIManager::changeGUIState("saveSlot" + std::to_string(i), true);
+				GUImanager::changeGUIState("saveSlot" + std::to_string(i), true);
 
 		}
 
 		void hideLoadMenu() {
 
-			GUIManager::changeGUIState("loadMenu", false);
-			GUIManager::changeGUIState("loadMenu.exitButton", false);
+			GUImanager::changeGUIState("loadMenu", false);
+			GUImanager::changeGUIState("loadMenu.exitButton", false);
 
 			for (int i = 1; i <= 5; i++)
-				GUIManager::changeGUIState("saveSlot" + std::to_string(i), false);
+				GUImanager::changeGUIState("saveSlot" + std::to_string(i), false);
 
 			changeStateMainMenu(true);
 
@@ -84,21 +92,21 @@ namespace VoxelEng {
 			game::setSlotAccessType(slotAccessType::save);
 
 			changeStateMainMenu(false);
-			GUIManager::changeGUIState("saveMenu", true);
-			GUIManager::changeGUIState("saveMenu.exitButton", true);
+			GUImanager::changeGUIState("saveMenu", true);
+			GUImanager::changeGUIState("saveMenu.exitButton", true);
 
 			for (int i = 1; i <= 5; i++)
-				GUIManager::changeGUIState("saveSlot" + std::to_string(i), true);
+				GUImanager::changeGUIState("saveSlot" + std::to_string(i), true);
 
 		}
 
 		void hideSaveMenu() {
 
-			GUIManager::changeGUIState("saveMenu", false);
-			GUIManager::changeGUIState("saveMenu.exitButton", false);
+			GUImanager::changeGUIState("saveMenu", false);
+			GUImanager::changeGUIState("saveMenu.exitButton", false);
 
 			for (int i = 1; i <= 5; i++)
-				GUIManager::changeGUIState("saveSlot" + std::to_string(i), false);
+				GUImanager::changeGUIState("saveSlot" + std::to_string(i), false);
 
 			changeStateMainMenu(true);
 
@@ -107,11 +115,11 @@ namespace VoxelEng {
 		void saveGame() {
 
 			// Convert character to int number (assuming the last character of the GUIElement's name is a digit).
-			unsigned int saveSlot = GUIManager::lastCheckedGUIElement()->name().back() - '0';
+			unsigned int saveSlot = GUImanager::lastCheckedGUIElement()->name().back() - '0';
 			game::setSaveSlot(saveSlot);
 
 			// Save chunk data into selected save slot.
-			chunkManager::saveAllChunks("saves/slot" + std::to_string(saveSlot) + "/level.terrain");
+			chunkManager::saveAllChunks("saves/slot" + std::to_string(saveSlot) + "/level");
 
 			logger::debugLog("Saved on slot " + std::to_string(saveSlot));
 
@@ -120,21 +128,23 @@ namespace VoxelEng {
 
 		void loadGame() {
 
+			GUImanager::setLevelGUIOpened(false);
+
 			// Convert character to int number (assuming the last character of the GUIElement's name is a digit).
-			unsigned int saveSlot = GUIManager::lastCheckedGUIElement()->name().back() - '0';
+			unsigned int saveSlot = GUImanager::lastCheckedGUIElement()->name().back() - '0';
 			game::setSaveSlot(saveSlot);
 
 			// Check if save slot has valid data written.
 			if (std::filesystem::exists(std::filesystem::path("saves/slot" + std::to_string(game::selectedSaveSlot()) + "/level.terrain"))) {
 
 				// Hide load menu and don't show the main menu like the hideLoadMenu() function.
-				GUIManager::changeGUIState("loadMenu", false);
-				GUIManager::changeGUIState("loadMenu.exitButton", false);
+				GUImanager::changeGUIState("loadMenu", false);
+				GUImanager::changeGUIState("loadMenu.exitButton", false);
 
 				for (int i = 1; i <= 5; i++)
-					GUIManager::changeGUIState("saveSlot" + std::to_string(i), false);
+					GUImanager::changeGUIState("saveSlot" + std::to_string(i), false);
 
-				game::enterLevel();
+				game::setLoopSelection(VoxelEng::engineMode::INITLEVEL);
 
 				logger::debugLog("Selected to load slot " + std::to_string(saveSlot));
 			
@@ -146,11 +156,11 @@ namespace VoxelEng {
 
 		void enterNewLevel() {
 		
-			GUIManager::setLevelGUIOpened(false);
+			GUImanager::setLevelGUIOpened(false);
 
 			changeStateMainMenu(false);
 
-			game::enterLevel();
+			game::setLoopSelection(VoxelEng::engineMode::INITLEVEL);
 			game::setSaveSlot(0);
 			
 		}
@@ -159,32 +169,48 @@ namespace VoxelEng {
 		
 			if (game::getSlotAccessType() == slotAccessType::load)
 				loadGame();
-			else
+			else {
+			
+				hideSaveMenu();
+
 				saveGame();
-		
+			
+			}
+			
 		}
 
 		void exit() {
 		
-			switch (game::loopSelection()) {
+			switch (game::selectedEngineMode()) {
 			
-			case AIMENULOOP:
+				case VoxelEng::engineMode::AIMENULOOP:
 
-				game::cleanUp();
+					game::setLoopSelection(VoxelEng::engineMode::EXIT);
 
-				break;
+					break;
 
-			case GRAPHICALMENU:
+				case VoxelEng::engineMode::GRAPHICALMENU:
 
-				game::goToAIMenu();
+					game::setLoopSelection(VoxelEng::engineMode::AIMENULOOP);
 
-				break;
+					break;
 
-			case GRAPHICALLEVEL:
+				case VoxelEng::engineMode::EDITLEVEL:
 
-				game::goToGraphicalMenu();
+					GUImanager::changeGUIState("mainMenu.saveButton");
+					GUImanager::changeGUIState("mainMenu.newButton");
 
-				break;
+					game::setLoopSelection(VoxelEng::engineMode::EXITLEVEL);
+					game::setLoopSelection(VoxelEng::engineMode::GRAPHICALMENU);
+
+					break;
+
+				case VoxelEng::engineMode::PLAYINGRECORD:
+
+					game::setLoopSelection(VoxelEng::engineMode::EXITRECORD);
+					game::setLoopSelection(VoxelEng::engineMode::AIMENULOOP);
+
+					break;
 			
 			}
 		

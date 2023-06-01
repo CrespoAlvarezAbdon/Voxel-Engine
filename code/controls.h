@@ -1,7 +1,23 @@
+/**
+* @file controls.h
+* @version 1.0
+* @date 20/04/2023
+* @author Abdon Crespo Alvarez
+* @title Controls.
+* @brief Contains the definition of the control keys supported by the engine
+* and how to map said controls between the input APIs.
+*/
 #ifndef _VOXELENG_CONTROLS_
 #define _VOXELENG_CONTROLS_
+
+#if GRAPHICS_API == OPENGL
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+
+#endif
+
 #include <unordered_map>
 
 
@@ -11,6 +27,9 @@ namespace VoxelEng {
 	//Classes & enums.//
 	////////////////////
 
+	/**
+	* @brief Control key codes accepted and supported by the engine.
+	*/
 	enum class controlCode {
 
 		noKey,
@@ -75,15 +94,19 @@ namespace VoxelEng {
 
 	};
 
-
+	/**
+	* @brief Provides mappings between the control codes supported by the game engine
+	* and the control codes supported by the APIs that are currently used to get the
+	* user input.
+	*/
 	class controls {
 
 	public:
 
 		// Observers.
 
-		/*
-		Returns the equivalent control code from VoxelEngine's API in GLFW.
+		/**
+		* @brief Returns the equivalent control code from VoxelEngine's API in GLFW.
 		*/
 		static unsigned int getGLFWControlCode(controlCode keyCode);
 

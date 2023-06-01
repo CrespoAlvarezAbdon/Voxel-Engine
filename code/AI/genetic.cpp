@@ -1,24 +1,23 @@
 #include "genetic.h"
-#include <thread>
 #include <ctime>
+#include <cstddef>
+#include <thread>
+#include <initializer_list>
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-#include <cstddef>
 #include "af/algorithm.h"
+#include "af/defines.h"
 #include "../logger.h"
 #include "../timer.h"
 #include "../AIAPI.h"
+#include "../worldGen.h"
+#include "../chunk.h"
+#include "../utilities.h"
 #include "AIGameEx1.h"
 
 
 namespace AIExample {
-
-	///////////////////////////////////
-	// Implementation file variables.//
-	///////////////////////////////////
-
-	AIExample::miningAIGame* aiGame_ = nullptr; // Selected aiGame's pointer cache.
 
 
 	/////////////
@@ -44,72 +43,115 @@ namespace AIExample {
 
 	void geneticJob::process() {
 
-		for (size_t i = rangeStart_; i <= rangeEnd_; i++)
-			*(fitness_ + *(indices_ + i)) = evaluationFunction_(i);
+		VoxelEng::logger::debugLog("Genetic job started");
+
+		for (std::size_t i = rangeStart_; i <= rangeEnd_; i++)
+			fitness_[indices_[i]] = evaluationFunction_(indices_[i]);
 	
+	}
+
+
+	// 'copyJob' class.
+
+	copyJob::copyJob(std::size_t rangeStart, std::size_t rangeEnd, const GeneticNeuralNetwork* parent,
+					std::vector<GeneticNeuralNetwork>* individuals, unsigned int* newbornInds)
+		: rangeStart_(rangeStart), rangeEnd_(rangeEnd), parent_(parent), individuals_(individuals), newbornInds_(newbornInds) {}
+
+	void copyJob::setAttributes(std::size_t rangeStart, std::size_t rangeEnd, const GeneticNeuralNetwork* parent,
+								std::vector<GeneticNeuralNetwork>* individuals, unsigned int* newbornInds) {
+
+		rangeStart_ = rangeStart;
+		rangeEnd_ = rangeEnd;
+		parent_ = parent;
+		individuals_ = individuals;
+		newbornInds_ = newbornInds;
+
+	}
+
+	void copyJob::process() {
+
+		VoxelEng::logger::debugLog("Copy job started");
+
+		for (std::size_t i = rangeStart_; i <= rangeEnd_; i++)
+			individuals_->operator[](newbornInds_[i]) = *parent_;
+
 	}
 
 
 	// 'genetic' class.
 
 	genetic::genetic()
-		: simInProgress_(false), saveIndsData_(false), crossoverSplitPoint_(0), nLayers_(0),
-		nThreads_(std::thread::hardware_concurrency()), nJobs_(0), mutationRate_(0.0f), mutationVariationMin_(0.0f),
+		: simInProgress_(false), saveIndsData_(false), crossoverSplitPoint_(0),
+		nJobs_(0), mutationRate_(0.0f), mutationVariationMin_(0.0f),
 		mutationVariationMax_(0.0f), popInds_(nullptr), newbornInds_(nullptr), hostFitness_(nullptr), hostSelected_(nullptr), 
 		hostPopInds_(nullptr), hostNewbornInds_(nullptr), threadPool_(nullptr) {}
 
-	void genetic::trainAgents(unsigned int nEpochs, unsigned int nEpochsPerSave) {
+	void genetic::trainAgents(unsigned int nEpochs, unsigned int nEpochsPerSave, unsigned int nEpochsForNewWorld) {
 	
-		if (aiGame_ = dynamic_cast<AIExample::miningAIGame*>(VoxelEng::AIAPI::aiGame::selectedGame()))
-			VoxelEng::logger::debugLog("Number of threads: " + std::to_string(nThreads_));
-		else
-			VoxelEng::logger::errorLog("The selected AI game is not a 'miningAIGame'");
+		if (aiGame_ = dynamic_cast<AIExample::miningAIGame*>(VoxelEng::AIAPI::aiGame::selectedGame())) {
 
-		simInProgress_ = true;
-		unsigned int epochSaveCounter = 0; // Used to decide when to save individuals' data.
-		std::string epochString;
-		VoxelEng::timer t;
-		for (unsigned int epoch = 0; epoch < nEpochs; epoch++) {
+			simInProgress_ = true;
+			unsigned int epochSaveCounter = 0, // Used to decide when to save individuals' data.
+						 epochNewWorldCounter = nEpochsForNewWorld;
+			std::string epochString;
+			VoxelEng::timer t;
+			for (unsigned int epoch = 0; epoch < nEpochs; epoch++) {
 
-			/*
-			Begin epoch.
-			*/
-			t.start();
-			aiGame_->generateAIWorld();
-			aiGame_->spawnAgents();
+				/*
+				Begin epoch.
+				*/
+				t.start();
+				VoxelEng::worldGen::setSeed();
+				VoxelEng::chunkManager::resetAIChunks();
+				if (epochNewWorldCounter >= nEpochsForNewWorld) {
 
-			calculateFitness(); // Calculate fitness of the actual population.
+					aiGame_->generateAIWorld();
+					epochNewWorldCounter = 0;
 
-			selectionOperator(0);
+				}
+				aiGame_->spawnAgents();
 
-			crossoverOperator(0);
+				calculateFitness(); // Calculate fitness of the actual population.
 
-			mutationOperator(0);
+				selectionOperator(0);
 
-			replacementOperator(1);
+				crossoverOperator(0);
 
-			t.clean();
-			epochString = std::to_string(epoch);
-			VoxelEng::logger::debugLog("EPOCH " + epochString + " finished");
-			VoxelEng::logger::debugLog("Time: " + std::to_string(t.getDurationMs()) + " ms");
+				mutationOperator(0);
 
-			/*
-			Epoch's end.
-			*/
+				replacementOperator(1);
 
-			if (++epochSaveCounter == nEpochsPerSave && saveIndsData_) {
+				t.finish();
+				epochString = std::to_string(epoch);
+				VoxelEng::logger::debugLog("EPOCH " + epochString + " finished");
+				VoxelEng::logger::debugLog("Time: " + std::to_string(t.getDurationMs()) + " ms");
 
-				saveIndividualsData("AIData/" + aiGame_->name() + "_EPOCH_" + epochString);
+				/*
+				Epoch's end.
+				*/
 
-				epochSaveCounter = 0;
+				epochSaveCounter++;
+				if (epochSaveCounter == nEpochsPerSave && saveIndsData_) {
+
+					saveIndividualsData("AIData/" + aiGame_->name() + '/' + aiGame_->name() + "_EPOCH_" + epochString);
+
+					epochSaveCounter = 0;
+
+				}				
+
+				epochNewWorldCounter++;
 
 			}
 
-		}
+			// If 'nEpochsPerSave' is 0, the individuals' data will be saved once all the epochs have been processed.
+			if (saveIndsData_ && nEpochsPerSave == 0)
+				saveIndividualsData("AIData/" + aiGame_->name() + '/' + aiGame_->name() + "_FINAL_EPOCH");
 
-		// If 'nEpochsPerSave' is 0, the individuals' data will be saved once all the epochs have been processed.
-		if (saveIndsData_ && nEpochsPerSave == 0)
-			saveIndividualsData("AIData/" + aiGame_->name() + "_EPOCH_" + epochString);
+			simInProgress_ = false;
+		
+		}
+		else
+			VoxelEng::logger::errorLog("The selected AI game is not a 'miningAIGame'");
 
 	}
 
@@ -121,53 +163,58 @@ namespace AIExample {
 
 	}
 
-	void genetic::train(unsigned int nEpochs, unsigned int nEpochsPerSave = 0) {
+	void genetic::train(unsigned int nEpochs, unsigned int nEpochsPerSave, unsigned int nEpochsForNewWorld) {
 
 		checkFlagsTrainOrTest();
 		saveIndsData_ = true;
-		trainAgents(nEpochs, nEpochsPerSave);
+		trainAgents(nEpochs, nEpochsPerSave, nEpochsForNewWorld);
 
 	}
 
-	void genetic::test(unsigned int nEpochs, float* output, unsigned int& outputSize) {
+	void genetic::test(unsigned int nEpochs, float*& output, unsigned int& outputSize, unsigned int nEpochsForNewWorld) {
 	
 		checkFlagsTrainOrTest();
 
-		if (aiGame_ = dynamic_cast<AIExample::miningAIGame*>(VoxelEng::AIAPI::aiGame::selectedGame()))
-			VoxelEng::logger::debugLog("Number of threads: " + std::to_string(nThreads_));
-		else
+		if (!(aiGame_ = dynamic_cast<AIExample::miningAIGame*>(VoxelEng::AIAPI::aiGame::selectedGame())))
 			VoxelEng::logger::errorLog("The selected AI game is not a 'miningAIGame'");
 
 
-		af::array results = af::constant(0, nIndividuals_);
-
-
 		simInProgress_ = true;
+		unsigned int epochNewWorldCounter = nEpochsForNewWorld;
 		std::string epochString;
 		VoxelEng::timer t;
 		VoxelEng::duration totalDuration = 0,
 						   duration;
+		af::array results = af::constant(0, nIndividuals_, af::dtype::f32);
 		for (unsigned int epoch = 0; epoch < nEpochs; epoch++) {
 
 			/*
 			Epoch's beginning.
 			*/
 			t.start();
-			aiGame_->generateAIWorld();
+
+			VoxelEng::chunkManager::resetAIChunks();
+			if (epochNewWorldCounter == nEpochsForNewWorld) {
+
+				aiGame_->generateAIWorld();
+				epochNewWorldCounter = 0;
+
+			}
 			aiGame_->spawnAgents();
 
 			calculateFitness(); // Calculate fitness of the actual population.
 
-			t.clean();
-			duration = t.getDurationMs();
-			totalDuration += duration;
-			epochString = std::to_string(epoch);
-			VoxelEng::logger::debugLog("EPOCH " + epochString + " finished");
-			VoxelEng::logger::debugLog("Time: " + std::to_string(duration) + " ms");
-
 			/*
 			Epoch's end.
 			*/
+			t.finish();
+			duration = t.getDurationMs();
+			totalDuration += duration;
+			epochString = std::to_string(epoch);
+
+			VoxelEng::logger::debugLog("EPOCH " + epochString + " finished");
+			VoxelEng::logger::debugLog("Time: " + std::to_string(duration) + " ms");
+
 			VoxelEng::logger::debugLog("Results' size: " + std::to_string(results.elements()));
 			results += fitness_(*popInds_);
 			VoxelEng::logger::debugLog("Results' size now: " + std::to_string(results.elements()));
@@ -178,13 +225,13 @@ namespace AIExample {
 		output = results.host<float>();
 		outputSize = results.elements();
 
+		simInProgress_ = false;
+
 	}
 
 	void genetic::test(unsigned int nEpochs) {
 	
-		if (aiGame_ = dynamic_cast<AIExample::miningAIGame*>(VoxelEng::AIAPI::aiGame::selectedGame()))
-			VoxelEng::logger::debugLog("Number of threads: " + std::to_string(nThreads_));
-		else
+		if (!(aiGame_ = dynamic_cast<AIExample::miningAIGame*>(VoxelEng::AIAPI::aiGame::selectedGame())))
 			VoxelEng::logger::errorLog("The selected AI game is not a 'miningAIGame'");
 
 		checkFlagsTrainOrTest();
@@ -193,6 +240,8 @@ namespace AIExample {
 		
 		for (unsigned int i = 0; i < nEpochs; i++) {
 		
+			VoxelEng::chunkManager::resetAIChunks();
+
 			/*
 			Epoch's beginning.
 			*/
@@ -207,26 +256,70 @@ namespace AIExample {
 		
 		}
 
+		simInProgress_ = false;
+
+	}
+
+	void genetic::record(const std::string& recordName) {
+	
+		if (!(aiGame_ = dynamic_cast<AIExample::miningAIGame*>(VoxelEng::AIAPI::aiGame::selectedGame())))
+			VoxelEng::logger::errorLog("The selected AI game is not a 'miningAIGame'");
+
+		checkFlagsTrainOrTest();
+
+		simInProgress_ = true;
+
+		VoxelEng::chunkManager::resetAIChunks();
+
+		/*
+		Epoch's beginning.
+		*/
+
+		aiGame_->generateAIWorld();
+		aiGame_->spawnAgents();
+
+		calculateFitness(); // Calculate fitness of the actual population.
+
+		/*
+		Epoch's end.
+		*/
+
+		// Save the record's world.
+		VoxelEng::chunkManager::saveAllChunks("saves/recordingWorlds/" + aiGame_->name() + "/" + recordName);
+
+		simInProgress_ = false;
+
+	
 	}
 
 	void genetic::saveIndividualsData(const std::string& path) {
 	
+		VoxelEng::timer t;
+		t.start();
+
 		std::string truePath = path + ".aidata",
 			        saveData;
 		std::ofstream saveFile(truePath);
-		
 		float* weightsData = nullptr;
 
 
+		// Store the individuals' network layout.
+		for (std::size_t i = 0; i < sizeLayer_.size(); i++)
+			saveData += std::to_string(sizeLayer_[i]) + '|';
+		saveData += '/';
+
+		// Store individuals' data.
+		hostPopInds_ = popInds_->host<unsigned int>();
+		VoxelEng::logger::say("Saving AI data...");
 		for (unsigned int i = 0; i < nIndividuals_; i++) { // For each individual (population or newborn).
 		
-			std::vector<af::array>& weights = individuals_[*(hostPopInds_ + i)].weights();
+			std::vector<af::array>* weights = individuals_[*(hostPopInds_ + i)].weights();
 
-			for (unsigned int layer = 0; layer < weights.size(); layer++) { // Save for every individual's layer.
+			for (unsigned int layer = 0; layer < weights->size(); layer++) { // Save for every individual's connection between layers.
 			
-				weightsData = weights[layer].host<float>();
+				weightsData = weights->operator[](layer).host<float>();
 
-				for (unsigned int w = 0; w < weights[layer].elements(); w++) { // Every layer's weight.
+				for (unsigned int w = 0; w < weights->operator[](layer).elements(); w++) { // Every connection's weight.
 				
 					saveData += std::to_string(*(weightsData + w));
 					saveData += '|';
@@ -235,146 +328,215 @@ namespace AIExample {
 
 				saveData += '#';
 
-				delete weightsData;
+				af::freeHost(weightsData);
 			
 			}
 
-			saveData += '-';
+			if (i != nIndividuals_ - 1)
+				saveData += '@';
 		
 		}
 
 		saveFile << saveData;
+
+		af::freeHost(hostPopInds_);
+		hostPopInds_ = nullptr;
+
+		t.finish();
+
+		VoxelEng::logger::say("Finished saving AI data. TIME: " + std::to_string(t.getDurationMs()));
 	
 	}
 
-	bool genetic::loadIndividualsData(const std::string& path) {
+	int genetic::loadIndividualsData(const std::string& path) {
 	
+		VoxelEng::timer t;
+		t.start();
 		std::string truePath = path + ".aidata";
 
 		if (std::filesystem::exists(truePath)) {
 
 			std::ifstream saveFile(truePath);
-			std::string saveData,
-					    word;
-
-
-			individuals_.clear();
-
-			// Read from disk into main memory at once.
-			saveFile.seekg(0, std::ios::end);
-			saveData.resize(saveFile.tellg());
-			saveFile.seekg(0);
-			saveFile.read(saveData.data(), saveData.size());
-			saveFile.close();
-
-			individuals_.emplace_back();
-			std::vector<af::array>& weights = individuals_[0].weights();
-			std::vector<unsigned int> sizeLayer;
-			std::vector<float> hostLayer;
-			bool readSizeLayer = false;
-			unsigned int i = 0,
-				layer = 0;
+			std::string word;
 			float number = 0.0f;
-			while (i < saveData.size()) {
+			char character;
+			unsigned int nIndividualsToLoad = 0;
 
-				switch (saveData[i]) {
 
-				case '-': // New individual
+			VoxelEng::logger::say("Type the number of individuals to load from the file or 0 to load them all.");
+			while (!VoxelEng::validatedCinInput<unsigned int>(nIndividualsToLoad))
+				VoxelEng::logger::say("Invalid number. Try again.");
 
-					individuals_.back().updateNLayers();
-					individuals_.emplace_back();
-					weights = individuals_.back().weights();
-					layer = 0;
-					readSizeLayer = true;
 
-					break;
+			// Clean up data structures when necessary.
+			individuals_.clear();
+			sizeLayer_.clear();
 
-				case '#': // New individual's layer
+			// Create the data for the first read individual.
+			individuals_.emplace_back();
+			std::vector<af::array>* weights = individuals_[0].weights();
 
-					weights[layer].write(hostLayer.data(), hostLayer.size());
+			// Read the individuals' data.
+			std::vector<float> hostLayer;
+			bool readingLayout = true,
+			     continueReading = true;
+			unsigned int layer = 0,
+						 nConnections = 0;
+			GeneticNeuralNetwork* previousInd = nullptr;
+			while (saveFile.get(character) && continueReading) {
 
-					if (!readSizeLayer)
-						sizeLayer.push_back(hostLayer.size());
+				switch (character) {
 
-					layer++;
+					case '/': // Finished reading the individuals' network layout.
+						readingLayout = false;
+						nConnections = sizeLayer_.size();
+						break;
 
-					hostLayer.clear();
+					case '@': // New individual.
 
-					break;
+						// Reshape the previous read individual to match the read network's layout.
+						previousInd = &individuals_.back();
+						for (unsigned int i = 0; i < nConnections - 1; i++)
+							previousInd->weights()->operator[](i) = af::moddims(previousInd->weights()->operator[](i), sizeLayer_[i] + 1, sizeLayer_[i + 1]);
+						previousInd->updateNLayers();
 
-				case '|': // New weight.
+						if (nIndividualsToLoad && individuals_.size() >= nIndividualsToLoad)
+							continueReading = false;
+						else {
+						
+							// Create data for the new read individual.
+							individuals_.emplace_back();
+							weights = individuals_.back().weights();
+							layer = 0;
+						
+						}
+						break;
 
-					number = std::stof(word);
-					hostLayer.push_back(number);
-					word = "";
+					case '#': // New individual's layer.
 
-					break;
+						weights->emplace_back(hostLayer.size(), af::dtype::f32);
+						weights->operator[](layer).write(hostLayer.data(), hostLayer.size() * sizeof(float));
 
-				default: // Any part of a weight.
+						layer++;
 
-					word += saveData[i];
+						hostLayer.clear();
 
-					break;
+						break;
+
+					case '|': // New weight.
+
+						number = std::stof(word);
+						word = "";
+
+						if (readingLayout)
+							sizeLayer_.push_back(number);
+						else
+							hostLayer.push_back(number);
+
+						break;
+
+					default: // Any part of a weight.
+
+						word += character;
+
+						break;
 
 				}
 
-				i++;
-
 			}
 
+			// Reshape the last read individual to match the read network's layout if there is more than 1.
+			if (individuals_.size() > 1) {
+			
+				previousInd = &individuals_.back();
+				for (unsigned int i = 0; i < nConnections - 1; i++)
+					previousInd->weights()->operator[](i) = af::moddims(previousInd->weights()->operator[](i), sizeLayer_[i] + 1, sizeLayer_[i + 1]);
+				previousInd->updateNLayers();
+
+			}
+			
+			// Adjust the other data structures that need first the individuals' data to be loaded.
 			nIndividuals_ = individuals_.size();
 
-			nLayers_ = individuals_[0].nLayers(); // All individuals have the same number of layers (at the moment).
-			fitness_ = af::constant(0.0f, nIndividuals_ * 2, f32);
-			selected_ = af::constant(0, nIndividuals_, u32);
+			fitness_ = af::constant(0.0f, nIndividuals_ * 2, af::dtype::f32);
+			selected_ = af::constant(0, nIndividuals_, af::dtype::u32);
 
 			if (popInds_)
 				delete popInds_;
-			popInds_ = new af::array(af::dim4(nIndividuals_));
+			popInds_ = new af::array(nIndividuals_, af::dtype::u32); // Allocate space.
+			*popInds_ = af::seq(nIndividuals_).operator af::array().as(af::dtype::u32); // Assign values by creating an af::seq and then converting it to an af::array.
 
 			if (newbornInds_)
 				delete newbornInds_;
-			newbornInds_ = new af::array(af::dim4(nIndividuals_)) + nIndividuals_;
+			newbornInds_ = new af::array(nIndividuals_, af::dtype::u32);
+			*newbornInds_ = af::seq(nIndividuals_).operator af::array().as(af::dtype::u32) + nIndividuals_;
 
-			for (int i = nIndividuals_; i < nIndividuals_ * 2; i++)
-				individuals_[i].init(sizeLayer, 0.0f, 0.0f);
+			for (unsigned int i = nIndividuals_; i < nIndividuals_ * 2; i++) {
+			
+				individuals_.emplace_back();
+				individuals_[i].initNetwork(sizeLayer_, 0.0f, 0.0f);
 
-			return true;
+			}
+
+			t.finish();
+			VoxelEng::logger::debugLog("Finished loading AI data on " + std::to_string(t.getDurationMs()) + " ms");
+
+			return nIndividuals_;
 
 		}
 		else
-			return false;
-	
+			return 0;
+
 	}
 
-	void genetic::genInitPop(unsigned int nIndividuals, const std::vector<unsigned>& sizeLayer, float rangeMin, float rangeMax) {
+	void genetic::genInitPop(unsigned int nIndividuals, float rangeMin, float rangeMax, bool training) {
 	
-		if (nIndividuals % 2 != 0)
-			VoxelEng::logger::errorLog("The number of individuals must be divisible by 2");
+		if (training && nIndividuals % 2 != 0)
+			VoxelEng::logger::errorLog("The number of individuals must be divisible by 2.");
 
+		unsigned int totalNIndividuals = (aiGame_->recording()) ? nIndividuals : nIndividuals * 2;
 		nIndividuals_ = nIndividuals;
-		nLayers_ = sizeLayer.size();
-		individuals_ = std::vector<AI::GeneticNeuralNetwork>(nIndividuals_ * 2);
-		fitness_ = af::constant(0.0f, nIndividuals_ * 2, f32);
-		selected_ = af::constant(0, nIndividuals_, u32);
+		individuals_ = std::vector<GeneticNeuralNetwork>(totalNIndividuals);
+		fitness_ = af::constant(0.0f, totalNIndividuals, af::dtype::f32);
+		selected_ = af::constant(0, nIndividuals_, af::dtype::u32);
 
 		if (popInds_)
 			delete popInds_;
-		popInds_ = new af::array(af::dim4(nIndividuals_));
+		popInds_ = new af::array(nIndividuals_, af::dtype::u32); // Allocate space.
+		*popInds_ = af::seq(nIndividuals_).operator af::array().as(af::dtype::u32); // Assign values by creating an af::seq and then converting it to an af::array.
 
 		if (newbornInds_)
 			delete newbornInds_;
-		newbornInds_ = new af::array(af::dim4(nIndividuals_)) + nIndividuals_;
+		newbornInds_ = new af::array(nIndividuals_, af::dtype::u32);
+		*newbornInds_ = af::seq(nIndividuals_).operator af::array().as(af::dtype::u32) + nIndividuals_;
 
-		for (int i = 0; i < nIndividuals_ * 2; i++)
-			individuals_[i].init(sizeLayer, rangeMin, rangeMax);
+		for (unsigned int i = 0; i < totalNIndividuals; i++)
+			individuals_[i].initNetwork(sizeLayer_, rangeMin, rangeMax);
 	
+	}
+
+	void genetic::setGame() {
+
+		if (simInProgress_)
+			VoxelEng::logger::errorLog("Cannot set AI game during a simulation.");
+		else
+			aiGame_ = dynamic_cast<miningAIGame*>(VoxelEng::AIAPI::aiGame::selectedGame());
+
+	}
+
+	void genetic::setNetworkTaxonomy(const std::initializer_list<unsigned int>& sizeLayer) {
+
+		if (simInProgress_)
+			VoxelEng::logger::errorLog("Cannot set network taxonomy during a simulation.");
+		else
+			sizeLayer_ = std::vector<unsigned int>(sizeLayer);
+
 	}
 
 	void genetic::setFitnessFunction(float (*fitnessFunction)(unsigned int individualID)) {
 	
 		if (simInProgress_)
-			VoxelEng::logger::errorLog("Cannot change fitness function during a simulation");
+			VoxelEng::logger::errorLog("Cannot change fitness function during a simulation.");
 		else
 			evaluationFunction_ = fitnessFunction;
 	
@@ -386,8 +548,8 @@ namespace AIExample {
 			VoxelEng::logger::errorLog("Cannot change crossover split point during a simulation");
 		else {
 
-			if (point >= nLayers_)
-				VoxelEng::logger::errorLog("The crossover split point was defined in a non-existent layer");
+			if (point >= sizeLayer_.size() - 1)
+				VoxelEng::logger::errorLog("The crossover split point was defined in a non-existent weight connection between layers");
 			else
 				crossoverSplitPoint_ = point;
 
@@ -416,7 +578,7 @@ namespace AIExample {
 
 	}
 
-	void genetic::setNJobs(unsigned int nJobs) {
+	void genetic::setNThreads(unsigned int nJobs) {
 
 		if (simInProgress_)
 			VoxelEng::logger::errorLog("Cannot change the number of parallel threadpool jobs during a simulation");
@@ -425,7 +587,7 @@ namespace AIExample {
 			if (nJobs)
 				nJobs_ = nJobs;
 			else
-				nJobs_ = nThreads_;
+				nJobs_ = std::thread::hardware_concurrency();
 		
 		}
 
@@ -449,48 +611,57 @@ namespace AIExample {
 
 	void genetic::calculateFitness(bool useNewborn) {
 
-		// Manage the jobs to send to the thread pool.
-		if (nJobs_ > jobs_.capacity())
-			jobs_.reserve(nJobs_);
-
 		// Arrayfire's gfor cannot be used since we have a std::vector of neural networks
 		// because each neural network could be different in future implementations
 		// an accessing an element in an af::array to index a std::vector breaks
 		// the gfor GPU paralellism since the std::vector is allocated in CPU's main memory.
 		// Therefore, to optimise the execution of the evaluation function on all the individuals,
 		// CPU-threads will be used.
-		unsigned int* hostIndices = nullptr;
-		if (useNewborn) {
 
-			newbornInds_->host(hostNewbornInds_);
-			hostIndices = hostNewbornInds_;
-			
+		unsigned int* hostIndices = nullptr;
+		if (useNewborn)
+			hostIndices = newbornInds_->host<unsigned int>();
+		else
+			hostIndices = popInds_->host<unsigned int>();
+
+
+		// Manage the threadPool objects and the jobs to send to the it.
+		if (nJobs_ > geneticJobs_.capacity())
+			geneticJobs_.reserve(nJobs_);
+
+		if (!threadPool_)
+			threadPool_ = new VoxelEng::threadPool(nJobs_);
+
+		// Send jobs to thread pool and wait until they are done.
+		hostFitness_ = fitness_.host<float>(); // Do not free this as it is used later by other genetic operators.
+
+		if (nIndividuals_ < nJobs_) {
+		
+			if (geneticJobs_.empty())
+				geneticJobs_.emplace_back(0, nIndividuals_ - 1, hostFitness_, hostIndices, evaluationFunction_); // Avoid unnecesary copy from push_back().
+			else
+				geneticJobs_[0].setAttributes(0, nIndividuals_ - 1, hostFitness_, hostIndices, evaluationFunction_); // Reuse 'geneticJob' objects to avoid dynamic memory overhead.
+			threadPool_->submitJob(&geneticJobs_[0]);
+		
 		}
 		else {
+		
+			std::size_t rangeStart = 0,
+				rangeEnd = 0,
+				nConstructedJobs = geneticJobs_.size();
+			for (std::size_t i = 0; i < nJobs_; i++) {
 
-			popInds_->host(hostPopInds_);
-			hostIndices = hostPopInds_;
+				rangeStart = nIndividuals_ / nJobs_ * i;
+				rangeEnd = (i == nJobs_ - 1) ? nIndividuals_ - 1 : rangeStart + nIndividuals_ / nJobs_ - 1;
 
-		}
+				if (i >= nConstructedJobs)
+					geneticJobs_.emplace_back(rangeStart, rangeEnd, hostFitness_, hostIndices, evaluationFunction_); // Avoid unnecesary copy from push_back().
+				else
+					geneticJobs_[i].setAttributes(rangeStart, rangeEnd, hostFitness_, hostIndices, evaluationFunction_); // Reuse 'geneticJob' objects to avoid dynamic memory overhead.
+				threadPool_->submitJob(&geneticJobs_[i]);
 
-		size_t rangeStart = 0,
-			   rangeEnd = 0,
-			   nConstructedJobs = jobs_.size();
-		fitness_.host(hostFitness_);
-		for (size_t i = 0; i < nJobs_; i++) {
-
-			rangeStart = nIndividuals_ / nJobs_ * i;
-			if (i == nJobs_ - 1)
-				rangeEnd = nIndividuals_ - 1;
-			else
-				rangeEnd = rangeStart + nIndividuals_ / nJobs_ - 1;
-
-			if (i >= nConstructedJobs)
-				jobs_.emplace_back(rangeStart, rangeEnd, hostFitness_, hostIndices, evaluationFunction_); // Avoid unnecesary copy from push_back().
-			else
-				jobs_[i].setAttributes(rangeStart, rangeEnd, hostFitness_, hostIndices, evaluationFunction_); // Reuse 'geneticJob' objects to avoid dynamic memory overhead.
-			threadPool_->submitJob(&jobs_[i]);
-
+			}
+		
 		}
 
 		VoxelEng::logger::debugLog("Waiting for all jobs to end");
@@ -499,18 +670,22 @@ namespace AIExample {
 
 
 		// DEBUG.
-		VoxelEng::logger::debugLog("Update fitness for population:");
-		for (size_t i = 0; i <= nIndividuals_; i++)
-			VoxelEng::logger::debugLog("Individual " + std::to_string(i) + ": " +  std::to_string(*(hostFitness_ + *(hostIndices + i))));
+		VoxelEng::logger::debugLog("Updated fitness for population:");
+		for (std::size_t i = 0; i < nIndividuals_; i++)
+			VoxelEng::logger::debugLog("Individual " + std::to_string(*(hostIndices + i)) + ": " + std::to_string(*(hostFitness_ + *(hostIndices + i))));
 
+		// Send results from CPU to GPU before deleting them in host memory.
+		fitness_.write(hostFitness_, nIndividuals_ * 2 * sizeof(float));
 
-		// Free copied memory from device (GPU) to host (CPU).
-		delete hostIndices;
+		// Free copied memory from device (GPU) to host (CPU) that are no longer needed.
+		af::freeHost(hostIndices);
 		hostIndices = nullptr;
+		af::freeHost(hostFitness_);
+		hostFitness_ = nullptr;
 
 	}
 
-	AI::GeneticNeuralNetwork& genetic::individual(unsigned int individualID) {
+	GeneticNeuralNetwork& genetic::individual(unsigned int individualID) {
 
 		if (individualID < individuals_.size())
 			return individuals_[individualID];
@@ -520,31 +695,49 @@ namespace AIExample {
 	}
 
 	void genetic::selectionOperator(unsigned int implementation) {
-	
-		// Clean up the selected_ array  from an earlier execution of this method
-		// because it stores this method's output instead of creating an af::array
-		// each time it is called.
-		selected_ = af::constant(0, nIndividuals_);
 
 		if (implementation == 0) { // Roulette-wheel.
 		
+			// Clean up the selected_ array.
+			selected_ = af::constant(0, nIndividuals_, af::dtype::u32);
+
 			// Get the sum of all fitness functions.
 			af::array popFitness = fitness_(*popInds_),
 					  fitnessSum = af::sum(popFitness, 0);
 
-			VoxelEng::logger::debugLog("fitnessSum's nElements: " + fitnessSum.elements());
-			VoxelEng::logger::debugLog("Is fitnessSum's scalar: " + fitnessSum.isscalar());
-			VoxelEng::logger::debugLog("fitnessMax's value: " + fitnessSum.scalar<unsigned>());
+			VoxelEng::logger::debugLog("fitnessSum: " + std::to_string(fitnessSum.as(af::dtype::f32).scalar<float>()));
 
 			// Calculate the cumulative sum of probability of being selected for each individual.
-			af::array prob = af::accum(popFitness / fitnessSum);
+			float* prob = af::accum(popFitness / fitnessSum.as(af::dtype::f32).scalar<float>()).host<float>();
 
 			// Select the parents using said random numbers.
-			af::array rand = af::randu(nIndividuals_);
-			selected_(af::where(rand <= prob(0))) = 0;
-			gfor(af::seq i, 1, nIndividuals_-1)
-				selected_(af::where(rand <= prob(i) && rand > prob(i.operator-(1)))) = i;
+			af::array rand = af::randu(nIndividuals_, af::dtype::f32, aiGame_->AIrandEng());
+			selected_(af::where(rand <= prob[0])) = 0;
+			for (std::size_t i = 1; i <= nIndividuals_; i++)
+				selected_(af::where(rand <= prob[i] && rand > prob[i - 1])) = i;
 
+			af::freeHost(prob);
+
+		}
+		else if (implementation == 1) { // Select the fittest individual as the only father (only compatible with crossover operator implemenentation 1).
+		
+			// Get the fittest individual in the population.
+			af::array fitnessIndices,
+					  fitnessValues;
+			af::sort(fitnessValues, fitnessIndices, fitness_(*popInds_), 0, false);
+
+			// DEBUG.
+			unsigned int* host = fitnessIndices.as(af::dtype::u32).host<unsigned int>();
+			float* hostFit = fitnessValues.as(af::dtype::f32).host<float>();
+			for (unsigned int i = 0; i < nIndividuals_ * 2; i++)
+				VoxelEng::logger::debugLog("Possible parent" + std::to_string(host[i]) + " with fitness " + std::to_string(hostFit[i]));
+			af::freeHost(host);
+			af::freeHost(hostFit);
+			VoxelEng::logger::debugLog("First index is " + std::to_string(fitnessIndices.as(af::dtype::u32).scalar<unsigned int>()));
+
+			// Fill the selected_ data.
+			selected_ = af::constant(fitnessIndices.as(af::dtype::u32).scalar<unsigned int>(), 1, af::dtype::u32);
+		
 		}
 		else
 			VoxelEng::logger::errorLog("The specified implementation for the selection operator does not exist");
@@ -555,42 +748,87 @@ namespace AIExample {
 
 		if (implementation == 0) { // 1-point crossover.
 
-			selected_.host(hostSelected_);
-			popInds_->host(hostPopInds_);
-			newbornInds_->host(hostNewbornInds_);
+			if (selected_.elements() % 2 == 0) {
 
-			for(int i = 0; i < nIndividuals_; i+=2)
-			{
+				hostSelected_ = selected_.host<unsigned int>();
+				hostPopInds_ = popInds_->host<unsigned int>();
+				hostNewbornInds_ = newbornInds_->host<unsigned int>();
 
-				std::vector<af::array>& newborn1Weights = individuals_[hostPopInds_[hostSelected_[i]]].weights(),
-										newborn2Weights = individuals_[hostPopInds_[hostSelected_[i+1]]].weights(),
-										parent1Weights = individuals_[hostNewbornInds_[i]].weights(),
-										parent2Weights = individuals_[hostNewbornInds_[i+1]].weights();
-				for (int i = crossoverSplitPoint_; i >= 0; i--) {
+				for (unsigned int i = 0; i < nIndividuals_; i += 2) {
 
-					newborn1Weights[i] = parent2Weights[i];
-					newborn2Weights[i] = parent1Weights[i];
+					std::vector<af::array>* newborn1Weights = individuals_[hostNewbornInds_[i]].weights(),
+						* newborn2Weights = individuals_[hostNewbornInds_[i + 1]].weights(),
+						* parent1Weights = individuals_[hostPopInds_[hostSelected_[i]]].weights(),
+						* parent2Weights = individuals_[hostPopInds_[hostSelected_[i + 1]]].weights();
+
+					for (int j = crossoverSplitPoint_; j >= 0; j--) {
+
+						newborn1Weights->operator[](j) = parent2Weights->operator[](j);
+						newborn2Weights->operator[](j) = parent1Weights->operator[](j);
+
+					}
+
+					for (int j = crossoverSplitPoint_ + 1; j < newborn1Weights->size(); j++) {
+
+						newborn1Weights->operator[](j) = parent1Weights->operator[](j);
+						newborn2Weights->operator[](j) = parent2Weights->operator[](j);
+
+					}
 
 				}
 
-				for (int i = crossoverSplitPoint_ + 1; i < nLayers_; i++) {
+				// Free copied memory from device (GPU) to host (CPU).
+				af::freeHost(hostSelected_);
+				hostSelected_ = nullptr;
+				af::freeHost(hostPopInds_);
+				hostPopInds_ = nullptr;
+				af::freeHost(hostNewbornInds_);
+				hostNewbornInds_ = nullptr;
 
-					newborn1Weights[i] = parent1Weights[i];
-					newborn2Weights[i] = parent2Weights[i];
+			}
+			else
+				VoxelEng::logger::errorLog("Number of parents must be divisible by 2");
 
-				}
+		}
+		else if (implementation == 1) { // All newborn are copies of the fittest individual.
+		
+			// Get newborns' data structures indices and the fittest parent from the population.
+			hostNewbornInds_ = newbornInds_->host<unsigned int>();
+			const GeneticNeuralNetwork& parent = individuals_[0];
+
+
+			// Manage the jobs to send to the thread pool.
+			if (nJobs_ > copyJobs_.capacity())
+				copyJobs_.reserve(nJobs_);
+
+			if (!threadPool_)
+				threadPool_ = new VoxelEng::threadPool(nJobs_);
+
+			// Send jobs to thread pool and wait until they are done.
+			std::size_t rangeStart = 0,
+						rangeEnd = 0,
+						nConstructedJobs = copyJobs_.size();
+			for (std::size_t i = 0; i < nJobs_; i++) {
+
+				rangeStart = nIndividuals_ / nJobs_ * i;
+				rangeEnd = (i == nJobs_ - 1) ? nIndividuals_ - 1 : rangeStart + nIndividuals_ / nJobs_ - 1;
+
+				if (i >= nConstructedJobs)
+					copyJobs_.emplace_back(rangeStart, rangeEnd, &parent, &individuals_, hostNewbornInds_); // Avoid unnecesary copy from push_back().
+				else
+					copyJobs_[i].setAttributes(rangeStart, rangeEnd, &parent, &individuals_, hostNewbornInds_); // Reuse 'geneticJob' objects to avoid dynamic memory overhead.
+				threadPool_->submitJob(&copyJobs_[i]);
 
 			}
 
+			VoxelEng::logger::debugLog("Waiting for all jobs to end");
+			threadPool_->awaitNoJobs();
+			VoxelEng::logger::debugLog("All jobs ended");
 
 			// Free copied memory from device (GPU) to host (CPU).
-			delete hostSelected_;
-			hostSelected_ = nullptr;
-			delete hostPopInds_;
-			hostPopInds_ = nullptr;
-			delete hostNewbornInds_;
+			af::freeHost(hostNewbornInds_);
 			hostNewbornInds_ = nullptr;
-			
+		
 		}
 		else
 			VoxelEng::logger::errorLog("The specified implementation for the crossover operator does not exist");
@@ -601,29 +839,30 @@ namespace AIExample {
 	
 		if (implementation == 0) { // Modify slighly some random newborn's genes.
 
-			newbornInds_->host(hostNewbornInds_);
+			hostNewbornInds_ = newbornInds_->host<unsigned int>();
 
 			unsigned int sizeX = 0,
 						 sizeY = 0;
-			for (int i = 0; i < nIndividuals_; i++) {
+			for (unsigned int i = 0; i < nIndividuals_; i++) {
 			
-				std::vector<af::array>& weights = individuals_[hostNewbornInds_[i]].weights();
+				std::vector<af::array>* weights = individuals_[hostNewbornInds_[i]].weights();
 
-				for (int j = 0; j < weights.size(); j++) {
+				for (int j = 0; j < weights->size(); j++) {
 				
 					// Calculate genes unaffected by mutation.
-					sizeX = weights[j].dims(0);
-					sizeY = weights[j].dims(1);
-					af::array variation = (mutationVariationMax_ - mutationVariationMin_) * af::randu(sizeX, sizeY) + mutationVariationMin_;
+					sizeX = weights->operator[](j).dims(0);
+					sizeY = weights->operator[](j).dims(1);
+					af::array variation = (mutationVariationMax_ - mutationVariationMin_) * af::randu(af::dim4(sizeX, sizeY), af::dtype::f32, aiGame_->AIrandEng()) + mutationVariationMin_;
 
 					// Apply mutation variation.
-					weights[j] += variation * (af::randu(sizeX, sizeY) < mutationRate_);
+					weights->operator[](j) += variation * (af::randu(af::dim4(sizeX, sizeY), af::dtype::f32, aiGame_->AIrandEng()) < mutationRate_);
 				
 				}
 			
 			}
 
-			delete hostNewbornInds_;
+			// Free copied memory from device (GPU) to host (CPU).
+			af::freeHost(hostNewbornInds_);
 			hostNewbornInds_ = nullptr;
 
 		}
@@ -634,8 +873,7 @@ namespace AIExample {
 
 	void genetic::replacementOperator(unsigned int implementation) {
 	
-		if (implementation == 0) // Generational.
-		{
+		if (implementation == 0) { // Generational.
 
 			af::array* aux = popInds_;
 			popInds_ = newbornInds_;
@@ -648,13 +886,26 @@ namespace AIExample {
 			calculateFitness(true);
 			
 			// Get the first 'nIndividuals' individuals among which the actual population and the newborn that have the highest fitness.
-			fitness_.write<float>(hostFitness_, sizeof(float) * nIndividuals_*2); // Pass updated fitness data from the CPU to the GPU.
 			af::array fitnessIndices;
 			af::sort(fitness_, fitnessIndices, fitness_, 0, false);
 
+			// DEBUG.
+			unsigned int* host = fitnessIndices.as(af::dtype::u32).host<unsigned int>();
+			float* hostFit = fitness_.host<float>();
+			for (unsigned int i = 0; i < nIndividuals_ * 2; i++)
+				VoxelEng::logger::debugLog("Possible parent " + std::to_string(host[i]) + " with fitness " + std::to_string(hostFit[i]));
+			af::freeHost(host);
+			
 			// Create the new generation by changing the indices in 'popInds_' and in 'newbornInds_'.
 			*popInds_ = fitnessIndices(af::seq(nIndividuals_));
 			*newbornInds_ = fitnessIndices(af::seq(nIndividuals_, nIndividuals_*2 - 1));
+
+			// DEBUG.
+			host = popInds_->host<unsigned int>();
+			for (unsigned int i = 0; i < nIndividuals_; i++)
+				VoxelEng::logger::debugLog("New parent is " + std::to_string(host[i]) + " with previous fitness " + std::to_string(hostFit[i]));
+			af::freeHost(host);
+			af::freeHost(hostFit);
 		
 		}
 		else
@@ -664,10 +915,14 @@ namespace AIExample {
 
 	genetic::~genetic() {
 	
-		threadPool_->shutdown();
-		threadPool_->awaitTermination();
-		delete threadPool_;
-
+		if (threadPool_) {
+		
+			threadPool_->shutdown();
+			threadPool_->awaitTermination();
+			delete threadPool_;
+			
+		}
+		
 		if (popInds_)
 			delete popInds_;
 

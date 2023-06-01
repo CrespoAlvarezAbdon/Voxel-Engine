@@ -1,9 +1,21 @@
+/**
+* @file texture.h
+* @version 1.0
+* @date 25/04/2023
+* @author Abdon Crespo Alvarez
+* @title Texture.
+* @brief Contains the declaration of the 'texture' class.
+*/
 #ifndef _VOXELENG_TEXTURE_
 #define _VOXELENG_TEXTURE_
 #include <string>
 #include <unordered_map>
 #include <utility>
+#if GRAPHICS_API == OPENGL
+
 #include <GL/glew.h>
+
+#endif
 
 
 namespace VoxelEng {
@@ -12,9 +24,10 @@ namespace VoxelEng {
 	//Classes.//
 	////////////
 
-	/*
-	Represents a texture (a 2D image).
-	It can (and should be) used to create texture atlases.
+	/**
+	* @brief Represents a texture, a 2D image usually applied to vertex data
+	* in order to give their models an alternative to using solid colors
+	* to draw them.
 	*/
 	class texture {
 
@@ -22,63 +35,82 @@ namespace VoxelEng {
 
 		// Constructors.
 
-		/*
-		WARNING. Must be called in a thread with valid OpenGL context.
+		/**
+		* @brief Class constructor.
+		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		texture(const std::string& filepath);
 
 
 		// Observers.
 
+		/**
+		* @brief Returns the texture's width.
+		*/
 		int width() const;
+
+		/**
+		* @brief Returns the texture's width.
+		*/
 		int height() const;
+
+		/**
+		* @brief Returns the texture's ID used by the graphics API to identify it.
+		*/
 		GLuint rendererID() const;
+
+		/**
+		* @brief Returns the currently used block texture atlas.
+		*/
 		static const texture* blockTextureAtlas();
+
+		/**
+		* @brief Returns the currently used block texture atlas' resolution per block.
+		*/
 		static int blockAtlasResolution();
 
-		/*
-		Returns the width and height of the specified texture with the 'textureID'.
+		/**
+		* @brief Returns the width and height of the specified texture with the 'textureID'.
 		*/
 		static const std::pair<int, int>& getTextureWH(unsigned int textureID);
 
 
 		// Modifiers.
 
-		/*
-		Set 'blockTextureAtlas' as the texture atlas for the blocks.
+		/**
+		* @brief Set 'blockTextureAtlas' as the block texture atlas.
 		*/
 		static void setBlockAtlas(const texture& blockTextureAtlas);
 
-		/*
-		Set the block texture atlas' resolution.
-		The resolution will always make block textures be square.
-		That is, if you execute texture::blockAtlasResolution() = 32, now
-		the block textures will have a resolution of 32x32 pixels.
-		WARNING. You must set the resolution at least once before the method
-		chunkManager::manageChunks starts executing in the chunk management thread.
-		NOTE. W.I.P. In the future, a texture pack will include information
-		about the resolution of the textures.
+		/**
+		* @brief Set the block texture atlas' resolution per block.
+		* The resolution will always make block textures be square.
+		* That is, if you execute texture::blockAtlasResolution() = 32, now
+		* the block textures will have a resolution of 32x32 pixels.
+		* WARNING. You must set the resolution at least once before the method
+		* chunkManager::manageChunks starts executing in the chunk management thread.
 		*/
 		static void setBlockAtlasResolution(int resolution);
 
 
-		/*
-		Bind a texture to an OpenGL texture slot (slot 0 by default).
-		WARNING. Must be called in a thread with valid OpenGL context.
+		/**
+		* @brief Bind the texture to an graphics API texture slot (slot 0 by default).
+		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		void bind(unsigned int slot = 0) const;
 
-		/*
-		Unbind a texture.
-		WARNING. Must be called in a thread with valid OpenGL context.
+		/**
+		* @brief Unbind the texture.
+		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		void unbind() const;
 
 
 		// Destructors.
 
-		/*
-		WARNING. Must be called in a thread with valid OpenGL context.
+		/**
+		* @brief Class destructor.
+		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		~texture();
 

@@ -1,20 +1,32 @@
+/**
+* @file AIAPI.h
+* @version 1.0
+* @date 20/04/2023
+* @author Abdon Crespo Alvarez
+* @title AI API.
+* @brief Contains everything related to AI agents and AI games.
+*/
+
 #ifndef _VOXELENG_AIAPI_
 #define _VOXELENG_AIAPI_
-#include <vector>
-#include <deque>
-#include <string>
 #include <atomic>
-#include <unordered_map>
-#include <unordered_set>
-#include <fstream>
-#include <initializer_list>
 #include <cstddef>
 #include <concepts>
 #include <deque>
+#include <initializer_list>
+#include <list>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <fstream>
+#include <filesystem>
+#include "chunk.h"
 #include "definitions.h"
 #include "entity.h"
-#include "chunk.h"
+#include "game.h"
 #include "logger.h"
+#include "time.h"
 #include "worldGen.h"
 
 
@@ -22,10 +34,31 @@ namespace VoxelEng {
 
 	namespace AIAPI {
 
+		/////////////////////////
+		//Forward declarations.//
+		/////////////////////////
+
+		class trainingGame;
+
+
+		/////////////////
+		//Enum classes.//
+		/////////////////
+
+		/**
+		* @brief The available modes of playing an AI game match record.
+		*/
+		enum class recordPlayMode {FORWARD, PAUSE, BACKWARDS};
+
+
 		////////////
 		//Classes.//
 		////////////
 
+		/**
+		* @brief Represents the type of one of the possible arguments that
+		* an AI action can have.
+		*/
 		class agentActionArg {
 
 		public:
@@ -33,7 +66,12 @@ namespace VoxelEng {
 			/*
 			Attributes.
 			*/
-			enum class type { INT, UINT, FLOAT, CHAR, BOOL, BLOCK } tag;
+
+			/**
+			* @brief The supported types that an AI action arguments can belong to.
+			*/
+			enum class type { INT, UINT, FLOAT, CHAR, BOOL, BLOCK, BLOCKVIEWDIR } tag;
+
 			union {
 
 				int i;
@@ -42,6 +80,7 @@ namespace VoxelEng {
 				char c;
 				bool b;
 				block bl;
+				blockViewDir bvd;
 
 			};
 
@@ -52,17 +91,40 @@ namespace VoxelEng {
 
 			// Constructors.
 
+			/**
+			* @brief Class constructor.
+			*/
 			agentActionArg(int value);
 
+			/**
+			* @brief Class constructor.
+			*/
 			agentActionArg(unsigned int value);
 
+			/**
+			* @brief Class constructor.
+			*/
 			agentActionArg(float value);
 
+			/**
+			* @brief Class constructor.
+			*/
 			agentActionArg(char value);
 
+			/**
+			* @brief Class constructor.
+			*/
 			agentActionArg(bool value);
 
+			/**
+			* @brief Class constructor.
+			*/
 			agentActionArg(block value);
+
+			/**
+			* @brief Class constructor.
+			*/
+			agentActionArg(blockViewDir value);
 
 
 		private:
@@ -72,26 +134,39 @@ namespace VoxelEng {
 		};
 
 
+		/**
+		* @brief An AI agent action is what an AI agent can perform when in an AI game match in its level.
+		* It may affect the level, the AI agent itself, other entities or agents or other things
+		* defined in the AI game.
+		*/
 		class AIagentAction {
 
 		public:
 
 			// Constructors.
 
-			/*
-			'recordFunc' should be a pointer to a void function that needs an 'aiGame' object as parameter
-			and that it calls to aiGame::recordAction(actionstring) on said object
+			/**
+			* @brief Provide the created AI action with its function and argument types.
+			* 'action' should be a pointer to a void function that needs an 'aiGame' object as parameter
+			* and that it calls to aiGame::recordAction(actionstring) on said object
 			*/
 			AIagentAction(void(*action)(), std::initializer_list<agentActionArg::type> paramTypes);
 
 
 			// Observers.
 
+			/**
+			* @brief Get the type of one of the AI action's parameters.
+			*/
 			agentActionArg::type paramType(unsigned int index) const;
 
 
-			// Non-modifiers.
+			// Misc.
 
+			/**
+			* @brief Execute the AI action with the parameters that have been read from 
+			* the recording file previously.
+			*/
 			void playRecordedAction();
 
 
@@ -108,10 +183,10 @@ namespace VoxelEng {
 
 		}
 
-		/*
-		WARNING: calling aiGame's constructor or the constructor of any class that derives
-		from aiGame results in undefined behaviour. Use aiGame::registerGame to create
-		a new AI game object from any derived class.
+
+		/**
+		* @brief Manages all the general aspects of AI games and all the aspects of AI games 
+		* that do not require training.
 		*/
 		class aiGame {
 
@@ -119,155 +194,293 @@ namespace VoxelEng {
 
 			// Initialization.
 
+			/**
+			* @brief Initialise the management system.
+			* Allocate any resources that are needed on initialisation.
+			*/
 			static void init();
 
 
 			// Constructors.
 
+			/**
+			* @brief WARNING: calling aiGame's constructor or the constructor of any class that derives
+			* from aiGame results in undefined behaviour. Use aiGame::registerGame to create
+			* a new AI game object from any derived class. This constructor was made public because of
+			* the requirements of some used C++'s STL data structures.
+			*/
 			aiGame();
 
 
 			// Observers: general.
 
+			/**
+			* @brief Returns the currently loaded and selected AI game.
+			*/
 			static aiGame* selectedGame();
 
-			/*
-			Name used to identify AI save data along with the date the save was made.
+			/**
+			* @brief Returns the name of the last specified recording file (even if it is being written at the moment).
+			* Does not include the path or the extension of said file.
+			*/
+			static const std::string& recordFilename();
+
+			/**
+			* @brief Returns true if the engine is currently recording an AI game match and false if otherwise.
+			*/
+			static bool recording();
+
+			/**
+			* @brief Returns true if the engine is currently playing an AI game match record and false if otherwise.
+			*/
+			static bool playingRecord();
+
+			/**
+			* @brief Returns true if the engine is currently playing an AI game match record
+			in forward mode and false if otherwise.
+			*/
+			static bool playingRecordForward();
+
+			/**
+			* @brief Returns true if the AI game match's record playback is paused and false if otherwise.
+			*/
+			static bool recordPaused();
+
+			/**
+			* @brief Name used to identify the AI game uniquely.
 			*/
 			const std::string& name() const;
 
-			/*
-			Note. The methods inside the aiGame class already check this. This method
-			is made public for use outside said class.
+			/**
+			* @brief Returns true if the specified AI agent exists or false otherwise.
 			*/
-			bool isAgentRegistered(unsigned int agentID) const;
+			bool isAgentRegistered(agentID agentID) const;
 
-			bool entityIsAgent(unsigned int entityID) const;
+			/**
+			* @brief Returns true if the specified entity is also an AI agent or false otherwise.
+			*/
+			bool entityIsAgent(entityID entityID) const;
 
-			bool playingRecordForward() const;
+			/**
+			* @brief Get the AI agent's entity ID.
+			*/
+			unsigned int getAgentEntityID(agentID agentID) const;
+
+			/**
+			* @brief Get the entity's AI agent ID (assuming said entity is an AI agent, otherwise
+			* an exception will be thrown).
+			*/
+			unsigned int getEntityAgentID(entityID entityID) const;
 
 
 			// Observers: Agent actions API. 
 
+			/**
+			* @brief Get the value of one of the parameters read from the current
+			* AI action that is going to be played.
+			*/
 			template <typename T>
 			T getParam(unsigned int index) const = delete;
 
+			/**
+			* @brief Get the value of one of the parameters read from the current
+			* AI action that is going to be played.
+			*/
 			template <>
 			int getParam<int>(unsigned int index) const;
 
+			/**
+			* @brief Get the value of one of the parameters read from the current
+			* AI action that is going to be played.
+			*/
 			template <>
 			unsigned int getParam<unsigned int>(unsigned int index) const;
 
+			/**
+			* @brief Get the value of one of the parameters read from the current
+			* AI action that is going to be played.
+			*/
 			template <>
 			float getParam<float>(unsigned int index) const;
 
+			/**
+			* @brief Get the value of one of the parameters read from the current
+			* AI action that is going to be played.
+			*/
 			template <>
 			char getParam<char>(unsigned int index) const;
 
+			/**
+			* @brief Get the value of one of the parameters read from the current
+			* AI action that is going to be played.
+			*/
 			template <>
 			bool getParam<bool>(unsigned int index) const;
 
+			/**
+			* @brief Get the value of one of the parameters read from the current
+			* AI action that is going to be played.
+			*/
 			template <>
 			block getParam<block>(unsigned int index) const;
 
-			/*
-			Returns if the AI agent has made modifications to its copy of the
-			original level that is being used in the AI game.
+			/**
+			* @brief Get the value of one of the parameters read from the current
+			* AI action that is going to be played.
 			*/
-			bool hasModifiedLevel(unsigned int agentID) const;
+			template <>
+			blockViewDir getParam<blockViewDir>(unsigned int index) const;
 
+			/**
+			* @brief Returns true if the AI agent has made modifications to its copy of the
+			* original level that is being used in the AI game or false otherwise.
+			*/
+			bool hasModifiedLevel(agentID agentID) const;
+
+			/**
+			* @brief Returns true if the recording of the AI agents' modifications
+			* of the level's terrain is enabled or false otherwise.
+			*/
 			bool recordAgentModifiedBlocks() const;
 
 
 			// Modifiers: general.
 
-			/*
-			Register an instance of a 'aiGame' object (or an object from a class that derives from 'aiGame')
-			to use it when generating new chunks in levels.
-			'T' is the class that either is 'aiGame' or a class that derives from 'aiGame'.
+			/**
+			* @brief Register an instance of a 'aiGame' object (or an object from a class that derives from 'aiGame')
+			* to use it when generating new chunks in levels.
+			* 'T' is the class that either is 'aiGame' or a class that derives from 'aiGame'.
 			*/
 			template <class T>
 			requires std::derived_from<T, aiGame>
 			static void registerGame(const std::string& gameName);
 
+			/**
+			* @brief Select one registered AI game to load and mark as the
+			* currently selected AI game.
+			*/
 			static void selectGame(const std::string& gameName);
 
-			/*
-			Select the 'index'º registered AI game.
-			'index' begins at 0 and the AI games are sorted
-			in the order they were registered.
+			/**
+			* @brief Select the 'index'º registered AI game.
+			* 'index' begins at 0 and the AI games are sorted
+			* in the order they were registered.
 			*/
 			static void selectGame(unsigned int index);
 
-			/*
-			WARNING. There must be an AI game previously loaded using aiGame::selectGame().
+			/**
+			* @brief Starts the currently loaded and selected AI game.
+			* WARNING. There must be an AI game previously loaded using aiGame::selectGame().
 			*/
 			static void startGame();
 
-			/*
+			/**
+			* @brief Finishes the currently loaded, selected and started AI game.
 			WARNING. There must be an AI game previously loaded using aiGame::selectGame() and
 			it must have been started previosuly using aiGame::startGame().
 			*/
 			static void finishGame();
 
-			/*
-			Display all registered AI games in the terminal window
-		    for selection. Returns the number of registered AI games.
+			/**
+			* @brief Display all registered AI games in the standard output
+		    * for selection. Returns the number of registered AI games.
 			*/
 			static unsigned int listAIGames();
+
+			/*
+			* @brief Change between the different record playing modes.
+			*/
+			static void changeRecordPlayMode(recordPlayMode mode);
+
+			/*
+			* @brief Stops the current record playback.
+			*/
+			static void stopPlayingRecord();
+
+			/*
+			* @brief Generate the level to be used when using AI agents without
+			* the graphical part of the engine.
+			*/
+			void generateAIWorld(const std::string& path = "");
+
+			/**
+			* @brief Get block and set block operations in the chunk manager system will now
+			* be performed on the AI world/level of AI agent with ID 'individualID'.
+			* AI mode must be turned on in the chunk manager system.
+			* WARNING. This method is not thread safe.
+			*/
+			void selectAIworld(unsigned int individualID);
+
+			/**
+			* @brief ONLY get block operations in the chunk manager system will now
+			* be performed on the original copy of the level that is being used for the AI game.
+			* AI mode must be turned on in the chunk manager system.
+			* Set block operations will use the latest AI world selected (the one corresponding to
+			* the AI agent with ID 0 by default).
+			* WARNING. This method is not thread safe.
+			*/
+			void selectOriginalWorld();
 
 
 			// Modifiers: Agent actions' API.
 
+			/**
+			* @brief Register an AI action with its unique name to identify it.
+			*/
 			static void registerAction(const std::string& actionName, const AIagentAction& action);
 
-			/*
-			The included parameters' indices are in range [paramIndBegin, paramIndEnd].
-			WARNING. Make sure that the recording flag is set to true before recording an action.
+			/**
+			* @brief Check if a block coordinate is withing the level's limits.
+			*/
+			static bool isInWorld(const VoxelEng::vec3& pos);
+
+			/**
+			* @brief Check if a block coordinate is withing the level's limits.
+			*/
+			static bool isInWorld(int x, int y, int z);
+
+			/**
+			* @brief Record an AI action performed by an AI agent.
+			* WARNING. The recording flag must be set to true before recording an action.
 			*/
 			void recordAction(const std::string& actionName, std::initializer_list<agentActionArg> args);
 
-			block getLastModifiedBlock(unsigned int agentID, bool popBlock = false);
+			/**
+			* @brief Get the last modified block ID by the specified AI agent. The caller may also
+			* optionally pop that ID out of the ordered list of the modified block IDs by said agent.
+			*/
+			block getLastModifiedBlock(agentID agentID, bool popBlock = false);
+			
+			/**
+			* @brief Get the first modified block ID by the specified AI agent. The caller may also
+			* optionally pop that ID out of the ordered list of the modified block IDs by said agent.
+			*/
+			block getFirstModifiedBlock(agentID agentID, bool popBlock = false);
 
-			block getFirstModifiedBlock(unsigned int agentID, bool popBlock = false);
-
+			/**
+			* @brief Begin the recording of the AI agents' modifications done to the level's terrain.
+			*/
 			void initBlockModRecording();
 
-			/*
-			Also sets the record block modifications flag to false.
+			/**
+			* @brief Stop the recording of the AI agents' modifications done to the level's terrain and
+			* clear the modification lists of all the registered agents.
 			*/
 			void clearBlockModRecording();
 
-			void generateAIWorld(const std::string& path = "");
-
 			/*
-			Get block and set block operations in the chunk manager system will now
-			be performed on the AI world/level of AI agent with ID 'individualID'.
-			AI mode must be turned on in the chunk manager system.
-			WARNING. This method is not thread safe.
-			*/
-			void selectAIworld(unsigned int individualID);
-
-			/*
-			ONLY get block operations in the chunk manager system will now
-			be performed on the original copy of the level that is being used for the AI game.
-			AI mode must be turned on in the chunk manager system.
-			Set block operations will use the latest AI world selected (the one corresponding to
-			the AI agent with ID 0 by default).
-			WARNING. This method is not thread safe.
-			*/
-			void selectOriginalWorld();
-
-			/*
-			This method cannot erase a modified block entry from the agent's record because
+			@brief Same as "aiGame::getLastModifiedBlock" or "aiGame::getFirstModifiedBlock", but
+			with access to any entry from the list by using their numerical indices.
+			This method cannot pop out a modified block entry from the agent's record because
 			it would render said record invalid as it would no longer contain a
 			sequence of instantly followed block modifications.
 			*/
-			block getModifiedBlock(unsigned int entityID, unsigned int blockIndex);
+			block getModifiedBlock(entityID entityID, unsigned int blockIndex);
 
-			static bool isInWorld(const VoxelEng::vec3& pos);
-
-			static bool isInWorld(int x, int y, int z);
+			/**
+			* @brief Get the Block View Direction (BVD) of the specified AI agent.
+			*/
+			blockViewDir getBlockViewDir(agentID agentID);
 
 
 			// Modifiers: AI agent actions.
@@ -286,121 +499,141 @@ namespace VoxelEng {
 			// least the first parameter must be the same when playing said action forward and backwards.
 			// Otherwise the program's execution falls on undefined behaviour.
 
-			unsigned int blockViewDir(unsigned int agentID);
-
-			/*
-			Block ID 0 equals no block or empty/null block.
-			Returns the old ID of the modified block.
-			WARNING. Select the proper level you want to access with aiGame::selectAIWorld() or aiGame::selectOriginalWorld()
-			before calling this method.
+			/**
+			* @brief Performs a modification of a terrain block and associates that modification to
+			* a specified entity.
+			* Block ID 0 equals no block or empty/null block.
+			* Returns the old ID of the modified block.
+			* WARNING. Select the proper level you want to access with "aiGame::selectAIWorld()" or "aiGame::selectOriginalWorld()"
+			* before calling this method.
 			*/
-			block setBlock(unsigned int entityID, const vec3& pos, block blockID, bool record);
+			block setBlock(entityID entityID, const vec3& pos, block blockID, bool record);
 
-			/*
-			Block ID 0 equals no block or empty/null block.
-			Returns the old ID of the modified block.
-			WARNING. Select the proper level you want to access with aiGame::selectAIWorld() or aiGame::selectOriginalWorld()
-			before calling this method.
+			/**
+			* @brief Performs a modification of a terrain block and associates that modification to
+			* a specified entity.
+			* Block ID 0 equals no block or empty/null block.
+			* Returns the old ID of the modified block.
+			* WARNING. Select the proper level you want to access with "aiGame::selectAIWorld()" or "aiGame::selectOriginalWorld()"
+			* before calling this method.
 			*/
-			block setBlock(unsigned int entityID, int x, int y, int z, block blockID, bool record);
+			block setBlock(entityID entityID, int x, int y, int z, block blockID, bool record);
 
-			/*
-			Get all blocks in the world that are in the box defined with the positions pos1 and pos2 taking into
-			account that pos1.x <= pos2.x ^ pos1.y <= pos2.y ^ pos1.z <= pos2.z.
+			/**
+			* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2.
 			*/
 			std::vector<block> getBlocksBox(const vec3& pos1, const vec3& pos2);
 
-			/*
-			Get all blocks in the world that are in the box defined with the positions pos1 and pos2 taking into
-			account that x1 <= x2 ^ y1 <= y2 ^ z1 <= z2.
+			/**
+			* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2.
 			*/
 			std::vector<block> getBlocksBox(int x1, int y1, int z1, int x2, int y2, int z2);
 
-			/*
-			Performs agent.pos() += movement;
+			/**
+			* @brief Performs agent.pos() += movement;
 			*/
-			void moveEntity(unsigned int entityID, const vec3& movement);
+			void moveEntity(entityID entityID, const vec3& movement);
 
-			/*
-			Performs agent.pos() += movement;
+			/**
+			* @brief Performs agent.pos() += vec3(x, y, z);
 			*/
-			void moveEntity(unsigned int entityID, int x, int y, int z);
+			void moveEntity(entityID entityID, int x, int y, int z);
 
-			/*
-			Apply rotation to the AI agent's model so it faces one of the 3 axes in one of both directions.
-			For example, if the rotation vector of an agent is (90, 90, 0) and we apply rotateEntityFixed(agentID, UP),
-			then said rotation vector will be (90, 180, 0) and if we apply rotateEntityFixed(agentID, DOWN)
-			to said result said vector will now be again (90, 90, 0).
+			/**
+			* @brief Performs agent.pos() = pos;
 			*/
-			void rotateAgentViewDir(unsigned int agentID, unsigned int direction);
+			void setEntityPos(unsigned entityID, const vec3& pos);
 
-			/*
-			AI agents cannot be rotated with this method, use aiGame::rotateAgentViewDir() instead.
-			The rotations are performed in the XYZ order.
+			/**
+			* @brief Performs agent.pos() = vec3(x, y, z);
 			*/
-			void rotateEntity(unsigned int entityID, const vec3& rot);
+			void setEntityPos(unsigned entityID, int x, int y, int z);
 
-			/*
-			AI agents cannot be rotated with this method, use aiGame::rotateAgentViewDir() instead.
-			The rotations are performed in the XYZ order.
+			/**
+			* @brief Rotate the AI agent's viewing direction and rotate it's model
+			* to represent graphically where it is now looking at.
+			*/
+			void rotateAgentViewDir(agentID agentID, blockViewDir direction);
+
+			/**
+			* @brief Rotates an entity.
+			* AI agents' view direction cannot be rotated with this method, use "aiGame::rotateAgentViewDir()" instead.
+			*/
+			void rotateEntity(entityID entityID, const vec3& rot);
+
+			/**
+			* @brief Rotates an entity.
+			* AI agents' view direction cannot be rotated with this method, use "aiGame::rotateAgentViewDir()" instead.
 			*/
 			void rotateEntity(unsigned entityID, float rotX, float rotY, float rotZ);
 
-			/*
-			Performs the following rotations.
-			entity.rotateZ(rotZ);
-			entity.rotateY(rotY);
-			entity.rotateX(rotX);
-			That is, the rotations are performed in the ZYX order.
+			/**
+			* @brief Inversely rotates an entity.
+			* AI agents' view direction cannot be rotated with this method, use "aiGame::rotateAgentViewDir()" instead.
 			*/
 			void inverseRotateEntity(unsigned entityID, const vec3& rot);
 
-			/*
-			Performs the following rotations.
-			entity.rotateZ(rotZ);
-			entity.rotateY(rotY);
-			entity.rotateX(rotX);
-			That is, the rotations are performed in the ZYX order.
+			/**
+			* @brief Inversely rotates an entity.
+			* AI agents' view direction cannot be rotated with this method, use "aiGame::rotateAgentViewDir()" instead.
 			*/
 			void inverseRotateEntity(unsigned entityID, float rotX, float rotY, float rotZ);
 
+			/**
+			* @brief Create an entity with its model determined by "entityTypeID".
+			*/
 			unsigned int createEntity(unsigned int entityTypeID, const vec3& pos, const vec3& rot);
 
+			/**
+			* @brief Create an entity with its model determined by "entityTypeID".
+			*/
 			unsigned int createEntity(unsigned int entityTypeID, int posX, int posY, int posZ, float rotX, float rotY, float rotZ);
 
-			unsigned int createAgent(unsigned int entityTypeID, const vec3& pos, unsigned int faceViewDir = PLUSX);
+			/**
+			* @brief Create an AI agent with its model determined by "entityTypeID".
+			* This only creates the representation of said AI agent in the system and in graphical form, without the AI implementation part.
+			*/
+			unsigned int createAgent(unsigned int entityTypeID, const vec3& pos, blockViewDir faceViewDir = blockViewDir::PLUSX);
 
-			unsigned int createAgent(unsigned int entityTypeID, int x, int y, int z, unsigned int faceViewDir = PLUSX);
+			/**
+			* @brief Create an AI agent with its model determined by "entityTypeID".
+			* This only creates the representation of said AI agent in the system and in graphical form, without the AI implementation part.
+			*/
+			unsigned int createAgent(unsigned int entityTypeID, int x, int y, int z, blockViewDir faceViewDir = blockViewDir::PLUSX);
 			
-			vec3 getEntityPos(unsigned int entityID);
-
-			void changeEntityActiveState(unsigned int entityID, bool state);
-
-			/*
-			WARNING. Only use when cleaning when the resources allocated with the AI game are no longer needed.
-			For other cases, use aiGame::changeActiveState().
+			/**
+			* @brief Get the entity's global position in the level.
 			*/
-			void deleteEntity(unsigned int entityID);
+			vec3 getEntityPos(entityID entityID);
 
-			/*
-			WARNING. Only use when cleaning when the resources allocated with the AI game are no longer needed.
-			For other cases, use aiGame::changeActiveState().
+			/**
+			* @brief Change the entity's active state.
 			*/
-			void deleteAgent(unsigned int agentID);
+			void changeEntityActiveState(entityID entityID, bool state);
 
-			/*
-			Returns false if no EOF nor the beginning of the recording file were reached.
-			Returns true otherwise.
+			/**
+			* @brief Delete an entity.
 			*/
-			bool playRecordTick();
+			void deleteEntity(entityID entityID);
+
+			/**
+			* @brief Delete an AI agent.
+			*/
+			void deleteAgent(agentID agentID);
+
+			/**
+			* @brief The implementation of the tick function that executes the next AI action
+			* from the record file each time a determined amount of ticks have passed.
+			*/
+			void playRecordTick();
 
 
 			// Clean up.
 
-			/*
-			Clean heap memory allocated by this system.
-			More precisely, it cleans the heap memory allocated with
-			registered AI games.
+			/**
+			* @brief Clean heap memory allocated by this system.
+			* More precisely, it cleans the heap memory allocated with
+			* registered AI games.
 			*/
 			static void cleanUp();
 
@@ -410,27 +643,30 @@ namespace VoxelEng {
 			Attributes.
 			*/
 
-			static std::atomic<bool> recording_;
+			static std::atomic<bool> recording_,
+									 recordAgentModifiedBlocks_,
+								     gameInProgress_;
 			static std::ofstream saveFile_;
-			static std::string saveDataBuffer_;
+			static std::string saveDataBuffer_, 
+							   saveFileName_;
+			static recordPlayMode recordPlayMode_;
+
+			// Stores a sequence of instantly followed block modifications done to each AI agent's level by the agent itself.
+			static std::vector<std::deque<block>> agentModifiedBlocks_;
+
+			// Stores the entity's ID in order of creation to, for example, properly delete them when playing a record in backwards mode.
+			static std::list<entityID> entityIDcreationOrder_;
+			// Stores the agent's ID in order of creation to, for example, properly delete them when playing a record in backwards mode.
+			static std::list<agentID> agentIDcreationOrder_;
 
 			std::string name_;
 
 			// Set of entities' ID who are also AI agents.	
-			std::unordered_set<unsigned int> activeEntityID_;
+			std::unordered_set<entityID> entityIDIsAgent;
 
-			std::vector<unsigned int> AIagentID_, // Map between AI agent ID and entity ID.
-									  AIagentLookDirection_; // Map between AI agent ID and the direction its looking at.
-			std::unordered_set<unsigned int> freeAIAgentID_;
-
-			VoxelEng::duration durationBetweenActions_; // Duration between playing a record's actions.
-			bool playingRecordForward_,
-				 recordAgentModifiedBlocks_;
-
-			/*
-			Stores a sequence of instantly followed block modifications done to each AI agent's level by the agent itself.
-			*/
-			std::vector<std::deque<block>> agentModifiedBlocks_;
+			std::vector<agentID> AIagentEntityID_; // Map between AI agent ID and entity ID.
+			std::vector<blockViewDir> AIagentLookDirection_; // Map between AI agent ID and the direction its looking at.
+			std::unordered_set<agentID> freeAIagentID_;
 
 
 			/*
@@ -449,11 +685,11 @@ namespace VoxelEng {
 			*/
 			virtual void displayMenu_() = 0;
 
-			virtual void setUpTest_() = 0;
+			virtual void setUpTest_(unsigned int nAgents, unsigned int nEpochs) = 0;
 
 			virtual void test_() = 0;
 
-			virtual void setUpRecord_() = 0;
+			virtual void setUpRecord_(unsigned int nAgents) = 0;
 
 			virtual void record_() = 0;
 
@@ -476,7 +712,7 @@ namespace VoxelEng {
 			been generated and the match has not been played.
 			The extension ".rec" is automatically appended to 'filename'.
 			*/
-			unsigned int generateRecord_(const std::string& path, const std::string& filename);
+			static unsigned int generateRecord_(const std::string& path, const std::string& filename);
 
 			/*
 			Returns 1 if 'path' is invalid.
@@ -485,9 +721,20 @@ namespace VoxelEng {
 			The record must be executed in ticks inside the game's graphical mode.
 			To go forward or backwards in the record, use aiGame::playRecordTick()
 			*/
-			unsigned int playRecord_(const std::string& path);
+			static unsigned int playRecord_(const std::string& path);
 
-			void stopPlayingRecord_();
+
+			// Clean up.
+
+			/*
+			Clean up any resources for the last AI game loaded.
+			*/
+			virtual void cleanUpGame_() = 0;
+
+			/*
+			Clean up any resources for the last AI game match.
+			*/
+			virtual void cleanUpMatch_() = 0;
 
 		private:
 
@@ -495,27 +742,29 @@ namespace VoxelEng {
 			Attributes.
 			*/
 			
-			static bool initialised_;
-			static std::atomic<bool> gameInProgress_,
-									 playingRecord_;
+			static bool initialised_,
+				        canForwardReplay_,
+				        canBackwardReplay_,
+						backwardAIactionFound_;
 			static aiGame* selectedGame_;
 			static std::unordered_map<std::string, aiGame*> aiGames_;
 			static std::vector<aiGame*> gamesRegisterOrder_;
 			static std::vector<AIagentAction> aiRecordActions_;
 			static std::unordered_map<std::string, unsigned int> AIactionsName_;
-			static std::string playbackTerrainFile_;
+			
+			// Specific to recording file parsing.
 			static std::ifstream loadedFile_;
 			static std::string readFileData_,
 							   readWord_;
 			static char readCharacter_;
-			static unsigned int nFileCharsRead_,
-								readActionCode_,
+			static unsigned int readActionCode_,
 							    readParamTypeInd_,
 							    readState_, // 0 = Reading aigame line.
 											// 1 = Reading level line.
 											// 2 = Reading actions.
-								lastParamInd_,
-								recordingPlayerEntity_; // ID of the entity that has the tick function that executes a tick from the record playing process.
+								lastParamInd_, // ID of the entity that has the tick function that executes a tick from the record playing process.
+								lastRawParamInd_;
+			static double oldActualTime_;
 
 			// Here are allocated the parameters available for the agent actions that are going to be executed as part of a record of an AI game.
 			// The parameters are used the following way.
@@ -530,6 +779,8 @@ namespace VoxelEng {
 			// Last, only alphanumeric characters are allowed as char type parameteres.
 			static std::vector<agentActionArg> params_;
 			static std::deque<std::string> rawParams_;
+
+			// Specific to recording file parsing ends.
 
 
 			/*
@@ -564,8 +815,37 @@ namespace VoxelEng {
 		};
 
 		inline aiGame::aiGame()
-			: durationBetweenActions_(0), playingRecordForward_(true), recordAgentModifiedBlocks_(false)
 		{}
+
+		inline const std::string& aiGame::recordFilename() {
+
+			return saveFileName_;
+
+		}
+
+		inline bool aiGame::recording() {
+		
+			return recording_;
+		
+		}
+
+		inline bool aiGame::playingRecord() {
+
+			return game::selectedEngineMode() == engineMode::PLAYINGRECORD;
+
+		}
+
+		inline bool aiGame::playingRecordForward() {
+
+			return recordPlayMode_ == recordPlayMode::FORWARD;
+
+		}
+
+		inline bool aiGame::recordPaused() {
+		
+			return recordPlayMode_ == recordPlayMode::PAUSE;
+		
+		}
 
 		inline const std::string& aiGame::name() const {
 		
@@ -573,16 +853,10 @@ namespace VoxelEng {
 		
 		}
 
-		inline bool aiGame::isAgentRegistered(unsigned int agentID) const {
+		inline bool aiGame::isAgentRegistered(agentID agentID) const {
 
-			return agentID < AIagentID_.size() && freeAIAgentID_.find(agentID) == freeAIAgentID_.cend();
+			return agentID < AIagentEntityID_.size() && freeAIagentID_.find(agentID) == freeAIagentID_.cend();
 
-		}
-
-		inline bool aiGame::playingRecordForward() const {
-		
-			return playingRecordForward_;
-		
 		}
 
 		inline bool aiGame::recordAgentModifiedBlocks() const {
@@ -601,17 +875,47 @@ namespace VoxelEng {
 
 				aiGames_.insert({ gameName, newGame });
 				gamesRegisterOrder_.push_back(newGame);
-			
+
+				// Create the directories for the records and AI data for these games
+				// if not already created.
+				std::string recordsPath = "records/" + gameName,
+					        AIDataPath = "AIData/" + gameName,
+					        terrainPath = "saves/recordingWorlds/" + gameName;
+				if (std::filesystem::exists(recordsPath)) {
+					
+					if (!std::filesystem::is_directory(recordsPath))
+						logger::errorLog(recordsPath + " is occupied by a file. Please move it.");
+
+				}
+				else
+					std::filesystem::create_directory(recordsPath);
+
+				if (std::derived_from<T, trainingGame>) {
+				
+					if (std::filesystem::exists(AIDataPath)) {
+
+						if (!std::filesystem::is_directory(AIDataPath))
+							logger::errorLog(AIDataPath + " is occupied by a file. Please move it.");
+
+					}
+					else
+						std::filesystem::create_directory(AIDataPath);
+				
+				}
+
+				if (std::filesystem::exists(terrainPath)) {
+
+					if (!std::filesystem::is_directory(terrainPath))
+						logger::errorLog(terrainPath + " is occupied by a file. Please move it.");
+
+				}
+				else
+					std::filesystem::create_directory("saves/recordingWorlds/" + gameName);
+
 			}
 			else
 				logger::errorLog("An AI game with the name " + gameName + " is already registered");
 		
-		}
-
-		inline void aiGame::generateAIWorld(const std::string& path) {
-
-			chunkManager::generateAIWorld(path);
-
 		}
 
 		inline void aiGame::selectOriginalWorld() {
@@ -626,9 +930,15 @@ namespace VoxelEng {
 
 		}
 
-		inline block aiGame::setBlock(unsigned int agentID, const vec3& pos, VoxelEng::block blockID, bool record) {
+		inline block aiGame::setBlock(agentID agentID, const vec3& pos, VoxelEng::block blockID, bool record) {
 
 			return setBlock(agentID, pos.x, pos.y, pos.z, blockID, record);
+
+		}
+
+		inline std::vector<block> aiGame::getBlocksBox(int x1, int y1, int z1, int x2, int y2, int z2) {
+
+			return chunkManager::getBlocksBox(x1, y1, z1, x2, y2, z2);
 
 		}
 
@@ -638,13 +948,19 @@ namespace VoxelEng {
 
 		}
 
-		inline void aiGame::moveEntity(unsigned int entityID, const vec3& movement) {
+		inline void aiGame::moveEntity(entityID entityID, const vec3& movement) {
 
 			moveEntity(entityID, movement.x, movement.y, movement.z);
 
 		}
 
-		inline void aiGame::rotateEntity(unsigned int entityID, const vec3& rot) {
+		inline void aiGame::setEntityPos(unsigned entityID, const vec3& pos) {
+
+			setEntityPos(entityID, pos.x, pos.y, pos.z);
+
+		}
+
+		inline void aiGame::rotateEntity(entityID entityID, const vec3& rot) {
 		
 			rotateEntity(entityID, rot.x, rot.y, rot.z);
 		
@@ -662,7 +978,7 @@ namespace VoxelEng {
 
 		}
 
-		inline unsigned int aiGame::createAgent(unsigned int entityTypeID, const vec3& pos, unsigned int faceViewDir) {
+		inline unsigned int aiGame::createAgent(unsigned int entityTypeID, const vec3& pos, blockViewDir faceViewDir) {
 
 			return createAgent(entityTypeID, pos.x, pos.y, pos.z, faceViewDir);
 
@@ -672,12 +988,6 @@ namespace VoxelEng {
 		
 			return actionCode < aiRecordActions_.size();
 		
-		}
-
-		inline void aiGame::stopPlayingRecord_() {
-
-			playingRecord_ = false;
-
 		}
 
 		// 'trainingGame' class.
@@ -692,7 +1002,7 @@ namespace VoxelEng {
 
 			// Modifiers.
 
-			virtual void setUpTraining_() = 0;
+			virtual void setUpTraining_(unsigned int nAgents, unsigned nEpochs) = 0;
 
 			virtual void train_() = 0;
 
@@ -702,7 +1012,10 @@ namespace VoxelEng {
 
 			virtual bool recordLoadedAgents_(const std::string& path) = 0;
 
-			virtual bool loadAgentsData_(const std::string& path) = 0;
+			/*
+			Returns the number of loaded agents or 0 if an error ocurred.
+			*/
+			virtual int loadAgentsData_(const std::string& path) = 0;
 
 			virtual void saveAgentsData_(const std::string& path) = 0;
 

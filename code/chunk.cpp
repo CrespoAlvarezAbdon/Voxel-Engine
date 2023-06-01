@@ -8,12 +8,14 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstddef>
-#include "model.h"
+#include "input.h"
 #include "gui.h"
 #include "logger.h"
 #include "timer.h"
 #include "aiAPI.h"
 #include "game.h"
+#include "entity.h"
+#include "AI/AIGameEx1.h"
 
 
 namespace VoxelEng {
@@ -93,11 +95,11 @@ namespace VoxelEng {
 
     }
 
-    block chunk::getBlock(const vec3& pos) {
+    block chunk::getBlock(const vec3& inChunkPos) {
 
         std::unique_lock<std::shared_mutex> lock(blocksMutex_);
 
-        return blocks_[(unsigned int)pos.x][(unsigned int)pos.y][(unsigned int)pos.z];
+        return blocks_[(unsigned int)inChunkPos.x][(unsigned int)inChunkPos.y][(unsigned int)inChunkPos.z];
 
     }
 
@@ -208,17 +210,17 @@ namespace VoxelEng {
                 neighborChunks[5]->blockDataMutex().lock_shared();
 
 
-            vertex aux;
-
             // Determine model from block's ID.
-            for (byte x = 0; x < SCX; x++)
-                for (byte y = 0; y < SCY; y++)
-                    for (byte z = 0; z < SCZ; z++) {
+            vertex aux;
+            for (unsigned int x = 0; x < SCX; x++)
+                for (unsigned int y = 0; y < SCY; y++)
+                    for (unsigned int z = 0; z < SCZ; z++) {
 
                         // Add block's model to the mesh if necessary.
                         if (blockID = blocks_[x][y][z]) {
 
                             bool DEBUG = blockID >= 7 && blockID <= 10;
+                            //bool DEBUG = false;
 
                             // Front face vertices with culling of non-visible faces. z+
                             if (DEBUG || (z < 15 && !blocks_[x][y][z + 1]) || (z == 15 && neighborChunks[0] && !neighborChunks[0]->blocks_[x][y][0])) {
@@ -410,6 +412,16 @@ namespace VoxelEng {
 
     }
 
+    void chunk::regenChunk(bool empty, const vec3& chunkPos) {
+    
+        makeEmpty();
+        renderingData_.chunkPos = chunkPos;
+        
+        if (!empty)
+            worldGen::generate(*this);
+    
+    }
+
     void chunk::cleanUp() {
     
         blockVertices_ = nullptr;
@@ -453,11 +465,11 @@ namespace VoxelEng {
     const unsigned int chunkManager::parseChunkPosStates_ = 2;
     std::string chunkManager::openedTerrainFileName_ = "";
 
+    std::unordered_map<unsigned int, std::unordered_map<vec3, bool>> chunkManager::AIChunkAvailable_;
     std::unordered_map<unsigned int, std::unordered_map<vec3, chunk*>> chunkManager::AIagentChunks_;
     unsigned int chunkManager::selectedAIWorld_ = 0;
 
-    bool chunkManager::AImodeON_ = false,
-         chunkManager::originalWorldAccess_ = true;
+    bool chunkManager::originalWorldAccess_ = true;
 
 
     void chunkManager::init(unsigned int nChunksToCompute) {
@@ -470,22 +482,25 @@ namespace VoxelEng {
 
             nChunksToCompute_ = nChunksToCompute;
 
-            drawableChunksRead_ = new std::unordered_map<vec3, std::vector<vertex>>;
-            drawableChunksWrite_ = new std::unordered_map<vec3, std::vector<vertex>>;
-
-            parseChunkPosState_ = 0;
-            selectedAIWorld_ = 0;
-
             forceSyncFlag_ = false;
             waitTerrainLoaded_ = true;
 
             openedTerrainFileName_ = "";
 
-            AImodeON_ = false;
             originalWorldAccess_ = true;
 
             initialised_ = true;
-        
+
+            parseChunkPosState_ = 0;
+            selectedAIWorld_ = 0;
+
+            if (!game::AImodeON()) {
+            
+                drawableChunksRead_ = new std::unordered_map<vec3, std::vector<vertex>>;
+                drawableChunksWrite_ = new std::unordered_map<vec3, std::vector<vertex>>;
+            
+            }
+
         } 
 
     }
@@ -504,35 +519,30 @@ namespace VoxelEng {
 
     block chunkManager::getBlock(int posX, int posY, int posZ) {
 
-        vec3 chunkPos = getChunkCoords(posX, posY, posZ);
-        block selectedBlock;
-
-
+        block selectedBlock = 0;
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (AImodeON_) {
-        
-            if (originalWorldAccess_ || AIagentChunks_.find(selectedAIWorld_) == AIagentChunks_.cend() ||
-                AIagentChunks_[selectedAIWorld_].find(chunkPos) == AIagentChunks_[selectedAIWorld_].cend()) { // Search in original's level.
-            
-                if (chunks_.find(chunkPos) == chunks_.end())
-                    logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
+
+        if (game::AImodeON()) {
+
+            if (originalWorldAccess_ || AIagentChunks_.find(selectedAIWorld_) == AIagentChunks_.cend())
+                selectedBlock = getBlockOGWorld_(posX, posY, posZ);
+            else {
+
+                std::unordered_map<vec3, chunk*>& AgentChunk = AIagentChunks_[selectedAIWorld_];
+                vec3 chunkPos = getChunkCoords(posX, posY, posZ);
+
+                if (AgentChunk.find(chunkPos) == AgentChunk.cend() || !AIChunkAvailable_[selectedAIWorld_][chunkPos])
+                    selectedBlock = getBlockOGWorld_(posX, posY, posZ);
                 else
-                    selectedBlock = chunks_[chunkPos]->getBlock(floorMod(posX, SCX), (int)floor(posY) % SCY, floorMod(posZ, SCZ));
-            
+                    selectedBlock = AgentChunk[chunkPos]->getBlock(floorMod(posX, SCX), floorMod(posY, SCY), floorMod(posZ, SCZ));
+
             }
-            else // Search in agent's level.
-                selectedBlock = AIagentChunks_[selectedAIWorld_][chunkPos]->getBlock(floorMod(posX, SCX), (int)floor(posY) % SCY, floorMod(posZ, SCZ));
 
         }
-        else {
-        
-            if (chunks_.find(chunkPos) == chunks_.end())
-                logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
-            else
-                selectedBlock = chunks_[chunkPos]->getBlock(floorMod(posX, SCX), (int)floor(posY) % SCY, floorMod(posZ, SCZ));
-            
-        }
+        else
+            selectedBlock = getBlockOGWorld_(posX, posY, posZ);
+
 
         return selectedBlock;
 
@@ -541,21 +551,19 @@ namespace VoxelEng {
     std::vector<block> chunkManager::getBlocksBox(int x1, int y1, int z1, int x2, int y2, int z2) {
 
         std::vector<block> blocks;
+        int iInc = (x1 <= x2) ? 1 : -1,
+            jInc = (y1 <= y2) ? 1 : -1,
+            kInc = (z1 <= z2) ? 1 : -1;
+        x2 += iInc; // To make the loop stop when (i, j, k), which started at (x1, y1, z1) has iterated
+        y2 += jInc; // through the box leading to (x2, y2, z2) and has also iterated said last point.
+        z2 += kInc;
 
-        if (x1 <= x2 && y1 <= y2 && z1 <= z2) {
 
-            chunk* selectedChunk;
-
-            std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
-            for (int i = x1; i <= x2; i++) // No merece la pena hacer caché porque las posiciones de los bloques pueden estar puestas "a mala leche" y seguir dando un peor caso.
-                for (int j = y1; j <= y2; j++)
-                    for (int k = z1; k <= z2; k++)
-                        blocks.push_back(getBlock((int)floor((double)i / SCX), (int)floor((double)j / SCY), (int)floor((double)k / SCZ)));
-
-        }
-        else
-            logger::errorLog("pos1.x <= pos2.x && pos1.y <= pos2.y && pos1.z <= pos2.z is not satisfied when getting blocks with a selection box");
+        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+        for (int i = x1; i != x2; i += iInc) // No merece la pena hacer caché porque las posiciones de los bloques pueden estar puestas "a mala leche" y seguir dando un peor caso.
+            for (int j = y1; j != y2; j += jInc)
+                for (int k = z1; k != z2; k += kInc)
+                    blocks.push_back((isInWorld(i, j, k)) ? getBlock(i, j, k) : 0);
 
         return blocks;
 
@@ -569,13 +577,35 @@ namespace VoxelEng {
 
     }
 
-    void chunkManager::setAImode(bool ON) {
+    void chunkManager::setAImode(bool on) {
+    
+        if (on) {
+        
+            if (drawableChunksRead_) {
 
-        if (game::loopSelection() == GRAPHICALLEVEL)
-            logger::errorLog("Cannot change chunkManager's AI mode while in a level");
-        else
-            AImodeON_ = ON;
+                delete drawableChunksRead_;
+                drawableChunksRead_ = nullptr;
 
+            }
+
+            if (drawableChunksWrite_) {
+
+                delete drawableChunksWrite_;
+                drawableChunksWrite_ = nullptr;
+
+            }
+        
+        }
+        else {
+        
+            if (!drawableChunksRead_)
+                drawableChunksRead_ = new std::unordered_map<vec3, std::vector<vertex>>;
+
+            if (!drawableChunksWrite_)
+                drawableChunksWrite_ = new std::unordered_map<vec3, std::vector<vertex>>;
+                
+        }
+    
     }
 
     void chunkManager::setNChunksToCompute(unsigned int nChunksToCompute) {
@@ -583,7 +613,7 @@ namespace VoxelEng {
         // That is, if terrain has already been loaded, the number of chunks to compute
         // cannot be changed (for now).
 
-        if (infiniteWorld_ || game::loopSelection() != GRAPHICALLEVEL)
+        if (infiniteWorld_ || game::selectedEngineMode() != VoxelEng::engineMode::EDITLEVEL)
             nChunksToCompute_ = nChunksToCompute;
         else
             logger::errorLog("Cannot change number of chunks to compute in a finite world that has been loaded.");
@@ -597,21 +627,28 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (AImodeON_) {
+        if (game::AImodeON()) {
         
-            if (AIagentChunks_.find(selectedAIWorld_) == AIagentChunks_.cend()) // Insert an empty map and fill it with the 
-                AIagentChunks_[selectedAIWorld_] = std::unordered_map<vec3, chunk*>(); // differences between the original level and the agent copy.
-
+            if (AIagentChunks_.find(selectedAIWorld_) == AIagentChunks_.cend()) {
+            
+                AIagentChunks_[selectedAIWorld_] = std::unordered_map<vec3, chunk*>(); // Store here differences between the original level and the agent's copy.
+                AIChunkAvailable_[selectedAIWorld_] = std::unordered_map<vec3, bool>(); // Store if the agent's copy chunk can be accessed.
+            
+            }
+               
             std::unordered_map<vec3, chunk*>& agentWorld = AIagentChunks_[selectedAIWorld_];
-
             if (agentWorld.find(chunkPos) == agentWorld.cend()) {
             
                 if (chunks_.find(chunkPos) == chunks_.cend())
-                    agentWorld[chunkPos] = new chunk(*chunks_[chunkPos]);  
-                else
-                    logger::errorLog("There is no chunk " + std::to_string(chunkPos.x) + '|' + std::to_string(chunkPos.y) + '|' + std::to_string(chunkPos.z) + 
+                    logger::errorLog("There is no chunk " + std::to_string(chunkPos.x) + '|' + std::to_string(chunkPos.y) + '|' + std::to_string(chunkPos.z) +
                                      "for AI agent " + std::to_string(selectedAIWorld_));
-            
+                else {
+                    
+                    agentWorld[chunkPos] = new chunk(*chunks_[chunkPos]);
+                    AIChunkAvailable_[selectedAIWorld_][chunkPos] = true;
+                
+                }
+                
             }
             
             return agentWorld[chunkPos]->setBlock(getChunkRelCoords(x, y, z), blockID);
@@ -621,9 +658,16 @@ namespace VoxelEng {
         
             if (chunks_.find(chunkPos) == chunks_.cend())
                 logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
-            else
-                return chunks_[chunkPos]->setBlock(getChunkRelCoords(x, y, z), blockID);
-                
+            else {
+            
+                block removedBlock = chunks_[chunkPos]->setBlock(getChunkRelCoords(x, y, z), blockID);
+
+                chunkManager::highPriorityUpdate(chunkPos);
+
+                return removedBlock;
+            
+            }
+                 
         }
 
     }
@@ -643,29 +687,39 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        chunk* selectedChunk = new chunk(false, chunkPos);
-        chunks_.insert_or_assign(chunkPos, selectedChunk);
+        chunk* selectedChunk = nullptr;
+        if (chunks_.find(chunkPos) == chunks_.cend()) {
+
+            selectedChunk = new chunk(empty, chunkPos);
+            chunks_.insert_or_assign(chunkPos, selectedChunk);
+
+        }
+        else {
+        
+            selectedChunk = chunks_[chunkPos];
+            selectedChunk->regenChunk(empty, chunkPos);
+        
+        }
+
         return selectedChunk;
 
     }
 
-    chunk* chunkManager::selectChunk(GLbyte x, GLbyte y, GLbyte z) {
+    chunk* chunkManager::selectChunk(int x, int y, int z) {
 
         vec3 chunkPos(x, y, z);
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
-
+        
         if (chunks_.find(chunkPos) != chunks_.end())
             return chunks_.at(chunkPos);
         else
             return nullptr;
-
+        
     }
 
     chunk* chunkManager::selectChunkByChunkPos(const vec3& chunkPos) {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
 
         if (chunks_.find(chunkPos) != chunks_.end())
             return chunks_.at(chunkPos);
@@ -801,7 +855,6 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(drawableChunksWriteMutex_);
 
-
         drawableChunksWrite_->insert_or_assign(renderingData.chunkPos, renderingData.vertices);
 
     }
@@ -809,7 +862,6 @@ namespace VoxelEng {
     void chunkManager::swapDrawableChunksLists() {
 
         std::unordered_map<vec3, std::vector<vertex>>* aux = drawableChunksRead_;
-
 
         drawableChunksRead_ = drawableChunksWrite_;
         drawableChunksWrite_ = aux;
@@ -832,8 +884,7 @@ namespace VoxelEng {
 
     }
 
-    void chunkManager::loadChunk(const vec3& chunkPos)
-    {
+    void chunkManager::loadChunk(const vec3& chunkPos) {
 
         bool chunkNotLoaded;
 
@@ -846,8 +897,7 @@ namespace VoxelEng {
 
         }
 
-        if (chunkNotLoaded)
-        {
+        if (chunkNotLoaded) {
 
             chunk* chunkPtr = nullptr;
 
@@ -855,15 +905,14 @@ namespace VoxelEng {
 
                 std::unique_lock<std::recursive_mutex> lock(freeChunksMutex_);
 
-                if (freeChunks_.size())
-                {
+                if (freeChunks_.size()) {
 
                     chunkPtr = freeChunks_.front();
                     freeChunks_.pop_front();
 
                 }
                 else
-                    chunkPtr = new chunk(true);
+                    chunkPtr = chunkManager::createChunk(true, vec3Zero);
 
             }
 
@@ -913,7 +962,7 @@ namespace VoxelEng {
             chunk* selectedChunk = nullptr;
 
 
-            while (game::loopSelection() == GRAPHICALLEVEL) {
+            while (game::selectedEngineMode() == VoxelEng::engineMode::EDITLEVEL) {
 
                 // Wait for the chunk management thread's signal.
                 while (!meshingTsCVContinue)
@@ -1022,7 +1071,7 @@ namespace VoxelEng {
 
 
             // Initialize meshing threads.
-            for (int i = 0; i < nMeshingThreads; i++) {
+            for (unsigned int i = 0; i < nMeshingThreads; i++) {
 
                 rangeStart = totalYChunks / nMeshingThreads * i;
                 if (i == nMeshingThreads - 1)
@@ -1038,12 +1087,11 @@ namespace VoxelEng {
             }
 
             // Chunk management main loop.
-            while (game::loopSelection() == GRAPHICALLEVEL) {
+            while (game::selectedEngineMode() == VoxelEng::engineMode::EDITLEVEL) {
 
                 // This will only execute when a high priority chunk update
                 // is not issued.
-                if (!forceSyncFlag_)
-                {
+                if (!forceSyncFlag_) {
 
                     // Marks all chunks as freeable
                     for (std::unordered_map<vec3, chunk*>::const_iterator it = chunks().cbegin(); it != chunks().cend(); it++)
@@ -1152,7 +1200,7 @@ namespace VoxelEng {
             meshingThreadsCV.notify_all();
 
             // Now wait for all meshing threads to end.
-            for (int i = 0; i < nMeshingThreads; i++)
+            for (unsigned int i = 0; i < nMeshingThreads; i++)
                 meshingThreads[i].join();
 
             drawableChunksRead_->clear();
@@ -1164,123 +1212,141 @@ namespace VoxelEng {
 
     void chunkManager::finiteWorldLoading(const std::string& terrainFile) {
 
-        chunk* selectedChunk = nullptr;
-        vec3 chunkPos;
+        try {
+        
+            chunk* selectedChunk = nullptr;
+            vec3 chunkPos;
+
+            {
+
+                std::unique_lock<std::mutex> lock(managerThreadMutex_);
+
+                /*
+                World loading if necessary.
+                */
+                if (terrainFile.empty()) {
+
+                    std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
 
-        {
+                    if (unsigned int slot = game::selectedSaveSlot())
+                        loadAllChunks("saves/slot" + std::to_string(slot) + "/level");
+                    else {
 
-            std::unique_lock<std::mutex> lock(managerThreadMutex_);
+                        timer t;
+                        t.start();
 
-            /*
-            World loading if necessary.
-            */
-            if (terrainFile.empty()) {
-            
-                std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+                        worldGen::prepareGen();
 
+                        for (chunkPos.y = -yChunksRange; chunkPos.y < yChunksRange; chunkPos.y++)
+                            for (chunkPos.x = -nChunksToCompute_; chunkPos.x < nChunksToCompute_; chunkPos.x++)
+                                for (chunkPos.z = -nChunksToCompute_; chunkPos.z < nChunksToCompute_; chunkPos.z++) {
 
-                if (unsigned int slot = game::selectedSaveSlot())
-                    loadAllChunks("saves/slot" + std::to_string(slot) + "/level");
-                else {
+                                    selectedChunk = chunkManager::createChunk(false, chunkPos);
+                                    chunks_.insert_or_assign(chunkPos, selectedChunk);
 
-                    worldGen::prepareGen();
+                                }
 
-                    for (chunkPos.y = -yChunksRange; chunkPos.y < yChunksRange; chunkPos.y++)
-                        for (chunkPos.x = -nChunksToCompute_; chunkPos.x < nChunksToCompute_; chunkPos.x++)
-                            for (chunkPos.z = -nChunksToCompute_; chunkPos.z < nChunksToCompute_; chunkPos.z++) {
+                        t.finish();
 
-                                selectedChunk = new chunk(false, chunkPos);
-                                chunks_.insert_or_assign(chunkPos, selectedChunk);
-
-                            }
-
-                }
-            
-            }
-
-            // Signal that the terrain loaded has finished.
-            waitTerrainLoaded_ = false;
-            loadingTerrainCV_.notify_all();
-
-            // Once chunk data has been loaded, generate the meshes. All chunk data must be loaded first before generating any mesh to
-            // compute block face culling optimizations.
-            for (chunkPos.y = -yChunksRange; chunkPos.y < yChunksRange; chunkPos.y++)
-                for (chunkPos.x = -nChunksToCompute_; chunkPos.x < nChunksToCompute_; chunkPos.x++)
-                    for (chunkPos.z = -nChunksToCompute_; chunkPos.z < nChunksToCompute_; chunkPos.z++) {
-
-                        selectedChunk = selectChunkByChunkPos(chunkPos);
-
-                        selectedChunk->renewMesh();
-                        selectedChunk->changed() = false;
-
-                        if (selectedChunk->renderingData().vertices.size())
-                            pushDrawableChunks(selectedChunk->renderingData());
+                        logger::debugLog("Generation took " + std::to_string(t.getDurationMs()) + " ms");
 
                     }
 
-            // Sync with rendering thread.
-            managerThreadCV_.wait(lock);
+                }
+                else
+                    loadAllChunks(terrainFile);
 
-            // Handle high priority chunk updates (the only type of chunk updates for
-            // this type of world loading).
-            while (game::loopSelection() == GRAPHICALLEVEL) {
+                // Signal that the terrain loaded has finished.
+                waitTerrainLoaded_ = false;
+                loadingTerrainCV_.notify_all();
 
-                forceSyncFlag_ = !priorityMeshingList_.empty();
+                // Once chunk data has been loaded, generate the meshes. All chunk data must be loaded first before generating any mesh to
+                // compute block face culling optimizations.
+                for (chunkPos.y = -yChunksRange; chunkPos.y < yChunksRange; chunkPos.y++)
+                    for (chunkPos.x = -nChunksToCompute_; chunkPos.x < nChunksToCompute_; chunkPos.x++)
+                        for (chunkPos.z = -nChunksToCompute_; chunkPos.z < nChunksToCompute_; chunkPos.z++) {
 
-                if (forceSyncFlag_) {
+                            selectedChunk = selectChunkByChunkPos(chunkPos);
 
-                    vec3 priorityChunkPos;
-                    bool synchronize = false,
-                         isLockActive = false;
-
-
-                    priorityMeshingListMutex_.lock();
-                    isLockActive = true;
-
-                    while (!priorityMeshingList_.empty()) {
-
-                        priorityChunkPos = priorityMeshingList_.front();
-                        priorityMeshingList_.pop_front();
-
-                        priorityMeshingListMutex_.unlock();
-                        isLockActive = false;
-
-                        selectedChunk = selectChunkByChunkPos(priorityChunkPos);
-
-                        if (selectedChunk) {
-
-                            synchronize = true;
-
-                            // Update mesh. 
-                            selectedChunk->changed() = false;
                             selectedChunk->renewMesh();
+                            selectedChunk->changed() = false;
 
-                            pushDrawableChunks(selectedChunk->renderingData());
-                            priorityUpdateList_.push_back(selectedChunk->chunkPos());
+                            if (selectedChunk->renderingData().vertices.size())
+                                pushDrawableChunks(selectedChunk->renderingData());
 
                         }
+
+                // Sync with rendering thread.
+                managerThreadCV_.wait(lock);
+
+                // Handle high priority chunk updates (the only type of chunk updates for
+                // this type of world loading).
+                bool synchronise = false;
+                while (game::threadsExecute[2]) {
+
+                    forceSyncFlag_ = !priorityMeshingList_.empty();
+                    synchronise = false;
+
+                    if (forceSyncFlag_) {
+
+                        vec3 priorityChunkPos;
+                        bool isLockActive = false;
 
                         priorityMeshingListMutex_.lock();
                         isLockActive = true;
 
+                        while (!priorityMeshingList_.empty()) {
+
+                            priorityChunkPos = priorityMeshingList_.front();
+                            priorityMeshingList_.pop_front();
+
+                            priorityMeshingListMutex_.unlock();
+                            isLockActive = false;
+
+                            selectedChunk = selectChunkByChunkPos(priorityChunkPos);
+
+                            if (selectedChunk) {
+
+                                synchronise = true;
+
+                                // Update mesh. 
+                                selectedChunk->changed() = false;
+                                selectedChunk->renewMesh();
+
+                                pushDrawableChunks(selectedChunk->renderingData());
+                                priorityUpdateList_.push_back(selectedChunk->chunkPos());
+
+                            }
+
+                            priorityMeshingListMutex_.lock();
+                            isLockActive = true;
+
+                        }
+
+                        if (isLockActive)
+                            priorityMeshingListMutex_.unlock();
+
+                        // Sync with the rendering thread if necessary.
+                        if (synchronise)
+                            managerThreadCV_.wait(lock);
+
+                        forceSyncFlag_ = false;
+
                     }
-
-                    if (isLockActive)
-                        priorityMeshingListMutex_.unlock();
-
-                    // Sync with the rendering thread if necessary.
-                    if (synchronize)
-                        managerThreadCV_.wait(lock);
-
-                    forceSyncFlag_ = false;
 
                 }
 
-            }
+                drawableChunksRead_->clear();
+                drawableChunksWrite_->clear();
 
-            drawableChunksRead_->clear();
-            drawableChunksWrite_->clear();
+            }
+        
+        }
+        catch (...) {
+        
+            VoxelEng::logger::say("Error was detected during engine execution. Shutting down chunk management thread.");
+            game::setLoopSelection(engineMode::EXIT);
 
         }
 
@@ -1288,21 +1354,23 @@ namespace VoxelEng {
 
     void chunkManager::generateAIWorld(const std::string& path) {
 
-        if (AImodeON_) {
+        if (game::AImodeON()) {
 
             chunk* selectedChunk = nullptr;
             vec3 chunkPos;
 
-
+            timer t;
+            t.start();
             if (path.empty()) {
 
-                std::srand(std::time(nullptr)); // Initalize random generator for creating new level.
+                worldGen::prepareGen();
 
                 for (chunkPos.y = -yChunksRange; chunkPos.y < yChunksRange; chunkPos.y++)
                     for (chunkPos.x = -nChunksToCompute_; chunkPos.x < nChunksToCompute_; chunkPos.x++)
                         for (chunkPos.z = -nChunksToCompute_; chunkPos.z < nChunksToCompute_; chunkPos.z++) {
 
-                            selectedChunk = new chunk(false, chunkPos);
+
+                            selectedChunk = chunkManager::createChunk(false, chunkPos);
                             chunks_.insert_or_assign(chunkPos, selectedChunk);
 
                         }
@@ -1310,6 +1378,9 @@ namespace VoxelEng {
             }
             else
                 loadAllChunks(path);
+
+            t.finish();
+            logger::debugLog("Generated AI world on " + std::to_string(t.getDurationMs()) + "ms");
 
         }
         else
@@ -1319,10 +1390,16 @@ namespace VoxelEng {
 
     void chunkManager::saveAllChunks(const std::string& path) {
 
+        std::unique_lock<std::recursive_mutex> lock(input::inputMutex());
+        input::shouldProcessInputs(false);
+
         // Save chunk data.
         std::ofstream saveFile(path + ".terrain");
-        std::string saveData,
-                    nChunks = std::to_string(chunks_.size());
+        std::string saveData;
+        block blockID = 0,
+              lastBlockID = 0;
+        unsigned int sameBlockCounter = 0;
+        bool readFirstBlock = false;
 
         // We cannot really be sure about the total size of the data to be saved as there can be blocks with IDs with 1, 2 or even more digits.
         // Try to guess the actual size of the data to be stored and reserve more main memory to the std::string buffer as it does not involve too much
@@ -1332,35 +1409,61 @@ namespace VoxelEng {
 
         saveData += std::to_string(nChunksToCompute_) + '|';
 
-        unsigned int nChunksSaved = 0;
+        const vec3& playerPos = (game::AImodeON()) ? worldGen::playerSpawnPos() : game::playerCamera().pos();
+        saveData += std::to_string((int)playerPos.x) + '|' + std::to_string((int)playerPos.y) + '|' + std::to_string((int)playerPos.z) + "|";
+
         for (auto it = chunks_.begin(); it != chunks_.end(); it++) {
 
             if (it->second->getNBlocks()) {
             
-                saveData += std::to_string((int)it->first.x) + '|';
-                saveData += std::to_string((int)it->first.y) + '|';
-                saveData += std::to_string((int)it->first.z) + "|-";
-
+                saveData += std::to_string((int)it->first.x) + '|' + std::to_string((int)it->first.y) + '|' + std::to_string((int)it->first.z) + "|@";
+                
+                readFirstBlock = false;
+                sameBlockCounter = 0;
                 for (int x = 0; x < SCX; x++)
                     for (int y = 0; y < SCY; y++)
-                        for (int z = 0; z < SCZ; z++)
-                            saveData += std::to_string(it->second->getBlock(x, y, z)) + '|';
+                        for (int z = 0; z < SCZ; z++) {
+                        
+                            blockID = it->second->getBlock(x, y, z);
 
-                saveData += '-';
+                            if (!readFirstBlock) {
+                            
+                                sameBlockCounter++;
 
-                nChunksSaved++;
+                                lastBlockID = blockID;
+
+                                readFirstBlock = true;
+                            
+                            }
+                            else if (blockID == lastBlockID) {
+
+                                sameBlockCounter++;
+
+                            }
+                            else {
+
+                                saveData += std::to_string(lastBlockID) + ':' + std::to_string(sameBlockCounter) + '|';
+
+                                lastBlockID = blockID;
+
+                                sameBlockCounter = 1;
+
+                            }
+
+                        }
+
+                saveData += std::to_string(lastBlockID) + ':' + std::to_string(sameBlockCounter) + "|@";
             
             }
 
         }
 
-        t.clean();
+        t.finish();
         logger::debugLog("Time: " + std::to_string(t.getDurationMs()) + " ms");
 
-        t.start();
         saveFile << saveData;
-        t.clean();
-        logger::debugLog("Time: " + std::to_string(t.getDurationMs()) + " ms");
+
+        input::shouldProcessInputs(true);
 
     }
 
@@ -1376,9 +1479,6 @@ namespace VoxelEng {
 
             std::string saveData,
                         word = "";
-            vec3 chunkPos;
-            chunk* selectedChunk = nullptr;
-
 
             // Read from disk into main memory.
             timer t;
@@ -1391,15 +1491,18 @@ namespace VoxelEng {
 
 
             // Parse data in main memory.
-            bool isChunkSelected = false;
-            unsigned int chunkPosCoord = 0, // 0 -> x, 1 -> y, 2 -> z.
+            unsigned int posSelectedCoord = 0, // 0 -> x, 1 -> y, 2 -> z.
                          chunkLinearIndex = 0,
-                         parseState = 0; // 0 = reading nChunksToCompute, 1 = reading a chunk's position and 2 = reading a chunk's block data.
+                         parseState = 0; // 0 = reading nChunksToCompute, 1 = reading player's position, 2 = reading a chunk's position and 
+                                         // 3 = reading a chunk's block ID, 4 = placing blocks in the currently selected chunk.
             int number = 0;
+            block blockID = 0;
+            vec3 pos;
+            chunk* selectedChunk = nullptr;
             for (int i = 0; i < saveData.size(); i++) {
 
-                if (saveData[i] == '-')
-                    parseState = (parseState == 1) ? 2 : 1;
+                if (saveData[i] == '@')
+                    parseState = (parseState == 2) ? 3 : 2;
                 else if (saveData[i] == '|') {
 
                     number = std::stoi(word);
@@ -1407,17 +1510,16 @@ namespace VoxelEng {
 
                     switch (parseState) {
                     
-                        case 0:
+                        case 0: // Set number of chunks to compute and load chunk data structures.
 
                             nChunksToCompute_ = number;
 
-                            // Load chunk structures.
-                            for (chunkPos.y = -yChunksRange; chunkPos.y < yChunksRange; chunkPos.y++)
-                                for (chunkPos.x = -nChunksToCompute_; chunkPos.x < nChunksToCompute_; chunkPos.x++)
-                                    for (chunkPos.z = -nChunksToCompute_; chunkPos.z < nChunksToCompute_; chunkPos.z++) {
+                            for (pos.y = -yChunksRange; pos.y < yChunksRange; pos.y++)
+                                for (pos.x = -nChunksToCompute_; pos.x < nChunksToCompute_; pos.x++)
+                                    for (pos.z = -nChunksToCompute_; pos.z < nChunksToCompute_; pos.z++) {
 
-                                        selectedChunk = new chunk(true, chunkPos);
-                                        chunks_.insert_or_assign(chunkPos, selectedChunk);
+                                        selectedChunk = chunkManager::createChunk(true, pos);
+                                        chunks_.insert_or_assign(pos, selectedChunk);
 
                                     }
 
@@ -1427,43 +1529,107 @@ namespace VoxelEng {
 
                         case 1:
 
-                            chunkLinearIndex = 0;
-                            isChunkSelected = false;
+                            if (posSelectedCoord == 0) {
 
-                            if (chunkPosCoord == 0)
-                                chunkPos.x = number;
-                            else if (chunkPosCoord == 1)
-                                chunkPos.y = number;
-                            else
-                                chunkPos.z = number;
+                                pos.x = number;
 
-                            chunkPosCoord = (chunkPosCoord + 1) % 3; // The next number read (if not the third one read) will be stored
-                                                                     // in the next chunk position coordinate.
+                                posSelectedCoord++;
 
-                            break;
+                            }
+                            else if (posSelectedCoord == 1) {
 
-                        case 2:
+                                pos.y = number;
 
-                            if (!isChunkSelected) {
+                                posSelectedCoord++;
 
-                                selectedChunk = selectChunkByChunkPos(chunkPos);
-                                isChunkSelected = true;
+                            }
+                            else {
+
+                                pos.z = number;
+
+                                player::changePosition(pos);
+
+                                parseState++;
+                                posSelectedCoord = 0;
 
                             }
 
-                            selectedChunk->setBlock(chunkLinearIndex++, number);
+                            break;
 
+                        case 2: // Reading a chunk's position.
+
+                            chunkLinearIndex = 0;
+
+                            if (posSelectedCoord == 0) {
+                            
+                                pos.x = number;
+
+                                posSelectedCoord++;
+                            
+                            }  
+                            else if (posSelectedCoord == 1) {
+                            
+                                pos.y = number;
+
+                                posSelectedCoord++;
+                                
+                            }   
+                            else {
+                            
+                                pos.z = number;
+
+                                selectedChunk = selectChunkByChunkPos(pos);
+
+                                posSelectedCoord = 0;
+                            
+                            }
+                            
+
+                            break;
+
+                        case 4: // Placing blocks in the currently selected chunk.
+
+                            for (int i = 0; i < number; i++)
+                                selectedChunk->setBlock(chunkLinearIndex++, blockID);
+
+                            parseState--;
+
+                            break;
+
+                        default:
+
+                            logger::errorLog("Unsupported load chunk process parse state");
                             break;
                     
                     }
 
+                }
+                else if (saveData[i] == ':') {
+                
+                    number = std::stoi(word);
+                    word = "";
+
+                    if  (parseState == 3) {  // Reading a chunk's block ID.
+
+                        blockID = number;
+
+                        parseState++;
+
+                    }
+                
                 }
                 else
                     word += saveData[i];
 
             }
 
-            t.clean();
+            // Lastly, mark all chunks as decorated as the entire level has been properly loaded.
+            for (pos.y = -yChunksRange; pos.y < yChunksRange; pos.y++)
+                for (pos.x = -nChunksToCompute_; pos.x < nChunksToCompute_; pos.x++)
+                    for (pos.z = -nChunksToCompute_; pos.z < nChunksToCompute_; pos.z++)
+                        selectChunkByChunkPos(pos)->setLoadLevel(VoxelEng::chunkLoadLevel::DECORATED);
+
+            t.finish();
             logger::debugLog("Time: " + std::to_string(t.getDurationMs()) + " ms");
 
 
@@ -1487,7 +1653,7 @@ namespace VoxelEng {
 
     void chunkManager::selectAIworld(unsigned int individualID) {
 
-        if (AImodeON_) {
+        if (game::AImodeON()) {
 
             originalWorldAccess_ = false;
             selectedAIWorld_ = individualID;
@@ -1500,10 +1666,63 @@ namespace VoxelEng {
 
     void chunkManager::selectOriginalWorld() {
 
-        if (AImodeON_)
+        if (game::AImodeON())
             originalWorldAccess_ = true;
         else
             logger::errorLog("AI mode needs to be enabled to select an AI agent world");
+
+    }
+
+    void chunkManager::resetAIChunks() {
+    
+        timer t;
+
+        t.start();
+        for (auto it = AIChunkAvailable_.begin(); it != AIChunkAvailable_.end(); it++)
+            for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++)
+                it2->second = false;
+        t.finish();
+
+        logger::debugLog("AI chunks copy reset done in " + std::to_string(t.getDurationMs()));
+    
+    }
+
+    void chunkManager::openedTerrainFileName(const std::string& newFilename) {
+
+        if (game::selectedEngineMode() != VoxelEng::engineMode::EDITLEVEL)
+            openedTerrainFileName_ = newFilename;
+        else
+            logger::errorLog("Cannot change the opened terrain file name while in a level");
+
+    }
+
+    void chunkManager::clean() {
+
+        for (auto it = chunks_.begin(); it != chunks_.end(); it++)
+            if (it->second)
+                delete it->second;
+        chunks_.clear();
+
+        if (drawableChunksRead_)
+            drawableChunksRead_->clear();
+
+        if (drawableChunksWrite_)
+            drawableChunksWrite_->clear();
+
+        for (auto it = freeChunks_.cbegin(); it != freeChunks_.cend(); it++)
+            if (*it)
+                delete* it;
+        freeChunks_.clear();
+
+        freeableChunks_.clear();
+
+        priorityMeshingList_.clear();
+        priorityUpdateList_.clear();
+
+        for (auto it = AIagentChunks_.cbegin(); it != AIagentChunks_.cend(); it++)
+            for (auto itChunks = it->second.cbegin(); itChunks != it->second.cend(); itChunks++)
+                delete itChunks->second;
+        AIagentChunks_.clear();
 
     }
 
@@ -1545,6 +1764,17 @@ namespace VoxelEng {
 
         initialised_ = false;
 
+    }
+
+    block chunkManager::getBlockOGWorld_(int posX, int posY, int posZ) {
+    
+        vec3 chunkPos = getChunkCoords(posX, posY, posZ);
+
+        if (chunks_.find(chunkPos) == chunks_.end())
+            logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
+        else
+            return chunks_[chunkPos]->getBlock(floorMod(posX, SCX), floorMod(posY, SCY), floorMod(posZ, SCZ));
+    
     }
 
 }

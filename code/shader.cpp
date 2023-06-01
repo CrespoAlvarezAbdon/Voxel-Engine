@@ -1,17 +1,21 @@
 #include <iterator>
 #include <fstream>
 #include <ios>
-#include <GL/glew.h>
-#include "shader.h"
 #include "logger.h"
 
+#if GRAPHICS_API == OPENGL
+
+#include <GL/glew.h>
+
+#endif
+
+#include "shader.h"
 
 namespace VoxelEng {
 
     // 'shader' class.
 
-    unsigned int shader::compileShader(const std::string& shaderSource, unsigned int type)
-    {
+    unsigned int shader::compileShader(const std::string& shaderSource, unsigned int type) {
 
         unsigned int shaderID = glCreateShader(type);
         const char* source = shaderSource.c_str();
@@ -21,8 +25,7 @@ namespace VoxelEng {
 
         int compileResult;
         glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compileResult);
-        if (!compileResult)
-        {
+        if (!compileResult) {
 
             // Errors were detected while compiling the shader.
             int length;
@@ -43,8 +46,7 @@ namespace VoxelEng {
 
     }
 
-    unsigned int shader::createShader(const std::string& vertexShader, const std::string& fragmentShader)
-    {
+    unsigned int shader::createShader(const std::string& vertexShader, const std::string& fragmentShader) {
 
         unsigned int shaderID = glCreateProgram();
 
@@ -71,8 +73,7 @@ namespace VoxelEng {
     }
 
     shader::shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
-	    : rendererID_(0)
-    {
+	    : rendererID_(0) {
 
         // Load the two shaders from the files and compile them later in the Shader::createShader() private method.
         std::ifstream vertex_shader_file(vertexShaderPath);
@@ -94,22 +95,19 @@ namespace VoxelEng {
 
     }
 
-    void shader::bind() const
-    {
+    void shader::bind() const {
 
         glUseProgram(rendererID_);
 
     }
 
-    void shader::unbind() const
-    {
+    void shader::unbind() const {
 
         glUseProgram(0);
 
     }
 
-    GLint shader::getUniformLocation(const std::string& name) const
-    {
+    GLint shader::getUniformLocation(const std::string& name) const {
 
         // We use a cache to prevent getting the location N times because
         // it is a costly operation.
@@ -127,36 +125,31 @@ namespace VoxelEng {
 
     }
 
-    void shader::setUniform1i(const std::string& name, int i1)
-    {
+    void shader::setUniform1i(const std::string& name, int i1) {
 
         glUniform1i(getUniformLocation(name), i1);
 
     }
 
-    void shader::setUniform1iv(const std::string& name, const int* v, int vSize)
-    {
+    void shader::setUniform1iv(const std::string& name, const int* v, int vSize) {
 
         glUniform1iv(getUniformLocation(name), vSize, v);
 
     }
 
-    void shader::setUniformVec4f(const std::string& name, float f1, float f2, float f3, float f4)
-    {
+    void shader::setUniformVec4f(const std::string& name, float f1, float f2, float f3, float f4) {
 
         glUniform4f(getUniformLocation(name), f1, f2, f3, f4);
 
     }
 
-    void shader::setUniformVec3f(const std::string& name, const vec3& vec)
-    {
+    void shader::setUniformVec3f(const std::string& name, const vec3& vec) {
 
         glUniform3f(getUniformLocation(name), vec.x, vec.y, vec.z);
 
     }
 
-    void shader::setUniformMatrix4f(const std::string& name, const glm::mat4& matrix)
-    {
+    void shader::setUniformMatrix4f(const std::string& name, const glm::mat4& matrix) {
 
         /* 
         The third parameter means that it isn't necessary to transpose the matrix since glm
@@ -166,8 +159,7 @@ namespace VoxelEng {
 
     }
 
-    shader::~shader()
-    {
+    shader::~shader() {
 
         glDeleteProgram(rendererID_);
 

@@ -12,11 +12,13 @@ namespace VoxelEng {
 	std::random_device worldGen::RD_;
 	std::mt19937 worldGen::generator_(worldGen::RD_());
 	std::uniform_int_distribution<unsigned int> worldGen::uDistribution_(0, std::numeric_limits<unsigned int>::max());
+	std::uniform_int_distribution<unsigned int>::param_type worldGen::flatWorldBlockDistribution_(1, 3);
 	std::atomic<bool> worldGen::isCreatingAllowed_ = false; // To restrict constructor's use.
 	bool worldGen::initialised_ = false;
 	std::unordered_map<std::string, worldGen*> worldGen::generators_;
 	worldGen* worldGen::defaultGen_ = nullptr;
 	worldGen* worldGen::selectedGen_ = nullptr;
+
 	
 
 	void worldGen::init() {
@@ -55,20 +57,18 @@ namespace VoxelEng {
 
 	void worldGen::setSeed() {
 	
-		if (game::loopSelection() == GRAPHICALLEVEL)
-			logger::errorLog("Cannot change the seed use by world generators inside a level");
-		else
-			seed_ = uDistribution_(generator_);
+		seed_ = uDistribution_(generator_);
+		generator_.seed(seed_);
 			
+		logger::debugLog("World generator seed: " + std::to_string(seed_));
+
 	}
 
 	void worldGen::setSeed(unsigned int seed) {
 	
-		if (game::loopSelection() == GRAPHICALLEVEL)
-			logger::errorLog("Cannot change the seed use by world generators inside a level");
-		else
-			seed_ = seed;
-	
+		seed_ = seed;
+		generator_.seed(seed_);
+			
 	}
 
 	void worldGen::unregisterGen(const std::string& genName) {
@@ -97,8 +97,9 @@ namespace VoxelEng {
 
 	void worldGen::cleanUp() {
 
-		for (auto it = generators_.begin(); it != generators_.end(); it++)
+		for (auto it = generators_.begin(); it != generators_.cend(); it++)
 			delete it->second;
+		generators_.clear();
 
 		defaultGen_ = nullptr;
 		selectedGen_ = nullptr;
@@ -116,6 +117,8 @@ namespace VoxelEng {
 		playerSpawnPos_.y = 150;
 		playerSpawnPos_.z = 0;
 
+		setSeed();
+
 	}
 
 	void defaultWorldGen::generate_(chunk& chunk) {
@@ -125,7 +128,9 @@ namespace VoxelEng {
 		for (GLbyte x = 0; x < SCX; x++)
 			for (GLbyte y = 0; y < SCY; y++)
 				for (GLbyte z = 0; z < SCZ; z++)
-					chunk.setBlock(x, y, z, (chunkPos.y <= 8) * (std::rand() % 3 + 1));
+					chunk.setBlock(x, y, z, (chunkPos.y <= 8) * (uDistribution_(generator_, flatWorldBlockDistribution_)));
+
+		chunk.setLoadLevel(VoxelEng::chunkLoadLevel::DECORATED);
 
 	}
 

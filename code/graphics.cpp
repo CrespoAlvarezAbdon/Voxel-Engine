@@ -1,6 +1,12 @@
 #include "graphics.h"
+
+#if GRAPHICS_API == OPENGL
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+#endif
+
 #include "logger.h"
 #include "definitions.h"
 
@@ -13,13 +19,12 @@ namespace VoxelEng {
 	
 		if (r < 0.0f || g < 0.0f || b < 0.0f || a < 0.0f)
 			logger::errorLog("Atleast one of the channels defined in a 'VoxelEng::color' object is negative");
-		else
-		{
+		else {
 
-			red = r;
-			green = g;
-			blue = b;
-			alpha = a;
+			red_ = r;
+			green_ = g;
+			blue_ = b;
+			alpha_ = a;
 
 		}
 	
@@ -58,7 +63,7 @@ namespace VoxelEng {
 
 				}
 
-
+				mainWindow_ = &mainWindow;
 				glfwMakeContextCurrent(mainWindow.windowAPIpointer());
 
 				// With the previously created context, now we can initialize the GLEW library.
@@ -82,9 +87,23 @@ namespace VoxelEng {
 
 	}
 
-	void graphics::setVSync(bool isEnabled) {
+	void graphics::GLCheckErrors(std::ostream& os, const char* file, const char* function, unsigned int line) {
 
-		glfwSwapInterval(isEnabled);
+		bool errorsDetected = false;
+
+		os << "[OpenGL error checking]" << std::endl;
+		while (GLenum error = glGetError()) {
+
+			errorsDetected = true;
+
+			os << "Error: " << error << std::endl
+				<< "at function " << function << ", instruction before line " << line << std::endl
+				<< "in file " << file << std::endl << std::endl;
+
+		}
+
+		if (errorsDetected)
+			abort();
 
 	}
 
@@ -108,8 +127,7 @@ namespace VoxelEng {
 
 	void graphics::setTransparency(bool isEnabled) {
 	
-		if (isEnabled)
-		{
+		if (isEnabled) {
 		
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
