@@ -29,6 +29,11 @@
  future programmers that are new either to graphics programming or the field
  of artificial intelligence.
 
+## Other links.
+
+Engine's Youtube Channel where I will upload any important changes.
+https://www.youtube.com/@DeepDiveOpenEngine
+
 ## Installation guide.
 A .pdf file with the installation guide is added to the repository and to every release.
 
@@ -38,7 +43,7 @@ A .pdf file with the installation guide is added to the repository and to every 
 First of all, in order to start the engine, if the user wishes to launch it with
 its Visual Studio project opened, it can be done by pressing the F5 key. That
 will compile the project and launch it with the possibility of adding breakpoints
-and other debug utilities offered by the IDE.
+and other debug utilities offered by the IDE.<br />
 On the other hand, if the user desires to execute the engine without using
 Visual Studio, then the user must navigate (assuming that the address starts
 from the project’s root directory) to /x64 (or the type of system that the project
@@ -46,11 +51,11 @@ was compiled for by the user) and then, in the “Debug” directory, make sure 
 the directories “AIData”, “records”, Resources” and “saves” are all updated (as,
 for example, if the shader programs are missing, the engine will produce an error
 when attempting to load them). Finally, in order to start the engine, execute the
-“Deep dive open.exe” executable file.
+“Deep dive open.exe” executable file.<br />
 Once the engine starts, by default, a command console will open featuring a
 menu with three possible options. Enter 1 to start the example AI game and
 access its main menu, 2 to enter the level editor mode and 3 to stop the engine’s
-execution.
+execution.<br />
 If the user chooses to enter the example AI game, another menu will be printed
 to the console with 8 options, being the 8th one to exit the example AI game and
 return to the previously mentioned menu. The first two options are for,
@@ -58,7 +63,7 @@ respectively, initiating agent training simulations with the first one generatin
 AI agents with random weights (according to the parameters given to the AI game
 in the code) and the other one loading some AI agents from an correct “.aidata”
 file. Tampering with “.aidata” files is not supported and could lead to undefined
-behaviour.
+behaviour.<br />
 The next two options are the same as the first two ones except they are for
 initiating testing simulations in which the AI agents are not trained and the only
 output is some statistics of how well they performed when completing their tasks
@@ -68,7 +73,7 @@ due to the genetic operators used during the simulation. When loading
 previously generated AI data, the engine will ask instead the path to its
 corresponding file and how many agents to load from the file (if the user declares
 to load “n” agents, the engine will load the first “n” agents found in the “.aidata”
-file).
+file).<br />
 Once the number of AI agents is specified (and they are loaded into the engine
 by using previously generated AI data), for training and testing modes, the engine
 will ask for a number of epochs for the simulation. An epoch is one iteration of
@@ -78,12 +83,12 @@ The 5th and 6th options are for generating a record of one epoch with,
 respectively, AI agents with randomly generated weights or with agents that are
 loaded from a “.aidata” file. When selecting one of these options, the engine will
 first ask for the name of the “.rec” file that will be generated containing the record
-of the match.
+of the match.<br />
 The “.aidata” and “.rec” files are stored, respectively, in the “AIData” and
 “records” directories, found in the same directory where “Deep dive open.exe” is
 found. Inside those directories, a folder is created for each registered AI game in
 order not to mix files from diferent AI games as the definitions of AI data and AI
-actions may vary per AI games.
+actions may vary per AI games.<br />
 If the record’s name corresponds to one already existing in the AI game’s
 record file, then the engine will ask if the user desires to override the existing file
 or not. If not, then it will ask for another name.
@@ -91,4 +96,4 @@ The 7th option is for playing a previously generated record. The engine will
 ask the user the name of said record and, if found, it will start the engine’s
 graphical mode, load the level that is associated with said recording (inside the
 /saves/recordingsWorlds directory found in the same folder as where the “Deep
-dive open.exe” file is located).
+dive open.exe” file is located).<br />
