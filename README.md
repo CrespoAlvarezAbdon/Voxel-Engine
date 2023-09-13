@@ -1,7 +1,7 @@
 # Deep Dive Open Engine.
 
 ## Introduction.
- Custom 3D grahpics engine written in C++ and OpenGL with the capability of letting
+ Custom 3D graphics engine written in C++ and OpenGL with the capability of letting
  the user define a custom game where the players are agents controlled by AI.
  Licensed under GNU General Public License Version 3.
  More details on LICENSE.txt file.
