@@ -1,4 +1,4 @@
-# Voxel Engine
+# Deep Dive Open Engine.
 
 ## Introduction.
  Custom 3D grahpics engine written in C++ and OpenGL with the capability of letting
