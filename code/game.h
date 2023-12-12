@@ -9,6 +9,7 @@
 
 #ifndef _VOXELENG_GAME_
 #define _VOXELENG_GAME_
+
 #include <atomic>
 #include <condition_variable>
 #include <thread>
@@ -20,9 +21,10 @@
 #include "vertexBuffer.h"
 #include "vertexArray.h"
 #include "vertexBufferLayout.h"
-#include "renderer.h"
 #include "logger.h"
+#include "shader.h"
 #include "world.h"
+#include "vec.h"
 
 
 namespace VoxelEng {
@@ -118,7 +120,6 @@ namespace VoxelEng {
         * without the need for the graphical capabilities of the engine to save resources) or not.
         */
         static bool AImodeON();
-
 
 		// Modifiers.
 
@@ -225,6 +226,7 @@ namespace VoxelEng {
 		static window* mainWindow_;
 
         static std::thread* chunkManagementThread_,
+                          * priorityChunkUpdatesThread_,
                           * playerInputThread_,
                           * tickManagementThread_;
 
@@ -244,13 +246,12 @@ namespace VoxelEng {
         static camera* playerCamera_;
 
         static texture* blockTextureAtlas_;
-        static std::unordered_map<vec3, std::vector<vertex>> const* chunksToDraw_;
+        static std::unordered_map<vec3, model> const* chunksToDraw_;
         static const std::vector<model>* batchesToDraw_;
         static shader* defaultShader_;
-        static vertexBuffer* vbo_;
-        static vertexArray* va_;
-        static vertexBufferLayout* layout_;
-        static renderer* renderer_;
+        static vertexBuffer* chunksVbo_,
+                           * entitiesVbo_;
+        static vertexArray * vao_;
 
         #if GRAPHICS_API == OPENGL
 

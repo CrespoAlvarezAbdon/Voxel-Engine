@@ -36,6 +36,13 @@
     <ClCompile Include="code\noise.cpp" />
     <ClCompile Include="code\time.cpp" />
     <ClCompile Include="code\threadPool.cpp" />
+    <ClCompile Include="code\block.cpp" />
+    <ClCompile Include="code\vec.cpp" />
+    <ClCompile Include="code\recyclingPool.cpp" />
+    <ClCompile Include="code\atomicRecyclingPool.cpp" />
+    <ClCompile Include="code\event.cpp" />
+    <ClCompile Include="code\listener.cpp" />
+    <ClCompile Include="code\quaternion.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="code\camera.h" />
@@ -74,5 +81,12 @@
     <ClInclude Include="code\noise.h" />
     <ClInclude Include="code\time.h" />
     <ClInclude Include="code\threadPool.h" />
+    <ClInclude Include="code\block.h" />
+    <ClInclude Include="code\vec.h" />
+    <ClInclude Include="code\recyclingPool.h" />
+    <ClInclude Include="code\atomicRecyclingPool.h" />
+    <ClInclude Include="code\event.h" />
+    <ClInclude Include="code\listener.h" />
+    <ClInclude Include="code\quaternion.h" />
   </ItemGroup>
 </Project>

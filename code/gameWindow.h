@@ -9,7 +9,9 @@
 */
 #ifndef _VOXELENG_GAMEWINDOW_
 #define _VOXELENG_GAMEWINDOW_
+
 #include <string>
+#include "definitions.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -17,9 +19,6 @@
 #include <GLFW/glfw3.h>
 
 #endif
-
-#include "definitions.h"
-#include "camera.h"
 
 
 namespace VoxelEng {

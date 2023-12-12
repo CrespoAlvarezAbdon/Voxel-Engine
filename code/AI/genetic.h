@@ -10,6 +10,7 @@
 */
 #ifndef _AIEXAMPLE_GENETIC_
 #define _AIEXAMPLE_GENETIC_
+
 #include <vector>
 #include <string>
 #include <cstddef>

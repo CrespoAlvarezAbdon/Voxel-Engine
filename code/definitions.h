@@ -9,13 +9,18 @@
 */
 #ifndef _VOXELENG_DEFINITIONS_
 #define _VOXELENG_DEFINITIONS_
+
 #include <chrono>
+#include <string>
+
+// Definitions.
+#define GRAPHICS_API OPENGL
 
 #if GRAPHICS_API == OPENGL
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <glm.hpp>
+	#include <GL/glew.h>
+	#include <GLFW/glfw3.h>
+	#include <glm.hpp>
 
 #endif
 
@@ -46,6 +51,7 @@ namespace VoxelEng {
 	* @brief The graphics API currently used by the engine during it's execution.
 	*/
 	const graphicsAPI graphicsAPIUsed = graphicsAPI::OPENGL;
+	
 
 	/**
 	* @brief Minimal block texture size in pixels.
@@ -68,9 +74,29 @@ namespace VoxelEng {
 	const int SCZ = 16;
 
 	/**
+	* @brief The total number of blocks per chunk.
+	*/
+	const int nBlocksChunk = SCX * SCY * SCZ;
+
+	/**
+	* @brief The total number of blocks per chunk edge.
+	*/
+	const int nBlocksChunkEdge = SCX * SCY;
+
+	/**
+	* @brief Number of chunks to compute in the Y axis (only in the +Y direction or the -Y direction).
+	*/
+	const int yChunksRange = 12;
+
+	/**
+	* @brief Total number of chunks to compute in the Y axis (both in the +Y direction and the -Y direction).
+	*/
+	const int totalYChunks = yChunksRange * 2;
+
+	/**
 	* @brief Default width for a game window.
 	*/
-	const unsigned int DEF_WIDTH = 800; // 
+	const unsigned int DEF_WIDTH = 800;
 
 	/**
 	* @brief Default height for a game window.
@@ -78,14 +104,24 @@ namespace VoxelEng {
 	const unsigned int DEF_HEIGHT = 600;
 
 	/**
-	* @brief Default total number of chunks to compute in the X and Z axes.
+	* @brief Default maximum distance in chunk coordinates for chunks to be computed in the X and Z axes.
 	*/
-	const unsigned int DEF_N_CHUNKS_TO_COMPUTE = 10;
+	const unsigned int DEF_N_CHUNKS_TO_COMPUTE = 20;
+
+	/**
+	* @brief Total number of blocks to compute taking into account the total amount of chunks to compute and the size of a chunk in blocks.
+	*/
+	const unsigned int totalNBlocksToCompute = DEF_N_CHUNKS_TO_COMPUTE*2 * DEF_N_CHUNKS_TO_COMPUTE*2 * totalYChunks * SCX*SCY*SCZ;
 
 	/**
 	* @brief Number of GUIelement layers in which to organize the graphical user interface.
 	*/
 	const unsigned int N_GUI_LAYERS = 3;
+
+	/**
+	* @brief Maximum number of chunk generation/meshing simultaneous jobs being executed.
+	*/
+	const unsigned int MAX_N_CHUNK_SIMULT_TASKS = 8;
 
 
 	/////////////////////
@@ -94,21 +130,12 @@ namespace VoxelEng {
 
 	typedef void(*tickFunc)();
 
-	#if GRAPHICS_API == OPENGL
-	
-		typedef glm::vec3 vec3;
-		typedef glm::vec2 vec2;
-
-	#else
-
-	
-
-	#endif
-
 	typedef unsigned int agentID;
 	typedef unsigned int entityID;
 
-	typedef unsigned short block; // Block's ID.
+	typedef const char* namespacedID_C; // In case the std::string version is not supported in the code.
+	typedef std::string namespacedID;
+	typedef unsigned short numericShortID; // Block's ID.
 
 	typedef unsigned char byte; // Number with values between 0 and 255.
 
@@ -124,57 +151,10 @@ namespace VoxelEng {
 
 		typedef GLFWwindow GraphicsAPIWindow;
 
-	#else
-
-	
 	#endif
 
 	typedef std::chrono::time_point<std::chrono::high_resolution_clock> timePoint;
 	typedef long long duration;
-
-
-	//////////////
-	//Constants.//
-	//////////////
-
-	/**
-	* @brief Number of chunks to compute in the Y axis (only in the +Y direction or the -Y direction).
-	*/
-	const int yChunksRange = 12;
-
-	/**
-	* @brief Total number of chunks to compute in the Y axis (both in the +Y direction and the -Y direction).
-	*/
-	const int totalYChunks = yChunksRange * 2;
-
-	/**
-	* @brief vec3 constant of the zero vector.
-	*/
-	const vec3 vec3Zero(0, 0, 0);
-	/**
-	* @brief vec3 constant poiting to the fixed up direction.
-	*/
-	const vec3 vec3FixedUp(0, 1, 0);
-	/**
-	* @brief vec3 constant poiting to the fixed down direction.
-	*/
-	const vec3 vec3FixedDown(0, -1, 0);
-	/**
-	* @brief vec3 constant poiting to the fixed north direction.
-	*/
-	const vec3 vec3FixedNorth(1, 0, 0);
-	/**
-	* @brief vec3 constant poiting to the fixed south direction.
-	*/
-	const vec3 vec3FixedSouth(-1, 0, 0);
-	/**
-	* @brief vec3 constant poiting to the fixed east direction.
-	*/
-	const vec3 vec3FixedEast(0, 0, 1);
-	/**
-	* @brief vec3 constant poiting to the fixed west direction.
-	*/
-	const vec3 vec3FixedWest(0, 0, -1);
 
 }
 

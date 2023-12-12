@@ -9,8 +9,10 @@
 */
 #ifndef _VOXELENG_VERTEXBUFFERLAYOUT_
 #define _VOXELENG_VERTEXBUFFERLAYOUT_
+
 #include <vector>
 #include "definitions.h"
+
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
@@ -122,9 +124,6 @@ namespace VoxelEng {
 		*/
 		template <>
 		void push<normalVec>(unsigned int count);
-
-
-		// Destructors.
 
 	private:
 

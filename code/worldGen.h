@@ -238,7 +238,11 @@ namespace VoxelEng {
 	requires std::derived_from<T, worldGen>
 	inline void worldGen::registerGen(const std::string& genName) {
 
-		generators_.insert({ genName, new T() });
+		generators_.insert({ genName, new T(
+			block::getBlockC("starminer::coalOre"), block::getBlockC("starminer::ironOre"), 
+			block::getBlockC("starminer::goldOre") , block::getBlockC("starminer::diamondOre"),
+			block::getBlockC("starminer::grass"), block::getBlockC("starminer::dirt"),
+			block::getBlockC("starminer::stone"), block::emptyBlock()) });
 
 	}
 
@@ -269,7 +273,7 @@ namespace VoxelEng {
 
 		// Constructors.
 
-		defaultWorldGen();
+		defaultWorldGen(const block& b1, const block& b2, const block& b3);
 
 
 	protected:
@@ -282,10 +286,15 @@ namespace VoxelEng {
 
 	private:
 
+		const block& b1_;
+		const block& b2_;
+		const block& b3_;
 
 	};
 
-	inline defaultWorldGen::defaultWorldGen() {}
+	inline defaultWorldGen::defaultWorldGen(const block& b1, const block& b2, const block& b3)
+	: b1_(b1), b2_(b2), b3_(b3)
+	{}
 
 }
 

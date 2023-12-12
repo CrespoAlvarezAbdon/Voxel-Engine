@@ -6,8 +6,9 @@
 * @title Thread pool.
 * @brief Contains the declaration of the 'threadPool' class.
 */
-#ifndef _THREADPOOL_
-#define _THREADPOOL_
+#ifndef _VOXELENG_THREADPOOL_
+#define _VOXELENG_THREADPOOL_
+
 #include <atomic>
 #include <condition_variable>
 #include <deque>
@@ -15,6 +16,7 @@
 #include <vector>
 #include <functional>
 #include <mutex>
+
 #if GRAPHICS_API == OPENGL
 
 #include <glm.hpp>
@@ -61,6 +63,19 @@ namespace VoxelEng {
 		threadPool(unsigned int nThreads);
 
 
+		// Observers.
+
+		/**
+		* @brief Returns the current number of jobs in the pool.
+		*/
+		unsigned int size();
+
+		/**
+		* @brief Returns true if the thread pool is terminated or false otherwise.
+		*/
+		bool terminated() const;
+
+
 		// Modifiers.
 
 		/**
@@ -72,7 +87,7 @@ namespace VoxelEng {
 		void waitForTask();
 
 		/**
-		* @brief Submit a job to complete to the thread pool.
+		* @brief Submit a previously existing job to complete to the thread pool.
 		* WARNING. Be sure to properly manage the heap memory assigned to the 'job' objects.
 		*/
 		void submitJob(job* job);
@@ -94,11 +109,6 @@ namespace VoxelEng {
 		* are freed when it is terminated.
 		*/
 		void awaitTermination();
-
-		/**
-		* Returns true if the thread pool is terminated or false otherwise.
-		*/
-		bool terminated() const;
 
 
 		// Destructors.

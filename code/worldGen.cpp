@@ -31,7 +31,7 @@ namespace VoxelEng {
 
 			generators_ = {
 
-				{"default", new defaultWorldGen()}
+				{"default", new defaultWorldGen(block::getBlockC("starminer::grass"), block::getBlockC("starminer::grass"), block::getBlockC("starminer::grass"))}
 
 			};
 
@@ -124,13 +124,45 @@ namespace VoxelEng {
 	void defaultWorldGen::generate_(chunk& chunk) {
 
 		const vec3 chunkPos = chunk.chunkPos();
+		const block* blockToGenerate = nullptr;
+		if (chunkPos.y <= 8) {
+			
+			for (GLbyte x = 0; x < SCX; x++)
+				for (GLbyte y = 0; y < SCY; y++)
+					for (GLbyte z = 0; z < SCZ; z++) {
 
-		for (GLbyte x = 0; x < SCX; x++)
-			for (GLbyte y = 0; y < SCY; y++)
-				for (GLbyte z = 0; z < SCZ; z++)
-					chunk.setBlock(x, y, z, (chunkPos.y <= 8) * (uDistribution_(generator_, flatWorldBlockDistribution_)));
+						switch (uDistribution_(generator_, flatWorldBlockDistribution_)) {
 
-		chunk.setLoadLevel(VoxelEng::chunkLoadLevel::DECORATED);
+						case 1:
+
+							blockToGenerate = &b1_;
+							break;
+
+						case 2:
+
+							blockToGenerate = &b2_;
+							break;
+
+						case 3:
+
+							blockToGenerate = &b3_;
+							break;
+
+						default:
+
+							blockToGenerate = block::emptyBlockP();
+
+							break;
+
+						}
+
+						chunk.setBlock(x, y, z, *blockToGenerate);
+
+					}
+
+			chunk.setLoadLevel(VoxelEng::chunkLoadLevel::DECORATED);
+			
+		}
 
 	}
 

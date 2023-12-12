@@ -10,6 +10,9 @@
 #ifndef _VOXELENG_CONTROLS_
 #define _VOXELENG_CONTROLS_
 
+#include <unordered_map>
+#include "definitions.h"
+
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
@@ -17,8 +20,6 @@
 
 
 #endif
-
-#include <unordered_map>
 
 
 namespace VoxelEng {
@@ -90,7 +91,8 @@ namespace VoxelEng {
 		rightArrow,
 		leftButton,
 		rightButton,
-		middleButton
+		middleButton,
+		escape
 
 	};
 

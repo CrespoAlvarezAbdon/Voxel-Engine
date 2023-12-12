@@ -1,15 +1,10 @@
-#if GRAPHICS_API == OPENGL
-
-#include <GL/glew.h>
-
-#endif
 #include "renderer.h"
+
+#include "logger.h"
 
 
 namespace VoxelEng {
 
-    // OpenGL debugging.
-
-    
+	
 
 }

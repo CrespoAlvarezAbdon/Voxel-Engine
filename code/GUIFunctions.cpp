@@ -1,9 +1,9 @@
+#include "GUIfunctions.h"
 #include <string>
 #include <filesystem>
 #include "chunk.h"
 #include "gui.h"
 #include "graphics.h"
-#include "GUIfunctions.h"
 #include "logger.h"
 
 
@@ -119,7 +119,7 @@ namespace VoxelEng {
 			game::setSaveSlot(saveSlot);
 
 			// Save chunk data into selected save slot.
-			chunkManager::saveAllChunks("saves/slot" + std::to_string(saveSlot) + "/level");
+			//chunkManager::saveAllChunks("saves/slot" + std::to_string(saveSlot) + "/level");
 
 			logger::debugLog("Saved on slot " + std::to_string(saveSlot));
 

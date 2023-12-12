@@ -9,6 +9,7 @@
 */
 #ifndef _VOXENG_ENTITY_
 #define _VOXENG_ENTITY_
+
 #include <atomic>
 #include <condition_variable>
 #include <list>
@@ -16,6 +17,12 @@
 #include <unordered_set>
 #include <vector>
 #include <mutex>
+#include "batch.h"
+#include "chunk.h"
+#include "definitions.h"
+#include "gameWindow.h"
+#include "model.h"
+#include "vec.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -25,20 +32,13 @@
 
 #endif
 
-#include "batch.h"
-#include "camera.h"
-#include "chunk.h"
-#include "definitions.h"
-#include "gameWindow.h"
-#include "model.h"
-
-
 namespace VoxelEng {
 
 	/////////////////////////
 	//Forward declarations.//
 	/////////////////////////
 
+	class camera;
 	class batch;
 	class entityManager;
 
@@ -46,115 +46,6 @@ namespace VoxelEng {
 	////////////
 	//Classes.//
 	////////////
-
-	/**
-	* @brief Abstraction containing everything that defines the entity that
-	* represents the user inside the engine.
-	*/
-	class player {
-
-	public:
-
-		// Initialisation.
-
-		/**
-		* @brief Initialise the player system and all the class' static attributes.
-		*/
-		static void init(float FOV, float zNear, float zFar, window& window, unsigned int blockReachRange);
-
-
-		// Modifiers.
-
-		/**
-		* @brief Get the user's first person camera.
-		*/
-		static camera& getCamera();
-
-		/**
-		* @brief Computes a basic raycast to select a block in the world that is
-		* reachable from where the user stands.
-		*/
-		static void selectBlock();
-
-		/**
-		* @brief Callback function to get the user's mouse buttons input.
-		*/
-		static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-
-		/**
-		* @brief Destroys the block selected by the user's camera, if any.
-		*/
-		static void destroySelectedBlock();
-
-		/**
-		* @brief Places the current selected block where the user is looking at.
-		* Cannot place a block on thin air, must be looking into a solid block to place.
-		*/
-		static void placeSelectedBlock();
-
-		/**
-		* @brief Function to process user's raycast used to interact with the level's enviroment.
-		* WARNING. Must not be called in the rendering thread.
-		*/
-		static void processSelectionRaycast();
-
-		/**
-		* @brief Change the current block ID used by the player to place blocks.
-		*/
-		static void setBlockToPlace(block blockID);
-
-		/**
-		* @brief Change user position and viewing direction.
-		*/
-		static void changePosition(const vec3& newPos, const vec3& newDir = vec3Zero);
-
-		/**
-		* @brief Change user position and viewing direction.
-		*/
-		static void changePosition(int newX, int newY, int newZ, int newDirX = 0, int newDirY = 0, int newDirZ = 0);
-
-
-		// Clean up.
-
-		/**
-		* @brief Used to clean up the heap memory allocated by this system and deinitialise it.
-		*/
-		static void cleanUp();
-
-	private:
-
-		static bool initialised_;
-		static GLFWwindow* window_;
-		static camera* camera_;
-		static float blockReachRange_,
-			         blockSearchIncrement_;
-		static block selectedBlock_;
-		static std::atomic<block> blockToPlace_;
-		static vec3 selectedBlockPos_,
-			        oldSelectedBlockPos_;
-		
-
-		/*
-		Flags used to coordinate the callbacks called
-		on the rendering thread with the input processing thread.
-		*/
-		static std::atomic<bool> destroyBlock_,
-					      placeBlock_;
-
-	};
-
-	inline camera& player::getCamera() {
-
-		return *camera_;
-
-	}
-
-	inline void player::changePosition(const vec3& newPos, const vec3& newDir) {
-	
-		changePosition(newPos.x, newPos.y, newPos.z, newDir.x, newDir.y, newDir.z);
-	
-	}
-
 
 	/**
 	* @brief An entity possess a custom 3D model as its representation
@@ -262,7 +153,7 @@ namespace VoxelEng {
 
 		/**
 		* @brief Set entity's postion in X axis.
-		*/ 
+		*/
 		float& x();
 
 		/**
@@ -341,7 +232,7 @@ namespace VoxelEng {
 		* said view direction vector still points to the model's front.
 		*/
 		void rotateViewYaw(float angle);
-		
+
 	private:
 
 		/*
@@ -368,21 +259,21 @@ namespace VoxelEng {
 	};
 
 	inline const vec3& entity::pos() const {
-	
+
 		return pos_;
-	
+
 	}
 
 	inline const vec3& entity::rot() const {
-	
+
 		return rot_;
-	
+
 	}
 
 	inline float entity::x() const {
-	
+
 		return pos_.x;
-	
+
 	}
 
 	inline float entity::y() const {
@@ -404,9 +295,9 @@ namespace VoxelEng {
 	}
 
 	inline bool entity::updateXRotation() const {
-	
+
 		return updateXRotation_;
-	
+
 	}
 
 	inline bool entity::updateYRotation() const {
@@ -424,7 +315,7 @@ namespace VoxelEng {
 	inline float entity::sinAngleX() const {
 
 		return std::sin(rot_.x * piDiv);
-	
+
 	}
 
 	inline float entity::cosAngleX() const {
@@ -494,8 +385,118 @@ namespace VoxelEng {
 	}
 
 	inline void entity::setModelID(unsigned int modelID) {
-	
+
 		model_ = &models::getModelAt(modelID);
+
+	}
+
+
+	/**
+	* @brief Abstraction containing everything that defines the entity that
+	* represents the user inside the engine.
+	*/
+	class player {
+
+	public:
+
+		// Initialisation.
+
+		/**
+		* @brief Initialise the player system and all the class' static attributes.
+		*/
+		static void init(float FOV, float zNear, float zFar, window& window, unsigned int blockReachRange);
+
+
+		// Modifiers.
+
+		/**
+		* @brief Get the user's first person camera.
+		*/
+		static camera& getCamera();
+
+		/**
+		* @brief Computes a basic raycast to select a block in the world that is
+		* reachable from where the user stands.
+		*/
+		static void selectBlock();
+
+		/**
+		* @brief Callback function to get the user's mouse buttons input.
+		*/
+		static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+
+		/**
+		* @brief Destroys the block selected by the user's camera, if any.
+		*/
+		static void destroySelectedBlock();
+
+		/**
+		* @brief Places the current selected block where the user is looking at.
+		* Cannot place a block on thin air, must be looking into a solid block to place.
+		*/
+		static void placeSelectedBlock();
+
+		/**
+		* @brief Function to process user's raycast used to interact with the level's enviroment.
+		* WARNING. Must not be called in the rendering thread.
+		*/
+		static void processSelectionRaycast();
+
+		/**
+		* @brief Change the current block ID used by the player to place blocks.
+		*/
+		static void setBlockToPlace(block& block);
+
+		/**
+		* @brief Change user position and viewing direction.
+		*/
+		static void changeTransform(const vec3& newPos, const vec3& newRot = vec3Zero);
+
+		/**
+		* @brief Change user position and viewing direction.
+		*/
+		static void changeTransform(float newX, float newY, float newZ, float pitch = 0.0f, float yaw = 0.0f, float roll = 0.0f);
+
+
+		// Clean up.
+
+		/**
+		* @brief Used to clean up the heap memory allocated by this system and deinitialise it.
+		*/
+		static void cleanUp();
+
+	private:
+
+		static bool initialised_;
+		static GLFWwindow* window_;
+		static camera* camera_;
+		static float blockReachRange_,
+			         blockSearchIncrement_;
+		static const block* selectedBlock_;
+		static std::atomic<const block*> blockToPlace_;
+		static vec3 selectedBlockPos_,
+			        oldSelectedBlockPos_;
+		static entity* playerEntity_;
+		
+
+		/*
+		Flags used to coordinate the callbacks called
+		on the rendering thread with the input processing thread.
+		*/
+		static std::atomic<bool> destroyBlock_,
+								 placeBlock_;
+
+	};
+
+	inline camera& player::getCamera() {
+
+		return *camera_;
+
+	}
+
+	inline void player::changeTransform(const vec3& newPos, const vec3& newRot) {
+	
+		changeTransform(newPos.x, newPos.y, newPos.z, newRot.x, newRot.y, newRot.z);
 	
 	}
 
@@ -573,13 +574,13 @@ namespace VoxelEng {
 		* @brief Registers a new entity in the entity management system.
 		* Returns the ID of the registered entity.
 		*/
-		static entityID registerEntity(unsigned int modelID, int posX, int posY, int posZ, const vec3& rot = vec3Zero, tickFunc func = nullptr);
+		static entityID registerEntity(unsigned int modelID, float posX, float posY, float posZ, const vec3& rot = vec3Zero, tickFunc func = nullptr);
 
 		/**
 		* @brief Registers a new entity in the entity management system.
 		* Returns the ID of the registered entity.
 		*/
-		static entityID registerEntity(unsigned int modelID, int posX, int posY, int posZ, float rotX, float rotY, float rotZ, tickFunc func = nullptr);
+		static entityID registerEntity(unsigned int modelID, float posX, float posY, float posZ, float rotX, float rotY, float rotZ, tickFunc func = nullptr);
 
 		/**
 		* @brief Returns the entity with the specified entity ID (with bounds checking).
@@ -637,7 +638,7 @@ namespace VoxelEng {
 
 		// Modifiers: actions on entities.
 
-		static void moveEntity(entityID entityID, int x, int y, int z);
+		static void moveEntity(entityID entityID, float x, float y, float z);
 
 		
 		// Clean up.
@@ -748,7 +749,7 @@ namespace VoxelEng {
 	
 	}
 
-	inline entityID entityManager::registerEntity(unsigned int entityTypeID, int posX, int posY, int posZ, const vec3& rot, tickFunc func) {
+	inline entityID entityManager::registerEntity(unsigned int entityTypeID, float posX, float posY, float posZ, const vec3& rot, tickFunc func) {
 
 		return registerEntity(entityTypeID, posX, posY, posZ, rot.x, rot.y, rot.z, func);
 

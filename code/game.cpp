@@ -8,6 +8,22 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include "AIAPI.h"
+#include "batch.h"
+#include "block.h"
+#include "camera.h"
+#include "entity.h"
+#include "tickFunctions.h"
+#include "texture.h"
+#include "graphics.h"
+#include "gui.h"
+#include "GUIfunctions.h"
+#include "input.h"
+#include "inputFunctions.h"
+#include "renderer.h"
+#include "utilities.h"
+#include "vertex.h"
+#include "worldGen.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -17,23 +33,6 @@
 #include <gtc/matrix_transform.hpp>
 
 #endif
-
-#include "AIAPI.h"
-#include "batch.h"
-#include "camera.h"
-#include "entity.h"
-#include "vertex.h"
-#include "definitions.h"
-#include "shader.h"
-#include "texture.h"
-#include "graphics.h"
-#include "gui.h"
-#include "GUIfunctions.h"
-#include "input.h"
-#include "inputFunctions.h"
-#include "utilities.h"
-#include "tickFunctions.h"
-#include "worldGen.h"
 
 
 namespace VoxelEng {
@@ -53,6 +52,7 @@ namespace VoxelEng {
     window* game::mainWindow_ = nullptr;
 
     std::thread* game::chunkManagementThread_ = nullptr,
+               * game::priorityChunkUpdatesThread_ = nullptr,
                * game::playerInputThread_ = nullptr,
                * game::tickManagementThread_ = nullptr;
 
@@ -63,26 +63,22 @@ namespace VoxelEng {
     skybox game::defaultSkybox_(140, 170, 255, 1.0f);
 
     unsigned int game::saveSlot_ = 0,
-                 game::blockReachRange_ = 5,
-                 game::nMeshingThreads_ = 1;
+        game::blockReachRange_ = 5,
+        game::nMeshingThreads_ = 0;
     float game::FOV_ = 110.0f,
           game::zNear_ = 0.1f,
           game::zFar_ = 500.0f;
 
     camera* game::playerCamera_ = nullptr;
-
-    
-
     texture* game::blockTextureAtlas_ = nullptr;
 
-    std::unordered_map<vec3, std::vector<vertex>> const* game::chunksToDraw_ = nullptr;
+    std::unordered_map<vec3, model> const* game::chunksToDraw_ = nullptr;
     const std::vector<model>* game::batchesToDraw_ = nullptr;
 
     shader* game::defaultShader_ = nullptr;
-    vertexBuffer* game::vbo_ = nullptr;
-    vertexArray* game::va_ = nullptr;
-    vertexBufferLayout* game::layout_ = nullptr;
-    renderer* game::renderer_ = nullptr;
+    vertexBuffer* game::chunksVbo_ = nullptr,
+                * game::entitiesVbo_ = nullptr;
+    vertexArray* game::vao_ = nullptr;
 
     #if GRAPHICS_API == OPENGL
 
@@ -106,9 +102,24 @@ namespace VoxelEng {
             // Put here any game initialisation that does not involve
             // the engine's graphical mode.
 
+
+            // General variables.
             loopSelection_ = engineMode::AIMENULOOP;
             timeStep_ = 0.0f;
             AImodeON_ = false;
+
+            // Block registration.
+            block::registerBlock("starminer::grass", 1); // manual texture ID assignemt is temporary
+            block::registerBlock("starminer::stone", 2);
+            block::registerBlock("starminer::sand", 3);
+            block::registerBlock("starminer::marbleBlock", 4);
+            block::registerBlock("starminer::dirt", 6);
+            block::registerBlock("starminer::coalOre", 7);
+            block::registerBlock("starminer::ironOre", 8);
+            block::registerBlock("starminer::goldOre", 9);
+            block::registerBlock("starminer::diamondOre", 10);
+
+            // Worldgen initialisation.
 
             worldGen::init();
 
@@ -128,12 +139,12 @@ namespace VoxelEng {
 
             mainWindow_ = new window(800, 800, "VoxelEng");
 
-            saveSlot_ = 0,
-            blockReachRange_ = 5,
-            nMeshingThreads_ = 1;
+            saveSlot_ = 0;
+            blockReachRange_ = 5;
+            nMeshingThreads_ = (std::thread::hardware_concurrency() > 8) ? 8 : std::thread::hardware_concurrency();
             
-            FOV_ = 110.0f,
-            zNear_ = 0.1f,
+            FOV_ = 110.0f;
+            zNear_ = 0.1f;
             zFar_ = 500.0f;
 
             useComplexLighting_ = false;
@@ -150,6 +161,36 @@ namespace VoxelEng {
             if (!graphics::initialised())
                 graphics::init(*mainWindow_);
 
+            chunksVbo_ = &graphics::vbo("chunks"),
+            entitiesVbo_ = &graphics::vbo("entities");
+            vao_ = &graphics::vao("3D");
+
+            // Load model system.
+            models::init();
+
+            // Custom model loading.
+            models::loadCustomModel("resources/Models/Warden.obj", 2);
+
+            // Load texture atlas and configure it.
+            blockTextureAtlas_ = new texture("resources/Textures/atlas.png");
+            texture::setBlockAtlas(*blockTextureAtlas_);
+            texture::setBlockAtlasResolution(16);
+
+            // World settings.
+            world::init();
+            world::setSkybox(defaultSkybox_);
+
+            // Load chunk system and chunk management system if not loaded.
+            if (!chunk::initialised())
+                chunk::init();
+
+            if (!chunkManager::initialised())
+                chunkManager::init();
+
+            // Load entity manager system.
+            if (!entityManager::initialised())
+                entityManager::init();
+
             // Load player system.
             player::init(FOV_, zNear_, zFar_, *mainWindow_, blockReachRange_);
             playerCamera_ = &player::getCamera();
@@ -165,47 +206,12 @@ namespace VoxelEng {
             input::setControlAction(controlCode::s, inputFunctions::moveSouth);
             input::setControlAction(controlCode::a, inputFunctions::moveEast);
             input::setControlAction(controlCode::d, inputFunctions::moveWest);
+            input::setControlAction(controlCode::q, inputFunctions::rollRight);
+            input::setControlAction(controlCode::e, inputFunctions::rollLeft);
             input::setControlAction(controlCode::r, inputFunctions::switchComplexLighting, false);
 
-
-            // Load model system.
-            models::init();
-
-            // Custom model loading.
-            models::loadCustomModel("Resources/Models/Warden.obj", 2);
-
-            // Load chunk system and chunk management system if not loaded.
-            if (!chunk::initialised())
-                chunk::init();
-
-            if (!chunkManager::initialised())
-                chunkManager::init();
-
-            // Load entity manager system.
-            if (!entityManager::initialised()) 
-                entityManager::init();
-
-
-            // World settings.
-            world::init();
-            world::setSkybox(defaultSkybox_);
-
-
-            // Load texture atlas and configure it.
-            blockTextureAtlas_ = new texture("Resources/Textures/atlas.png");
-            texture::setBlockAtlas(*blockTextureAtlas_);
-            texture::setBlockAtlasResolution(16);
-
-
             // Load shaders.
-            defaultShader_ = new shader("Resources/Shaders/vertexShader.shader", "Resources/Shaders/fragmentShader.shader");
-
-
-            // Load graphics API data structures.
-            vbo_ = new vertexBuffer();
-            va_ = new vertexArray();
-            layout_ = new vertexBufferLayout();
-            renderer_ = new renderer();
+            defaultShader_ = new shader("resources/Shaders/vertexShader.shader", "resources/Shaders/fragmentShader.shader");
 
 
             /*
@@ -213,7 +219,7 @@ namespace VoxelEng {
             WARNING. The engine currently only supports initialization of GUIElements
             before the main menu loop starts for the first time in the game's execution.
             */
-            GUImanager::init(*mainWindow_, *defaultShader_, *renderer_);
+            GUImanager::init(*mainWindow_, *defaultShader_);
 
             // Main menu.
             GUImanager::addGUIBox("mainMenu", 0.5, 0.5, 0.3, 0.35, 995, true, GUIcontainer::both);
@@ -243,7 +249,7 @@ namespace VoxelEng {
             */
 
             // Main Menu/Level.
-            GUImanager::bindActKeyFunction("mainMenu", GUIfunctions::changeStateLevelMenu, controlCode::e);
+            GUImanager::bindActKeyFunction("mainMenu", GUIfunctions::changeStateLevelMenu, controlCode::escape);
             GUImanager::bindActMouseButtonFunction("mainMenu.loadButton", GUIfunctions::showLoadMenu, controlCode::leftButton);
             GUImanager::bindActMouseButtonFunction("mainMenu.saveButton", GUIfunctions::showSaveMenu, controlCode::leftButton);
             GUImanager::bindActMouseButtonFunction("mainMenu.exitButton", GUIfunctions::exit, controlCode::leftButton);
@@ -270,19 +276,9 @@ namespace VoxelEng {
             glfwSetWindowSizeCallback(mainWindow_->windowAPIpointer(), window::windowSizeCallback);
 
 
-            // Configure the vertex layout for 3D rendering.
-            layout_->push<GLfloat>(3);
-            layout_->push<GLfloat>(2);
-            layout_->push<normalVec>(1);
-
-
             // Bind the currently used VAO, shaders and atlases for 3D rendering.
-            va_->bind();
-            vbo_->bind();
-            va_->addLayout(*layout_);
             defaultShader_->bind();
             blockTextureAtlas_->bind();
-
 
             graphicalModeInitialised_ = true;
         
@@ -387,7 +383,7 @@ namespace VoxelEng {
                     mainWindow_->resizeHeavyProcessing();
 
                 // Clear the screen to draw the next frame.
-                renderer_->clear();
+                renderer::clearWindow();
 
 
                 /*
@@ -416,21 +412,25 @@ namespace VoxelEng {
     }
 
     void game::gameLoop(const std::string& terrainFile) {
-
+        
         if (loopSelection_ == engineMode::INITLEVEL || loopSelection_ == engineMode::INITRECORD) {
 
             if (!graphicalModeInitialised_)
                 initGraphicalMode();
 
+            chunkManager::setNChunksToCompute(DEF_N_CHUNKS_TO_COMPUTE);
+
             /*
             Level loading.
             */
-
+            
             // Start the terrain management and loading of the world.
-            if (chunkManager::infiniteWorld())
-                chunkManagementThread_ = new std::thread(&chunkManager::manageChunks, nMeshingThreads_);
-            else
-                chunkManagementThread_ = new std::thread(&chunkManager::finiteWorldLoading, terrainFile);
+            if (chunkManagementThread_)
+                delete chunkManagementThread_;
+            if (priorityChunkUpdatesThread_)
+                delete priorityChunkUpdatesThread_;
+            chunkManagementThread_ = new std::thread(&chunkManager::manageChunks);
+            priorityChunkUpdatesThread_ = new std::thread(&chunkManager::manageChunkPriorityUpdates);
 
             if (loopSelection_ == engineMode::INITRECORD) {
 
@@ -447,7 +447,7 @@ namespace VoxelEng {
                 }
 
                 // Things to apply when the terrain is loaded.
-                chunkManager::waitTerrainLoaded();
+                chunkManager::waitInitialTerrainLoaded();
 
                 setLoopSelection(engineMode::PLAYINGRECORD);
 
@@ -471,7 +471,7 @@ namespace VoxelEng {
                 }
 
                 // Things to apply when the terrain is loaded.
-                chunkManager::waitTerrainLoaded();
+                chunkManager::waitInitialTerrainLoaded();
 
                 setLoopSelection(engineMode::EDITLEVEL);
 
@@ -491,7 +491,7 @@ namespace VoxelEng {
             mainWindow_->changeStateMouseLock(false);
 
             // Set shader options.
-            vec3 lightpos(10.0f, 150.0f, -10.0f);
+            vec3 lightpos{ 10.0f, 150.0f, -10.0f };
             defaultShader_->setUniformVec3f("u_sunLightPos", lightpos);
             defaultShader_->setUniform1i("u_useComplexLighting", 0);
 
@@ -521,14 +521,14 @@ namespace VoxelEng {
                 timeStep_ = actualTime - lastFrameTime;
                 lastFrameTime = actualTime;
 
-                // Clear the screen to draw the next frame.
-                renderer_->clear();
+                // Clear the window to draw the next frame.
+                renderer::clearWindow();
 
                 // ms/frame calculation and display.
                 nFramesDrawn++;
                 if (actualTime - lastSecondTime >= 1.0) {
 
-                    //std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame" << " and resolution is " << mainWindow_.width() << " x " << mainWindow_.height();
+                    //std::cout << 1000.0 / nFramesDrawn << "ms/frame";
                     nFramesDrawn = 0;
                     lastSecondTime = glfwGetTime();
 
@@ -538,18 +538,21 @@ namespace VoxelEng {
                 3D rendering.
                 */
                 defaultShader_->setUniform1i("u_renderMode", 0); // renderMode = 0 stands for 3D rendering mode.
+                vao_->bind();
+                chunksVbo_->bind();
 
-                // Coordinate rendering thread and chunk management thread if necessary.
-                if (chunkManager::managerThreadMutex().try_lock()) {
+                // Receive updated chunk meshes when possible.
+                if (chunkManager::priorityManagerThreadMutex().try_lock()) {
+                
+                    chunksToDraw_ = chunkManager::drawableChunksRead();
 
-                    if (chunkManager::forceSyncFlag())
-                        chunkManager::updatePriorityChunks();
-                    else {
+                    chunkManager::priorityManagerThreadMutex().unlock();
+                    chunkManager::priorityManagerThreadCV().notify_one();
+                
+                }
+                else if (chunkManager::managerThreadMutex().try_lock()) {
 
-                        chunkManager::swapDrawableChunksLists();
-                        chunksToDraw_ = chunkManager::drawableChunksRead();
-
-                    }
+                    chunksToDraw_ = chunkManager::drawableChunksRead();
 
                     chunkManager::managerThreadMutex().unlock();
                     chunkManager::managerThreadCV().notify_one();
@@ -567,10 +570,6 @@ namespace VoxelEng {
 
                 }
 
-                // Binding section.
-                va_->bind();
-                vbo_->bind();
-                
                 // Render chunks.
                 if (chunksToDraw_) {
 
@@ -580,15 +579,17 @@ namespace VoxelEng {
 
                         if (nVertices = chunk.second.size()) {
 
-                            vbo_->prepareStatic(chunk.second.data(), sizeof(vertex) * nVertices);
+                            chunksVbo_->setDynamicData(chunk.second.data(), 0, nVertices * sizeof(vertex));
 
-                            renderer_->draw3D(nVertices);
+                            renderer::draw3D(nVertices);
 
                         }
 
                     }
 
                 }
+
+                entitiesVbo_->bind();
 
                 // Render batches.
                 if (batchesToDraw_) {
@@ -597,9 +598,9 @@ namespace VoxelEng {
 
                         if (nVertices = batch.size()) {
 
-                            vbo_->prepareStatic(batch.data(), sizeof(vertex) * nVertices);
+                            entitiesVbo_->prepareStatic(batch.data(), sizeof(vertex) * nVertices);
 
-                            renderer_->draw3D(nVertices);
+                            renderer::draw3D(nVertices);
 
                         }
 
@@ -617,10 +618,6 @@ namespace VoxelEng {
                 GUImanager::drawGUI();
 
                 graphics::setDepthTest(true);
-
-                // Unbinding section.
-                va_->unbind();
-                vbo_->unbind();
 
                 // Swap front and back buffers.
                 glfwSwapBuffers(mainWindow_->windowAPIpointer());
@@ -647,7 +644,7 @@ namespace VoxelEng {
             
                     case engineMode::EXIT:
 
-                        input::inputMutex().lock(); // Input management needs this.
+                        input::inputMutex().lock(); // Do not accept input until all is cleared.
                         cleanUp();
 
                         loopSelection_ = engineMode::EXIT;
@@ -951,28 +948,39 @@ namespace VoxelEng {
         else
             AImodeON_ = ON;
 
-        chunkManager::setAImode(AImodeON_);
         entityManager::setAImode(AImodeON_);
 
     }
 
     void game::stopAuxiliaryThreads() {
-
-        if (chunkManagementThread_ && threadsExecute[2]) {
+        
+        if (chunkManagementThread_ && priorityChunkUpdatesThread_ && threadsExecute[2]) {
 
             // Notify the chunk management and the high priority update threads to stop.
             // In case a thread is waiting on its corresponding condition variable, send a notification to unblock it.
+            threadsExecute[2] = false;
             {
 
-                threadsExecute[2] = false;
                 std::unique_lock<std::mutex> lock(chunkManager::managerThreadMutex());
+                chunkManager::managerThreadCV().notify_all();
 
             }
-            chunkManager::managerThreadCV().notify_one();
-            
+
             chunkManagementThread_->join();
             delete chunkManagementThread_;
             chunkManagementThread_ = nullptr;
+
+            {
+
+                chunkManager::priorityNewChunkMeshesCV().notify_all();
+                std::unique_lock<std::mutex> priorityUpdatesLock(chunkManager::priorityManagerThreadMutex());
+                chunkManager::priorityManagerThreadCV().notify_all();
+                
+            }
+
+            priorityChunkUpdatesThread_->join();
+            delete priorityChunkUpdatesThread_;
+            priorityChunkUpdatesThread_ = nullptr;
 
         }
 
@@ -1036,13 +1044,15 @@ namespace VoxelEng {
 
         input::shouldProcessInputs(true);
 
+        block::cleanUp();
+
     }
 
     void game::cleanUpGraphicalMode() {
 
         std::unique_lock<std::recursive_mutex> lock(input::inputMutex());
 
-        // Clear everything that is related to the engine's graphical mode.
+        // Deallocate everything that is related to the engine's graphical mode.
 
         GUImanager::setMMGUIChanged(true);
 
@@ -1066,30 +1076,43 @@ namespace VoxelEng {
 
         graphics::cleanUp();
 
-        if (blockTextureAtlas_)
+        if (blockTextureAtlas_) {
+        
             delete blockTextureAtlas_;
+            blockTextureAtlas_ = nullptr;
+        
+        }
 
-        if (defaultShader_)
+        if (defaultShader_) {
+
             delete defaultShader_;
+            defaultShader_ = nullptr;
 
-        if (vbo_)
-            delete vbo_;
+        }
 
-        if (va_)
-            delete va_;
-
-        if (layout_)
-            delete layout_;
-
-        if (renderer_)
-            delete renderer_;
-
-        mainWindow_ = nullptr;
-
+        // These pointers where not the original owners of the object they point to.
+        // They were allocated in the 'graphics' class and they have been properly deallocated before this.
+        chunksVbo_ = nullptr;
+        entitiesVbo_ = nullptr;
+        vao_ = nullptr;
         playerCamera_ = nullptr;
-
         chunksToDraw_ = nullptr;
-        batchesToDraw_ = nullptr;
+
+        if (mainWindow_) {
+
+            delete mainWindow_;
+            mainWindow_ = nullptr;
+
+        }
+
+       
+
+        if (batchesToDraw_) {
+
+            delete batchesToDraw_;
+            batchesToDraw_ = nullptr;
+
+        }
 
         graphicalModeInitialised_ = false;
 

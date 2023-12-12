@@ -1,3 +1,6 @@
+#ifndef _AI_AIAPI_
+#define _AI_AIAPI_
+
 #include "AIAPI.h"
 #include <filesystem>
 #include <ios>
@@ -47,8 +50,8 @@ namespace VoxelEng {
 		: tag(type::BOOL), b(value)
 		{}
 
-		agentActionArg::agentActionArg(block value)
-		: tag(type::BLOCK), bl(value)
+		agentActionArg::agentActionArg(numericShortID value)
+		: tag(type::NUMERIC_BLOCK_ID), nbi(value)
 		{}
 
 		agentActionArg::agentActionArg(blockViewDir value)
@@ -116,7 +119,7 @@ namespace VoxelEng {
 							logger::errorLog("The recording of agents' terrain modification is disabled");
 
 						VoxelEng::logger::debugLog("Agent removes block on " + std::to_string(game->getParam<int>(1)) + '|' + std::to_string(game->getParam<int>(2)) + '|' + std::to_string(game->getParam<int>(3)));
-						game->setBlock(game->getParam<unsigned int>(0), game->getParam<int>(1), game->getParam<int>(2), game->getParam<int>(3), game->getParam<block>(4), true);
+						game->setBlock(game->getParam<unsigned int>(0), game->getParam<int>(1), game->getParam<int>(2), game->getParam<int>(3), block::getBlockC(game->inverseBlockPalette_[game->getParam<numericShortID>(4)]), true);
 
 					}
 					else {
@@ -127,7 +130,7 @@ namespace VoxelEng {
 
 					}
 
-				}, {agentActionArg::type::UINT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::BLOCK }));
+				}, {agentActionArg::type::UINT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::INT, agentActionArg::type::NUMERIC_BLOCK_ID }));
 
 				registerAction("moveEntity", AIagentAction([]() {
 
@@ -365,10 +368,10 @@ namespace VoxelEng {
 		}
 
 		template <>
-		block aiGame::getParam<block>(unsigned int index) const {
+		numericShortID aiGame::getParam<numericShortID>(unsigned int index) const {
 
 			if (index < lastParamInd_)
-				return params_[index].bl;
+				return params_[index].nbi;
 			else
 				VoxelEng::logger::errorLog("Invalid index " + std::to_string(index) + " for an AI agent action parameter");
 
@@ -390,6 +393,24 @@ namespace VoxelEng {
 				return !agentModifiedBlocks_[agentID].empty();
 			else
 				logger::errorLog("AI agent with ID " + std::to_string(agentID) + " was not found");
+
+		}
+
+		numericShortID aiGame::getInternalID(const std::string& block) const {
+
+			if (blockPalette_.contains(block))
+				return blockPalette_.at(block);
+			else
+				VoxelEng::logger::errorLog("Block " + block + " is not registered in this AI game instance");
+
+		}
+
+		const std::string& aiGame::getNamespacedID(short internalID) const {
+
+			if (inverseBlockPalette_.contains(internalID))
+				return inverseBlockPalette_.at(internalID);
+			else
+				VoxelEng::logger::errorLog("Block internal ID " + std::to_string(internalID) + " is not registered in this AI game instance");
 
 		}
 
@@ -570,14 +591,17 @@ namespace VoxelEng {
 									saveFile_.open(recordingPath);
 
 									// Initialise chunk manager system earlier in order to set the number of chunks to compute.
-									if (chunkManager::initialised())
-										chunkManager::setNChunksToCompute(DEF_N_CHUNKS_TO_COMPUTE);
-									else
-										chunkManager::init(DEF_N_CHUNKS_TO_COMPUTE);
+									if (!chunkManager::initialised())
+										chunkManager::init();
 
+									// TODOAI. Los AIGAMES deben tener un atributo que se inicialize en su constructor que diga si los mundos serán infinitos o no.
+									// Y que en los chunkManager::init se pase a chunkManager::setInfiniteWorld() dicho valor.
+										
 									saveDataBuffer_ += selectedGame_->name_ + '|';
 									saveDataBuffer_ += "saves/recordingWorlds/" + selectedGame_->name_ + '/' + filename + '|';
-									saveDataBuffer_ += std::to_string(chunkManager::nChunksToCompute()) + "|@";
+									//TODOAI. if (!chunkManager::infiniteWorlds())
+									//	saveDataBuffer_ += std::to_string(chunkManager::nChunksToCompute()) + "|@";
+									//  VoxelEng::chunkManager::setNChunksToCompute(VoxelEng::DEF_N_CHUNKS_TO_COMPUTE);
 
 									saveFileName_ = filename;
 
@@ -620,6 +644,15 @@ namespace VoxelEng {
 				if (std::filesystem::exists(truePath)) {
 
 					game::setLoopSelection(engineMode::INITRECORD);
+
+					// Initialise required engine systems.
+					if (!chunkManager::initialised()) {
+
+						chunkManager::init();
+						entityManager::init();
+
+					}
+
 					recordPlayMode_ = recordPlayMode::FORWARD;
 
 					loadedFile_.open(truePath);
@@ -653,7 +686,12 @@ namespace VoxelEng {
 
 									chunkManager::setNChunksToCompute(sto<unsigned int>(readWord_));
 
-									readFirstLines = true;
+									readState_++;
+									break;
+
+								default:
+
+									logger::errorLog("Undefined action for read state " + std::to_string(readState_));
 									break;
 
 								}
@@ -661,6 +699,8 @@ namespace VoxelEng {
 								readWord_ = "";
 
 							}
+							else if (readCharacter_ == '@')
+								readFirstLines = true;
 							else
 								readWord_ += readCharacter_;
 
@@ -672,14 +712,6 @@ namespace VoxelEng {
 					readState_ = 0;
 
 					selectedGame_->initBlockModRecording();
-
-					// Initialise required engine systems.
-					if (!VoxelEng::chunkManager::initialised()) {
-
-						VoxelEng::chunkManager::init(VoxelEng::DEF_N_CHUNKS_TO_COMPUTE);
-						VoxelEng::entityManager::init();
-
-					}
 
 					// Initialisation of the elements that are used in aiGame::playRecordTick().
 					canForwardReplay_ = true;
@@ -941,9 +973,9 @@ namespace VoxelEng {
 
 								break;
 
-							case agentActionArg::type::BLOCK:
+							case agentActionArg::type::NUMERIC_BLOCK_ID:
 
-								saveDataBuffer_ += std::to_string(arg.bl) + "|";
+								saveDataBuffer_ += std::to_string(arg.nbi) + "|";
 
 								break;
 
@@ -1024,11 +1056,11 @@ namespace VoxelEng {
 
 						break;
 
-					case agentActionArg::type::BLOCK:
+					case agentActionArg::type::NUMERIC_BLOCK_ID:
 						if (lastParamInd_ < params_.size())
-							params_[lastParamInd_].bl = sto<block>(param);
+							params_[lastParamInd_].nbi = sto<numericShortID>(param);
 						else
-							params_.emplace_back(sto<block>(param));
+							params_.emplace_back(sto<numericShortID>(param));
 
 						lastParamInd_++;
 
@@ -1112,11 +1144,11 @@ namespace VoxelEng {
 
 							break;
 
-						case agentActionArg::type::BLOCK:
+						case agentActionArg::type::NUMERIC_BLOCK_ID:
 							if (lastParamInd_ < params_.size())
-								params_[lastParamInd_].bl = sto<block>(rawParams_[i]);
+								params_[lastParamInd_].nbi = sto<numericShortID>(rawParams_[i]);
 							else
-								params_.emplace_back(sto<block>(rawParams_[i]));
+								params_.emplace_back(sto<numericShortID>(rawParams_[i]));
 
 							lastParamInd_++;
 
@@ -1159,7 +1191,7 @@ namespace VoxelEng {
 		
 		}
 
-		block aiGame::getLastModifiedBlock(agentID agentID, bool popBlock) {
+		const block& aiGame::getLastModifiedBlock(agentID agentID, bool popBlock) {
 		
 			if (isAgentRegistered(agentID)) {
 
@@ -1188,7 +1220,7 @@ namespace VoxelEng {
 		
 		}
 
-		block aiGame::getFirstModifiedBlock(agentID agentID, bool popBlock) {
+		const block& aiGame::getFirstModifiedBlock(agentID agentID, bool popBlock) {
 		
 			if (isAgentRegistered(agentID)) {
 
@@ -1217,7 +1249,7 @@ namespace VoxelEng {
 		
 		}
 
-		block aiGame::getModifiedBlock(agentID agentID, unsigned int blockIndex) {
+		const block& aiGame::getModifiedBlock(agentID agentID, unsigned int blockIndex) {
 		
 			if (isAgentRegistered(agentID)) {
 
@@ -1270,12 +1302,12 @@ namespace VoxelEng {
 
 		}
 
-		block aiGame::setBlock(agentID agentID, int x, int y, int z, VoxelEng::block blockID, bool record) {
+		const block& aiGame::setBlock(agentID agentID, int x, int y, int z, const block& blockID, bool record) {
 
 			if (isAgentRegistered(agentID)) {
 			
 				if (recording_)
-					recordAction("setBlock", {agentID, x, y, z, blockID});
+					recordAction("setBlock", {agentID, x, y, z, blockPalette_[blockID.name()]});
 
 
 				if (recordAgentModifiedBlocks_ && record)
@@ -1288,7 +1320,7 @@ namespace VoxelEng {
 				logger::errorLog("AI agent with ID " + std::to_string(agentID) + " was not found");
 		}
 
-		void aiGame::moveEntity(entityID entityID, int x, int y, int z) {
+		void aiGame::moveEntity(entityID entityID, float x, float y, float z) {
 
 			entityManager::moveEntity(entityID, x, y, z);
 
@@ -1297,7 +1329,7 @@ namespace VoxelEng {
 
 		}
 
-		void aiGame::setEntityPos(unsigned entityID, int x, int y, int z) {
+		void aiGame::setEntityPos(unsigned entityID, float x, float y, float z) {
 
 			if (entityManager::isEntityRegistered(entityID)) {
 
@@ -1374,7 +1406,7 @@ namespace VoxelEng {
 		
 		}
 
-		unsigned int aiGame::createEntity(unsigned int entityTypeID, int posX, int posY, int posZ, float rotX, float rotY, float rotZ) {
+		unsigned int aiGame::createEntity(unsigned int entityTypeID, float posX, float posY, float posZ, float rotX, float rotY, float rotZ) {
 
 			if (recording_)
 				recordAction("createEntity", { entityTypeID, posX, posY, posZ, rotX, rotY, rotZ });
@@ -1383,7 +1415,7 @@ namespace VoxelEng {
 
 		}
 
-		unsigned int aiGame::createAgent(unsigned int entityTypeID, int x, int y, int z, blockViewDir direction) {
+		unsigned int aiGame::createAgent(unsigned int entityTypeID, float x, float y, float z, blockViewDir direction) {
 
 			unsigned int ID = entityManager::registerEntity(entityTypeID, x, y, z, uDirectionToVec3(direction));
 
@@ -1621,3 +1653,5 @@ namespace VoxelEng {
 	}
 
 }
+
+#endif

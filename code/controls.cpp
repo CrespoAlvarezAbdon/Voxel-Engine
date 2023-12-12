@@ -61,6 +61,7 @@ namespace VoxelEng {
 		{controlCode::leftButton, GLFW_MOUSE_BUTTON_LEFT},
 		{controlCode::rightButton, GLFW_MOUSE_BUTTON_RIGHT},
 		{controlCode::leftButton, GLFW_MOUSE_BUTTON_MIDDLE},
+		{controlCode::escape, GLFW_KEY_ESCAPE},
 	
 	};
 

@@ -1,3 +1,4 @@
+#include "shader.h"
 #include <iterator>
 #include <fstream>
 #include <ios>
@@ -9,7 +10,6 @@
 
 #endif
 
-#include "shader.h"
 
 namespace VoxelEng {
 

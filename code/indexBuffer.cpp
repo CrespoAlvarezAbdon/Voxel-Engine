@@ -1,9 +1,11 @@
+#include "indexBuffer.h"
+#include "definitions.h"
+
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
 
 #endif
-#include "indexBuffer.h"
 
 
 namespace VoxelEng {

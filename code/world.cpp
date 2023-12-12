@@ -9,6 +9,10 @@ namespace VoxelEng {
 	// 'world' class.
 
 	bool world::initialised_ = false;
+	bool world::infiniteTerrain_ = true;
+	unsigned int world::maxDistanceX_ = 0,
+				 world::maxDistanceY_ = 0,
+				 world::maxDistanceZ_ = 0;
 	std::unordered_map<std::string, tickFunc> world::globalTickFunctions_;
 	std::unordered_set<std::string> world::activeTickFunctions_;
 	std::mutex world::tickFunctionsMutex_;
@@ -20,9 +24,18 @@ namespace VoxelEng {
 
 		if (initialised_)
 			logger::errorLog("The world class is already initialised");
-		else
+		else {
+		
+			infiniteTerrain_ = true;
+
+			maxDistanceX_ = 0;
+			maxDistanceY_ = 0;
+			maxDistanceZ_ = 0;
+
 			initialised_ = true;
-	
+		
+		}
+
 	}
 
 	void world::addGlobalTickFunction(const std::string& name, tickFunc func, bool active) {

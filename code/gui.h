@@ -10,9 +10,19 @@
 */
 #ifndef _VOXELENG_GUI_
 #define _VOXELENG_GUI_
+
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
+#include <mutex>
+#include "controls.h"
+#include "definitions.h"
+#include "vertexBuffer.h"
+#include "vertexArray.h"
+#include "shader.h"
+#include "vertex.h"
+#include "gameWindow.h"
+#include "vec.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -23,17 +33,6 @@
 #include <glm.hpp>
 
 #endif
-
-#include <mutex>
-#include "controls.h"
-#include "definitions.h"
-#include "vertexBuffer.h"
-#include "vertexArray.h"
-#include "shader.h"
-#include "vertex.h"
-#include "renderer.h"
-#include "gameWindow.h"
-
 
 namespace VoxelEng {
 
@@ -276,7 +275,7 @@ namespace VoxelEng {
 		* @brief Initialise the GUI management system.
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
-		static void init(window& window, shader& shader, renderer& renderer);
+		static void init(window& window, shader& shader);
 
 
 		// Observers.
@@ -489,11 +488,9 @@ namespace VoxelEng {
 
 		static GUIelement* lastCheckedGUIElement_; // Has the last GUIElement checked by the processGUIInputs method. It's meant to reference, for example, a GUIButton inside
 											       // it's own activation mouse button function.
-
 		static vertexBuffer* vbo_;
 		static vertexArray* vao_;
 		static shader* shader_;
-		static renderer* renderer_;
 
 
 		/*

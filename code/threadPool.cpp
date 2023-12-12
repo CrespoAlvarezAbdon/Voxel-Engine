@@ -2,6 +2,8 @@
 #include "logger.h"
 
 
+#include <string>
+
 namespace VoxelEng {
 
 	threadPool::threadPool(unsigned int nThreads)
@@ -9,6 +11,14 @@ namespace VoxelEng {
 
 		for (unsigned int i = 0; i < nThreads; i++)
 			pool_.push_back(std::thread([this]() {this->waitForTask(); }));
+
+	}
+
+	unsigned int threadPool::size() {
+
+		std::unique_lock<std::mutex> lock(jobsMutex_);
+
+		return jobs_.size();
 
 	}
 
@@ -33,9 +43,8 @@ namespace VoxelEng {
 				while (jobs_.empty() && !shutdown_) // Wait until there is a job to do (if we should wait for one).
 					jobsAvailable_.wait(lock); 
 
-
-				// If new jobs are not going to we added to the queue (that is, shutdown() was called), 
-				// then finish this thread's execution
+				// If new jobs are not going to we added to the queue (that is, shutdown() was called)
+				// and there are no more jobs to do, then finish this thread's execution
 				if (shutdown_ && jobs_.empty())
 					return;
 
@@ -85,12 +94,12 @@ namespace VoxelEng {
 		{
 
 			std::unique_lock<std::mutex> lock(callerMutex_);
-			
-			do {
+
+			while (!jobs_.empty() && nWorkingThreads_) { // If 'jobs_' is already empty or there are no jobs currently being done, unblock.
 
 				callerCV_.wait(lock);
 
-			} while (!jobs_.empty() && nWorkingThreads_); // If 'jobs_' is already empty and there are no jobs currently being done, unblock.
+			}; 
 				
 		}
 

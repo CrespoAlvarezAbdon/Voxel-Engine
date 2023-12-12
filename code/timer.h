@@ -8,6 +8,7 @@
 */
 #ifndef _VOXELENG_TIMER_
 #define _VOXELENG_TIMER_
+
 #include <chrono>
 #include <atomic>
 #include "definitions.h"

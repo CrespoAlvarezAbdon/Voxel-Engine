@@ -8,15 +8,22 @@
 */
 #ifndef _AIEXAMPLE_EX1_
 #define _AIEXAMPLE_EX1_
+
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <array>
+#include <mutex>
 #include <arrayfire.h>
 #include "af/random.h"
 #include "../AIAPI.h"
-#include "../definitions.h"
-#include "../worldGen.h"
+#include "../block.h"
 #include "../chunk.h"
+#include "../definitions.h"
+#include "../event.h"
+#include "../listener.h"
+#include "../vec.h"
+#include "../worldGen.h"
 #include "genetic.h"
 #include "NN.h"
 
@@ -46,6 +53,92 @@ namespace AIExample {
 	//Classes.//
 	////////////
 
+	// 'chunkLoadListener' class.
+
+	/**
+	* @brief Listener of the event when a chunk is loaded.
+	*/
+	class chunkLoadListener : public VoxelEng::listener {
+
+	public:
+
+		// Constructors.
+
+		/**
+		* @brief Class constructor.
+		*/
+		chunkLoadListener(std::unordered_map<VoxelEng::vec2, chunkHeightMap>& chunkColHeight,
+						  std::unordered_map<VoxelEng::vec2, unsigned int>& chunkColHeightUses,
+					      std::mutex& chunkColHeightMutex);
+
+		// Modifiers.
+
+		/**
+		* @brief The method to execute when the attached event occurs.
+		*/
+		virtual void onEvent(VoxelEng::event* e);
+
+	private:
+
+		std::unordered_map<VoxelEng::vec2, chunkHeightMap>& chunkColHeight_;
+		std::unordered_map<VoxelEng::vec2, unsigned int>& chunkColHeightUses_;
+		std::mutex& chunkColHeightMutex_;
+
+	};
+
+	inline chunkLoadListener::chunkLoadListener(std::unordered_map<VoxelEng::vec2, chunkHeightMap>& chunkColHeight,
+		std::unordered_map<VoxelEng::vec2, unsigned int>& chunkColHeightUses,
+		std::mutex& chunkColHeightMutex)
+		: chunkColHeight_(chunkColHeight),
+		  chunkColHeightUses_(chunkColHeightUses),
+		  chunkColHeightMutex_(chunkColHeightMutex)
+	{}
+
+
+	// 'chunkUnloadListener' class.
+
+	/**
+	* @brief Listener of the event when a chunk is loaded.
+	*/
+	class chunkUnloadListener : public VoxelEng::listener {
+
+	public:
+
+		// Constructors.
+
+		/**
+		* @brief Class constructor.
+		*/
+		chunkUnloadListener(std::unordered_map<VoxelEng::vec2, chunkHeightMap>& chunkColHeight,
+							std::unordered_map<VoxelEng::vec2, unsigned int>& chunkColHeightUses,
+							std::mutex& chunkColHeightMutex);
+
+		// Modifiers.
+
+		/**
+		* @brief The method to execute when the attached event occurs.
+		*/
+		virtual void onEvent(VoxelEng::event* e);
+
+	private:
+
+		std::unordered_map<VoxelEng::vec2, chunkHeightMap>& chunkColHeight_;
+		std::unordered_map<VoxelEng::vec2, unsigned int>& chunkColHeightUses_;
+		std::mutex& chunkColHeightMutex_;
+
+	};
+
+	inline chunkUnloadListener::chunkUnloadListener(std::unordered_map<VoxelEng::vec2, chunkHeightMap>& chunkColHeight,
+		std::unordered_map<VoxelEng::vec2, unsigned int>& chunkColHeightUses,
+		std::mutex& chunkColHeightMutex)
+		: chunkColHeight_(chunkColHeight),
+		  chunkColHeightUses_(chunkColHeightUses),
+		  chunkColHeightMutex_(chunkColHeightMutex)
+	{}
+
+
+	// 'miningWorldGen' class.
+
 	/**
 	* @brief Custom world generation for the example AI game.
 	*/
@@ -58,7 +151,8 @@ namespace AIExample {
 		/**
 		* @brief Default constructor.
 		*/
-		miningWorldGen();
+		miningWorldGen(const VoxelEng::block& ore1, const VoxelEng::block& ore2, const VoxelEng::block& ore3, const VoxelEng::block& ore4,
+					   const VoxelEng::block& layer0, const VoxelEng::block& layer1, const VoxelEng::block& layer2, const VoxelEng::block& air);
 
 
 		// Observers.
@@ -77,7 +171,7 @@ namespace AIExample {
 		void generate_(VoxelEng::chunk& chunk);
 
 		void cascadeOreGen_(const VoxelEng::vec3 chunkPos, unsigned int& nBlocksCounter, unsigned int nBlocks,
-			unsigned int inChunkX, unsigned int inChunkY, unsigned int inChunkZ, VoxelEng::block oreID);
+			unsigned int inChunkX, unsigned int inChunkY, unsigned int inChunkZ, const VoxelEng::block& oreID);
 
 
 	private:
@@ -90,17 +184,29 @@ namespace AIExample {
 		static std::uniform_int_distribution<unsigned int> intDice_;
 		static std::uniform_real_distribution<float> floatDice_;
 
-		bool spawnSet_;
-		int maxBlockYCoord_;
-		VoxelEng::vec3 AISpawnPos_; // Same spawn position for every AI agent.
-		std::unordered_map<VoxelEng::vec2, chunkHeightMap> chunkColHeight_;
-		std::uniform_int_distribution<unsigned int>::param_type coalSpreadRange_,
-																ironSpreadRange_,
-																goldSpreadRange_,
-																diamondSpreadRange_;
-		VoxelEng::vec2 oreInChunkPos_;
+		const VoxelEng::block& ore1_,
+							 & ore2_,
+							 & ore3_,
+							 & ore4_,
+			                 & layer0_,
+							 & layer1_,
+							 & layer2_,
+							 & air_;
 
-		enum class ore { COAL, IRON, GOLD, DIAMOND };
+		bool spawnSet_;
+		int maxBlockYCoord_; // TODO. REMOVE THIS
+		float minHeight_,
+			  maxHeight_;
+		VoxelEng::vec3 AISpawnPos_; // Same spawn position for every AI agent.
+		std::mutex chunkColHeightMutex_;
+		std::unordered_map<VoxelEng::vec2, chunkHeightMap> chunkColHeight_;
+		std::unordered_map<VoxelEng::vec2, unsigned int> chunkColHeightUses_;
+		std::uniform_int_distribution<unsigned int>::param_type ore1SpreadRange_,
+																ore2SpreadRange_,
+																ore3SpreadRange_,
+																ore4SpreadRange_;
+		chunkLoadListener chunkLoadListener_;
+		chunkUnloadListener chunkUnloadListener_;
 
 		/*
 		Methods.
@@ -113,28 +219,42 @@ namespace AIExample {
 		of chunks that share the same X and Z chunk coordinate) using
 		perlin noise if it is not already generated. Otherwise it
 		returns said value for the specified chunk column.
+		'countUse' is used for whether counting or not the use of this specific
+		chunkHeightMap object for the later deleiton of height maps that are no longer
+		required.
 		*/
-		const chunkHeightMap& chunkHeightMap_(int blockX, int blockZ);
+		const chunkHeightMap& chunkHeightMap_(int blockX, int blockZ, bool countUse = true);
 
 		/*
 		Generates a height map from a chunk column (that is, a set
 		of chunks that share the same X and Z chunk coordinate) using
 		perlin noise if it is not already generated. Otherwise it
 		returns said value for the specified chunk column.
+		'countUse' is used for whether counting or not the use of this specific
+		chunkHeightMap object for the later deleiton of height maps that are no longer
+		required.
 		*/
-		const chunkHeightMap& chunkHeightMap_(const VoxelEng::vec2& blockXZPos);
+		const chunkHeightMap& chunkHeightMap_(const VoxelEng::vec2& blockXZPos, bool countUse = true);
 
 		void generateChunkHeightMap_(const VoxelEng::vec2& chunkXZPos);
 
 		/*
 		'inChunkX', 'inChunkY' and 'inChunkZ' serve as the starting point to generate the ore.
 		*/
-		void generateOre_(VoxelEng::vec3 inChunkPos, VoxelEng::chunk& chunk, ore ore);
+		void generateOre_(VoxelEng::vec3 inChunkPos, VoxelEng::chunk& chunk, const VoxelEng::block& ore);
 
 	};
 
-	inline miningWorldGen::miningWorldGen()
-		: spawnSet_(false), maxBlockYCoord_(0), AISpawnPos_(VoxelEng::vec3Zero)
+	inline miningWorldGen::miningWorldGen(const VoxelEng::block& ore1, const VoxelEng::block& ore2, const VoxelEng::block& ore3, const VoxelEng::block& ore4,
+		const VoxelEng::block& layer0, const VoxelEng::block& layer1, const VoxelEng::block& layer2, const VoxelEng::block& air)
+	: spawnSet_(false), maxBlockYCoord_(0), AISpawnPos_(VoxelEng::vec3Zero), ore1_(ore1), ore2_(ore2), ore3_(ore3), ore4_(ore4),
+	  layer0_(layer0), layer1_(layer1), layer2_(layer2), air_(air),
+	  ore1SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 8)),
+	  ore2SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 7)),
+	  ore3SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 5)),
+	  ore4SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 3)),
+      chunkLoadListener_(chunkColHeight_, chunkColHeightUses_, chunkColHeightMutex_),
+	  chunkUnloadListener_(chunkColHeight_, chunkColHeightUses_, chunkColHeightMutex_)
 	{}
 
 	inline const VoxelEng::vec3& miningWorldGen::spawnPos() const {
@@ -143,9 +263,9 @@ namespace AIExample {
 	
 	}
 
-	inline const chunkHeightMap& miningWorldGen::chunkHeightMap_(const VoxelEng::vec2& blockXZPos) {
+	inline const chunkHeightMap& miningWorldGen::chunkHeightMap_(const VoxelEng::vec2& blockXZPos, bool countUse) {
 
-		return chunkHeightMap_(blockXZPos[0], blockXZPos[1]);
+		return chunkHeightMap_(blockXZPos.x, blockXZPos.y, countUse);
 
 	}
 
@@ -188,7 +308,7 @@ namespace AIExample {
 		/**
 		* @brief Get the score associated with a specified block ID.
 		*/
-		float blockScore(VoxelEng::block) const;
+		float blockScore(short block) const;
 
 		/**
 		* @brief Method to indicate if this AI game requires training of the agents or not.
@@ -206,6 +326,22 @@ namespace AIExample {
 		* Said penalization should result in decreasing the number of actions that the agent has left.
 		*/
 		unsigned int nNoCostActionsToPen() const;
+
+		/**
+		* @brief Get an AI agent's score with bounds checking.
+		*/
+		float getScoreAt(unsigned int individualID) const;
+
+		/**
+		* @brief Get an AI agent's score without bounds checking.
+		*/
+		float getScore(unsigned int individualID) const;
+
+		/**
+		* @brief Returns true if the specified block is registered or
+		* false otherwise.
+		*/
+		bool isBlockRegistered(const std::string& block) const;
 
 
 		// Modifiers.
@@ -243,16 +379,6 @@ namespace AIExample {
 		void addScore(unsigned int individualID, float score);
 
 		/**
-		* @brief Get an AI agent's score with bounds checking.
-		*/
-		float getScoreAt(unsigned int individualID);
-
-		/**
-		* @brief Get an AI agent's score without bounds checking.
-		*/
-		float getScore(unsigned int individualID);
-
-		/**
 		* @brief Load an AI data file.
 		*/
 		int loadAgentsData(const std::string& path);
@@ -274,6 +400,29 @@ namespace AIExample {
 		* provided by the set up methods.
 		*/
 		void spawnAgents();
+
+		/**
+		* @brief Registers the specified block to be used inside this AI game.
+		*/
+		void registerBlock(const std::string& block);
+
+		/**
+		* @brief Registers the specified block to be used inside this AI game
+		* and with the specified score to grant to the AI agent that obtains
+		* an unit of this type of block.
+		*/
+		void registerBlockWithScore(const std::string& block, float score);
+
+		/**
+		* @brief Unregisters the specified block to be used inside this AI game.
+		*/
+		void unregisterBlock(const std::string& block);
+
+		/**
+		* @brief Sets the specified score granted to an agent for obtaining one unit of the specified
+		* type of block.
+		*/
+		void setBlockScore(const std::string& block, float score);
 
 	protected:
 
@@ -302,7 +451,7 @@ namespace AIExample {
 		
 		void cleanUpGame_();
 
-		void setUpTraining_(unsigned int nAgents, unsigned nEpochs);
+		void setUpTraining_(unsigned int nAgents, unsigned int nEpochs);
 
 		void train_();
 
@@ -318,6 +467,7 @@ namespace AIExample {
 
 	private:
 
+		
 		std::random_device rd_;
 		std::mt19937 randGen_;
 		std::uniform_int_distribution<unsigned int> UIdist_;
@@ -330,7 +480,7 @@ namespace AIExample {
 					 nEpochs_,
 			         nEpochsBetweenSaves_,
 				     agentsModelID_;
-		std::unordered_map<VoxelEng::block, float> blockScore_;
+		std::unordered_map<VoxelEng::numericShortID, float> blockScore_;
 		std::vector<float> scores_;
 		genetic genetic_;
 		std::string lastWorldPath_;
@@ -425,9 +575,15 @@ namespace AIExample {
 
 	}
 
-	inline float miningAIGame::getScore(unsigned int individualID) {
+	inline float miningAIGame::getScore(unsigned int individualID) const {
 
 		return scores_[individualID];
+
+	}
+
+	inline bool miningAIGame::isBlockRegistered(const std::string& block) const {
+
+		return blockPalette_.contains(block);
 
 	}
 
@@ -438,9 +594,9 @@ namespace AIExample {
 	}
 
 	inline void miningAIGame::saveAgentsData_(const std::string& path) {
-	
+
 		genetic_.saveIndividualsData(path);
-	
+
 	}
 
 }

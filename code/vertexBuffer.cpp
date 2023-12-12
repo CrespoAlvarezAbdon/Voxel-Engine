@@ -1,17 +1,22 @@
 #include "vertexBuffer.h"
 #include "renderer.h"
-#if GRAPHICS_API == OPENGL
+#include "logger.h"
 
-#include <GL/glew.h>
-
-#endif
+#include "graphics.h"
+#include <iostream>
+#include <ostream>
 
 
 namespace VoxelEng {
 
     // 'vertexBuffer' class.
 
-    vertexBuffer::vertexBuffer() {
+    vertexBuffer::vertexBuffer() 
+    : rendererID_(0)
+    { }
+
+    void vertexBuffer::generate()
+    {
 
         glGenBuffers(1, &rendererID_);
 
@@ -23,15 +28,15 @@ namespace VoxelEng {
 
     }
 
-    void vertexBuffer::prepareDynamic(unsigned int size) {
+    void vertexBuffer::prepareDynamic(long long size) {
 
         glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 
     }
 
-    void vertexBuffer::replaceDynamicData(const void* data, unsigned int size) {
+    void vertexBuffer::setDynamicData(const void* data, long long offset, long long size) {
 
-        glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+        glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
 
     }
 

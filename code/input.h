@@ -11,6 +11,7 @@
 */
 #ifndef _VOXELENG_INPUT_
 #define _VOXELENG_INPUT_
+
 #include <atomic>
 #include <unordered_map>
 #include <mutex>

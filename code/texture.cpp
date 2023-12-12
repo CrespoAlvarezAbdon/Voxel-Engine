@@ -4,10 +4,9 @@
 
 namespace VoxelEng {
 
-
 	// 'texture' class.
 
-	std::unordered_map<unsigned int, std::pair<int, int>> texture::GUItexturesHW_ = {
+	std::unordered_map<unsigned int, std::pair<int, int>> texture::texturesHW_ = {
 
 		{929, {32, 16}},
 		{961, {32, 16}},

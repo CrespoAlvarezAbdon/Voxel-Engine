@@ -285,7 +285,7 @@ namespace AIExample {
 		*/
 
 		// Save the record's world.
-		VoxelEng::chunkManager::saveAllChunks("saves/recordingWorlds/" + aiGame_->name() + "/" + recordName);
+		//VoxelEng::chunkManager::saveAllChunks("saves/recordingWorlds/" + aiGame_->name() + "/" + recordName);
 
 		simInProgress_ = false;
 

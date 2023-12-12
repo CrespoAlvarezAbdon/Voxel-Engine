@@ -9,6 +9,7 @@
 */
 #ifndef _VOXELENG_LOGGER_
 #define _VOXELENG_LOGGER_
+
 #include <string>
 #include <stdexcept>
 
@@ -31,27 +32,32 @@ namespace VoxelEng {
 		// Other methods.
 
 		/**
-		* @brief Directly print 'msg' into the standard output.
+		* @brief Print 'msg' into the standard output.
+		*/
+		static void print(const std::string& msg);
+
+		/**
+		* @brief Print 'msg' + std::endl into the standard output.
 		*/
 		static void say(const std::string& msg);
 
 		/**
-		* @brief Print "[log]: " + 'msg' into the standard output.
+		* @brief Print "[log]: " + 'msg' + std::endl into the standard output.
 		*/
 		static void log(const std::string& msg);
 
 		/**
-		* @brief Print "[DEBUG]: " + 'msg' into the standard output.
+		* @brief Print "[DEBUG]: " + 'msg' + std::endl into the standard output.
 		*/
 		static void debugLog(const std::string& msg);
 
 		/**
-		* @brief Print "[WARNING]: " + 'msg' into the standard output.
+		* @brief Print "[WARNING]: " + 'msg' + std::endl into the standard output.
 		*/
 		static void warningLog(const std::string& msg);
 
 		/**
-		* @brief Print "[ERROR]:" + 'msg' into the standard output and throw
+		* @brief Print "[ERROR]:" + 'msg' + std::endl into the standard output and throw
 		* a std::runtime_exception with 'msg' as the error message. Try to save
 		* the loaded level into a special file at the root directory named 
 		* chunkManager::openedTerrainFileName() + "ERRORED" if possible.
@@ -59,7 +65,7 @@ namespace VoxelEng {
 		static void errorLog(const std::string& msg);
 
 		/**
-		* @brief Print "[ERROR]:" + 'msg' into the standard output and throw
+		* @brief Print "[ERROR]:" + 'msg' + std::endl into the standard output and throw
 		* a std::out_of_range with 'msg' as the error message. Try to save
 		* the loaded level into a special file at the root directory named
 		* chunkManager::openedTerrainFileName() + "ERRORED" if possible.

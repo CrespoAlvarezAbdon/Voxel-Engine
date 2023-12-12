@@ -8,7 +8,9 @@
 */
 #ifndef _VOXELENG_VERTEXBUFFER_
 #define _VOXELENG_VERTEXBUFFER_
+
 #include <vector>
+
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
@@ -32,13 +34,15 @@ namespace VoxelEng {
 		// Constructors.
 
 		/**
-		* @brief Class constructor.
-		* WARNING. Must be called in a thread with valid graphics API context.
+		* @brief Class constructor that creates and empty vertex buffer with no association
+		* with a real graphics API buffer.
 		*/
 		vertexBuffer();
 
 
 		// Modifiers.
+
+		void generate();
 
 		/**
 		* @brief Initialize a static geometry buffer with vertex data.
@@ -52,7 +56,7 @@ namespace VoxelEng {
 		* store is needed.
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
-		void prepareDynamic(unsigned int size);
+		void prepareDynamic(long long size);
 
 		/**
 		* @brief Replaces the vertex's data with new one.
@@ -60,7 +64,7 @@ namespace VoxelEng {
 		* This vertex buffer must have been initialized as a dynamic geometry
 		* vertex buffer for this function to work as expected.
 		*/
-		void replaceDynamicData(const void* data, unsigned int size);
+		void setDynamicData(const void* data, long long offset, long long size);
 
 		/**
 		* @brief Bind the vertex buffer for the next draw call.
@@ -82,7 +86,7 @@ namespace VoxelEng {
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		~vertexBuffer();
-
+		
 	private:
 
 		GLuint rendererID_;

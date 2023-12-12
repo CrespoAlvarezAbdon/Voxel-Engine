@@ -11,10 +11,12 @@
 */
 #ifndef _VOXELENG_MODEL_
 #define _VOXELENG_MODEL_
+
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include "vertex.h"
+#include "block.h"
 #include "definitions.h"
 
 
@@ -94,11 +96,19 @@ namespace VoxelEng {
 		static const modelTriangles& getModelTriangles(unsigned int modelID);
 
 		/**
-		* @brief Add a texture for a face of a terrain block.
+		* @brief Add a specified texture for a face of a terrain block.
 		* WARNING. Only call when just all the face's vertices have been added
-		* to the model m.
+		* to the model.
 		*/
-		static void addTexture(block blockID, unsigned int textureID, model& m);
+		static void addTexture(const block& block, unsigned int textureID, model& m);
+
+		/**
+		* @brief Add a texture for a face of a terrain block. The added texture is 
+		* the one corresponding to the specified block.
+		* WARNING. Only call when just all the face's vertices have been added
+		* to the model.
+		*/
+		static void addTexture(const block& block, model& m);
 
 
 		// Clean up.

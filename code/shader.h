@@ -8,14 +8,17 @@
 */
 #ifndef _VOXELENG_SHADER_
 #define _VOXELENG_SHADER_
+
 #include <string>
 #include <unordered_map>
 #include "definitions.h"
-#if GRAPHICS_API == OPENGL
+#include "vec.h"
+
+/*#if GRAPHICS_API == OPENGL
 
 #include <glm.hpp>
 
-#endif
+#endif*/
 
 
 namespace VoxelEng {

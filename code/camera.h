@@ -9,20 +9,22 @@
 #ifndef _VOXELENG_CAMERA_
 #define _VOXELENG_CAMERA_
 
+#include "chunk.h"
+#include "definitions.h"
+#include "quaternion.h"
+#include "gameWindow.h"
+#include "vec.h"
+
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <gtx/quaternion.hpp>
+#include <gtc/quaternion.hpp>
 #include <gtx/rotate_vector.hpp>
 #include <glm.hpp>
 
 #endif
-
-#include "definitions.h"
-#include "chunk.h"
-#include "gameWindow.h"
-
 
 namespace VoxelEng {
 
@@ -57,7 +59,7 @@ namespace VoxelEng {
 		* Note: the window parameter must be the one with the graphics API context.
 		*/
 		camera(float FOV, float zNear, float zFar, window& window, bool isPlayerCamera,
-			   const vec3& position = vec3(0.0f, 0.0f, 0.0f), const vec3& direction = vec3(0.0f, 0.0f, 0.0f));
+			   const vec3& position = vec3Zero, const vec3& rotation = vec3Zero);
 
 
 		// Observers.
@@ -104,9 +106,9 @@ namespace VoxelEng {
 		const glm::mat4& modelMatrix() const;
 
 		/**
-		* @brief Provide access to the user camera's direction vector.
+		* @brief Provide access to the user camera's rotation.
 		*/
-		const vec3& direction() const;
+		const vec3& rotation() const;
 
 		/**
 		* @brief Get the camera's chunk relative position.
@@ -117,6 +119,11 @@ namespace VoxelEng {
 		* @brief Get the camera's position.
 		*/
 		const vec3& pos() const;
+
+		/**
+		* @brief Provide access to the user camera's direction.
+		*/
+		const vec3& viewDirection() const;
 
 
 		// Modifiers.
@@ -172,7 +179,7 @@ namespace VoxelEng {
 		/**
 		* @brief Set the camera's position.
 		*/
-		void setPos(int newX, int newY, int newZ);
+		void setPos(float newX, float newY, float newZ);
 
 		/**
 		* @brief Set the camera's chunk position.
@@ -187,12 +194,12 @@ namespace VoxelEng {
 		/**
 		* @brief Set the camera's direction.
 		*/
-		void setDirection(const vec3& newDir);
+		void rotation(const vec3& newRotation);
 
 		/**
 		* @brief Set the camera's direction.
 		*/
-		void setDirection(int newDX, int newDY, int newDZ);
+		void rotation(float pitch, float yaw, float roll);
 
 		/**
 		* @brief Notify that the camera is to be moved up once according
@@ -231,6 +238,18 @@ namespace VoxelEng {
 		void moveWest();
 
 		/**
+		* @brief Notify that the camera will be rolled to its right according to
+		* its rolling speed.
+		*/
+		void rollRight();
+
+		/**
+		* @brief Notify that the camera will be rolled to its left according to
+		* its rolling speed.
+		*/
+		void rollLeft();
+
+		/**
 		* @brief Update the camera's position and the direction it's looking at
 		* taking into account the delta time to avoid the FPS from altering the movement speed.
 		* NOTE. Once this method is called, the next method that should be instantly called is
@@ -263,14 +282,20 @@ namespace VoxelEng {
 			 moveNorth_,
 			 moveSouth_,
 			 moveEast_,
-			 moveWest_;
+			 moveWest_,
+			 rollRight_,
+			 rollLeft_;
 		float FOV_,
-			 zNear_,
-			 zFar_,
-			 angleX_,
-			 angleY_,
-			 mouseSensibility_,
-			 movementSpeed_;
+			  zNear_,
+			  zFar_,
+			  pitchViewDir_,
+			  yawViewDir_,
+			  pitch_,
+			  yaw_,
+			  roll_,
+			  mouseSensibility_,
+			  movementSpeed_,
+			  rollSpeed_;
 		double mouseX_,
 			   mouseY_,
 			   oldMouseX_,
@@ -280,11 +305,14 @@ namespace VoxelEng {
 				  modelMatrix_; // All models' vertices will be multiplied with this matrix (so you can, for example, rotate the entire world around the camera).
 
 		vec3 position_,
-		     direction_,
+			 rotation_,
+		     viewDirection_,
 			 upAxis_,
-			 chunkPosition_,
-			 oldChunkPos_;
+			 rightAxis_,
+			 forwardAxis_;
 
+		vec3 chunkPosition_,
+			  oldChunkPos_;
 	};
 
 	inline const camera* camera::cPlayerCamera() {
@@ -341,15 +369,21 @@ namespace VoxelEng {
 
 	}
 
+	inline const vec3& camera::viewDirection() const {
+	
+		return viewDirection_;
+	
+	}
+
 	inline const vec3& camera::chunkPos() const {
 
 		return chunkPosition_;
 
 	}
 
-	inline const vec3& camera::direction() const {
+	inline const vec3& camera::rotation() const {
 
-		return direction_;
+		return vec3Zero;
 
 	}
 
@@ -401,9 +435,9 @@ namespace VoxelEng {
 
 	}
 
-	inline void camera::setDirection(const vec3& newDir) {
+	inline void camera::rotation(const vec3& newRotation) {
 	
-		setDirection(newDir.x, newDir.y, newDir.z);
+		rotation(newRotation.x, newRotation.y, newRotation.z);
 	
 	}
 
@@ -443,18 +477,16 @@ namespace VoxelEng {
 
 	}
 
-	inline void camera::updateView() {
+	inline void camera::rollRight() {
+	
+		rollRight_ = true;
+	
+	}
 
-		#if GRAPHICS_API == OPENGL
-
-			viewMatrix_ = glm::lookAt(position_, position_ + direction_, upAxis_);
-
-		#else
-
-			
-
-		#endif
-
+	inline void camera::rollLeft() {
+	
+		rollLeft_ = true;
+	
 	}
 
 	inline camera::~camera() {

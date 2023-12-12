@@ -10,6 +10,14 @@
 */
 #ifndef _VOXELENG_GRAPHICS_
 #define _VOXELENG_GRAPHICS_
+
+#include <initializer_list>
+#include <unordered_map>
+#include <string>
+#include "indexBuffer.h"
+#include "vertexArray.h"
+#include "vertexBuffer.h"
+#include "vertexBufferLayout.h"
 #include "gameWindow.h"
 
 
@@ -183,8 +191,38 @@ namespace VoxelEng {
 		*/
 		static void GLCheckErrors(std::ostream& os, const char* file, const char* function, unsigned int line);
 
+		/**
+		* @brief Get a previously registered vertex buffer.
+		*/
+		static const vertexBuffer& cVbo(const std::string& vboName);
+
+		/**
+		* @brief Get a previously registered vertex array.
+		*/
+		static const vertexArray& cVao(const std::string& vboName);
+
+		/**
+		* @brief Get a previously registered vertex buffer layout.
+		*/
+		static const vertexBufferLayout& cVboLayout(const std::string& vboName);
+
 
 		// Modifiers.
+
+		/**
+		* @brief Get a previously registered vertex buffer.
+		*/
+		static vertexBuffer& vbo(const std::string& vboName);
+
+		/**
+		* @brief Get a previously registered vertex array.
+		*/
+		static vertexArray& vao(const std::string& vboName);
+
+		/**
+		* @brief Get a previously registered vertex buffer layout.
+		*/
+		static vertexBufferLayout& vboLayout(const std::string& vboName);
 
 		/**
 		* @brief Set Vertical Synchronization (VSync) on (true) or off (false).
@@ -210,7 +248,6 @@ namespace VoxelEng {
 		*/
 		static void setTransparency(bool isEnabled);
 
-
 		// Clean up.
 
 		/**
@@ -222,6 +259,9 @@ namespace VoxelEng {
 
 		static bool initialised_;
 		static window* mainWindow_;
+		static std::unordered_map<std::string, vertexBuffer> vbos_;
+		static std::unordered_map<std::string, vertexArray> vaos_;
+		static std::unordered_map<std::string, vertexBufferLayout> vboLayouts_;
 		
 	};
 

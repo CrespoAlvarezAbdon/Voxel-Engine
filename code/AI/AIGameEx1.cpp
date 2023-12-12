@@ -3,16 +3,17 @@
 #include <cstddef>
 #include <filesystem>
 #include <typeinfo>
+#include "../definitions.h"
 #include "../logger.h"
 #include "../utilities.h"
+#include "../game.h"
+#include <type_traits>
 
 #if GRAPHICS_API == OPENGL
 
 #include "../glm/gtc/noise.hpp"
 
 #endif
-
-#include "../game.h"
 
 
 namespace AIExample {
@@ -28,19 +29,19 @@ namespace AIExample {
 			GeneticNeuralNetwork& individual = game->getGenetic().individual(individualID);
 			VoxelEng::vec3 posBox1,
 						   posBox2;
-			VoxelEng::block blockObtained = 0;
+			short blockObtained = 0;
 			bool hasObtainedBlock = false;
 			VoxelEng::blockViewDir blockViewDir = VoxelEng::blockViewDir::NONE;
 			unsigned int depth = game->visionDepth(),
 				         radius = game->visionRadius(),
 				         action = 0;
-			std::vector<VoxelEng::block> seenBlocks;
+			std::vector<VoxelEng::numericShortID> seenBlocks;
 			unsigned int remainingActions = game->nInitialActions(),
 				         nActionsNoCostPerformed = 0;
 
 
 			while (remainingActions) {
-			
+
 				// Get input for the neural network.
 				// That is, get the blocks in front of where the
 				// agent is looking, the agent's position in the y-axis
@@ -128,7 +129,14 @@ namespace AIExample {
 						break;
 				
 				}
-				seenBlocks = game->getBlocksBox(posBox1, posBox2);
+
+				// Get blocks seen by the agent.
+				seenBlocks.clear();
+				const std::vector<const VoxelEng::block*> namespacedBlockBox = game->getBlocksBox(posBox1, posBox2);
+				for (auto it = namespacedBlockBox.cbegin(); it != namespacedBlockBox.cend(); it++)
+					seenBlocks.push_back(game->getInternalID(**it));
+
+				// Insert agent's network input parameters.
 				std::vector<int> networkInput(seenBlocks.cbegin(), seenBlocks.cend());
 				networkInput.push_back(pos.y);
 				networkInput.push_back(static_cast<unsigned int>(blockViewDir));
@@ -174,7 +182,8 @@ namespace AIExample {
 							if (game->isInWorld(pos.x + 1, pos.y, pos.z)) {
 						
 								game->selectAIworld(individualID);
-								blockObtained = game->setBlock(individualID, pos.x + 1, pos.y, pos.z, 0, game->recordAgentModifiedBlocks());
+								blockObtained = game->getInternalID(game->setBlock(individualID, pos.x + 1, pos.y, pos.z,
+									VoxelEng::block::emptyBlock(), game->recordAgentModifiedBlocks()));
 								hasObtainedBlock = true;
 						
 							}
@@ -186,7 +195,8 @@ namespace AIExample {
 							if (game->isInWorld(pos.x - 1, pos.y, pos.z)) {
 
 								game->selectAIworld(individualID);
-								blockObtained = game->setBlock(individualID, pos.x - 1, pos.y, pos.z, 0, game->recordAgentModifiedBlocks());
+								blockObtained = game->getInternalID(game->setBlock(individualID, pos.x - 1, pos.y, pos.z,
+									VoxelEng::block::emptyBlock(), game->recordAgentModifiedBlocks()));
 								hasObtainedBlock = true;
 
 							}
@@ -198,7 +208,8 @@ namespace AIExample {
 							if (game->isInWorld(pos.x, pos.y + 1, pos.z)) {
 
 								game->selectAIworld(individualID);
-								blockObtained = game->setBlock(individualID, pos.x, pos.y + 1, pos.z, 0, game->recordAgentModifiedBlocks());
+								blockObtained = game->getInternalID(game->setBlock(individualID, pos.x, pos.y + 1, pos.z,
+									VoxelEng::block::emptyBlock(), game->recordAgentModifiedBlocks()));
 								hasObtainedBlock = true;
 
 							}
@@ -210,7 +221,8 @@ namespace AIExample {
 							if (game->isInWorld(pos.x, pos.y - 1, pos.z)) {
 
 								game->selectAIworld(individualID);
-								blockObtained = game->setBlock(individualID, pos.x, pos.y - 1, pos.z, 0, game->recordAgentModifiedBlocks());
+								blockObtained = game->getInternalID(game->setBlock(individualID, pos.x, pos.y - 1, pos.z,
+									VoxelEng::block::emptyBlock(), game->recordAgentModifiedBlocks()));
 								hasObtainedBlock = true;
 
 							}
@@ -222,7 +234,8 @@ namespace AIExample {
 							if (game->isInWorld(pos.x, pos.y, pos.z + 1)) {
 
 								game->selectAIworld(individualID);
-								blockObtained = game->setBlock(individualID, pos.x, pos.y, pos.z + 1, 0, game->recordAgentModifiedBlocks());
+								blockObtained = game->getInternalID(game->setBlock(individualID, pos.x, pos.y, pos.z + 1,
+									VoxelEng::block::emptyBlock(), game->recordAgentModifiedBlocks()));
 								hasObtainedBlock = true;
 
 							}
@@ -234,7 +247,8 @@ namespace AIExample {
 							if (game->isInWorld(pos.x, pos.y, pos.z - 1)) {
 
 								game->selectAIworld(individualID);
-								blockObtained = game->setBlock(individualID, pos.x, pos.y, pos.z - 1, 0, game->recordAgentModifiedBlocks());
+								blockObtained = game->getInternalID(game->setBlock(individualID, pos.x, pos.y, pos.z - 1,
+									VoxelEng::block::emptyBlock(), game->recordAgentModifiedBlocks()));
 								hasObtainedBlock = true;
 
 							}
@@ -267,7 +281,6 @@ namespace AIExample {
 			
 			}
 
-			//VoxelEng::logger::debugLog(std::to_string(individualID) + " score " + std::to_string(game->getScore(individualID)));
 			return game->getScore(individualID);
 
 		}
@@ -286,60 +299,48 @@ namespace AIExample {
 	void miningWorldGen::prepareGen_() {
 
 		chunkColHeight_.clear();
+		chunkColHeightUses_.clear();
+
+		minHeight_ = 0.0f;
+		maxHeight_ = 200.0f;
 
 		if (!VoxelEng::game::selectedSaveSlot() && VoxelEng::chunkManager::openedTerrainFileName().empty())
 			setSeed();
 
 		playerSpawnPos_.x = 0;
-		playerSpawnPos_.y = chunkHeightMap_({ 0, 0 })[0][0] + 10;
+		playerSpawnPos_.y = chunkHeightMap_({ 0, 0 }, false)[0][0] + 10;
 		playerSpawnPos_.z = 0;
 
 		AISpawnPos_.x = 0;
-		AISpawnPos_.y = chunkHeightMap_({ 0, 0 })[0][0];
+		AISpawnPos_.y = chunkHeightMap_({ 0, 0 }, false)[0][0];
 		AISpawnPos_.z = 0;
 
-		coalSpreadRange_ = std::uniform_int_distribution<unsigned int>::param_type(1, 8);
-		ironSpreadRange_ = std::uniform_int_distribution<unsigned int>::param_type(1, 7);
-		goldSpreadRange_ = std::uniform_int_distribution<unsigned int>::param_type(1, 5);
-		diamondSpreadRange_ = std::uniform_int_distribution<unsigned int>::param_type(1, 3);
-
+		VoxelEng::chunkManager::onChunkLoad().attach(chunkLoadListener_);
+		VoxelEng::chunkManager::onChunkUnload().attach(chunkUnloadListener_);
+	
 	}
 
 	void miningWorldGen::generate_(VoxelEng::chunk& chunk) {
 
 		VoxelEng::vec3 chunkPos = chunk.chunkPos(),
-				       blockPos;
-		VoxelEng::vec3 inChunkPos;
-		const chunkHeightMap& heightMap = chunkHeightMap_(chunkPos.x, chunkPos.z);
+					    blockPos,
+					    inChunkPos;
+		VoxelEng::vec2 chunkXZPos{ chunkPos.x, chunkPos.z };
+		const chunkHeightMap& heightMap = chunkHeightMap_(chunkXZPos);
+		// TODO. Optimise when terrainFeature class and ore subclass are properly defined.
 
 		for (inChunkPos.x = 0; inChunkPos.x < VoxelEng::SCX; inChunkPos.x++)
 			for (inChunkPos.z = 0; inChunkPos.z < VoxelEng::SCZ; inChunkPos.z++)
 				for (inChunkPos.y = 0; inChunkPos.y < VoxelEng::SCY; inChunkPos.y++) {
 
-					if (!chunk.getBlock(inChunkPos)) {
+					blockPos = VoxelEng::chunkManager::getGlobalPos(chunkPos, inChunkPos);
 
-						blockPos = VoxelEng::chunkManager::getGlobalPos(chunkPos, inChunkPos);
-
-						if (blockPos.y < heightMap[inChunkPos.x][inChunkPos.z] - 3) {
-
-							if (blockPos.y > 30 && floatDice_(generator_) <= 1.05f)
-								generateOre_(inChunkPos, chunk, ore::COAL);
-							else if (blockPos.y <= 35 && blockPos.y > 10 && floatDice_(generator_) <= 1.05f)
-								generateOre_(inChunkPos, chunk, ore::IRON);
-							else if (blockPos.y <= 15 && blockPos.y > -10 && floatDice_(generator_) <= 1.01f)
-								generateOre_(inChunkPos, chunk, ore::GOLD);
-							else if (blockPos.y <= -5 && blockPos.y > -20 && floatDice_(generator_) <= 1.005f)
-								generateOre_(inChunkPos, chunk, ore::DIAMOND);
-							else
-								chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 2);
-
-						}
-						else if (blockPos.y >= heightMap[inChunkPos.x][inChunkPos.z] - 3 && blockPos.y < heightMap[inChunkPos.x][inChunkPos.z])
-							chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 6);
-						else if (blockPos.y == heightMap[inChunkPos.x][inChunkPos.z])
-							chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, 1);
-
-					}
+					if (blockPos.y < heightMap[inChunkPos.x][inChunkPos.z] - 3)
+						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer2_);
+					else if (blockPos.y >= heightMap[inChunkPos.x][inChunkPos.z] - 3 && blockPos.y < heightMap[inChunkPos.x][inChunkPos.z])
+						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer1_);
+					else if (blockPos.y == heightMap[inChunkPos.x][inChunkPos.z])
+						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer0_);
 
 				}
 
@@ -347,36 +348,41 @@ namespace AIExample {
 
 	}
 
-	const chunkHeightMap& miningWorldGen::chunkHeightMap_(int chunkX, int chunkZ) {
+	const chunkHeightMap& miningWorldGen::chunkHeightMap_(int chunkX, int chunkZ, bool countUse) {
 
-		VoxelEng::vec2 chunkXZPos(chunkX, chunkZ);
+		VoxelEng::vec2 chunkXZPos{ chunkX, chunkZ };
 
-		if (chunkColHeight_.find(chunkXZPos) == chunkColHeight_.cend())
+		chunkColHeightMutex_.lock();
+		bool found = chunkColHeight_.find(chunkXZPos) != chunkColHeight_.cend();
+		chunkColHeightMutex_.unlock();
+		if (!found)
 			generateChunkHeightMap_(chunkXZPos);
+			
+		std::unique_lock<std::mutex> lock(chunkColHeightMutex_);
 
-		return chunkColHeight_[chunkXZPos];
+		return chunkColHeight_.at(chunkXZPos);
 	
 	}
 
 	void miningWorldGen::generateChunkHeightMap_(const VoxelEng::vec2& chunkXZPos) {
 
-		chunkHeightMap& heights = chunkColHeight_[chunkXZPos] = std::array<std::array<int, VoxelEng::SCZ>, VoxelEng::SCX>();
-		float softnessFactor = 64.0f,
+		chunkHeightMap heightsAux = std::array<std::array<int, VoxelEng::SCZ>, VoxelEng::SCX>();
+		float softnessFactor = 64,
 			  height;
-		VoxelEng::vec2 pos,
-					   aux;
-		VoxelEng::vec3 perlinCoords;
-		for (pos[0] = 0u; pos[0] < VoxelEng::SCX; pos[0]++) // x
-			for (pos[1] = 0u; pos[1] < VoxelEng::SCZ; pos[1]++) { // z
+		VoxelEng::vec2 pos;
+		VoxelEng::vec2 aux;
+		glm::vec3 perlinCoords;
+		for (pos.x = 0u; pos.x < VoxelEng::SCX; pos.x++) // x
+			for (pos.y = 0u; pos.y < VoxelEng::SCZ; pos.y++) { // z
 
 				// Height here is between -1.0 and 1.0.
 				#if GRAPHICS_API == OPENGL
 
 					aux = VoxelEng::chunkManager::getXZGlobalPos(chunkXZPos, pos) / softnessFactor;
 
-					perlinCoords[0] = aux[0];
-					perlinCoords[1] = aux[1];
-					perlinCoords[2] = seed_;
+					perlinCoords.x = aux.x;
+					perlinCoords.y = aux.y;
+					perlinCoords.z = seed_;
 
 					height = glm::perlin(perlinCoords);
 
@@ -387,150 +393,135 @@ namespace AIExample {
 				#endif
 			
 				// Make height value between 0.0 and 200.0.
-				heights[pos[0]][pos[1]] = VoxelEng::translateRange(height, -1.0f, 1.0f, 0.0f, 200.0f);
+				heightsAux[pos.x][pos.y] = VoxelEng::translateRange(height, -1.0f, 1.0f, 0.0f, 200.0f);
 
 			}
+
+		chunkColHeightMutex_.lock();
+		chunkColHeight_[chunkXZPos] = heightsAux;
+		chunkColHeightMutex_.unlock();
 	
 	}
 
-	void miningWorldGen::generateOre_(VoxelEng::vec3 inChunkPos, VoxelEng::chunk& chunk, ore ore) {
+	void miningWorldGen::generateOre_(VoxelEng::vec3 inChunkPos, VoxelEng::chunk& chunk, const VoxelEng::block& ore) {
 
 		std::uniform_int_distribution<unsigned int>::param_type* oreSpread = nullptr;
-		VoxelEng::block oreID = 0;
 
-		switch (ore) {
+		// TODO. Optimise when terrainFeature class and ore subclass are properly defined.
 
-		case ore::COAL:
+		if (ore == ore1_)
+			oreSpread = &ore1SpreadRange_;
+		else {
+			
+			if (ore == ore2_)
+				oreSpread = &ore2SpreadRange_;
+			else {
+			
+				if (ore == ore3_)
+					oreSpread = &ore3SpreadRange_;
+				else {
+				
+					if (ore == ore4_)
+						oreSpread = &ore4SpreadRange_;
+					else
+						VoxelEng::logger::errorLog("Block " + ore.name() + " is not registered as an ore block");
 
-			oreSpread = &coalSpreadRange_;
-			oreID = 7;
-
-			break;
-
-		case ore::IRON:
-
-			oreSpread = &ironSpreadRange_;
-			oreID = 8;
-
-			break;
-
-		case ore::GOLD:
-
-			oreSpread = &goldSpreadRange_;
-			oreID = 9;
-
-			break;
-
-		case ore::DIAMOND:
-
-			oreSpread = &diamondSpreadRange_;
-			oreID = 10;
-
-			break;
-
+				}
+					
+			}
+		
 		}
 
 		unsigned int nBlocks = intDice_(generator_, *oreSpread);
-		VoxelEng::vec3 cPos;
 		for (unsigned int i = 0; i < nBlocks; i++) {
 
-			if (true) {
+			chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, ore);
 
-				chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, oreID);
+			switch (int6Dice_(generator_)) {
 
-				switch (int6Dice_(generator_)) {
+			case 1:
 
-				case 1:
+				if (inChunkPos.x + 1 >= VoxelEng::SCX) {
 
-					if (inChunkPos.x + 1 >= VoxelEng::SCX) {
-
-						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedNorth))
-							cascadeOreGen_(cPos, i, nBlocks, 0, inChunkPos.y, inChunkPos.z, oreID);
+					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedNorth, i, nBlocks, 0, inChunkPos.y, inChunkPos.z, ore);
 						
-						i = nBlocks;
-
-					}
-					else
-						inChunkPos.x++;
-
-					break;
-
-				case 2:
-
-					if (inChunkPos.x == 0) {
-
-						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedSouth))
-							cascadeOreGen_(cPos, i, nBlocks, VoxelEng::SCX - 1, inChunkPos.y, inChunkPos.z, oreID);
-						
-						i = nBlocks;
-
-					}
-					else
-						inChunkPos.x--;
-
-					break;
-
-				case 3:
-
-					if (inChunkPos.y + 1 >= VoxelEng::SCY) {
-
-						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedUp))
-							cascadeOreGen_(cPos, i, nBlocks, inChunkPos.x, 0, inChunkPos.z, oreID);
-						
-						i = nBlocks;
-
-					}
-					else
-						inChunkPos.y++;
-
-					break;
-
-				case 4:
-
-					if (inChunkPos.y == 0) {
-
-						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedDown))
-							cascadeOreGen_(cPos, i, nBlocks, inChunkPos.x, VoxelEng::SCY - 1, inChunkPos.z, oreID);
-						
-						i = nBlocks;
-
-					}
-					else
-						inChunkPos.y--;
-
-					break;
-
-				case 5:
-
-					if (inChunkPos.z + 1 >= VoxelEng::SCZ) {
-
-						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedEast))
-							cascadeOreGen_(cPos, i, nBlocks, inChunkPos.x, inChunkPos.y, 0, oreID);
-
-						i = nBlocks;
-
-					}
-					else
-						inChunkPos.z++;
-
-					break;
-
-				case 6:
-
-					if (inChunkPos.z == 0) {
-
-						if (VoxelEng::chunkManager::isChunkInWorld(cPos = chunk.chunkPos() + VoxelEng::vec3FixedWest))
-							cascadeOreGen_(cPos, i, nBlocks, inChunkPos.x, inChunkPos.y, VoxelEng::SCZ - 1, oreID);
-						else
-							i = nBlocks;
-
-					}
-					else
-						inChunkPos.z--;
-
-					break;
+					i = nBlocks;
 
 				}
+				else
+					inChunkPos.x++;
+
+				break;
+
+			case 2:
+
+				if (inChunkPos.x == 0) {
+
+					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedSouth, i, nBlocks, VoxelEng::SCX - 1, inChunkPos.y, inChunkPos.z, ore);
+						
+					i = nBlocks;
+
+				}
+				else
+					inChunkPos.x--;
+
+				break;
+
+			case 3:
+
+				if (inChunkPos.y + 1 >= VoxelEng::SCY) {
+
+					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedUp, i, nBlocks, inChunkPos.x, 0, inChunkPos.z, ore);
+						
+					i = nBlocks;
+
+				}
+				else
+					inChunkPos.y++;
+
+				break;
+
+			case 4:
+
+				if (inChunkPos.y == 0) {
+
+					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedDown, i, nBlocks, inChunkPos.x, VoxelEng::SCY - 1, inChunkPos.z, ore);
+						
+					i = nBlocks;
+
+				}
+				else
+					inChunkPos.y--;
+
+				break;
+
+			case 5:
+
+				if (inChunkPos.z + 1 >= VoxelEng::SCZ) {
+
+					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedEast, i, nBlocks, inChunkPos.x, inChunkPos.y, 0, ore);
+
+					i = nBlocks;
+
+				}
+				else
+					inChunkPos.z++;
+
+				break;
+
+			case 6:
+
+				if (inChunkPos.z == 0) {
+
+					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedWest, i, nBlocks, inChunkPos.x, inChunkPos.y, VoxelEng::SCZ - 1, ore);
+					
+					i = nBlocks;
+
+				}
+				else
+					inChunkPos.z--;
+
+				break;
 
 			}
 
@@ -538,18 +529,28 @@ namespace AIExample {
 
 	}
 
+	// TODO. FIX THIS
 	void miningWorldGen::cascadeOreGen_(const VoxelEng::vec3 chunkPos, unsigned int& nBlocksCounter, unsigned int nBlocks,
-		unsigned int inChunkX, unsigned int inChunkY, unsigned int inChunkZ, VoxelEng::block oreID) {
+		unsigned int inChunkX, unsigned int inChunkY, unsigned int inChunkZ, const VoxelEng::block& oreID) {
 
 		VoxelEng::chunk* cascadeChunk = nullptr;
-		if (VoxelEng::chunkManager::getChunkLoadLevel(chunkPos) == VoxelEng::chunkLoadLevel::NOTLOADED)
-			cascadeChunk = VoxelEng::chunkManager::createChunk(true, chunkPos);
-		else
-			cascadeChunk = VoxelEng::chunkManager::selectChunkByChunkPos(chunkPos);
+
+		if (!VoxelEng::chunkManager::isChunkInWorld(chunkPos)) {
+			//cascadeChunk = VoxelEng::chunkManager::createChunk(false, chunkPos);
+		}
+		else {
+		
+			cascadeChunk = VoxelEng::chunkManager::selectChunk(chunkPos);
+
+			if (cascadeChunk->loadLevel() == VoxelEng::chunkLoadLevel::NOTLOADED)
+				worldGen::generate(*cascadeChunk);
+		
+		}
+
 		unsigned int spreadDirection = 0;
 		for (nBlocksCounter; nBlocksCounter < nBlocks; nBlocksCounter++) {
 
-			if (!cascadeChunk->getBlock(inChunkX, inChunkY, inChunkZ)) {
+			if (!cascadeChunk->isEmptyBlock(inChunkX, inChunkY, inChunkZ)) {
 
 				cascadeChunk->setBlock(inChunkX, inChunkY, inChunkZ, oreID);
 
@@ -559,7 +560,7 @@ namespace AIExample {
 
 						if (inChunkX + 1 >= VoxelEng::SCX)
 							nBlocksCounter = nBlocks; // Stop generating because we do not want ore clusters					 
-						else						  // that expand to 3 chunks or that form a '<' or '>' shape between 2 chunks.
+						else						  // that expand to 3 chunks or that returns the generation between 2 chunks more than one time.
 							inChunkX++;
 
 						break;
@@ -618,6 +619,62 @@ namespace AIExample {
 	}
 
 
+	// 'chunkLoadListener' class.
+	
+	void chunkLoadListener::onEvent(VoxelEng::event* e) {
+
+		if (e == nullptr)
+			VoxelEng::logger::errorLog("The provided event is null");
+		else {
+
+			VoxelEng::chunkEvent* aChunkEvent = dynamic_cast<VoxelEng::chunkEvent*>(e);
+			if (std::is_polymorphic<VoxelEng::event>() && aChunkEvent == nullptr)
+				VoxelEng::logger::errorLog("The chunkLoadListener is attached to the event '" + e->name() + "', which is not a chunkEvent");
+			else {
+			
+				chunkColHeightMutex_.lock();
+				chunkColHeightUses_[aChunkEvent->chunkPosXZ()]++;
+				chunkColHeightMutex_.unlock();
+			
+			}
+				
+		}
+
+
+	}
+
+
+	// 'chunkUnloadListener' class.
+
+	void chunkUnloadListener::onEvent(VoxelEng::event* e) {
+	
+		if (e == nullptr)
+			VoxelEng::logger::errorLog("The provided event is null");
+		else {
+
+			VoxelEng::chunkEvent* aChunkEvent = dynamic_cast<VoxelEng::chunkEvent*>(e);
+			if (aChunkEvent == nullptr)
+				VoxelEng::logger::errorLog("The chunkLoadListener is attached to the event " + e->name() + " , which is not a chunkEvent");
+			else
+			{
+
+				const VoxelEng::vec2& chunkPosXZ = aChunkEvent->chunkPosXZ();
+				chunkColHeightMutex_.lock();
+				if (--chunkColHeightUses_.at(chunkPosXZ) == 0) {
+
+					chunkColHeightUses_.erase(chunkPosXZ);
+					chunkColHeight_.erase(chunkPosXZ);
+
+				}
+				chunkColHeightMutex_.unlock();
+
+			}
+
+		}
+
+	}
+
+
 	// 'miningAIGame' class.
 
 	void miningAIGame::addScoreAt(unsigned int individualID, float score) {
@@ -627,7 +684,7 @@ namespace AIExample {
 
 	}
 
-	float miningAIGame::getScoreAt(unsigned int individualID) {
+	float miningAIGame::getScoreAt(unsigned int individualID) const {
 	
 		if (isAgentRegistered(individualID))
 			return getScore(individualID);
@@ -654,25 +711,121 @@ namespace AIExample {
 
 	}
 
-	float miningAIGame::blockScore(VoxelEng::block ID) const {
+	void miningAIGame::registerBlock(const std::string& block) {
+	
+		if (VoxelEng::block::isBlockRegistered(block)) {
 
-		if (blockScore_.contains(ID))
-			return blockScore_.at(ID);
+			if (blockPalette_.contains(block))
+				VoxelEng::logger::errorLog("Block " + block + " is already registered in this AI game");
+			else {
+			
+				short internalID = 0;
+
+				if (freeInternalIDs_.empty())
+					internalID = blockPalette_.size();
+				else {
+
+					internalID = *freeInternalIDs_.cbegin();
+					freeInternalIDs_.erase(internalID);
+
+				}
+
+				blockPalette_[block] = internalID;
+				inverseBlockPalette_[internalID] = block;
+			
+			}
+			
+		}
 		else
-			VoxelEng::logger::errorLog("Block ID " + std::to_string(ID) + " is not registered to have an score");
+			VoxelEng::logger::errorLog("Block " + block + " is not registered in the engine");
+	
+	}
+
+	void miningAIGame::registerBlockWithScore(const std::string& block, float score) {
+
+		if (VoxelEng::block::isBlockRegistered(block)) {
+
+			if (blockPalette_.contains(block))
+				VoxelEng::logger::errorLog("Block " + block + " is already registered in this AI game");
+			else {
+
+				short internalID = 0;
+
+				if (freeInternalIDs_.empty())
+					internalID = blockPalette_.size();
+				else {
+
+					internalID = *freeInternalIDs_.cbegin();
+					freeInternalIDs_.erase(internalID);
+
+				}
+
+				blockPalette_[block] = internalID;
+				inverseBlockPalette_[internalID] = block;
+				blockScore_[internalID] = score;
+
+			}
+
+		}
+		else
+			VoxelEng::logger::errorLog("Block " + block + " is not registered in the engine");
 
 	}
 
+	void miningAIGame::unregisterBlock(const std::string& block) {
+
+		if (blockPalette_.contains(block)) {
+
+			short internalID = blockPalette_[block];
+			freeInternalIDs_.insert(internalID);
+			blockPalette_.erase(block);
+			inverseBlockPalette_.erase(internalID);
+			blockScore_.erase(internalID);
+
+		}
+		else
+			VoxelEng::logger::errorLog("Block " + block + " is not registered in this AI game");
+
+	}
+
+	void miningAIGame::setBlockScore(const std::string& block, float score) {
+	
+		if (isBlockRegistered(block)) {
+
+			short internalID = blockPalette_[block];
+
+			if (blockScore_.contains(internalID))
+				blockScore_[internalID] = score;
+			else
+				VoxelEng::logger::errorLog("Block " + block + " is not registered to have an score");
+
+		}
+		else
+			VoxelEng::logger::errorLog("Block " + block + " is not registered in this AI game");
+		
+	
+	}
+
+	float miningAIGame::blockScore(short internalBlockID) const {
+
+		if (blockScore_.contains(internalBlockID))
+			return blockScore_.at(internalBlockID);
+		else
+			VoxelEng::logger::errorLog("Block " + inverseBlockPalette_.at(internalBlockID) + " is not registered to have an score");
+
+	}
+
+	
+
 	void miningAIGame::generalSetUp_() {
 
-		blockScore_ = { {0, 0}, // Block with ID 0 means out of bounds/unreachable/empty block.
-						{1, 0.5f},
-						{2, 1.0f}, 
-						{6, 2.5f},
-						{7, 5},
-						{8, 10},
-						{9, 25},
-						{10, 50} }; 
+		registerBlockWithScore(VoxelEng::block::emptyBlock().name(), 0.0f);
+		registerBlockWithScore("starminer::grass", 0.5f);
+		registerBlockWithScore("starminer::dirt", 1.0f);
+		registerBlockWithScore("starminer::stone", 2.5f);
+		registerBlockWithScore("starminer::coalOre", 5.0f);
+		registerBlockWithScore("starminer::ironOre", 10.0f);
+		registerBlockWithScore("starminer::goldOre", 25.0f);
 
 		visionDepth_ = 3;
 		visionRadius_ = 3;
@@ -932,14 +1085,16 @@ namespace AIExample {
 		// Initialise required engine systems.
 		if (!VoxelEng::chunkManager::initialised()) {
 		
-			VoxelEng::chunkManager::init(VoxelEng::DEF_N_CHUNKS_TO_COMPUTE);
+			VoxelEng::chunkManager::init();
+			// TODOAI. if (!chunkManager::infiniteWorlds())
+						// VoxelEng::chunkManager::setNChunksToCompute(VoxelEng::DEF_N_CHUNKS_TO_COMPUTE);
 			VoxelEng::entityManager::init();
 		
 		}
 
 		VoxelEng::logger::debugLog("Number of inputs for neural network: " + std::to_string(nInputs_));
 		popSize_ = nAgents;
-		scores_ = std::vector<float>(popSize_ * 2, 0.0f);
+		scores_ = std::vector<float>(popSize_ * 2u, 0.0f);
 
 		genetic_.setNetworkTaxonomy({ nInputs_, 50, 50, 50, 50, 50, 6 });
 		genetic_.setCrossoverSplitPoint(0);
@@ -969,14 +1124,16 @@ namespace AIExample {
 		// Initialise required engine systems.
 		if (!VoxelEng::chunkManager::initialised()) {
 
-			VoxelEng::chunkManager::init(VoxelEng::DEF_N_CHUNKS_TO_COMPUTE);
+			VoxelEng::chunkManager::init();
+			// TODOAI. if (!chunkManager::infiniteWorlds())
+						// VoxelEng::chunkManager::setNChunksToCompute(VoxelEng::DEF_N_CHUNKS_TO_COMPUTE);
 			VoxelEng::entityManager::init();
 
 		}
 
 		VoxelEng::logger::debugLog("Number of inputs for neural network: " + std::to_string(nInputs_));
 		popSize_ = nAgents;
-		scores_ = std::vector<float>(popSize_ * 2, 0.0f);
+		scores_ = std::vector<float>(popSize_ * 2u, 0.0f);
 
 		genetic_.setNetworkTaxonomy({ nInputs_, 50, 50, 50, 50, 50, 6 });
 
@@ -1008,14 +1165,16 @@ namespace AIExample {
 		if (!VoxelEng::chunkManager::initialised()) {
 
 			VoxelEng::chunk::init();
-			VoxelEng::chunkManager::init(VoxelEng::DEF_N_CHUNKS_TO_COMPUTE);
+			VoxelEng::chunkManager::init();
+			// TODOAI. if (!chunkManager::infiniteWorlds())
+						// VoxelEng::chunkManager::setNChunksToCompute(VoxelEng::DEF_N_CHUNKS_TO_COMPUTE);
 			VoxelEng::entityManager::init();
 			
 		}
 
 		VoxelEng::logger::debugLog("Number of inputs for neural network: " + std::to_string(nInputs_));
 		popSize_ = nAgents;
-		scores_ = std::vector<float>(popSize_ * 2, 0.0f);
+		scores_ = std::vector<float>(popSize_ * 2u, 0.0f);
 
 		genetic_.setNetworkTaxonomy({ nInputs_, 50, 50, 50, 50, 50, 6 });
 
@@ -1081,7 +1240,10 @@ namespace AIExample {
 
 	void miningAIGame::cleanUpGame_() {
 
+		blockPalette_.clear();
+		inverseBlockPalette_.clear();
 		blockScore_.clear();
+		freeInternalIDs_.clear();
 		VoxelEng::worldGen::selectGen("default");
 		VoxelEng::chunkManager::cleanUp();
 		VoxelEng::entityManager::cleanUp();
@@ -1096,7 +1258,7 @@ namespace AIExample {
 			VoxelEng::logger::errorLog("The number of individuals to load must be even when training.");
 
 		// Setup that must be performed here instead of in its usual method.
-		scores_ = std::vector<float>(popSize_ * 2, 0.0f);
+		scores_ = std::vector<float>(popSize_ * 2u, 0.0f);
 		genetic_.setMutationParameters(1.0f / popSize_, -0.5f, 0.5f);
 
 		genetic_.train(nEpochs_, nEpochsBetweenSaves_, epochForNewWorld_);
@@ -1116,7 +1278,7 @@ namespace AIExample {
 			return false;
 
 		// Setup that must be performed here instead of in its usual method.
-		scores_ = std::vector<float>(popSize_ * 2, 0.0f);
+		scores_ = std::vector<float>(popSize_ * 2u, 0.0f);
 		genetic_.setMutationParameters(1.0f / popSize_, -0.5f, 0.5f);
 
 		genetic_.test(nEpochs_, averageFitness, averageFitnessSize);

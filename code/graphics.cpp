@@ -1,14 +1,14 @@
 #include "graphics.h"
 
+#include "logger.h"
+#include "definitions.h"
+
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #endif
-
-#include "logger.h"
-#include "definitions.h"
 
 
 namespace VoxelEng {
@@ -34,6 +34,9 @@ namespace VoxelEng {
 
 	bool graphics::initialised_ = false;
 	window* graphics::mainWindow_ = nullptr;
+	std::unordered_map<std::string, vertexBuffer> graphics::vbos_;
+	std::unordered_map<std::string, vertexArray> graphics::vaos_;
+	std::unordered_map<std::string, vertexBufferLayout> graphics::vboLayouts_;
 
 
 	void graphics::init(window& mainWindow) {
@@ -47,6 +50,7 @@ namespace VoxelEng {
 				// GLFW initialization.
 				if (!glfwInit())
 					logger::errorLog("Failed to initialize the GLFW library!");
+
 
 				// Select GLFW version.
 				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -74,6 +78,39 @@ namespace VoxelEng {
 				graphics::setDepthTest(true);
 				graphics::setBasicFaceCulling(true);
 				graphics::setTransparency(true);
+
+				// Initialise VBO, VAO and VBO layouts.
+
+				vaos_.insert({ "3D", vertexArray() });
+				vaos_.insert({ "2D", vertexArray() });
+
+				vbos_.insert({ "chunks", vertexBuffer() });
+				vbos_.insert({ "entities", vertexBuffer() });
+				vbos_.insert({ "GUI", vertexBuffer() });
+
+				vaos_.at("3D").generate();
+				vaos_.at("2D").generate();
+				vbos_.at("chunks").generate();
+				vbos_.at("entities").generate();
+				vbos_.at("GUI").generate();
+
+				vertexBufferLayout& layout3D = vboLayouts_.insert({ "3D", vertexBufferLayout() }).first->second,
+								  & layout2D = vboLayouts_.insert({ "2D", vertexBufferLayout() }).first->second;
+
+				// Configure the vertex layout for 3D rendering.
+				layout3D.push<GLfloat>(3);
+				layout3D.push<GLfloat>(2);
+				layout3D.push<normalVec>(1);
+				vaos_.at("3D").bind();
+				vbos_.at("chunks").bind();
+				vaos_.at("3D").addLayout(layout3D);
+
+				// The same for 2D rendering.
+				layout2D.push<GLfloat>(2);
+				layout2D.push<GLfloat>(2);
+				vaos_.at("2D").bind();
+				vbos_.at("GUI").bind();
+				vaos_.at("2D").addLayout(layout2D);
 
 			#else
 
@@ -104,6 +141,60 @@ namespace VoxelEng {
 
 		if (errorsDetected)
 			abort();
+
+	}
+
+	const vertexBuffer& graphics::cVbo(const std::string& vboName) {
+
+		if (vbos_.contains(vboName))
+			return vbos_[vboName];
+		else
+			logger::errorLog(vboName + " is not a registered vertex buffer");
+
+	}
+
+	const vertexArray& graphics::cVao(const std::string& vaoName) {
+
+		if (vaos_.contains(vaoName))
+			return vaos_[vaoName];
+		else
+			logger::errorLog(vaoName + " is not a registered vertex array");
+
+	}
+
+	const vertexBufferLayout& graphics::cVboLayout(const std::string& vboLayoutName) {
+
+		if (vboLayouts_.contains(vboLayoutName))
+			return vboLayouts_[vboLayoutName];
+		else
+			logger::errorLog(vboLayoutName + " is not a registered vertex array");
+
+	}
+
+	vertexBuffer& graphics::vbo(const std::string& vboName) {
+
+		if (vbos_.contains(vboName))
+			return vbos_[vboName];
+		else
+			logger::errorLog(vboName + " is not a registered vertex buffer");
+
+	}
+
+	vertexArray& graphics::vao(const std::string& vaoName) {
+
+		if (vaos_.contains(vaoName))
+			return vaos_[vaoName];
+		else
+			logger::errorLog(vaoName + " is not a registered vertex array");
+
+	}
+
+	vertexBufferLayout& graphics::vboLayout(const std::string& vboLayoutName) {
+
+		if (vboLayouts_.contains(vboLayoutName))
+			return vboLayouts_[vboLayoutName];
+		else
+			logger::errorLog(vboLayoutName + " is not a registered vertex array");
 
 	}
 
@@ -141,6 +232,10 @@ namespace VoxelEng {
 	void graphics::cleanUp() {
 	
 		#if GRAPHICS_API == OPENGL
+
+			vbos_.clear();
+			vaos_.clear();
+			vboLayouts_.clear();
 
             glfwTerminate();
 

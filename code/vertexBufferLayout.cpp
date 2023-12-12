@@ -1,5 +1,4 @@
 #include "vertexBufferLayout.h"
-#include "definitions.h"
 
 
 namespace VoxelEng {

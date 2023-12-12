@@ -10,6 +10,7 @@
 
 #ifndef _VOXELENG_BATCH_
 #define _VOXELENG_BATCH_
+
 #include <unordered_set>
 #include <atomic>
 #include <cstddef>

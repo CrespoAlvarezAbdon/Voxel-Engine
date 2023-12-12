@@ -8,9 +8,11 @@
 */
 #ifndef _VOXELENG_TEXTURE_
 #define _VOXELENG_TEXTURE_
+
 #include <string>
 #include <unordered_map>
 #include <utility>
+
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
@@ -118,7 +120,7 @@ namespace VoxelEng {
 
 		static texture const* blockTextureAtlas_;
 		static unsigned int blockAtlasResolution_;
-		static std::unordered_map<unsigned int, std::pair<int, int>> GUItexturesHW_;
+		static std::unordered_map<unsigned int, std::pair<int, int>> texturesHW_;
 		static std::pair<int, int> defaultTextureHW_;
 
 		GLuint rendererID_;
@@ -163,7 +165,7 @@ namespace VoxelEng {
 
 	inline const std::pair<int, int>& texture::getTextureWH(unsigned int textureID) {
 
-		return GUItexturesHW_.find(textureID) == GUItexturesHW_.cend() ? defaultTextureHW_ : GUItexturesHW_[textureID];
+		return texturesHW_.find(textureID) == texturesHW_.cend() ? defaultTextureHW_ : texturesHW_[textureID];
 
 	}
 

@@ -1,396 +1,300 @@
 ﻿  game.cpp
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(207,33): warning C4244: 'return': conversion from 'const T' to 'unsigned int', possible loss of data
+  GLM: GLM_GTX_hash is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it.
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\utilities.h(158,20): warning C4244: 'return': conversion from 'unsigned long' to 'VoxelEng::numericShortID', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(456,57): warning C4244: 'argument': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(213,33): warning C4244: 'return': conversion from 'const T' to 'unsigned int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(456,43): warning C4244: 'argument': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(219,33): warning C4244: 'return': conversion from 'const T' to 'unsigned int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(456,29): warning C4244: 'argument': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(693,51): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(462,33): warning C4244: 'return': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(693,37): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(468,33): warning C4244: 'return': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(705,97): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(474,33): warning C4244: 'return': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(705,83): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(600,61): warning C4244: 'argument': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(705,69): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(600,47): warning C4244: 'argument': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(705,55): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(600,33): warning C4244: 'argument': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(705,43): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(624,60): warning C4244: 'argument': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(705,31): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(624,45): warning C4244: 'argument': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(717,73): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(624,30): warning C4244: 'argument': conversion from 'const T' to 'GLbyte', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(717,59): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1495,51): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(717,45): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1495,37): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(717,33): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1507,97): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(753,36): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1507,83): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(753,29): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1507,69): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(753,22): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1507,55): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(760,67): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1507,43): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(760,59): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1507,31): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(760,51): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1519,73): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(760,43): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1519,59): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(760,35): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1519,45): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(760,27): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1519,33): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(798,57): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1549,51): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(798,45): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1549,39): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(798,33): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1549,27): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(830,36): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1556,67): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(830,29): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1556,59): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(830,22): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1556,51): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(270,36): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1556,43): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(270,26): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1556,35): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(270,16): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1556,27): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(276,56): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1562,52): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(276,41): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1562,40): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(276,26): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1562,28): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(282,42): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1648,36): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(282,32): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1648,29): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(282,22): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\chunk.h(1648,22): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\entity.h(137,74): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(955,38): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\entity.h(137,64): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(955,31): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\entity.h(137,54): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(955,24): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\entity.h(137,44): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(961,46): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\entity.h(137,34): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(961,39): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\entity.h(137,24): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(961,32): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\entity.h(595,56): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(973,68): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\entity.h(595,49): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(973,60): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\entity.h(595,42): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(973,52): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\worldGen.h(177,36): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(973,44): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\worldGen.h(177,29): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(973,36): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\worldGen.h(177,22): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(973,28): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\worldGen.h(189,29): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(434,56): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\worldGen.h(189,22): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(434,41): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\worldGen.h(189,15): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\camera.h(434,26): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
           with
           [
               T=float
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(643,46): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\renderer.h(101,62): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(225,97): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(226,128): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(227,129): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(228,128): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(229,128): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(232,99): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(233,129): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(236,99): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(237,129): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(240,119): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(241,120): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(242,120): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(243,120): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(244,121): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(439,82): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(459,82): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(512,60): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(580,60): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(599,53): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\utilities.h(213,39): warning C4101: 'e': unreferenced local variable
+D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(336): message : see reference to function template instantiation 'bool VoxelEng::validatedCinInput<unsigned int>(T &)' being compiled
           with
           [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(643,39): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(643,32): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(649,68): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(649,60): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(649,52): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(649,44): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(649,36): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(649,28): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(655,57): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(655,45): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(655,33): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(673,55): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(673,48): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(673,41): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(679,54): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(679,47): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AIAPI.h(679,40): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-C:\Program Files\ArrayFire\v3\include\af\exception.h(22,1): warning C4275: non dll-interface class 'std::exception' used as base for dll-interface class 'af::exception'
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vcruntime_exception.h(48): message : see declaration of 'std::exception'
-C:\Program Files\ArrayFire\v3\include\af\exception.h(21): message : see declaration of 'af::exception'
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Dependencies\GLFW\include\GLFW\glfw3.h(123): message : see previous definition of 'APIENTRY'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AI\NN.h(137,29): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AI\AIGameEx1.h(124,50): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
-          ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\AI\AIGameEx1.h(124,36): warning C4244: 'argument': conversion from 'const T' to 'int', possible loss of data
-          with
-          [
-              T=float
+              T=unsigned int
           ]
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(212,98): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(213,129): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(214,131): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(215,130): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(216,130): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(219,100): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(220,131): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(223,100): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(224,131): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(227,114): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(228,115): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(229,115): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(230,115): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(231,115): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(234,75): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(498,60): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(567,60): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
-D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\Deep dive open\code\game.cpp(584,54): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
   Deep dive open.vcxproj -> D:\Users\0\Desktop\C++\Deep dive open\Deep dive open\x64\Debug\Deep dive open.exe

@@ -6,6 +6,12 @@
 
 namespace VoxelEng {
 
+	void logger::print(const std::string& msg) {
+
+		std::cout << msg;
+
+	}
+
 	void logger::say(const std::string& msg) {
 
 		std::cout << msg << std::endl;
@@ -36,8 +42,8 @@ namespace VoxelEng {
 
 		std::cout << errorMsg << std::endl;
 
-		if (game::selectedEngineMode() == engineMode::EDITLEVEL) // Save a separate copy of the level just when the error happened just in case.
-			chunkManager::saveAllChunks(chunkManager::openedTerrainFileName() + "ERRORED");
+		//if (game::selectedEngineMode() == engineMode::EDITLEVEL) // Save a separate copy of the level just when the error happened just in case.
+			//chunkManager::saveAllChunks(chunkManager::openedTerrainFileName() + "ERRORED");
 
 		game::cleanUp();
 
@@ -51,8 +57,8 @@ namespace VoxelEng {
 
 		std::cout << errorMsg << std::endl;
 
-		if (game::selectedEngineMode() == engineMode::EDITLEVEL) // Save a separate copy of the level just when the error happened just in case.
-			chunkManager::saveAllChunks(chunkManager::openedTerrainFileName() + "ERRORED");
+		//if (game::selectedEngineMode() == engineMode::EDITLEVEL) // Save a separate copy of the level just when the error happened just in case.
+			//chunkManager::saveAllChunks(chunkManager::openedTerrainFileName() + "ERRORED");
 
 		game::cleanUp();
 

@@ -5,11 +5,13 @@
 * @author Abdon Crespo Alvarez
 * @title User input functions.
 * @brief The functions that are supposed to be executed when a certain user input
-* is received by the engine should at least be declared here.
+* is received by the engine should be declared here.
 */
 #ifndef _VOXELENG_INPUTFUNCTIONS_
 #define _VOXELENG_INPUTFUNCTIONS_
+
 #include "AIAPI.h"
+#include "block.h"
 #include "camera.h"
 #include "game.h"
 #include "logger.h"
@@ -68,6 +70,18 @@ namespace VoxelEng {
 		* to its movement speed.
 		*/
 		static void moveWest();
+
+		/**
+		* @brief Indicate that the user's camera will be rolled to its right according to
+		* its rolling speed.
+		*/
+		static void rollRight();
+
+		/**
+		* @brief Indicate that the user's camera will be rolled to its left according to
+		* its rolling speed.
+		*/
+		static void rollLeft();
 
 		/**
 		* @brief Switch on and off the shader lighting test.
@@ -195,6 +209,18 @@ namespace VoxelEng {
 
 	}
 
+	inline void inputFunctions::rollRight() {
+
+		playerCamera_->rollRight();
+
+	}
+
+	inline void inputFunctions::rollLeft() {
+
+		playerCamera_->rollLeft();
+
+	}
+
 	inline void inputFunctions::switchComplexLighting() {
 	
 		game::switchComplexLighting();
@@ -227,55 +253,56 @@ namespace VoxelEng {
 
 	inline void inputFunctions::selectBlockSlot1() {
 	
-		player::setBlockToPlace(1);
+		// TODO. CHANGE WHEN PROPER INVENTORY SYSTEM IS ADDED.
+		player::setBlockToPlace(block::getBlockC("starminer::grass"));
 	
 	}
 
 	inline void inputFunctions::selectBlockSlot2() {
 
-		player::setBlockToPlace(2);
+		player::setBlockToPlace(block::getBlockC("starminer::dirt"));
 
 	}
 
 	inline void inputFunctions::selectBlockSlot3() {
 
-		player::setBlockToPlace(3);
+		player::setBlockToPlace(block::getBlockC("starminer::stone"));
 
 	}
 
 	inline void inputFunctions::selectBlockSlot4() {
 
-		player::setBlockToPlace(4); 
+		player::setBlockToPlace(block::getBlockC("starminer::marbleBlock"));
 
 	}
 
 	inline void inputFunctions::selectBlockSlot5() {
 
-		player::setBlockToPlace(10); // Texture ID 4 is reserved for the warden model's texture.
+		player::setBlockToPlace(block::getBlockC("starminer::coalOre")); // Texture ID 4 is reserved for the warden model's texture.
 
 	}
 
 	inline void inputFunctions::selectBlockSlot6() {
 
-		player::setBlockToPlace(6);
+		player::setBlockToPlace(block::getBlockC("starminer::ironOre"));
 
 	}
 
 	inline void inputFunctions::selectBlockSlot7() {
 
-		player::setBlockToPlace(7);
+		player::setBlockToPlace(block::getBlockC("starminer::goldOre"));
 
 	}
 
 	inline void inputFunctions::selectBlockSlot8() {
 
-		player::setBlockToPlace(8);
+		player::setBlockToPlace(block::getBlockC("starminer::diamondOre"));
 
 	}
 
 	inline void inputFunctions::selectBlockSlot9() {
 
-		player::setBlockToPlace(9);
+		player::setBlockToPlace(block::getBlockC("starminer::sand"));
 
 	}
 

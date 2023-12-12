@@ -9,6 +9,7 @@
 */
 #ifndef _VOXELENG_GUIFUNCTIONS_
 #define _VOXELENG_GUIFUNCTIONS_
+
 #include "game.h"
 
 

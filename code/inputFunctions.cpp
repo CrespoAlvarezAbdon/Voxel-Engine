@@ -1,7 +1,6 @@
 #include "inputFunctions.h"
 
 
-
 namespace VoxelEng {
 
 	// 'inputFunctions' class.

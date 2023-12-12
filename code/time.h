@@ -9,6 +9,7 @@
 */
 #ifndef _VOXELENG_TIME_
 #define _VOXELENG_TIME_
+
 #include "definitions.h"
 
 #if GRAPHICS_API == OPENGL

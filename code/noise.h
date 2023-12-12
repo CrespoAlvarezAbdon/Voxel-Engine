@@ -9,6 +9,8 @@
 #ifndef _VOXELENG_NOISE_
 #define _VOXELENG_NOISE_
 
+#include "definitions.h"
+
 #if GRAPHICS_API == OPENGL
 	
 #include "../glm/gtc/noise.hpp"

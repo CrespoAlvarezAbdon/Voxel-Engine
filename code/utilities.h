@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include "definitions.h"
 #include "logger.h"
+#include "vec.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -148,11 +149,15 @@ namespace VoxelEng {
 	}
 
 	/**
-	* @brief Returns the string converted into a block ID.
+	* @brief Returns the string converted into a numericShortID.
 	* Throws std::invalid_argument if could not convert.
 	*/
 	template <>
-	block sto(const std::string& str);
+	inline numericShortID sto(const std::string& str) {
+
+		return std::stoul(str);
+
+	}
 
 	/**
 	* @brief Returns the string converted into a Block View Direction.

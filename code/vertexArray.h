@@ -29,25 +29,27 @@ namespace VoxelEng {
 		// Constructors.
 
 		/**
-		* @brief Class constructor.
-		* WARNING. Must be called in a thread with valid graphics API context.
+		* @brief Class constructor that creates and empty vertex buffer with no association
+		* with a real graphics API buffer.
 		*/
 		vertexArray();
 
 
 		// Modifiers.
 
+		void generate();
+
 		/**
 		* @brief Bind the VAO to the graphics API context.
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
-		void bind() const;
+		void bind();
 
 		/**
 		* @brief Unbind the VAO from the graphics API contex.
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
-		void unbind() const;
+		void unbind();
 
 		/**
 		* @brief Add a vertex buffer layout to the VAO so the GPU can figure out
@@ -71,10 +73,10 @@ namespace VoxelEng {
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		~vertexArray();
-
+		
 	private:
 
-		unsigned int rendererID_;
+		GLuint rendererID_;
 
 	};
 

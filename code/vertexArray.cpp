@@ -1,5 +1,6 @@
 #include "vertexArray.h"
 #include <cstddef>
+
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
@@ -9,20 +10,22 @@
 
 namespace VoxelEng {
 
-    vertexArray::vertexArray() {
+    vertexArray::vertexArray()
+    : rendererID_(0) {}
 
-        // The first parameter is the number of arrays to generate.
-        glGenVertexArrays(1, &rendererID_); 
+    void vertexArray::generate() {
+
+        glGenVertexArrays(1, &rendererID_);
 
     }
 
-    void vertexArray::bind() const {
+    void vertexArray::bind() {
 
         glBindVertexArray(rendererID_);
 
     }
 
-    void vertexArray::unbind() const {
+    void vertexArray::unbind() {
 
         glBindVertexArray(0);
 

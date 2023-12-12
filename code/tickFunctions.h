@@ -8,7 +8,9 @@
 */
 #ifndef _VOXELENG_TICKFUNC_
 #define _VOXELENG_TICKFUNC_
+
 #include "AIAPI.h"
+#include "entity.h"
 
 
 namespace VoxelEng {

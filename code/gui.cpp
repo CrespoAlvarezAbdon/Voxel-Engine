@@ -10,6 +10,7 @@
 #include "graphics.h"
 #include "texture.h"
 #include "logger.h"
+#include "renderer.h"
 #include "utilities.h"
 #include "vertexBufferLayout.h"
 
@@ -26,7 +27,7 @@ namespace VoxelEng {
 	GUIelement::GUIelement() 
 		: enabled_(false), textureID_(0), KeyFuncPtr_(nullptr), MouseButtonFuncPtr_(nullptr),
 		  oldActivationEventReceived_(false), name_("Unnamed GUIElement"), GUIContainer_(GUIcontainer::both), parent_(nullptr),
-	      GUILayer_(1), originalPos_(0, 0), originalSize_(0, 0), truePos_(0, 0)
+		  GUILayer_(1), originalPos_{ 0, 0 }, originalSize_{ 0, 0 }, truePos_{ 0, 0 }
 	{}
 
 	void GUIelement::changeTextureID(unsigned int newTextureID) {
@@ -298,10 +299,9 @@ namespace VoxelEng {
 	vertexBuffer* GUImanager::vbo_ = nullptr;
 	vertexArray* GUImanager::vao_ = nullptr;
 	shader* GUImanager::shader_ = nullptr;
-	renderer* GUImanager::renderer_ = nullptr;
 	
 
-	void GUImanager::init(window& window, shader& shader, renderer& renderer) {
+	void GUImanager::init(window& window, shader& shader) {
 
 		if (initialised_)
 			logger::errorLog("GUI management system is already initialised");
@@ -310,23 +310,11 @@ namespace VoxelEng {
 			// Attributes' initialisation.
 
 			window_ = &window;
-			updateOrthoMatrix();
-			shader_ = &shader;
-			renderer_ = &renderer;
 			windowAPIPointer_ = window_->windowAPIpointer();
-			vbo_ = new vertexBuffer();
-			vao_ = new vertexArray();
-
-			// Setup VBO, VAO and VAO layout.
-			vbo_->bind();
-			vao_->bind();
-
-			vertexBufferLayout layout;
-
-			layout.push<GLfloat>(2);
-			layout.push<GLfloat>(2);
-
-			vao_->addLayout(layout);
+			updateOrthoMatrix();
+			vbo_ = &graphics::vbo("GUI");
+			vao_ = &graphics::vao("2D");
+			shader_ = &shader;
 
 			// Initialize GUIElement attributes.
 			GUIelement::window_ = window_;
@@ -367,10 +355,10 @@ namespace VoxelEng {
 
 					element->lockMutex();
 
-					size = sizeof(vertex2D) * element->nVertices();
+					size = element->nVertices();
 
-					vbo_->prepareStatic(element->vertexData(), size);
-					renderer_->draw2D(size);
+					vbo_->prepareStatic(element->vertexData(), size * sizeof(vertex2D));
+					renderer::draw2D(size);
 
 					element->unlockMutex();
 
@@ -386,15 +374,11 @@ namespace VoxelEng {
 					size = sizeof(vertex2D) * element->nVertices();
 
 					vbo_->prepareStatic(element->vertexData(), size);
-					renderer_->draw2D(size);
+					renderer::draw2D(size);
 
 					element->unlockMutex();
 
 				}
-
-		// Unbinding section.
-		vao_->unbind();
-		vbo_->unbind();
 	
 	}
 
@@ -1273,13 +1257,9 @@ namespace VoxelEng {
 
 		shader_ = nullptr;
 
-		renderer_ = nullptr;
+		vbo_ = nullptr;
 
-		if (vbo_)
-			delete vbo_;
-
-		if (vao_)
-			delete vao_;
+		vao_ = nullptr;
 
 		initialised_ = false;
 

@@ -2,6 +2,8 @@
 #include <cmath>
 #include <cstddef>
 #include <string>
+#include "block.h"
+#include "camera.h"
 #include "game.h"
 #include "graphics.h"
 #include "gui.h"
@@ -18,12 +20,13 @@ namespace VoxelEng {
     camera* player::camera_ = nullptr;
     float player::blockReachRange_ = 0.0f,
           player::blockSearchIncrement_ = 0.0f;
-    block player::selectedBlock_ = 0;
-    std::atomic<block> player::blockToPlace_ = 1;
+    const block* player::selectedBlock_ = nullptr;
+    std::atomic<const block*> player::blockToPlace_ = nullptr;
     vec3 player::selectedBlockPos_ = vec3Zero,
          player::oldSelectedBlockPos_ = vec3Zero;
     std::atomic<bool> player::destroyBlock_ = false,
                       player::placeBlock_ = false;
+    entity* player::playerEntity_ = nullptr;
 
 
     void player::init(float FOV, float zNear, float zFar, window& window, unsigned int blockReachRange) {
@@ -32,13 +35,17 @@ namespace VoxelEng {
             logger::errorLog("Player system is already initialised");
         else {
         
-            engineMode mode = game::selectedEngineMode();
-            if (mode == engineMode::AIMENULOOP) {
+            if (game::selectedEngineMode() == engineMode::AIMENULOOP) {
 
                 window_ = window.windowAPIpointer();
                 camera_ = new camera(FOV, zNear, zFar, window, true);
                 blockReachRange_ = blockReachRange;
-                blockSearchIncrement_ = 0.01f;
+                blockSearchIncrement_ = 0.1f;
+                selectedBlock_ = block::emptyBlockP();
+                blockToPlace_ = block::emptyBlockP(); // TODO. ADD PROPER PLAYER MODEL.
+                playerEntity_ = &entityManager::getEntity(entityManager::registerEntity(2, vec3Zero, vec3Zero, nullptr));
+
+                // NEXT. GET ALL THE PLAYERENTITY'S VARIABLE SYNCHRONIZED (WITH THE SAME VALUE) AS THE PLAYER'S AND SEE IF THE MODEL RENDERS PROPERLY AND IF NOT FIX IT
 
             }  
             else 
@@ -51,12 +58,12 @@ namespace VoxelEng {
     void player::selectBlock() {
 
         float step = blockSearchIncrement_;
-        const vec3& dir = camera_->direction(),
+        const vec3& dir = camera_->viewDirection(),
                     pos = camera_->pos();
         vec3 blockPos;
-        selectedBlock_ = 0;
+        selectedBlock_ = block::emptyBlockP();
 
-        while (step < blockReachRange_ && !selectedBlock_) {
+        while (step < blockReachRange_ && selectedBlock_->isEmptyBlock()) {
 
             selectedBlockPos_ = pos + (dir * step);
 
@@ -64,14 +71,19 @@ namespace VoxelEng {
             blockPos.y = floor(selectedBlockPos_.y);
             blockPos.z = floor(selectedBlockPos_.z);
 
-            selectedBlock_ = (chunkManager::getChunkLoadLevel(chunkManager::getChunkCoords(blockPos)) == VoxelEng::chunkLoadLevel::DECORATED) ? chunkManager::getBlock(blockPos) : 0;
+            selectedBlock_ = (chunkManager::getChunkLoadLevel(chunkManager::getChunkCoords(blockPos)) == VoxelEng::chunkLoadLevel::DECORATED) ? &chunkManager::getBlock(blockPos) : block::emptyBlockP();
 
-            if (!selectedBlock_) { // No non-null block found. Continue searching.
+            if (selectedBlock_->isEmptyBlock()) { // No non-empty block found. Continue searching.
 
                 oldSelectedBlockPos_ = selectedBlockPos_;
 
                 step += blockSearchIncrement_;
 
+            }
+            else {
+            
+                float dummy = 2.50f;
+            
             }
 
         }
@@ -97,31 +109,31 @@ namespace VoxelEng {
             chunk* selectedChunk = chunkManager::selectChunkByRealPos(selectedBlockPos_),
                  * neighbor = nullptr;
 
-            if (selectedChunk && selectedBlock_) {
+            if (selectedChunk && !selectedBlock_->isEmptyBlock()) {
 
                 vec3 chunkRelPos = chunkManager::getChunkRelCoords(selectedBlockPos_);
 
-                selectedChunk->setBlock(chunkRelPos, 0);
+                selectedChunk->setBlock(chunkRelPos, block::emptyBlock());
 
-                chunkManager::highPriorityUpdate(selectedChunk->chunkPos());
+                chunkManager::issueChunkMeshJob(selectedChunk, false, true);
 
                 if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
 
                 if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
 
                 if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
 
                 if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
 
                 if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
 
                 if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(selectedChunk->chunkPos())))
-                    chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
 
             }
 
@@ -157,40 +169,36 @@ namespace VoxelEng {
             
             } // else xOld == x && yOld == y
 
-            if (chunkManager::isInWorld(xOld, yOld, zOld) && !chunkManager::getBlock(xOld, yOld, zOld)) {
+            chunk* selectedChunk = chunkManager::selectChunkByChunkPos(xOld, yOld, zOld);
+            if (selectedChunk && chunkManager::isEmptyBlock(xOld, yOld, zOld) && !selectedBlock_->isEmptyBlock()) {
             
-                chunk* selectedChunk = chunkManager::selectChunkByChunkPos(xOld, yOld, zOld),
-                     * neighbor = nullptr;
+                chunk * neighbor = nullptr;
 
-                if (selectedChunk && selectedBlock_) {
+                vec3 chunkRelPos{ floorMod(xOld, SCX),
+                                   floorMod(yOld, SCY),
+                                   floorMod(zOld, SCZ) };
 
-                    vec3 chunkRelPos(floorMod(xOld, SCX),
-                                     floorMod(yOld, SCY),
-                                     floorMod(zOld, SCZ));
+                selectedChunk->setBlock(chunkRelPos, *blockToPlace_);
 
-                    selectedChunk->setBlock(chunkRelPos, blockToPlace_);
+                chunkManager::issueChunkMeshJob(selectedChunk, false, true);
 
-                    chunkManager::highPriorityUpdate(selectedChunk->chunkPos());
+                if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(selectedChunk->chunkPos())))
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
 
-                    if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(selectedChunk->chunkPos())))
-                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(selectedChunk->chunkPos())))
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
 
-                    if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(selectedChunk->chunkPos())))
-                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(selectedChunk->chunkPos())))
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
 
-                    if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(selectedChunk->chunkPos())))
-                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(selectedChunk->chunkPos())))
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
 
-                    if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(selectedChunk->chunkPos())))
-                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
+                if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(selectedChunk->chunkPos())))
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
 
-                    if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(selectedChunk->chunkPos())))
-                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
-
-                    if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(selectedChunk->chunkPos())))
-                        chunkManager::highPriorityUpdate(neighbor->chunkPos());
-
-                }
+                if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(selectedChunk->chunkPos())))
+                    chunkManager::issueChunkMeshJob(neighbor, false, true);
             
             }
 
@@ -210,13 +218,12 @@ namespace VoxelEng {
                 destroyBlock_ = false;
 
             }
-            else
-                if (placeBlock_) {
+            else if (placeBlock_) {
 
-                    placeSelectedBlock();
-                    placeBlock_ = false;
+                placeSelectedBlock();
+                placeBlock_ = false;
 
-                }
+            }
 
             {
 
@@ -230,75 +237,49 @@ namespace VoxelEng {
 
     }
 
-    void player::setBlockToPlace(block blockID) {
+    void player::setBlockToPlace(block& block) {
 
-        if (blockID != blockToPlace_) {
+        if (block != *blockToPlace_) {
 
-            blockToPlace_ = blockID;
+            blockToPlace_ = &block;
 
             GUIelement& element = GUImanager::getGUIElement("blockPreview");
             element.lockMutex();
-            switch (blockID) { // This could use a map for associating texture ID with block ID in the future.
-
-            case 1:
-                element.changeTextureID(1);
-                break;
-
-            case 2:
-                element.changeTextureID(2);
-                break;
-
-            case 3:
-                element.changeTextureID(3);
-                break;
-
-            case 4:
-                element.changeTextureID(4);
-                break;
-
-            case 10:
-                element.changeTextureID(10);
-                break;
-
-            case 6:
-                element.changeTextureID(6);
-                break;
-
-            case 7:
-                element.changeTextureID(7);
-                break;
-
-            case 8:
-                element.changeTextureID(8);
-                break;
-
-            case 9:
-                element.changeTextureID(9);
-                break;
-
-            default:
-                logger::errorLog("Invalid ID for user's selected block to place");
-                break;
-
-            }
+            element.changeTextureID(block.textureID());
             element.unlockMutex();
 
         }
 
     }
 
-    void player::changePosition(int newX, int newY, int newZ, int newDirX, int newDirY, int newDirZ) {
+    void player::changeTransform(float newX, float newY, float newZ, float pitch, float yaw, float roll) {
     
         camera_->setPos(newX, newY, newZ);
         camera_->setChunkPos(chunkManager::getChunkCoords(newX, newY, newZ));
-        camera_->setDirection(newDirX, newDirY, newDirZ);
+        camera_->rotation(pitch, yaw, roll);
+
+        playerEntity_->x() = newX;
+        playerEntity_->y() = newY;
+        playerEntity_->z() = newZ;
+        playerEntity_->rotateViewPitch(pitch);
+        playerEntity_->rotateViewYaw(yaw);
+        playerEntity_->rotateViewRoll(roll);
     
     }
 
     void player::cleanUp() {
 
-        delete camera_;
+        if (camera_) {
+        
+            delete camera_;
+            camera_ = nullptr;
+        
+        }
+       
         initialised_ = false;
+
+        selectedBlock_ = nullptr;
+        blockToPlace_ = nullptr;
 
     }
 
@@ -313,8 +294,7 @@ namespace VoxelEng {
         updateXRotation_(false), updateYRotation_(false), updateZRotation_(false),
         tickFunc_(func) {
     
-        if (rot != vec3Zero)
-            rotate(rot);
+        rotate(rot);
     
     }
 
@@ -554,10 +534,6 @@ namespace VoxelEng {
 
     void entityManager::manageEntities() {
 
-        // If the generated level is new use the spawn position
-        // provided by the selected world generator as the player's.
-        if (firstManagementIteration_ && chunkManager::openedTerrainFileName() == "")
-            player::changePosition(worldGen::playerSpawnPos());
         firstManagementIteration_ = false;
 
         // Process active entities that have a corresponding tick function ...
@@ -610,7 +586,7 @@ namespace VoxelEng {
 
     }
 
-    entityID entityManager::registerEntity(unsigned int modelID, int posX, int posY, int posZ, float rotX, float rotY, float rotZ, tickFunc func) {
+    entityID entityManager::registerEntity(unsigned int modelID, float posX, float posY, float posZ, float rotX, float rotY, float rotZ, tickFunc func) {
 
         entityID entityID = 0,
                  batchID = 0;
@@ -622,7 +598,7 @@ namespace VoxelEng {
         if (freeEntityID_.empty()) {
 
             entityID = entities_.size();
-            entities_.emplace_back(modelID, vec3(posX, posY, posZ), vec3(rotX, rotY, rotZ), func);
+            entities_.emplace_back(modelID, vec3{ posX, posY, posZ }, vec3{ rotX, rotY, rotZ }, func);
 
         }
         else {
@@ -631,7 +607,7 @@ namespace VoxelEng {
             freeEntityID_.erase(entityID);
             
             entities_[entityID].setModelID(modelID);
-            entities_[entityID].pos_ = vec3(posX, posY, posZ);
+            entities_[entityID].pos_ = vec3{ posX, posY, posZ };
             entities_[entityID].rotate(rotX, rotY, rotZ);
             entities_[entityID].tickFunc_ = func;
 
@@ -812,7 +788,7 @@ namespace VoxelEng {
 
     }
 
-    void entityManager::moveEntity(entityID entityID, int x, int y, int z) {
+    void entityManager::moveEntity(entityID entityID, float x, float y, float z) {
     
         if (entityManager::isEntityRegistered(entityID)) {
 

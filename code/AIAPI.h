@@ -70,7 +70,7 @@ namespace VoxelEng {
 			/**
 			* @brief The supported types that an AI action arguments can belong to.
 			*/
-			enum class type { INT, UINT, FLOAT, CHAR, BOOL, BLOCK, BLOCKVIEWDIR } tag;
+			enum class type { INT, UINT, FLOAT, CHAR, BOOL, NUMERIC_BLOCK_ID, BLOCKVIEWDIR } tag;
 
 			union {
 
@@ -79,7 +79,7 @@ namespace VoxelEng {
 				float f;
 				char c;
 				bool b;
-				block bl;
+				numericShortID nbi;
 				blockViewDir bvd;
 
 			};
@@ -119,7 +119,7 @@ namespace VoxelEng {
 			/**
 			* @brief Class constructor.
 			*/
-			agentActionArg(block value);
+			agentActionArg(numericShortID value);
 
 			/**
 			* @brief Class constructor.
@@ -322,7 +322,7 @@ namespace VoxelEng {
 			* AI action that is going to be played.
 			*/
 			template <>
-			block getParam<block>(unsigned int index) const;
+			numericShortID getParam<numericShortID>(unsigned int index) const;
 
 			/**
 			* @brief Get the value of one of the parameters read from the current
@@ -342,6 +342,21 @@ namespace VoxelEng {
 			* of the level's terrain is enabled or false otherwise.
 			*/
 			bool recordAgentModifiedBlocks() const;
+
+			/**
+			* @brief Returns the corresponding internal ID used to represent the specified block in the game.
+			*/
+			numericShortID getInternalID(const std::string& block) const;
+
+			/**
+			* @brief Returns the corresponding internal ID used to represent the specified block in the game.
+			*/
+			numericShortID getInternalID(const VoxelEng::block& block) const;
+
+			/**
+			* @brief Returns the corresponding namespaced ID to the block with the specified internal ID.
+			*/
+			const std::string& getNamespacedID(short internalID) const;
 
 
 			// Modifiers: general.
@@ -449,13 +464,13 @@ namespace VoxelEng {
 			* @brief Get the last modified block ID by the specified AI agent. The caller may also
 			* optionally pop that ID out of the ordered list of the modified block IDs by said agent.
 			*/
-			block getLastModifiedBlock(agentID agentID, bool popBlock = false);
+			const block& getLastModifiedBlock(agentID agentID, bool popBlock = false);
 			
 			/**
 			* @brief Get the first modified block ID by the specified AI agent. The caller may also
 			* optionally pop that ID out of the ordered list of the modified block IDs by said agent.
 			*/
-			block getFirstModifiedBlock(agentID agentID, bool popBlock = false);
+			const block& getFirstModifiedBlock(agentID agentID, bool popBlock = false);
 
 			/**
 			* @brief Begin the recording of the AI agents' modifications done to the level's terrain.
@@ -475,7 +490,7 @@ namespace VoxelEng {
 			it would render said record invalid as it would no longer contain a
 			sequence of instantly followed block modifications.
 			*/
-			block getModifiedBlock(entityID entityID, unsigned int blockIndex);
+			const block& getModifiedBlock(entityID entityID, unsigned int blockIndex);
 
 			/**
 			* @brief Get the Block View Direction (BVD) of the specified AI agent.
@@ -507,7 +522,7 @@ namespace VoxelEng {
 			* WARNING. Select the proper level you want to access with "aiGame::selectAIWorld()" or "aiGame::selectOriginalWorld()"
 			* before calling this method.
 			*/
-			block setBlock(entityID entityID, const vec3& pos, block blockID, bool record);
+			const block& setBlock(entityID entityID, const vec3& pos, const block& block, bool record);
 
 			/**
 			* @brief Performs a modification of a terrain block and associates that modification to
@@ -517,17 +532,17 @@ namespace VoxelEng {
 			* WARNING. Select the proper level you want to access with "aiGame::selectAIWorld()" or "aiGame::selectOriginalWorld()"
 			* before calling this method.
 			*/
-			block setBlock(entityID entityID, int x, int y, int z, block blockID, bool record);
+			const block& setBlock(entityID entityID, int x, int y, int z, const block& block, bool record);
 
 			/**
 			* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2.
 			*/
-			std::vector<block> getBlocksBox(const vec3& pos1, const vec3& pos2);
+			std::vector<const block*> getBlocksBox(const vec3& pos1, const vec3& pos2);
 
 			/**
 			* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2.
 			*/
-			std::vector<block> getBlocksBox(int x1, int y1, int z1, int x2, int y2, int z2);
+			std::vector<const block*> getBlocksBox(int x1, int y1, int z1, int x2, int y2, int z2);
 
 			/**
 			* @brief Performs agent.pos() += movement;
@@ -537,7 +552,7 @@ namespace VoxelEng {
 			/**
 			* @brief Performs agent.pos() += vec3(x, y, z);
 			*/
-			void moveEntity(entityID entityID, int x, int y, int z);
+			void moveEntity(entityID entityID, float x, float y, float z);
 
 			/**
 			* @brief Performs agent.pos() = pos;
@@ -547,7 +562,7 @@ namespace VoxelEng {
 			/**
 			* @brief Performs agent.pos() = vec3(x, y, z);
 			*/
-			void setEntityPos(unsigned entityID, int x, int y, int z);
+			void setEntityPos(unsigned entityID, float x, float y, float z);
 
 			/**
 			* @brief Rotate the AI agent's viewing direction and rotate it's model
@@ -587,7 +602,7 @@ namespace VoxelEng {
 			/**
 			* @brief Create an entity with its model determined by "entityTypeID".
 			*/
-			unsigned int createEntity(unsigned int entityTypeID, int posX, int posY, int posZ, float rotX, float rotY, float rotZ);
+			unsigned int createEntity(unsigned int entityTypeID, float posX, float posY, float posZ, float rotX, float rotY, float rotZ);
 
 			/**
 			* @brief Create an AI agent with its model determined by "entityTypeID".
@@ -599,7 +614,7 @@ namespace VoxelEng {
 			* @brief Create an AI agent with its model determined by "entityTypeID".
 			* This only creates the representation of said AI agent in the system and in graphical form, without the AI implementation part.
 			*/
-			unsigned int createAgent(unsigned int entityTypeID, int x, int y, int z, blockViewDir faceViewDir = blockViewDir::PLUSX);
+			unsigned int createAgent(unsigned int entityTypeID, float x, float y, float z, blockViewDir faceViewDir = blockViewDir::PLUSX);
 			
 			/**
 			* @brief Get the entity's global position in the level.
@@ -667,6 +682,11 @@ namespace VoxelEng {
 			std::vector<agentID> AIagentEntityID_; // Map between AI agent ID and entity ID.
 			std::vector<blockViewDir> AIagentLookDirection_; // Map between AI agent ID and the direction its looking at.
 			std::unordered_set<agentID> freeAIagentID_;
+
+			// Block palette used for converting between namespaced block IDs and numerical IDs used in the AI game.
+			std::unordered_map<std::string, numericShortID> blockPalette_;
+			std::unordered_map<numericShortID, std::string> inverseBlockPalette_;
+			std::unordered_set<numericShortID> freeInternalIDs_;
 
 
 			/*
@@ -865,6 +885,12 @@ namespace VoxelEng {
 		
 		}
 
+		inline numericShortID aiGame::getInternalID(const VoxelEng::block& block) const {
+
+			return getInternalID(block.name());
+
+		}
+
 		template <class T>
 		requires std::derived_from<T, aiGame>
 		static void aiGame::registerGame(const std::string& gameName) {
@@ -930,19 +956,19 @@ namespace VoxelEng {
 
 		}
 
-		inline block aiGame::setBlock(agentID agentID, const vec3& pos, VoxelEng::block blockID, bool record) {
+		inline const block& aiGame::setBlock(agentID agentID, const vec3& pos, const block& blockID, bool record) {
 
 			return setBlock(agentID, pos.x, pos.y, pos.z, blockID, record);
 
 		}
 
-		inline std::vector<block> aiGame::getBlocksBox(int x1, int y1, int z1, int x2, int y2, int z2) {
+		inline std::vector<const block*> aiGame::getBlocksBox(int x1, int y1, int z1, int x2, int y2, int z2) {
 
 			return chunkManager::getBlocksBox(x1, y1, z1, x2, y2, z2);
 
 		}
 
-		inline std::vector<block> aiGame::getBlocksBox(const vec3& pos1, const vec3& pos2) {
+		inline std::vector<const block*> aiGame::getBlocksBox(const vec3& pos1, const vec3& pos2) {
 
 			return getBlocksBox(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
 

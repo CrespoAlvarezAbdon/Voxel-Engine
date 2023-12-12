@@ -10,6 +10,7 @@
 */
 #ifndef _AI_NN_
 #define _AI_NN_
+
 #include <vector>
 #include <concepts>
 #include <typeinfo>

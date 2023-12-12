@@ -1,7 +1,6 @@
 #include "utilities.h"
 #include <cstddef>
 #include <cctype>
-#include "logger.h"
 
 
 namespace VoxelEng {
@@ -326,23 +325,11 @@ namespace VoxelEng {
 	}
 
 	template <>
-	block sto(const std::string& str) {
-
-		unsigned long result = std::stoul(str);
-
-		if (result > std::numeric_limits<block>::max())
-			logger::errorOutOfRange(" Thrown when trying to convert '" + str + "' into an block ID");
-
-		return result;
-
-	}
-
-	template <>
 	blockViewDir sto(const std::string& str) {
 
 		unsigned long value = std::stoul(str);
 
-		if (value > std::numeric_limits<block>::max())
+		if (value > 6)
 			logger::errorOutOfRange(" Thrown when trying to convert '" + str + "' into an blockViewDir");
 
 		return static_cast<blockViewDir>(value);

@@ -58,6 +58,32 @@ namespace VoxelEng {
 		static void init();
 
 
+		// Observers.
+
+		/**
+		* @brief Returns true if the current world is infinite or false otherwise.
+		*/
+		static bool infiniteTerrain();
+
+		/**
+		* @brief Returns the maximun distance that any entity (including players) can be from
+		* the center of the X axis on finite worlds.
+		*/
+		static unsigned int maxDistanceX();
+
+		/**
+		* @brief Returns the maximun distance that any entity (including players) can be from
+		* the center of the Y axis on finite worlds.
+		*/
+		static unsigned int maxDistanceY();
+
+		/**
+		* @brief Returns the maximun distance that any entity (including players) can be from
+		* the center of the Z axis on finite worlds.
+		*/
+		static unsigned int maxDistanceZ();
+
+
 		// Modifiers.
 
 		/**
@@ -99,6 +125,11 @@ namespace VoxelEng {
 		*/
 		static void processGlobalTickFunctions();
 
+		/**
+		* @brief Set if the current world is infinite or not.
+		*/
+		static void infiniteTerrain(bool value);
+
 
 		// Clean up.
 
@@ -109,12 +140,40 @@ namespace VoxelEng {
 
 	private:
 
-		static bool initialised_;
+		static bool initialised_,
+					infiniteTerrain_;
+		static unsigned int maxDistanceX_,
+							maxDistanceY_,
+							maxDistanceZ_;
 		static std::unordered_map<std::string, tickFunc> globalTickFunctions_;
 		static std::unordered_set<std::string> activeTickFunctions_;
 		static std::mutex tickFunctionsMutex_;
 	
 	};
+
+	inline bool world::infiniteTerrain() {
+	
+		return infiniteTerrain_;
+	
+	}
+
+	inline unsigned int world::maxDistanceX() {
+
+		return maxDistanceX_;
+
+	}
+
+	inline unsigned int world::maxDistanceY() {
+
+		return maxDistanceY_;
+
+	}
+
+	inline unsigned int world::maxDistanceZ() {
+
+		return maxDistanceZ_;
+
+	}
 
 	inline void world::setSkybox(const skybox& background) {
 
@@ -127,6 +186,12 @@ namespace VoxelEng {
 			
 
 		#endif
+	
+	}
+
+	inline void world::infiniteTerrain(bool value) {
+	
+		infiniteTerrain_ = value;
 	
 	}
 
