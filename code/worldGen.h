@@ -147,6 +147,11 @@ namespace VoxelEng {
 		// Clean up.
 
 		/**
+		* @brief Deallocate the resources of the current world generator.
+		*/
+		static void clear();
+
+		/**
 		* @brief Clean up heap memory allocated for this system and deinitialise it.
 		* Note, any extra heap memory allocated by any user-implemented generator
 		* will have to be handled by the user's code.
@@ -182,6 +187,11 @@ namespace VoxelEng {
 		Chunk generation is done here.
 		*/
 		virtual void generate_(chunk& chunk) = 0;
+
+		/*
+		Method for deallocating and deinitialising anything related to the world generator.
+		*/
+		virtual void clear_() = 0;
 
 	private:
 
@@ -284,6 +294,8 @@ namespace VoxelEng {
 
 		void generate_(chunk& chunk);
 
+		void clear_();
+
 	private:
 
 		const block& b1_;
@@ -294,6 +306,9 @@ namespace VoxelEng {
 
 	inline defaultWorldGen::defaultWorldGen(const block& b1, const block& b2, const block& b3)
 	: b1_(b1), b2_(b2), b3_(b3)
+	{}
+
+	inline void defaultWorldGen::clear_()
 	{}
 
 }

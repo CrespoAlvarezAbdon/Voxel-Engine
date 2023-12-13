@@ -173,6 +173,7 @@ namespace AIExample {
 		void cascadeOreGen_(const VoxelEng::vec3 chunkPos, unsigned int& nBlocksCounter, unsigned int nBlocks,
 			unsigned int inChunkX, unsigned int inChunkY, unsigned int inChunkZ, const VoxelEng::block& oreID);
 
+		void clear_();
 
 	private:
 

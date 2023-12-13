@@ -1021,8 +1021,7 @@ namespace VoxelEng {
 
     void game::cleanUpLevel() {
     
-        // Clear everything related to the engine that is exclusively generated when inside a level that is not
-        // already handled in game::cleanUp or game::cleanUpGraphicalMode.
+        worldGen::clear();
         
     }
 
@@ -1075,6 +1074,8 @@ namespace VoxelEng {
         world::cleanUp();
 
         graphics::cleanUp();
+
+        worldGen::clear();
 
         if (blockTextureAtlas_) {
         

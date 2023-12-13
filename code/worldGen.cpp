@@ -95,7 +95,19 @@ namespace VoxelEng {
 			
 	}
 
+	void worldGen::clear() {
+
+		if (selectedGen_) {
+		
+			selectedGen_->clear_();
+		
+		}
+
+	}
+
 	void worldGen::cleanUp() {
+
+		clear();
 
 		for (auto it = generators_.begin(); it != generators_.cend(); it++)
 			delete it->second;

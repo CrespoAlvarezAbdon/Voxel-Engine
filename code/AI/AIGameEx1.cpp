@@ -619,6 +619,13 @@ namespace AIExample {
 	}
 
 
+	void miningWorldGen::clear_() {
+	
+		VoxelEng::chunkManager::onChunkLoad().detach(chunkLoadListener_);
+		VoxelEng::chunkManager::onChunkUnload().detach(chunkUnloadListener_);
+	
+	}
+
 	// 'chunkLoadListener' class.
 	
 	void chunkLoadListener::onEvent(VoxelEng::event* e) {
