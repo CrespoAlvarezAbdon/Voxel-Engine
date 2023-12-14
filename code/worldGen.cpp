@@ -105,18 +105,24 @@ namespace VoxelEng {
 
 	}
 
-	void worldGen::cleanUp() {
+	void worldGen::reset() {
 
-		clear();
+		if (initialised_) {
 
-		for (auto it = generators_.begin(); it != generators_.cend(); it++)
-			delete it->second;
-		generators_.clear();
+			clear();
 
-		defaultGen_ = nullptr;
-		selectedGen_ = nullptr;
+			for (auto it = generators_.begin(); it != generators_.cend(); it++)
+				delete it->second;
+			generators_.clear();
 
-		initialised_ = false;
+			defaultGen_ = nullptr;
+			selectedGen_ = nullptr;
+
+			initialised_ = false;
+
+		}
+		else
+			logger::errorLog("World gen system is not initialised");
 	
 	}
 

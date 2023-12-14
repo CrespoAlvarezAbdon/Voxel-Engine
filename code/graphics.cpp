@@ -229,7 +229,7 @@ namespace VoxelEng {
 		
 	}
 	
-	void graphics::cleanUp() {
+	void graphics::reset() {
 	
 		#if GRAPHICS_API == OPENGL
 

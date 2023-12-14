@@ -454,7 +454,7 @@ namespace VoxelEng {
 		/**
 		* @brief Deinitialise the system and clean any resources (heap memory, files...) allocated to it.
 		*/
-		static void cleanUp();
+		static void reset();
 
 	private:
 

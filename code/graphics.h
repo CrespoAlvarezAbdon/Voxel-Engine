@@ -253,7 +253,7 @@ namespace VoxelEng {
 		/**
 		* @brief Deallocate any heap memory used by the engine graphics API and shut it down.
 		*/
-		static void cleanUp();
+		static void reset();
 
 	private:
 

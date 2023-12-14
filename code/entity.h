@@ -463,7 +463,7 @@ namespace VoxelEng {
 		/**
 		* @brief Used to clean up the heap memory allocated by this system and deinitialise it.
 		*/
-		static void cleanUp();
+		static void reset();
 
 	private:
 
@@ -651,7 +651,7 @@ namespace VoxelEng {
 		/**
 		* @brief Free dynamic memory allocated by the entity manager system and deinitialise it.
 		*/
-		static void cleanUp();
+		static void reset();
 
 	private:
 

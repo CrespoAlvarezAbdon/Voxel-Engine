@@ -161,6 +161,9 @@ namespace VoxelEng {
 		*/
 		const model& generateVertices();
 
+
+		// Clean up.
+
 		/**
 		* @brief Deletes all vertices that belong to the batch and
 		* removes any previous association with any entity.
@@ -168,15 +171,14 @@ namespace VoxelEng {
 		*/
 		void clear();
 
-		std::recursive_mutex mutex_; // FOR TESTING ONLY.
+		
 	private:
 
+		std::recursive_mutex mutex_;
 		std::atomic<bool> dirty_;
 		std::unordered_set<unsigned int> activeEntityID_,
 										 inactiveEntityID_;
 		model model_;
-
-		
 
 	};
 

@@ -164,7 +164,7 @@ namespace VoxelEng {
 		/**
 		* @brief Free any freeable resources allocated to input functions.
 		*/
-		static void cleanUp();
+		static void reset();
 
 	private:
 

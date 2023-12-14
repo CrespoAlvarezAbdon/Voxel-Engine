@@ -22,7 +22,7 @@ namespace VoxelEng {
 		
 	}
 
-	void inputFunctions::cleanUp() {
+	void inputFunctions::reset() {
 	
 		playerCamera_ = nullptr;
 

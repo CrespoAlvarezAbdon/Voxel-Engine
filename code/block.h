@@ -12,8 +12,7 @@ namespace VoxelEng {
 	* @brief A block is the minimal unit of terrain in this engine. This class is the base
 	* for the representation of any type of blocks registered and supported by this engine.
 	*/
-	class block { // TODO. HAY QUE REUSAR LOS OBJETOS BLOCK.
-				  // TODO. DOC DE ESTE .H
+	class block { // TODO. DOC DE ESTE .H
 
 	public:
 
@@ -70,9 +69,9 @@ namespace VoxelEng {
 		~block();
 
 
-		// Deinitialisers.
+		// Clean up.
 
-		static void cleanUp();
+		static void reset();
 
 	private:
 
@@ -145,7 +144,7 @@ namespace VoxelEng {
 
 	inline block::~block() {}
 
-	inline void block::cleanUp() {
+	inline void block::reset() {
 
 		blocks_.clear();
 		emptyBlock_ = nullptr;

@@ -312,7 +312,7 @@ namespace VoxelEng {
 			 forwardAxis_;
 
 		vec3 chunkPosition_,
-			  oldChunkPos_;
+			 oldChunkPos_;
 	};
 
 	inline const camera* camera::cPlayerCamera() {

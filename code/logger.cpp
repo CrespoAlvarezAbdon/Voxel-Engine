@@ -45,7 +45,7 @@ namespace VoxelEng {
 		//if (game::selectedEngineMode() == engineMode::EDITLEVEL) // Save a separate copy of the level just when the error happened just in case.
 			//chunkManager::saveAllChunks(chunkManager::openedTerrainFileName() + "ERRORED");
 
-		game::cleanUp();
+		game::reset();
 
 		throw std::runtime_error(errorMsg);
 
@@ -60,7 +60,7 @@ namespace VoxelEng {
 		//if (game::selectedEngineMode() == engineMode::EDITLEVEL) // Save a separate copy of the level just when the error happened just in case.
 			//chunkManager::saveAllChunks(chunkManager::openedTerrainFileName() + "ERRORED");
 
-		game::cleanUp();
+		game::reset();
 
 		throw std::out_of_range(errorMsg);
 

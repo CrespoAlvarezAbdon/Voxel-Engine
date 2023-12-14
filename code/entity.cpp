@@ -267,7 +267,7 @@ namespace VoxelEng {
     
     }
 
-    void player::cleanUp() {
+    void player::reset() {
 
         if (camera_) {
         
@@ -839,7 +839,7 @@ namespace VoxelEng {
 
     }
 
-    void entityManager::cleanUp() {
+    void entityManager::reset() {
 
         std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
         std::unique_lock<std::recursive_mutex> lockEntities(entitiesMutex_);

@@ -141,7 +141,7 @@ namespace VoxelEng {
 	
 	}
 
-	void world::cleanUp() {
+	void world::reset() {
 	
 		std::unique_lock<std::mutex> lock(tickFunctionsMutex_);
 

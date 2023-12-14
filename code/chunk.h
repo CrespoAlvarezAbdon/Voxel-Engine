@@ -386,16 +386,17 @@ namespace VoxelEng {
 		unsigned int& nNeighbors();
 
 
-		/*
-		Clean up.
-		*/
+		// Destructors.
 
 		~chunk();
 
+
+		// Clean up.
+		
 		/**
-		* @brief Clean up any resources allocated for the class' static methods.
+		* @brief Clean up any resources allocated for this system.
 		*/ 
-		static void cleanUp();
+		static void reset();
 
 		
 	private:
@@ -808,7 +809,8 @@ namespace VoxelEng {
 	: chunk_(nullptr),
 	  pool_(nullptr),
 	  generateTerrain_(false),
-	  isPriorityUpdate_(false)
+	  isPriorityUpdate_(false),
+      priorityNewChunkMeshesCV_(nullptr)
 	{}
 
 	inline meshChunkJob::meshChunkJob(chunk* chunk, atomicRecyclingPool<meshChunkJob>* pool, bool generateTerrain, bool isPriorityUpdate,
@@ -1318,9 +1320,7 @@ namespace VoxelEng {
 		static chunkEvent& onChunkUnload();
 
 
-		/*
-		Clean Up.
-		*/
+		// Clean Up.
 
 		static void clearChunks();
 
@@ -1334,7 +1334,7 @@ namespace VoxelEng {
 		* @brief Frees any memory allocated in the process of generating the world, like
 		* all the Chunk objects created to load it.
 		*/
-		static void cleanUp();
+		static void reset();
 
 	private:
 

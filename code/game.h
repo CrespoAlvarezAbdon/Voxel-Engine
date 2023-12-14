@@ -203,18 +203,18 @@ namespace VoxelEng {
         * until the function that executes the level game loop
         * has finished it's execution.
         */
-        static void cleanUpLevel();
+        static void resetLevel();
 
         /**
         * @brief To be called when closing the engine.
         * Cleans up the heap memory allocated and deinitialises it.
         */
-        static void cleanUp();
+        static void reset();
         
         /**
         * @brief Cleans up the heap memory allocated for the engine's graphical part and deinitialises it.
         */
-        static void cleanUpGraphicalMode();
+        static void resetGraphicalMode();
 
 	private:
 

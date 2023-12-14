@@ -448,9 +448,9 @@ namespace AIExample {
 
 		void spawnAgents_(unsigned int nAgents);
 
-		void cleanUpMatch_();
+		void resetMatch_();
 		
-		void cleanUpGame_();
+		void resetGame_();
 
 		void setUpTraining_(unsigned int nAgents, unsigned int nEpochs);
 
@@ -467,7 +467,6 @@ namespace AIExample {
 		void saveAgentsData_(const std::string& path);
 
 	private:
-
 		
 		std::random_device rd_;
 		std::mt19937 randGen_;

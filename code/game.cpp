@@ -645,7 +645,7 @@ namespace VoxelEng {
                     case engineMode::EXIT:
 
                         input::inputMutex().lock(); // Do not accept input until all is cleared.
-                        cleanUp();
+                        reset();
 
                         loopSelection_ = engineMode::EXIT;
                         input::inputMutex().unlock();
@@ -698,7 +698,7 @@ namespace VoxelEng {
 
                     case engineMode::AIMENULOOP:
 
-                        cleanUpGraphicalMode();
+                        resetGraphicalMode();
                         setAImode(true);
 
                         if (!chunkManager::openedTerrainFileName().empty())
@@ -780,7 +780,7 @@ namespace VoxelEng {
 
                         // Reload anything necessary between changing worlds.
                         setLoopSelection(engineMode::EXITLEVEL);
-                        cleanUpLevel();
+                        resetLevel();
                         threadsExecute[0] = true;
                         threadsExecute[1] = true;
                         threadsExecute[2] = true;
@@ -811,7 +811,7 @@ namespace VoxelEng {
                 
                     case engineMode::GRAPHICALMENU:
 
-                        cleanUpLevel();
+                        resetLevel();
                         loopSelection_ = engineMode::GRAPHICALMENU;
 
                         break;
@@ -837,8 +837,8 @@ namespace VoxelEng {
 
                     case engineMode::AIMENULOOP:
 
-                        cleanUpLevel();
-                        cleanUpGraphicalMode();
+                        resetLevel();
+                        resetGraphicalMode();
                         setAImode(true);
 
                         if (!chunkManager::openedTerrainFileName().empty())
@@ -906,8 +906,8 @@ namespace VoxelEng {
 
                     case engineMode::AIMENULOOP:
 
-                        cleanUpLevel();
-                        cleanUpGraphicalMode();
+                        resetLevel();
+                        resetGraphicalMode();
                         setAImode(true);
 
                         if (!chunkManager::openedTerrainFileName().empty())
@@ -1019,13 +1019,13 @@ namespace VoxelEng {
     
     }
 
-    void game::cleanUpLevel() {
+    void game::resetLevel() {
     
         worldGen::clear();
         
     }
 
-    void game::cleanUp() {
+    void game::reset() {
 
         std::unique_lock<std::recursive_mutex> lock(input::inputMutex());
         input::shouldProcessInputs(false);
@@ -1034,20 +1034,21 @@ namespace VoxelEng {
 
         // Clear everything related to the engine that is not related to the engine's graphical mode.
 
-        worldGen::cleanUp();
+        if (worldGen::initialised())
+            worldGen::reset();
 
         if (graphicalModeInitialised_)
-            cleanUpGraphicalMode();
+            resetGraphicalMode();
 
         initialised_ = false;
 
         input::shouldProcessInputs(true);
 
-        block::cleanUp();
+        block::reset();
 
     }
 
-    void game::cleanUpGraphicalMode() {
+    void game::resetGraphicalMode() {
 
         std::unique_lock<std::recursive_mutex> lock(input::inputMutex());
 
@@ -1055,27 +1056,25 @@ namespace VoxelEng {
 
         GUImanager::setMMGUIChanged(true);
 
-        GUImanager::cleanUp();
+        GUImanager::reset();
 
-        player::cleanUp();
+        player::reset();
 
-        input::cleanUp();
+        input::reset();
 
-        inputFunctions::cleanUp();
+        inputFunctions::reset();
 
-        chunk::cleanUp();
+        chunk::reset();
 
-        chunkManager::cleanUp();
+        chunkManager::reset();
 
-        models::cleanUp();
+        models::reset();
 
-        entityManager::cleanUp();
+        entityManager::reset();
 
-        world::cleanUp();
+        world::reset();
 
-        graphics::cleanUp();
-
-        worldGen::clear();
+        graphics::reset();
 
         if (blockTextureAtlas_) {
         

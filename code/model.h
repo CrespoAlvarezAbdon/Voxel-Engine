@@ -117,7 +117,7 @@ namespace VoxelEng {
 		* @brief Free any resources allocated to the static members of this class
 		* and deinitialise it.
 		*/
-		static void cleanUp();
+		static void reset();
 
 	private:
 

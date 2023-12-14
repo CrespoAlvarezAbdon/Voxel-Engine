@@ -42,8 +42,8 @@ int main() {
         VoxelEng::game::mainLoop();
 
         // Exit game.
-        VoxelEng::game::cleanUp();
-        VoxelEng::AIAPI::aiGame::cleanUp();
+        VoxelEng::game::reset();
+        VoxelEng::AIAPI::aiGame::reset();
 
         return 0;
 

@@ -461,7 +461,7 @@ namespace VoxelEng {
 					selectedGame_->displayMenu_();
 
 					game::setAImode(false);
-					selectedGame_->cleanUpGame_();
+					selectedGame_->resetGame_();
 					gameInProgress_ = false;
 
 				}
@@ -728,7 +728,7 @@ namespace VoxelEng {
 					stopPlayingRecord();
 					oldActualTime_ = 0;
 
-					selectedGame_->cleanUpMatch_();
+					selectedGame_->resetMatch_();
 
 					return 0;
 
@@ -1174,7 +1174,7 @@ namespace VoxelEng {
 
 		}
 
-		void aiGame::cleanUp() {
+		void aiGame::reset() {
 		
 			selectedGame_ = nullptr;
 

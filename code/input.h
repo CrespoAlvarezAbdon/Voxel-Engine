@@ -88,7 +88,7 @@ namespace VoxelEng {
 		* @brief Deinitialise the input system and clean up any resources (heap memory, opened files...)
 		* allocated to it.
 		*/
-		static void cleanUp();
+		static void reset();
 
 	private:
 

@@ -902,7 +902,7 @@ namespace VoxelEng {
 
     }
 
-    void chunk::cleanUp() {
+    void chunk::reset() {
     
         blockVertices_ = nullptr;
         blockTriangles_ = nullptr;
@@ -1953,7 +1953,7 @@ namespace VoxelEng {
 
     }
 
-    void chunkManager::cleanUp() {
+    void chunkManager::reset() {
 
         if (chunkTasks_) {
 

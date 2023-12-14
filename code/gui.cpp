@@ -1222,7 +1222,7 @@ namespace VoxelEng {
 
 	}
 
-	void GUImanager::cleanUp() {
+	void GUImanager::reset() {
 
 		for (auto it = GUIElements_.begin(); it != GUIElements_.end(); it++)
 			delete it->second;

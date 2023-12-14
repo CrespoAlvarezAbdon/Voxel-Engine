@@ -650,7 +650,7 @@ namespace VoxelEng {
 			* More precisely, it cleans the heap memory allocated with
 			* registered AI games.
 			*/
-			static void cleanUp();
+			static void reset();
 
 		protected:
 
@@ -749,12 +749,12 @@ namespace VoxelEng {
 			/*
 			Clean up any resources for the last AI game loaded.
 			*/
-			virtual void cleanUpGame_() = 0;
+			virtual void resetGame_() = 0;
 
 			/*
 			Clean up any resources for the last AI game match.
 			*/
-			virtual void cleanUpMatch_() = 0;
+			virtual void resetMatch_() = 0;
 
 		private:
 

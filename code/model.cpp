@@ -324,7 +324,7 @@ namespace VoxelEng {
 
     }
 
-    void models::cleanUp() {
+    void models::reset() {
     
         for (auto it = models_.cbegin(); it != models_.cend(); it++)
             delete it->second;

@@ -105,7 +105,7 @@ namespace VoxelEng {
 
 	}
 
-	void input::cleanUp() {
+	void input::reset() {
 	
 		controlActions_.clear();
 		oldActivationEvent_.clear();

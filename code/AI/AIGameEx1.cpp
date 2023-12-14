@@ -968,7 +968,7 @@ namespace AIExample {
 						}
 
 						opExitStatus = generateRecord_(recordsDirectory, recordFileName);
-						cleanUpMatch_();
+						resetMatch_();
 
 						if (opExitStatus == 2) { // 'recordFileName' is invalid.
 					
@@ -1024,7 +1024,7 @@ namespace AIExample {
 						}				
 
 						opExitStatus = generateRecordLoadedAgents_(recordsDirectory, recordFileName, AIDataDirectory + agentDataPath);
-						cleanUpMatch_();
+						resetMatch_();
 
 						if (opExitStatus == 2) { // Record file path is not valid.
 					
@@ -1122,7 +1122,7 @@ namespace AIExample {
 		genetic_.genInitPop(popSize_, -5.0f, 5.0f, true);
 		genetic_.train(nEpochs_, nEpochsBetweenSaves_, epochForNewWorld_);
 
-		cleanUpMatch_();
+		resetMatch_();
 	
 	}
 
@@ -1162,7 +1162,7 @@ namespace AIExample {
 		for (unsigned int i = 0; i < averageFitnessSize; i++)
 			VoxelEng::logger::debugLog("Individual " + std::to_string(i) + " average fitness is: " + std::to_string(*(averageFitness + i)));
 
-		cleanUpMatch_();
+		resetMatch_();
 
 	}
 
@@ -1229,7 +1229,7 @@ namespace AIExample {
 
 	}
 	
-	void miningAIGame::cleanUpMatch_() {
+	void miningAIGame::resetMatch_() {
 
 		for (std::size_t i = 0; i < AIagentEntityID_.size(); i++)
 			VoxelEng::entityManager::deleteEntity(AIagentEntityID_[i]);
@@ -1239,21 +1239,21 @@ namespace AIExample {
 		AIagentLookDirection_.clear();
 		freeAIagentID_.clear();
 		scores_.clear();
-		VoxelEng::chunk::cleanUp();
+		VoxelEng::chunk::reset();
 		VoxelEng::chunkManager::clean();
 		VoxelEng::entityManager::clean();
 
 	}
 
-	void miningAIGame::cleanUpGame_() {
+	void miningAIGame::resetGame_() {
 
 		blockPalette_.clear();
 		inverseBlockPalette_.clear();
 		blockScore_.clear();
 		freeInternalIDs_.clear();
 		VoxelEng::worldGen::selectGen("default");
-		VoxelEng::chunkManager::cleanUp();
-		VoxelEng::entityManager::cleanUp();
+		VoxelEng::chunkManager::reset();
+		VoxelEng::entityManager::reset();
 
 	}
 
@@ -1270,7 +1270,7 @@ namespace AIExample {
 
 		genetic_.train(nEpochs_, nEpochsBetweenSaves_, epochForNewWorld_);
 
-		cleanUpMatch_();
+		resetMatch_();
 
 		return true;
 
@@ -1293,7 +1293,7 @@ namespace AIExample {
 		for (unsigned int i = 0; i < averageFitnessSize; i++)
 			VoxelEng::logger::debugLog("Individual " + std::to_string(i) + " average fitness is: " + std::to_string(*(averageFitness + i)));
 
-		cleanUpMatch_();
+		resetMatch_();
 		delete averageFitness;
 
 		return true;

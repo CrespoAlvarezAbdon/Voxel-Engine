@@ -82,6 +82,11 @@ namespace VoxelEng {
 		*/
 		static unsigned int getSeed();
 
+		/**
+		* @brief Returns true if the world gen system is initialised or false otherwise.
+		*/
+		static bool initialised();
+
 
 		// Modifiers.
 
@@ -157,7 +162,7 @@ namespace VoxelEng {
 		* will have to be handled by the user's code.
 		* WARNING. The built-in generator is also deleted.
 		*/
-		static void cleanUp();
+		static void reset();
 
 	protected:
 
@@ -224,6 +229,12 @@ namespace VoxelEng {
 	inline unsigned int worldGen::getSeed() {
 	
 		return seed_;
+	
+	}
+
+	inline bool worldGen::initialised() {
+	
+		return initialised_;
 	
 	}
 
