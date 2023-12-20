@@ -1243,13 +1243,8 @@ namespace VoxelEng {
     void chunkManager::setNChunksToCompute(unsigned int nChunksToCompute) {
 
         engineMode mode = game::selectedEngineMode();
-        if (mode == engineMode::INITLEVEL || mode == engineMode::EDITLEVEL || mode == engineMode::INITRECORD) {
-            
+        if (mode == engineMode::INITLEVEL || mode == engineMode::EDITLEVEL || mode == engineMode::INITRECORD)
             nChunksToCompute_ = nChunksToCompute;
-            if (!game::AImodeON())
-                clearChunks();
-
-        }
         else
             logger::errorLog("Cannot change the number of chunks to compute in the current engine mode " + std::to_string((unsigned int)mode));
     
@@ -1884,14 +1879,13 @@ namespace VoxelEng {
     
     }
 
-    void chunkManager::clean() {
+    void chunkManager::clear() { 
 
-        if (drawableChunksRead_) {
-        
-            delete drawableChunksRead_;
-            drawableChunksRead_ = nullptr;
-        
-        }
+        if (chunkTasks_)
+            chunkTasks_->awaitNoJobs();
+
+        if (priorityChunkTasks_)
+            priorityChunkTasks_->awaitNoJobs();
 
         chunksMutex_.lock();
         for (auto it = chunks_.begin(); it != chunks_.end(); it++)
@@ -1899,6 +1893,9 @@ namespace VoxelEng {
                 delete it->second;
         chunks_.clear();
         chunksMutex_.unlock();
+
+        if (drawableChunksRead_)
+            drawableChunksRead_->clear();
 
         chunksPool_.clear();
 
@@ -1921,35 +1918,6 @@ namespace VoxelEng {
             for (auto itChunks = it->second.cbegin(); itChunks != it->second.cend(); itChunks++)
                 delete itChunks->second;
         AIagentChunks_.clear();
-
-        if (chunkTasks_) {
-        
-            chunkTasks_->shutdown();
-            chunkTasks_->awaitTermination();
-
-            delete chunkTasks_;
-            chunkTasks_ = nullptr;
-        
-        }
-        
-        if (priorityChunkTasks_) {
-        
-            priorityChunkTasks_->shutdown();
-            priorityChunkTasks_->awaitTermination();
-
-            delete priorityChunkTasks_;
-            priorityChunkTasks_ = nullptr;
-        
-        }
-
-        if (loadChunkJobs_) {
-
-            loadChunkJobs_->clear();
-
-            delete loadChunkJobs_;
-            loadChunkJobs_ = nullptr;
-
-        }
 
     }
 
@@ -1984,7 +1952,34 @@ namespace VoxelEng {
 
         }
 
-        clean();
+        clear();
+
+        if (drawableChunksRead_) {
+
+            delete drawableChunksRead_;
+            drawableChunksRead_ = nullptr;
+
+        }
+
+        if (chunkTasks_) {
+
+            chunkTasks_->shutdown();
+            chunkTasks_->awaitTermination();
+
+            delete chunkTasks_;
+            chunkTasks_ = nullptr;
+
+        }
+
+        if (priorityChunkTasks_) {
+
+            priorityChunkTasks_->shutdown();
+            priorityChunkTasks_->awaitTermination();
+
+            delete priorityChunkTasks_;
+            priorityChunkTasks_ = nullptr;
+
+        }
 
         initialised_ = false;
         

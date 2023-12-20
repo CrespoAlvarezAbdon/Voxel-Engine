@@ -1328,7 +1328,7 @@ namespace VoxelEng {
 		* @brief Only cleans any resources like chunks created but it does not de-initialise
 		* the chunk management system.
 		*/
-		static void clean();
+		static void clear();
 
 		/**
 		* @brief Frees any memory allocated in the process of generating the world, like

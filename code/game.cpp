@@ -794,6 +794,7 @@ namespace VoxelEng {
                     case engineMode::EXITLEVEL:
 
                         game::stopAuxiliaryThreads();
+                        chunkManager::clear();
                         loopSelection_ = engineMode::EXITLEVEL;
 
                         break;

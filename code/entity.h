@@ -646,7 +646,7 @@ namespace VoxelEng {
 		/**
 		* @brief Free dynamic memory allocated by the entity manager system and NOT deinitialise it.
 		*/
-		static void clean();
+		static void clear();
 
 		/**
 		* @brief Free dynamic memory allocated by the entity manager system and deinitialise it.

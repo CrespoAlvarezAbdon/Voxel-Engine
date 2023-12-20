@@ -809,7 +809,7 @@ namespace VoxelEng {
     
     }
 
-    void entityManager::clean() {
+    void entityManager::clear() {
 
         std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
         std::unique_lock<std::recursive_mutex> lockEntities(entitiesMutex_);

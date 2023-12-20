@@ -18,6 +18,13 @@ namespace VoxelEng {
 
 	}
 
+	void event::attachIfExists(listener* l) {
+
+		if (!listeners_.contains(l))
+			listeners_.insert(l);
+
+	}
+
 	void event::detach(listener* l) {
 	
 		if (listeners_.contains(l))
@@ -25,6 +32,13 @@ namespace VoxelEng {
 		else
 			logger::errorLog("The specified listener is not attached to event " + name_);
 	
+	}
+
+	void event::detachIfExists(listener* l) {
+
+		if (listeners_.contains(l))
+			listeners_.erase(l);
+
 	}
 
 }

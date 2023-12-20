@@ -618,13 +618,13 @@ namespace AIExample {
 
 	}
 
-
 	void miningWorldGen::clear_() {
 	
-		VoxelEng::chunkManager::onChunkLoad().detach(chunkLoadListener_);
-		VoxelEng::chunkManager::onChunkUnload().detach(chunkUnloadListener_);
+		VoxelEng::chunkManager::onChunkLoad().detachIfExists(chunkLoadListener_);
+		VoxelEng::chunkManager::onChunkUnload().detachIfExists(chunkUnloadListener_);
 	
 	}
+
 
 	// 'chunkLoadListener' class.
 	
@@ -1240,8 +1240,8 @@ namespace AIExample {
 		freeAIagentID_.clear();
 		scores_.clear();
 		VoxelEng::chunk::reset();
-		VoxelEng::chunkManager::clean();
-		VoxelEng::entityManager::clean();
+		VoxelEng::chunkManager::clear();
+		VoxelEng::entityManager::clear();
 
 	}
 

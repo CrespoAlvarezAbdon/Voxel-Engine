@@ -38,6 +38,18 @@ namespace VoxelEng {
 
 		const std::string& name() const;
 
+		/**
+		* @brief Returns true if the specified listener is attached to this event
+		* or false otherwise.
+		*/
+		bool hasAttached(listener* l);
+
+		/**
+		* @brief Returns true if the specified listener is attached to this event
+		* or false otherwise.
+		*/
+		bool hasAttached(listener& l);
+
 
 		// Modifiers.
 
@@ -65,6 +77,18 @@ namespace VoxelEng {
 		void attach(listener& l);
 
 		/**
+		* @brief Attach a listener to this event if it is not already attached.
+		* Does nothing and does NOT report anything if the listener is not attached.
+		*/
+		void attachIfExists(listener* l);
+
+		/**
+		* @brief Attach a listener to this event if it is not already attached.
+		* Does nothing and does NOT report anything if the listener is not attached.
+		*/
+		void attachIfExists(listener& l);
+
+		/**
 		* @brief Detach a listener that has been previously attached to this event.
 		*/
 		void detach(listener* l);
@@ -73,6 +97,18 @@ namespace VoxelEng {
 		* @brief Detach a listener that has been previously attached to this event.
 		*/
 		void detach(listener& l);
+
+		/**
+		* @brief Detach a listener that has been previously attached to this event.
+		* Does nothing and does NOT report anything if the listener is not attached.
+		*/
+		void detachIfExists(listener* l);
+
+		/**
+		* @brief Detach a listener that has been previously attached to this event.
+		* Does nothing and does NOT report anything if the listener is not attached.
+		*/
+		void detachIfExists(listener& l);
 
 
 		// Destructor.
@@ -95,9 +131,21 @@ namespace VoxelEng {
 	
 	}
 
+	inline void event::attachIfExists(listener& l) {
+
+		attachIfExists(&l);
+
+	}
+
 	inline void event::detach(listener& l) {
 
 		detach(&l);
+
+	}
+
+	inline void event::detachIfExists(listener& l) {
+
+		detachIfExists(&l);
 
 	}
 
@@ -108,6 +156,18 @@ namespace VoxelEng {
 	inline const std::string& event::name() const {
 	
 		return name_;
+	
+	}
+
+	inline bool event::hasAttached(listener* l) {
+	
+		return listeners_.contains(l);
+	
+	}
+
+	inline bool event::hasAttached(listener& l) {
+	
+		return hasAttached(&l);
 	
 	}
 
