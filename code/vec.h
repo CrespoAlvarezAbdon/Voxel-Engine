@@ -9,6 +9,7 @@
 #ifndef _VOXELENG_VEC_
 #define _VOXELENG_VEC_
 
+#include <string>
 #include "definitions.h"
 
 #if GRAPHICS_API == OPENGL
@@ -81,6 +82,16 @@ namespace VoxelEng {
 			   (v1.x <= v2.x&& v1.y < v2.y && v1.z <= v2.z) ||
 			   (v1.x <= v2.x&& v1.y <= v2.y && v1.z < v2.z);
 
+	}
+
+}
+
+namespace std {
+
+	inline std::string to_string(const VoxelEng::vec3& v) {
+	
+		return std::to_string(v.x) + ',' + std::to_string(v.y) + ',' + std::to_string(v.z);
+	
 	}
 
 }

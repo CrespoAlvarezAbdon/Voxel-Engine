@@ -18,8 +18,10 @@
 #include <vector>
 #include <mutex>
 #include "batch.h"
+#include "camera.h" // IGUAL ESTO DA PROBLEMAS Y HAY QUE HACER FORWARD DELCARATION Y METER EL INCLUDE EN EL .CPP
 #include "chunk.h"
 #include "definitions.h"
+#include "transform.h"
 #include "gameWindow.h"
 #include "model.h"
 #include "vec.h"
@@ -38,7 +40,6 @@ namespace VoxelEng {
 	//Forward declarations.//
 	/////////////////////////
 
-	class camera;
 	class batch;
 	class entityManager;
 
@@ -251,8 +252,7 @@ namespace VoxelEng {
 		bool updateXRotation_,
 			 updateYRotation_,
 			 updateZRotation_;
-		vec3 pos_,
-			 rot_;
+		transform transform_;
 		const model* model_;
 		tickFunc tickFunc_;
 
@@ -260,31 +260,31 @@ namespace VoxelEng {
 
 	inline const vec3& entity::pos() const {
 
-		return pos_;
+		return transform_.position;
 
 	}
 
 	inline const vec3& entity::rot() const {
 
-		return rot_;
+		return transform_.rotation;
 
 	}
 
 	inline float entity::x() const {
 
-		return pos_.x;
+		return transform_.position.x;
 
 	}
 
 	inline float entity::y() const {
 
-		return pos_.y;
+		return transform_.position.y;
 
 	}
 
 	inline float entity::z() const {
 
-		return pos_.z;
+		return transform_.position.z;
 
 	}
 
@@ -314,61 +314,61 @@ namespace VoxelEng {
 
 	inline float entity::sinAngleX() const {
 
-		return std::sin(rot_.x * piDiv);
+		return std::sin(transform_.rotation.x * piDiv);
 
 	}
 
 	inline float entity::cosAngleX() const {
 
-		return std::cos(rot_.x * piDiv);
+		return std::cos(transform_.rotation.x * piDiv);
 
 	}
 
 	inline float entity::sinAngleY() const {
 
-		return std::sin(rot_.y * piDiv);
+		return std::sin(transform_.rotation.y * piDiv);
 
 	}
 
 	inline float entity::cosAngleY() const {
 
-		return std::cos(rot_.y * piDiv);
+		return std::cos(transform_.rotation.y * piDiv);
 
 	}
 
 	inline float entity::sinAngleZ() const {
 
-		return std::sin(rot_.z * piDiv);
+		return std::sin(transform_.rotation.z * piDiv);
 
 	}
 
 	inline float entity::cosAngleZ() const {
 
-		return std::cos(rot_.z * piDiv);
+		return std::cos(transform_.rotation.z * piDiv);
 
 	}
 
 	inline vec3& entity::pos() {
 
-		return pos_;
+		return transform_.position;
 
 	}
 
 	inline float& entity::x() {
 
-		return pos_.x;
+		return transform_.position.x;
 
 	}
 
 	inline float& entity::y() {
 
-		return pos_.y;
+		return transform_.position.y;
 
 	}
 
 	inline float& entity::z() {
 
-		return pos_.z;
+		return transform_.position.z;
 
 	}
 
@@ -405,6 +405,13 @@ namespace VoxelEng {
 		* @brief Initialise the player system and all the class' static attributes.
 		*/
 		static void init(float FOV, float zNear, float zFar, window& window, unsigned int blockReachRange);
+
+
+		// Observers.
+
+		static const vec3& globalPos();
+
+		static const vec3& rotation();
 
 
 		// Modifiers.
@@ -487,6 +494,18 @@ namespace VoxelEng {
 								 placeBlock_;
 
 	};
+
+	inline const vec3& player::globalPos() {
+	
+		return camera_->pos();
+	
+	}
+
+	inline const vec3& player::rotation() {
+
+		return camera_->rotation();
+
+	}
 
 	inline camera& player::getCamera() {
 

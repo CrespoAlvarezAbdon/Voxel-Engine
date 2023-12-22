@@ -11,8 +11,9 @@
 
 #include "chunk.h"
 #include "definitions.h"
-#include "quaternion.h"
+#include "transform.h"
 #include "gameWindow.h"
+#include "quaternion.h"
 #include "vec.h"
 
 #if GRAPHICS_API == OPENGL
@@ -304,9 +305,8 @@ namespace VoxelEng {
 				  viewMatrix_,
 				  modelMatrix_; // All models' vertices will be multiplied with this matrix (so you can, for example, rotate the entire world around the camera).
 
-		vec3 position_,
-			 rotation_,
-		     viewDirection_,
+		transform transform_;
+		vec3 viewDirection_,
 			 upAxis_,
 			 rightAxis_,
 			 forwardAxis_;
@@ -365,7 +365,7 @@ namespace VoxelEng {
 
 	inline const vec3& camera::pos() const {
 
-		return position_;
+		return transform_.position;
 
 	}
 

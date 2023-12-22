@@ -290,7 +290,7 @@ namespace VoxelEng {
 
 
     entity::entity(unsigned int modelID, const vec3& pos, const vec3& rot, tickFunc func)
-        : model_(&models::getModelAt(modelID)), pos_(pos), rot_(rot),
+        : model_(&models::getModelAt(modelID)),
         updateXRotation_(false), updateYRotation_(false), updateZRotation_(false),
         tickFunc_(func) {
     
@@ -302,21 +302,21 @@ namespace VoxelEng {
     
         if (x != 0) {
         
-            rot_.x += x;
+            transform_.rotation.x += x;
             updateXRotation_ = true;
         
         }
 
         if (y != 0) {
 
-            rot_.y += y;
+            transform_.rotation.y += y;
             updateYRotation_ = true;
 
         }
 
         if (z != 0) {
 
-            rot_.z += z;
+            transform_.rotation.z += z;
             updateZRotation_ = true;
 
         }
@@ -327,7 +327,7 @@ namespace VoxelEng {
 
         if (angle) {
 
-            rot_.x += angle;
+            transform_.rotation.x += angle;
             updateXRotation_ = true;
 
         }
@@ -338,7 +338,7 @@ namespace VoxelEng {
 
         if (angle) {
 
-            rot_.y += angle;
+            transform_.rotation.y += angle;
             updateYRotation_ = true;
 
         }
@@ -349,7 +349,7 @@ namespace VoxelEng {
 
         if (angle) {
 
-            rot_.z += angle;
+            transform_.rotation.z += angle;
             updateZRotation_ = true;
 
         }
@@ -360,21 +360,21 @@ namespace VoxelEng {
 
         if (roll != 0) {
 
-            rot_.z += roll;
+            transform_.rotation.z += roll;
             updateZRotation_ = true;
 
         }
 
         if (pitch != 0) {
 
-            rot_.x += pitch;
+            transform_.rotation.x += pitch;
             updateXRotation_ = true;
 
         }
 
         if (yaw != 0) {
 
-            rot_.y += yaw;
+            transform_.rotation.y += yaw;
             updateYRotation_ = true;
 
         }
@@ -385,7 +385,7 @@ namespace VoxelEng {
     
         if (angle != 0) {
 
-            rot_.z += angle;
+            transform_.rotation.z += angle;
             updateZRotation_ = true;
 
         }
@@ -396,7 +396,7 @@ namespace VoxelEng {
     
         if (angle != 0) {
 
-            rot_.x += angle;
+            transform_.rotation.x += angle;
             updateXRotation_ = true;
 
         }
@@ -407,7 +407,7 @@ namespace VoxelEng {
     
         if (angle != 0) {
 
-            rot_.y += angle;
+            transform_.rotation.y += angle;
             updateYRotation_ = true;
 
         }
@@ -607,7 +607,7 @@ namespace VoxelEng {
             freeEntityID_.erase(entityID);
             
             entities_[entityID].setModelID(modelID);
-            entities_[entityID].pos_ = vec3{ posX, posY, posZ };
+            entities_[entityID].transform_.position = vec3{ posX, posY, posZ };
             entities_[entityID].rotate(rotX, rotY, rotZ);
             entities_[entityID].tickFunc_ = func;
 
@@ -775,7 +775,7 @@ namespace VoxelEng {
         }
 
         // Reset entity's attributes here.
-        entities_[entityID].rot_ = vec3Zero;
+        entities_[entityID].transform_.rotation = vec3Zero;
         
     }
 

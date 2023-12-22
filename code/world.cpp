@@ -1,4 +1,5 @@
 #include "world.h"
+
 #include "entity.h"
 #include "game.h"
 #include "logger.h"
@@ -9,13 +10,14 @@ namespace VoxelEng {
 	// 'world' class.
 
 	bool world::initialised_ = false;
-	bool world::infiniteTerrain_ = true;
 	unsigned int world::maxDistanceX_ = 0,
 				 world::maxDistanceY_ = 0,
 				 world::maxDistanceZ_ = 0;
 	std::unordered_map<std::string, tickFunc> world::globalTickFunctions_;
 	std::unordered_set<std::string> world::activeTickFunctions_;
 	std::mutex world::tickFunctionsMutex_;
+	unsigned int world::currentWorldSlot_ = 0;
+	std::string world::currentWorldPath_;
 
 
 	void world::init() {
@@ -25,12 +27,13 @@ namespace VoxelEng {
 		if (initialised_)
 			logger::errorLog("The world class is already initialised");
 		else {
-		
-			infiniteTerrain_ = true;
 
 			maxDistanceX_ = 0;
 			maxDistanceY_ = 0;
 			maxDistanceZ_ = 0;
+
+			currentWorldSlot_ = 0;
+			currentWorldPath_.clear();
 
 			initialised_ = true;
 		
@@ -155,6 +158,43 @@ namespace VoxelEng {
 		}
 		else
 			logger::errorLog("The world class is not initialised");
+	
+	}
+
+	void world::createSaveDirectory_(unsigned int slot) {
+
+		currentWorldPath_ = "saves/slot" + std::to_string(slot);
+		std::filesystem::create_directory(currentWorldPath_);
+		currentWorldSlot_ = slot;
+
+	}
+
+	void world::saveAll_() {
+
+		saveMainData_();
+	
+	}
+
+	void world::saveMainData_() {
+	
+		std::ofstream mainFile(currentWorldPath_ + "mainData.world", std::ios::binary);
+		std::string data;
+
+		data += std::to_string(maxDistanceX_) + '|' + std::to_string(maxDistanceY_) + '|' + std::to_string(maxDistanceZ_) + '|' + 
+			    std::to_string(player::globalPos());
+		// NEXT.
+		// 1º. METER DE NUEVO LA FUNCIONALIDAD A LOS BOTONES DE SLOT CUANDO SE GUARDA.
+		// 2º. SEPARAR COMPLETAMENTE LA CLASE PLAYER EN SU PROPIO .H Y .CPP.
+		// 3º. QUE LA CAMARA DEL PLAYER COJA LOS VALORES DEL TRANSFORM DEL PROPIO DEL PLAYER Y QUE TODO EL CONTROL DE MOVIMIENTO DEL PLAYER
+		// ESTÉ EN PLAYER. ASÍ LUEGO SE PUEDEN HACER COSAS COMO EL MODO TERCERA PERSONA MÁS FÁCIL.
+
+		mainFile.write(data.c_str(), data.size());
+	
+	}
+
+	void world::saveChunk_(const vec3& chunkPos) {
+	
+	
 	
 	}
 

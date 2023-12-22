@@ -10,12 +10,17 @@
 */
 #ifndef _VOXELENG_VOXELENGWORLD_
 #define _VOXELENG_VOXELENGWORLD_
+
+#include <filesystem>
+#include <fstream>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <mutex>
+
 #include "definitions.h"
 #include "graphics.h"
+#include "vec.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -61,13 +66,9 @@ namespace VoxelEng {
 		// Observers.
 
 		/**
-		* @brief Returns true if the current world is infinite or false otherwise.
-		*/
-		static bool infiniteTerrain();
-
-		/**
 		* @brief Returns the maximun distance that any entity (including players) can be from
 		* the center of the X axis on finite worlds.
+		* If the returned distance is 0, it means that there is no maximun distance on said axis.
 		*/
 		static unsigned int maxDistanceX();
 
@@ -82,6 +83,10 @@ namespace VoxelEng {
 		* the center of the Z axis on finite worlds.
 		*/
 		static unsigned int maxDistanceZ();
+
+		static vec3 chunkCoordsToRegionCoords(const vec3& chunkPos);
+
+		static vec3 regionCoordsToChunkCoords(const vec3& regionPos);
 
 
 		// Modifiers.
@@ -125,11 +130,6 @@ namespace VoxelEng {
 		*/
 		static void processGlobalTickFunctions();
 
-		/**
-		* @brief Set if the current world is infinite or not.
-		*/
-		static void infiniteTerrain(bool value);
-
 
 		// Clean up.
 
@@ -140,22 +140,33 @@ namespace VoxelEng {
 
 	private:
 
-		static bool initialised_,
-					infiniteTerrain_;
+		/*
+		Attributes.
+		*/
+
+		static bool initialised_;
 		static unsigned int maxDistanceX_,
 							maxDistanceY_,
 							maxDistanceZ_;
 		static std::unordered_map<std::string, tickFunc> globalTickFunctions_;
 		static std::unordered_set<std::string> activeTickFunctions_;
 		static std::mutex tickFunctionsMutex_;
+		static unsigned int currentWorldSlot_;
+		static std::string currentWorldPath_;
+
+
+		/*
+		Methods.
+		*/
+		static void createSaveDirectory_(unsigned int slot);
+
+		static void saveAll_();
+
+		static void saveMainData_();
+
+		static void saveChunk_(const vec3& chunkPos);
 	
 	};
-
-	inline bool world::infiniteTerrain() {
-	
-		return infiniteTerrain_;
-	
-	}
 
 	inline unsigned int world::maxDistanceX() {
 
@@ -186,12 +197,6 @@ namespace VoxelEng {
 			
 
 		#endif
-	
-	}
-
-	inline void world::infiniteTerrain(bool value) {
-	
-		infiniteTerrain_ = value;
 	
 	}
 
