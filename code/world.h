@@ -130,6 +130,13 @@ namespace VoxelEng {
 		*/
 		static void processGlobalTickFunctions();
 
+		/**
+		* @brief 
+		*/
+		static void saveAll();
+
+		static void createSaveDirectory(unsigned int slot);
+
 
 		// Clean up.
 
@@ -158,9 +165,6 @@ namespace VoxelEng {
 		/*
 		Methods.
 		*/
-		static void createSaveDirectory_(unsigned int slot);
-
-		static void saveAll_();
 
 		static void saveMainData_();
 

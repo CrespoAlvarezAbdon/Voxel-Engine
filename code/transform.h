@@ -10,6 +10,10 @@ namespace VoxelEng {
 	*/
 	struct transform {
 
+		transform()
+		: position(vec3Zero), rotation(vec3Zero), scale{1.0f, 1.0f, 1.0f}
+		{}
+
 		vec3 position;
 		vec3 rotation;
 		vec3 scale;

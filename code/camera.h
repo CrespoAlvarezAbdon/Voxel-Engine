@@ -117,9 +117,9 @@ namespace VoxelEng {
 		const vec3& chunkPos() const;
 
 		/**
-		* @brief Get the camera's position.
+		* @brief Get the camera's global position.
 		*/
-		const vec3& pos() const;
+		const vec3& globalPos() const;
 
 		/**
 		* @brief Provide access to the user camera's direction.
@@ -200,7 +200,7 @@ namespace VoxelEng {
 		/**
 		* @brief Set the camera's direction.
 		*/
-		void rotation(float pitch, float yaw, float roll);
+		void rotation(float x, float y, float z);
 
 		/**
 		* @brief Notify that the camera is to be moved up once according
@@ -286,21 +286,21 @@ namespace VoxelEng {
 			 moveWest_,
 			 rollRight_,
 			 rollLeft_;
+
 		float FOV_,
 			  zNear_,
 			  zFar_,
 			  pitchViewDir_,
 			  yawViewDir_,
-			  pitch_,
-			  yaw_,
-			  roll_,
 			  mouseSensibility_,
 			  movementSpeed_,
 			  rollSpeed_;
+
 		double mouseX_,
 			   mouseY_,
 			   oldMouseX_,
 			   oldMouseY_;
+
 		glm::mat4 projectionMatrix_,
 				  viewMatrix_,
 				  modelMatrix_; // All models' vertices will be multiplied with this matrix (so you can, for example, rotate the entire world around the camera).
@@ -309,10 +309,13 @@ namespace VoxelEng {
 		vec3 viewDirection_,
 			 upAxis_,
 			 rightAxis_,
-			 forwardAxis_;
-
-		vec3 chunkPosition_,
-			 oldChunkPos_;
+			 forwardAxis_,
+			 chunkPosition_,
+			 oldChunkPos_,
+			 gravityDirection_,
+			 pitchAxis_,
+			 yawAxis_,
+			 rollAxis_;
 	};
 
 	inline const camera* camera::cPlayerCamera() {
@@ -363,7 +366,7 @@ namespace VoxelEng {
 
 	}
 
-	inline const vec3& camera::pos() const {
+	inline const vec3& camera::globalPos() const {
 
 		return transform_.position;
 
@@ -383,7 +386,7 @@ namespace VoxelEng {
 
 	inline const vec3& camera::rotation() const {
 
-		return vec3Zero;
+		return transform_.rotation;
 
 	}
 

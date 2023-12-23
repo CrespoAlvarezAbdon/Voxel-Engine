@@ -1,6 +1,7 @@
 #include "world.h"
 
 #include "entity.h"
+#include "player.h"
 #include "game.h"
 #include "logger.h"
 
@@ -144,6 +145,20 @@ namespace VoxelEng {
 	
 	}
 
+	void world::saveAll() {
+
+		saveMainData_();
+
+	}
+
+	void world::createSaveDirectory(unsigned int slot) {
+
+		currentWorldSlot_ = slot;
+		currentWorldPath_ = "saves/slot" + std::to_string(currentWorldSlot_);
+		std::filesystem::create_directory(currentWorldPath_);
+
+	}
+
 	void world::reset() {
 	
 		std::unique_lock<std::mutex> lock(tickFunctionsMutex_);
@@ -161,34 +176,24 @@ namespace VoxelEng {
 	
 	}
 
-	void world::createSaveDirectory_(unsigned int slot) {
-
-		currentWorldPath_ = "saves/slot" + std::to_string(slot);
-		std::filesystem::create_directory(currentWorldPath_);
-		currentWorldSlot_ = slot;
-
-	}
-
-	void world::saveAll_() {
-
-		saveMainData_();
-	
-	}
-
 	void world::saveMainData_() {
 	
 		std::ofstream mainFile(currentWorldPath_ + "mainData.world", std::ios::binary);
 		std::string data;
 
 		data += std::to_string(maxDistanceX_) + '|' + std::to_string(maxDistanceY_) + '|' + std::to_string(maxDistanceZ_) + '|' + 
-			    std::to_string(player::globalPos());
+			    std::to_string(player::globalPos()) + '|' + std::to_string(player::rotation()) + '|';
 		// NEXT.
-		// 1º. METER DE NUEVO LA FUNCIONALIDAD A LOS BOTONES DE SLOT CUANDO SE GUARDA.
-		// 2º. SEPARAR COMPLETAMENTE LA CLASE PLAYER EN SU PROPIO .H Y .CPP.
-		// 3º. QUE LA CAMARA DEL PLAYER COJA LOS VALORES DEL TRANSFORM DEL PROPIO DEL PLAYER Y QUE TODO EL CONTROL DE MOVIMIENTO DEL PLAYER
-		// ESTÉ EN PLAYER. ASÍ LUEGO SE PUEDEN HACER COSAS COMO EL MODO TERCERA PERSONA MÁS FÁCIL.
+		// 1º. METER DE NUEVO LA FUNCIONALIDAD A LOS BOTONES DE SLOT CUANDO SE GUARDA. DONE.
+		// 2º. SEPARAR COMPLETAMENTE LA CLASE PLAYER EN SU PROPIO .H Y .CPP. DONE.
+		// 2.5º. AÑADIR GRAVITY DIRECTION PARA TODAS LAS ENTIDADES. DONE.
+		// 3º. QUE TODO EL CONTROL DE MOVIMIENTO DEL PLAYER ESTÉ EN PLAYER Y QUE CUANDO SE CALCULEN ESOS VALORES SE PASEN A LA CÁMARA.
+		//  ASÍ LUEGO SE PUEDEN HACER COSAS COMO EL MODO TERCERA PERSONA MÁS FÁCIL.
+		// 4º. METER MODO GRAVITY-FREE DEL PLAYER.
+		// Por último, ARREGLAR TODOS LOS FALLOS DERIVADOS DE HACER ESTO.
 
 		mainFile.write(data.c_str(), data.size());
+		mainFile.close();
 	
 	}
 

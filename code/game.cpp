@@ -155,8 +155,6 @@ namespace VoxelEng {
 
             #endif
 
-            slotAccessType_ = slotAccessType::load;
-
             // Initialise the graphics API/libraries if not done yet.
             if (!graphics::initialised())
                 graphics::init(*mainWindow_);
