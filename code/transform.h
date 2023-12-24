@@ -11,12 +11,19 @@ namespace VoxelEng {
 	struct transform {
 
 		transform()
-		: position(vec3Zero), rotation(vec3Zero), scale{1.0f, 1.0f, 1.0f}
+		: position(vec3Zero), rotation(vec3Zero), scale{1.0f, 1.0f, 1.0f},
+		  Xaxis(vec3FixedNorth), Yaxis(vec3FixedUp), Zaxis(vec3FixedEast),
+		  viewDirection(vec3FixedNorth)
 		{}
 
-		vec3 position;
-		vec3 rotation;
-		vec3 scale;
+		vec3 position,
+			 chunkPosition,
+			 rotation,
+			 scale,
+			 Xaxis,
+			 Yaxis,
+			 Zaxis,
+			 viewDirection;
 
 	};
 

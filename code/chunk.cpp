@@ -11,7 +11,7 @@
 #include <iostream>
 #include "AIAPI.h"
 #include "camera.h"
-#include "entity.h"
+#include "player.h"
 #include "input.h"
 #include "gui.h"
 #include "game.h"

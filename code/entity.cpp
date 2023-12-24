@@ -263,7 +263,7 @@ namespace VoxelEng {
 
         firstManagementIteration_ = false;
 
-        // Process active entities that have a corresponding tick function ...
+        // Process active entities that have a corresponding tick function.
         entitiesMutex_.lock();
         unsigned int ID;
         for (unsigned int i = 0; i < ticksPerFrame_ && i < tickingEntityID_.size(); i++) { // It processes min(ticksPerFrame_, tickingEntityID_.size()) ticks.

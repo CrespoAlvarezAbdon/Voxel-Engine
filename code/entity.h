@@ -63,6 +63,11 @@ namespace VoxelEng {
 		// Observers.
 
 		/**
+		* @brief Get the entity's transform.
+		*/
+		const transform& getTransform() const;
+
+		/**
 		* @brief Get the entity's position.
 		*/
 		const vec3& pos() const;
@@ -139,6 +144,11 @@ namespace VoxelEng {
 
 
 		// Modifiers.
+
+		/**
+		* @brief Get the entity's transform.
+		*/
+		transform& getTransform();
 
 		/**
 		* @brief Get the entity's position.
@@ -252,6 +262,12 @@ namespace VoxelEng {
 
 	};
 
+	inline const transform& entity::getTransform() const {
+	
+		return transform_;
+	
+	}
+
 	inline const vec3& entity::pos() const {
 
 		return transform_.position;
@@ -340,6 +356,12 @@ namespace VoxelEng {
 
 		return std::cos(transform_.rotation.z * piDiv);
 
+	}
+
+	inline transform& entity::getTransform() {
+	
+		return transform_;
+	
 	}
 
 	inline vec3& entity::pos() {

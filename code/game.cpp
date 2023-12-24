@@ -13,6 +13,7 @@
 #include "block.h"
 #include "camera.h"
 #include "entity.h"
+#include "player.h"
 #include "tickFunctions.h"
 #include "texture.h"
 #include "graphics.h"
@@ -512,7 +513,7 @@ namespace VoxelEng {
 
                 MVPmatrix_ = playerCamera_->projectionMatrix() * playerCamera_->viewMatrix();
                 defaultShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
-                defaultShader_->setUniformVec3f("u_viewPos", playerCamera_->pos());
+                defaultShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
 
                 // Times calculation.
                 actualTime = glfwGetTime();

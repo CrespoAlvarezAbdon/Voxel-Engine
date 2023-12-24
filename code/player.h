@@ -13,6 +13,7 @@
 #include "block.h"
 #include "entity.h"
 #include "gameWindow.h"
+#include "transform.h"
 #include "vec.h"
 
 #if GRAPHICS_API == OPENGL
@@ -26,10 +27,9 @@
 namespace VoxelEng {
 
 	/**
-	* @brief Abstraction containing everything that defines the entity that
-	* represents the user inside the world.
+	* @brief Abstraction containing everything that defines the user's entity in the world.
 	*/
-	class player : public entity {
+	class player {
 
 	public:
 
@@ -98,6 +98,62 @@ namespace VoxelEng {
 		*/
 		static void changeTransform(float newX, float newY, float newZ, float pitch = 0.0f, float yaw = 0.0f, float roll = 0.0f);
 
+		/**
+		* @brief Notify that the camera is to be moved up once according
+		* to its movement speed.
+		*/
+		static void moveUp();
+
+		/**
+		* @brief Notify that the camera is to be moved down once according
+		* to its movement speed.
+		*/
+		static void moveDown();
+
+		/**
+		* @brief Notify that the camera is to be moved in global north direction (+x) once according
+		* to its movement speed.
+		*/
+		static void moveNorth();
+
+		/**
+		* @brief Notify that the camera is to be moved in global south direction (-x) once according
+		* to its movement speed.
+		*/
+		static void moveSouth();
+
+		/**
+		* @brief Notify that the camera is to be moved in global east direction (+z) once according
+		* to its movement speed.
+		*/
+		static void moveEast();
+
+		/**
+		* @brief Notify that the camera is to be moved in global west direction (-z) once according
+		* to its movement speed.
+		*/
+		static void moveWest();
+
+		/**
+		* @brief Notify that the camera will be rolled to its right according to
+		* its rolling speed.
+		*/
+		static void rollRight();
+
+		/**
+		* @brief Notify that the camera will be rolled to its left according to
+		* its rolling speed.
+		*/
+		static void rollLeft();
+
+		/**
+		* @brief Update the player's transforms.
+		* Called on the rendering thread while applying the time step in order to
+		* un-link the frame rate with the player's movement.
+		* This will also update the associated camera's transform.
+		*/
+		static void updateTransform(float timeStep);
+
 
 		// Clean up.
 
@@ -108,15 +164,27 @@ namespace VoxelEng {
 
 	private:
 
-		static bool initialised_;
+		static bool initialised_,
+					moveUp_,
+					moveDown_,
+					moveNorth_,
+					moveSouth_,
+					moveEast_,
+					moveWest_,
+					rollRight_,
+					rollLeft_;
 		static GLFWwindow* window_;
 		static camera* camera_;
 		static float blockReachRange_,
-					 blockSearchIncrement_;
+					 blockSearchIncrement_,
+					 movementSpeed_,
+			         rollSpeed_;
 		static const block* selectedBlock_;
 		static std::atomic<const block*> blockToPlace_;
 		static vec3 selectedBlockPos_,
 					oldSelectedBlockPos_;
+		static entity* playerEntity_;
+		static transform* playerTransform_;
 
 		/*
 		Flags used to coordinate the callbacks called
@@ -129,7 +197,7 @@ namespace VoxelEng {
 
 	inline const vec3& player::globalPos() {
 
-		return camera_->pos();
+		return camera_->globalPos();
 
 	}
 
@@ -148,6 +216,54 @@ namespace VoxelEng {
 	inline void player::changeTransform(const vec3& newPos, const vec3& newRot) {
 
 		changeTransform(newPos.x, newPos.y, newPos.z, newRot.x, newRot.y, newRot.z);
+
+	}
+
+	inline void player::moveUp() {
+
+		moveUp_ = true;
+
+	}
+
+	inline void player::moveDown() {
+
+		moveDown_ = true;
+
+	}
+
+	inline void player::moveNorth() {
+
+		moveNorth_ = true;
+
+	}
+
+	inline void player::moveSouth() {
+
+		moveSouth_ = true;
+
+	}
+
+	inline void player::moveEast() {
+
+		moveEast_ = true;
+
+	}
+
+	inline void player::moveWest() {
+
+		moveWest_ = true;
+
+	}
+
+	inline void player::rollRight() {
+
+		rollRight_ = true;
+
+	}
+
+	inline void player::rollLeft() {
+
+		rollLeft_ = true;
 
 	}
 

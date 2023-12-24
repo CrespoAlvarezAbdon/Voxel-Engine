@@ -7,17 +7,29 @@ namespace VoxelEng {
 
     // 'player' class.
 
-    bool player::initialised_ = false;
+    bool player::initialised_ = false,
+         player::moveUp_ = false,
+         player::moveDown_ = false,
+         player::moveNorth_ = false,
+         player::moveSouth_ = false,
+         player::moveEast_ = false,
+         player::moveWest_ = false,
+         player::rollRight_ = false,
+         player::rollLeft_ = false;
     GLFWwindow* player::window_ = nullptr;
     camera* player::camera_ = nullptr;
     float player::blockReachRange_ = 0.0f,
-          player::blockSearchIncrement_ = 0.0f;
+          player::blockSearchIncrement_ = 0.0f,
+          player::movementSpeed_ = 0.0f,
+          player::rollSpeed_ = 0.0f;
     const block* player::selectedBlock_ = nullptr;
     std::atomic<const block*> player::blockToPlace_ = nullptr;
     vec3 player::selectedBlockPos_ = vec3Zero,
          player::oldSelectedBlockPos_ = vec3Zero;
     std::atomic<bool> player::destroyBlock_ = false,
                       player::placeBlock_ = false;
+    entity* player::playerEntity_ = nullptr;
+    transform* player::playerTransform_ = nullptr;
 
 
     void player::init(float FOV, float zNear, float zFar, window& window, unsigned int blockReachRange) {
@@ -32,11 +44,20 @@ namespace VoxelEng {
                 camera_ = new camera(FOV, zNear, zFar, window, true);
                 blockReachRange_ = blockReachRange;
                 blockSearchIncrement_ = 0.1f;
+                movementSpeed_ = 10.0f;
+                rollSpeed_ = 70.0f;
                 selectedBlock_ = block::emptyBlockP();
-                blockToPlace_ = block::emptyBlockP(); // TODO. ADD PROPER PLAYER MODEL.
-                playerEntity_ = &entityManager::getEntity(entityManager::registerEntity(2, vec3Zero, vec3Zero, nullptr));
-
-                // NEXT. GET ALL THE PLAYERENTITY'S VARIABLE SYNCHRONIZED (WITH THE SAME VALUE) AS THE PLAYER'S AND SEE IF THE MODEL RENDERS PROPERLY AND IF NOT FIX IT
+                blockToPlace_ = block::emptyBlockP();
+                moveUp_ = false;
+                moveDown_ = false;
+                moveNorth_ = false;
+                moveSouth_ = false;
+                moveEast_ = false;
+                moveWest_ = false;
+                rollRight_ = false;
+                rollLeft_ = false;
+                playerEntity_ = &entityManager::getEntity(entityManager::registerEntity(2, vec3Zero, vec3Zero, nullptr));  // TODO. ADD PROPER PLAYER MODEL.
+                playerTransform_ = &playerEntity_->getTransform();
 
             }
             else
@@ -50,13 +71,13 @@ namespace VoxelEng {
 
         float step = blockSearchIncrement_;
         const vec3& dir = camera_->viewDirection(),
-            pos = camera_->pos();
+                    globalPos = camera_->globalPos();
         vec3 blockPos;
         selectedBlock_ = block::emptyBlockP();
 
         while (step < blockReachRange_ && selectedBlock_->isEmptyBlock()) {
 
-            selectedBlockPos_ = pos + (dir * step);
+            selectedBlockPos_ = globalPos + (dir * step);
 
             blockPos.x = floor(selectedBlockPos_.x);
             blockPos.y = floor(selectedBlockPos_.y);
@@ -69,11 +90,6 @@ namespace VoxelEng {
                 oldSelectedBlockPos_ = selectedBlockPos_;
 
                 step += blockSearchIncrement_;
-
-            }
-            else {
-
-                float dummy = 2.50f;
 
             }
 
@@ -258,6 +274,71 @@ namespace VoxelEng {
 
     }
 
+    void player::updateTransform(float timeStep) {
+
+        // Camera's movement.
+        if (moveNorth_) {
+
+            playerTransform_->position += playerTransform_->viewDirection * movementSpeed_ * timeStep;
+            //transform_.position += forwardAxis_ * movementSpeed_ * timeStep;
+            moveNorth_ = false;
+
+        }
+
+        if (moveSouth_) {
+
+            playerTransform_->position -= playerTransform_->viewDirection * movementSpeed_ * timeStep;
+            //transform_.position -= forwardAxis_ * movementSpeed_ * timeStep;
+            moveSouth_ = false;
+
+        }
+
+        if (moveEast_) {
+
+            playerTransform_->position -= playerTransform_->Zaxis * movementSpeed_ * timeStep;
+            moveEast_ = false;
+
+        }
+
+        if (moveWest_) {
+
+            playerTransform_->position += playerTransform_->Zaxis * movementSpeed_ * timeStep;
+            moveWest_ = false;
+
+        }
+
+        if (moveUp_) {
+
+            playerTransform_->position += playerTransform_->Yaxis * movementSpeed_ * timeStep;
+            moveUp_ = false;
+
+        }
+
+        if (moveDown_) {
+
+            playerTransform_->position -= playerTransform_->Yaxis * movementSpeed_ * timeStep;
+            moveDown_ = false;
+
+        }
+
+        if (rollRight_) {
+
+            //roll_ -= rollSpeed_ * timeStep;
+            rollRight_ = false;
+
+        }
+
+        if (rollLeft_) {
+
+            //roll_ += rollSpeed_ * timeStep;
+            rollLeft_ = false;
+
+        }
+
+        camera_->updatePos();
+    
+    }
+
     void player::reset() {
 
         if (camera_) {
@@ -271,6 +352,9 @@ namespace VoxelEng {
 
         selectedBlock_ = nullptr;
         blockToPlace_ = nullptr;
+
+        playerEntity_ = nullptr;
+        playerTransform_ = nullptr;
 
     }
 

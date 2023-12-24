@@ -87,11 +87,6 @@ namespace VoxelEng {
 		float mouseSensibility() const;
 
 		/**
-		* @brief Provide access to the user camera's movement speed parameter.
-		*/
-		float movementSpeed() const;
-
-		/**
 		* @brief Provide access to the user camera's projection matrix.
 		*/
 		const glm::mat4& projectionMatrix() const;
@@ -153,11 +148,6 @@ namespace VoxelEng {
 		float& mouseSensibility();
 
 		/**
-		* @brief Provide access to the camera's movement speed parameter.
-		*/
-		float& movementSpeed();
-
-		/**
 		* @brief Provide access to the camera's projection matrix.
 		*/
 		glm::mat4& projectionMatrix();
@@ -203,60 +193,12 @@ namespace VoxelEng {
 		void rotation(float x, float y, float z);
 
 		/**
-		* @brief Notify that the camera is to be moved up once according
-		* to its movement speed.
-		*/
-		void moveUp();
-
-		/**
-		* @brief Notify that the camera is to be moved down once according
-		* to its movement speed.
-		*/
-		void moveDown();
-
-		/**
-		* @brief Notify that the camera is to be moved in global north direction (+x) once according
-		* to its movement speed.
-		*/
-		void moveNorth();
-
-		/**
-		* @brief Notify that the camera is to be moved in global south direction (-x) once according
-		* to its movement speed.
-		*/
-		void moveSouth();
-
-		/**
-		* @brief Notify that the camera is to be moved in global east direction (+z) once according
-		* to its movement speed.
-		*/
-		void moveEast();
-
-		/**
-		* @brief Notify that the camera is to be moved in global west direction (-z) once according
-		* to its movement speed.
-		*/
-		void moveWest();
-
-		/**
-		* @brief Notify that the camera will be rolled to its right according to
-		* its rolling speed.
-		*/
-		void rollRight();
-
-		/**
-		* @brief Notify that the camera will be rolled to its left according to
-		* its rolling speed.
-		*/
-		void rollLeft();
-
-		/**
 		* @brief Update the camera's position and the direction it's looking at
 		* taking into account the delta time to avoid the FPS from altering the movement speed.
 		* NOTE. Once this method is called, the next method that should be instantly called is
 		* camera::updateView() to reflect the change in the camera's position and view direction.
 		*/
-		void updatePos(float timeStep);
+		void updatePos();
 
 		/**
 		* @brief Update the camera's vision.
@@ -278,23 +220,13 @@ namespace VoxelEng {
 		static camera* playerCamera_;
 
 		window& window_;
-		bool moveUp_,
-			 moveDown_,
-			 moveNorth_,
-			 moveSouth_,
-			 moveEast_,
-			 moveWest_,
-			 rollRight_,
-			 rollLeft_;
 
 		float FOV_,
-			  zNear_,
-			  zFar_,
-			  pitchViewDir_,
-			  yawViewDir_,
-			  mouseSensibility_,
-			  movementSpeed_,
-			  rollSpeed_;
+			zNear_,
+			zFar_,
+			pitchViewDir_,
+			yawViewDir_,
+			mouseSensibility_;
 
 		double mouseX_,
 			   mouseY_,
@@ -306,12 +238,7 @@ namespace VoxelEng {
 				  modelMatrix_; // All models' vertices will be multiplied with this matrix (so you can, for example, rotate the entire world around the camera).
 
 		transform transform_;
-		vec3 viewDirection_,
-			 upAxis_,
-			 rightAxis_,
-			 forwardAxis_,
-			 chunkPosition_,
-			 oldChunkPos_,
+		vec3 oldChunkPos_,
 			 gravityDirection_,
 			 pitchAxis_,
 			 yawAxis_,
@@ -342,12 +269,6 @@ namespace VoxelEng {
 
 	}
 
-	inline float camera::movementSpeed() const {
-
-		return movementSpeed_;
-
-	}
-
 	inline const glm::mat4& camera::projectionMatrix() const {
 
 		return projectionMatrix_;
@@ -374,13 +295,13 @@ namespace VoxelEng {
 
 	inline const vec3& camera::viewDirection() const {
 	
-		return viewDirection_;
+		return transform_.viewDirection;
 	
 	}
 
 	inline const vec3& camera::chunkPos() const {
 
-		return chunkPosition_;
+		return transform_.chunkPosition;
 
 	}
 
@@ -399,12 +320,6 @@ namespace VoxelEng {
 	inline float& camera::mouseSensibility() {
 
 		return mouseSensibility_;
-
-	}
-
-	inline float& camera::movementSpeed() {
-
-		return movementSpeed_;
 
 	}
 
@@ -441,54 +356,6 @@ namespace VoxelEng {
 	inline void camera::rotation(const vec3& newRotation) {
 	
 		rotation(newRotation.x, newRotation.y, newRotation.z);
-	
-	}
-
-	inline void camera::moveUp() {
-
-		moveUp_ = true;
-
-	}
-
-	inline void camera::moveDown() {
-
-		moveDown_ = true;
-
-	}
-
-	inline void camera::moveNorth() {
-
-		moveNorth_ = true;
-
-	}
-
-	inline void camera::moveSouth() {
-
-		moveSouth_ = true;
-
-	}
-
-	inline void camera::moveEast() {
-
-		moveEast_ = true;
-
-	}
-
-	inline void camera::moveWest() {
-
-		moveWest_ = true;
-
-	}
-
-	inline void camera::rollRight() {
-	
-		rollRight_ = true;
-	
-	}
-
-	inline void camera::rollLeft() {
-	
-		rollLeft_ = true;
 	
 	}
 
