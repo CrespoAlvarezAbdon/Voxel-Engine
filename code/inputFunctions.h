@@ -12,8 +12,8 @@
 
 #include "AIAPI.h"
 #include "block.h"
-#include "camera.h"
 #include "game.h"
+#include "player.h"
 #include "logger.h"
 
 
@@ -169,55 +169,54 @@ namespace VoxelEng {
 	private:
 
 		static bool initialised_;
-		static camera* playerCamera_; // To avoid calling game::playerCamera() too many times.
 
 	};
 
 	inline void inputFunctions::moveUp() {
 
-		playerCamera_->moveUp();
+		player::moveUp();
 
 	}
 
 	inline void inputFunctions::moveDown() {
 
-		playerCamera_->moveDown();
+		player::moveDown();
 
 	}
 
 	inline void inputFunctions::moveNorth() {
 
-		playerCamera_->moveNorth();
+		player::moveNorth();
 
 	}
 
 	inline void inputFunctions::moveSouth() {
 
-		playerCamera_->moveSouth();
+		player::moveSouth();
 
 	}
 
 	inline void inputFunctions::moveEast() {
 
-		playerCamera_->moveEast();
+		player::moveEast();
 
 	}
 
 	inline void inputFunctions::moveWest() {
 
-		playerCamera_->moveWest();
+		player::moveWest();
 
 	}
 
 	inline void inputFunctions::rollRight() {
 
-		playerCamera_->rollRight();
+		player::rollRight();
 
 	}
 
 	inline void inputFunctions::rollLeft() {
 
-		playerCamera_->rollLeft();
+		player::rollLeft();
 
 	}
 

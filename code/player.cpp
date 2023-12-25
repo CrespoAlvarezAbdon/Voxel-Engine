@@ -16,16 +16,26 @@ namespace VoxelEng {
          player::moveWest_ = false,
          player::rollRight_ = false,
          player::rollLeft_ = false;
-    GLFWwindow* player::window_ = nullptr;
+    window* player::window_ = nullptr;
     camera* player::camera_ = nullptr;
     float player::blockReachRange_ = 0.0f,
           player::blockSearchIncrement_ = 0.0f,
           player::movementSpeed_ = 0.0f,
-          player::rollSpeed_ = 0.0f;
+          player::rollSpeed_ = 0.0f,
+          player::pitchViewDir_ = 0.0f,
+          player::yawViewDir_ = 0.0f,
+          player::mouseSensibility_ = 0.0f;
+    double player::mouseX_ = 0.0,
+           player::mouseY_ = 0.0,
+           player::oldMouseX_ = 0.0,
+           player::oldMouseY_ = 0.0;
     const block* player::selectedBlock_ = nullptr;
     std::atomic<const block*> player::blockToPlace_ = nullptr;
     vec3 player::selectedBlockPos_ = vec3Zero,
-         player::oldSelectedBlockPos_ = vec3Zero;
+         player::oldSelectedBlockPos_ = vec3Zero,
+         player::pitchAxis_ = vec3Zero,
+         player::yawAxis_ = vec3Zero,
+         player::rollAxis_ = vec3Zero;
     std::atomic<bool> player::destroyBlock_ = false,
                       player::placeBlock_ = false;
     entity* player::playerEntity_ = nullptr;
@@ -40,14 +50,6 @@ namespace VoxelEng {
 
             if (game::selectedEngineMode() == engineMode::AIMENULOOP) {
 
-                window_ = window.windowAPIpointer();
-                camera_ = new camera(FOV, zNear, zFar, window, true);
-                blockReachRange_ = blockReachRange;
-                blockSearchIncrement_ = 0.1f;
-                movementSpeed_ = 10.0f;
-                rollSpeed_ = 70.0f;
-                selectedBlock_ = block::emptyBlockP();
-                blockToPlace_ = block::emptyBlockP();
                 moveUp_ = false;
                 moveDown_ = false;
                 moveNorth_ = false;
@@ -56,8 +58,32 @@ namespace VoxelEng {
                 moveWest_ = false;
                 rollRight_ = false;
                 rollLeft_ = false;
+                window_ = &window;
+                camera_ = new camera(FOV, zNear, zFar, window, true);
+                blockReachRange_ = blockReachRange;
+                blockSearchIncrement_ = 0.1f;
+                movementSpeed_ = 10.0f;
+                rollSpeed_ = 70.0f;
+                pitchViewDir_ = 0.0f;
+                yawViewDir_ = 0.0f;
+                mouseSensibility_ = 0.0f;
+                mouseX_ = 0.0;
+                mouseY_ = 0.0;
+                oldMouseX_ = 0.0;
+                oldMouseY_ = 0.0;
+                selectedBlock_ = block::emptyBlockP();
+                blockToPlace_ = block::emptyBlockP();
+                selectedBlockPos_ = vec3Zero;
+                oldSelectedBlockPos_ = vec3Zero;
+                pitchAxis_ = vec3Zero;
+                yawAxis_ = vec3Zero;
+                rollAxis_ = vec3Zero;
+                destroyBlock_ = false;
+                placeBlock_ = false;
                 playerEntity_ = &entityManager::getEntity(entityManager::registerEntity(2, vec3Zero, vec3Zero, nullptr));  // TODO. ADD PROPER PLAYER MODEL.
                 playerTransform_ = &playerEntity_->getTransform();
+
+                initialised_ = true;
 
             }
             else
@@ -70,7 +96,7 @@ namespace VoxelEng {
     void player::selectBlock() {
 
         float step = blockSearchIncrement_;
-        const vec3& dir = camera_->viewDirection(),
+        const vec3& dir = playerTransform_->viewDirection,
                     globalPos = camera_->globalPos();
         vec3 blockPos;
         selectedBlock_ = block::emptyBlockP();
@@ -259,18 +285,10 @@ namespace VoxelEng {
 
     }
 
-    void player::changeTransform(float newX, float newY, float newZ, float pitch, float yaw, float roll) {
+    void player::changeTransform(const vec3& newPos, const vec3& newRot) {
 
-        camera_->setPos(newX, newY, newZ);
-        camera_->setChunkPos(chunkManager::getChunkCoords(newX, newY, newZ));
-        camera_->rotation(pitch, yaw, roll);
-
-        playerEntity_->x() = newX;
-        playerEntity_->y() = newY;
-        playerEntity_->z() = newZ;
-        playerEntity_->rotateViewPitch(pitch);
-        playerEntity_->rotateViewYaw(yaw);
-        playerEntity_->rotateViewRoll(roll);
+        playerTransform_->position = newPos;
+        playerTransform_->rotation = newRot;
 
     }
 
@@ -335,7 +353,67 @@ namespace VoxelEng {
 
         }
 
-        camera_->updatePos();
+        // Update chunk-relative coordinates.
+        playerTransform_->chunkPosition.x = trunc(playerTransform_->position.x / SCX);
+        playerTransform_->chunkPosition.y = trunc(playerTransform_->position.y / SCY);
+        playerTransform_->chunkPosition.z = trunc(playerTransform_->position.z / SCZ);
+
+        // Get and process mouse input.
+        oldMouseX_ = mouseX_;
+        oldMouseY_ = mouseY_;
+
+        #if GRAPHICS_API == OPENGL
+
+            glfwGetCursorPos(window_->windowAPIpointer(), &mouseX_, &mouseY_);
+
+        #else
+
+        #endif
+
+        pitchViewDir_ += (oldMouseY_ - mouseY_) * mouseSensibility_;
+        yawViewDir_ += (oldMouseX_ - mouseX_) * mouseSensibility_;
+
+        if (pitchViewDir_ > 89.0f)
+            pitchViewDir_ = 89.0f;
+        else if (pitchViewDir_ < -89.0f)
+            pitchViewDir_ = -89.0f;
+
+        // Obtain the angles needed to rotate a vector equal to vec3FixedUp to the current value of the transform's Y axis.
+        pitchAxis_ = vec3FixedEast;
+        yawAxis_ = vec3FixedUp;
+        rollAxis_ = vec3FixedNorth;
+
+        playerTransform_->Yaxis = -glm::normalize(playerTransform_->gravityDirection);
+        playerTransform_->Xaxis = vec3FixedNorth;
+
+        playerTransform_->rotation.x = glm::degrees(glm::acos(glm::dot(playerTransform_->Yaxis, vec3FixedNorth))) - 90.0f;
+        playerTransform_->rotation.y = glm::degrees(glm::acos(glm::dot(playerTransform_->Yaxis, vec3FixedUp)));
+        playerTransform_->rotation.z = glm::degrees(glm::acos(glm::dot(playerTransform_->Yaxis, vec3FixedEast))) - 90.0f;
+
+        // Change the orientation of the camera based on the actual gravity direction of the entity this camera is attached to.
+        pitchAxis_ = glm::rotate(pitchAxis_, glm::radians(playerTransform_->rotation.y), rollAxis_);
+        yawAxis_ = glm::rotate(yawAxis_, glm::radians(playerTransform_->rotation.y), rollAxis_);
+
+        yawAxis_ = glm::rotate(yawAxis_, glm::radians(playerTransform_->rotation.x), pitchAxis_);
+        rollAxis_ = glm::rotate(rollAxis_, glm::radians(playerTransform_->rotation.x), pitchAxis_);
+
+        pitchAxis_ = glm::rotate(pitchAxis_, glm::radians(playerTransform_->rotation.z), yawAxis_);
+        rollAxis_ = glm::rotate(rollAxis_, glm::radians(playerTransform_->rotation.z), yawAxis_);
+
+        if (playerTransform_->Yaxis != vec3FixedUp && playerTransform_->Yaxis != vec3FixedDown)
+            playerTransform_->Xaxis = glm::cross(yawAxis_, playerTransform_->Yaxis);
+        else // Particular case when glm::cross will return (0,0,0)
+            playerTransform_->Xaxis = glm::rotate(playerTransform_->Xaxis, glm::radians(playerTransform_->rotation.y), rollAxis_);
+
+        playerTransform_->viewDirection = quaternion::rotateVector(playerTransform_->Xaxis, yawViewDir_, playerTransform_->Yaxis);
+        playerTransform_->Zaxis = glm::cross(playerTransform_->viewDirection, playerTransform_->Yaxis);
+        playerTransform_->viewDirection = quaternion::rotateVector(playerTransform_->viewDirection, pitchViewDir_, playerTransform_->Zaxis);
+
+        playerTransform_->Xaxis = glm::normalize(playerTransform_->Xaxis);
+        playerTransform_->Zaxis = glm::normalize(playerTransform_->Zaxis);
+        playerTransform_->viewDirection = glm::normalize(playerTransform_->viewDirection);
+
+        camera_->updateTransform(playerTransform_);
     
     }
 

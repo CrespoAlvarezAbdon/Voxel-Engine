@@ -508,7 +508,7 @@ namespace VoxelEng {
                     mainWindow_->resizeHeavyProcessing();
 
                 if (!mainWindow_->isMouseFree())
-                    playerCamera_->updatePos(game::timeStep());
+                    player::updateTransform(game::timeStep());
                 playerCamera_->updateView();
 
                 MVPmatrix_ = playerCamera_->projectionMatrix() * playerCamera_->viewMatrix();

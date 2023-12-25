@@ -256,7 +256,6 @@ namespace VoxelEng {
 			 updateYRotation_,
 			 updateZRotation_;
 		transform transform_;
-		vec3 gravityDirection_;
 		const model* model_;
 		tickFunc tickFunc_;
 

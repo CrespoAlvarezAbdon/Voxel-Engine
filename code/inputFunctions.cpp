@@ -6,7 +6,6 @@ namespace VoxelEng {
 	// 'inputFunctions' class.
 
 	bool inputFunctions::initialised_ = false;
-	camera* inputFunctions::playerCamera_ = nullptr;
 
 
 	void inputFunctions::init() {
@@ -15,7 +14,6 @@ namespace VoxelEng {
 			logger::errorLog("The input functions system is already initialised");
 		else {
 		
-			playerCamera_ = &game::playerCamera();
 			initialised_ = true;
 		
 		}
@@ -24,8 +22,6 @@ namespace VoxelEng {
 
 	void inputFunctions::reset() {
 	
-		playerCamera_ = nullptr;
-
 		initialised_ = false;
 	
 	}

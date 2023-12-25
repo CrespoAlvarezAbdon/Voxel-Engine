@@ -82,11 +82,6 @@ namespace VoxelEng {
 		float zFar() const;
 
 		/**
-		* @brief Provide access to the user camera's movement my mouse sensibility parameter.
-		*/
-		float mouseSensibility() const;
-
-		/**
 		* @brief Provide access to the user camera's projection matrix.
 		*/
 		const glm::mat4& projectionMatrix() const;
@@ -143,11 +138,6 @@ namespace VoxelEng {
 		void updateProjectionMatrix();
 
 		/**
-		* @brief Provide access to the camera's movement my mouse sensibility parameter.
-		*/
-		float& mouseSensibility();
-
-		/**
 		* @brief Provide access to the camera's projection matrix.
 		*/
 		glm::mat4& projectionMatrix();
@@ -198,7 +188,15 @@ namespace VoxelEng {
 		* NOTE. Once this method is called, the next method that should be instantly called is
 		* camera::updateView() to reflect the change in the camera's position and view direction.
 		*/
-		void updatePos();
+		void updateTransform(const transform& baseTransform);
+
+		/**
+		* @brief Update the camera's position and the direction it's looking at
+		* taking into account the delta time to avoid the FPS from altering the movement speed.
+		* NOTE. Once this method is called, the next method that should be instantly called is
+		* camera::updateView() to reflect the change in the camera's position and view direction.
+		*/
+		void updateTransform(const transform* baseTransform);
 
 		/**
 		* @brief Update the camera's vision.
@@ -222,27 +220,15 @@ namespace VoxelEng {
 		window& window_;
 
 		float FOV_,
-			zNear_,
-			zFar_,
-			pitchViewDir_,
-			yawViewDir_,
-			mouseSensibility_;
-
-		double mouseX_,
-			   mouseY_,
-			   oldMouseX_,
-			   oldMouseY_;
+			  zNear_,
+			  zFar_;
 
 		glm::mat4 projectionMatrix_,
 				  viewMatrix_,
 				  modelMatrix_; // All models' vertices will be multiplied with this matrix (so you can, for example, rotate the entire world around the camera).
 
 		transform transform_;
-		vec3 oldChunkPos_,
-			 gravityDirection_,
-			 pitchAxis_,
-			 yawAxis_,
-			 rollAxis_;
+		
 	};
 
 	inline const camera* camera::cPlayerCamera() {
@@ -260,12 +246,6 @@ namespace VoxelEng {
 	inline float camera::zFar() const {
 
 		return zFar_;
-
-	}
-
-	inline float camera::mouseSensibility() const {
-
-		return mouseSensibility_;
 
 	}
 
@@ -317,12 +297,6 @@ namespace VoxelEng {
 
 	}
 
-	inline float& camera::mouseSensibility() {
-
-		return mouseSensibility_;
-
-	}
-
 	inline glm::mat4& camera::projectionMatrix() {
 
 		return projectionMatrix_;
@@ -357,6 +331,32 @@ namespace VoxelEng {
 	
 		rotation(newRotation.x, newRotation.y, newRotation.z);
 	
+	}
+
+	inline void camera::updateTransform(const transform& baseTransform) {
+
+		transform_ = baseTransform;
+
+	}
+
+	inline void camera::updateTransform(const transform* baseTransform) {
+	
+		updateTransform(*baseTransform);
+	
+	}
+
+	inline void camera::updateView() {
+
+		#if GRAPHICS_API == OPENGL
+
+			viewMatrix_ = glm::lookAt(transform_.position, transform_.position + transform_.viewDirection, transform_.Yaxis);
+
+		#else
+
+
+
+		#endif
+
 	}
 
 	inline camera::~camera() {

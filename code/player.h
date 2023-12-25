@@ -96,7 +96,7 @@ namespace VoxelEng {
 		/**
 		* @brief Change user position and viewing direction.
 		*/
-		static void changeTransform(float newX, float newY, float newZ, float pitch = 0.0f, float yaw = 0.0f, float roll = 0.0f);
+		static void changeTransform(float posX, float posY, float posZ, float rotX = 0.0f, float rotY = 0.0f, float rotZ = 0.0f);
 
 		/**
 		* @brief Notify that the camera is to be moved up once according
@@ -173,16 +173,26 @@ namespace VoxelEng {
 					moveWest_,
 					rollRight_,
 					rollLeft_;
-		static GLFWwindow* window_;
+		static window* window_;
 		static camera* camera_;
 		static float blockReachRange_,
 					 blockSearchIncrement_,
 					 movementSpeed_,
-			         rollSpeed_;
+			         rollSpeed_,
+					 pitchViewDir_,
+					 yawViewDir_,
+					 mouseSensibility_;
+		static double mouseX_,
+					  mouseY_,
+					  oldMouseX_,
+					  oldMouseY_;
 		static const block* selectedBlock_;
 		static std::atomic<const block*> blockToPlace_;
 		static vec3 selectedBlockPos_,
-					oldSelectedBlockPos_;
+					oldSelectedBlockPos_,
+					pitchAxis_,
+					yawAxis_,
+					rollAxis_;
 		static entity* playerEntity_;
 		static transform* playerTransform_;
 
@@ -197,13 +207,13 @@ namespace VoxelEng {
 
 	inline const vec3& player::globalPos() {
 
-		return camera_->globalPos();
+		return playerTransform_->position;
 
 	}
 
 	inline const vec3& player::rotation() {
 
-		return camera_->rotation();
+		return playerTransform_->rotation;
 
 	}
 
@@ -213,9 +223,9 @@ namespace VoxelEng {
 
 	}
 
-	inline void player::changeTransform(const vec3& newPos, const vec3& newRot) {
+	void player::changeTransform(float posX, float posY, float posZ, float rotX, float rotY, float rotZ) {
 
-		changeTransform(newPos.x, newPos.y, newPos.z, newRot.x, newRot.y, newRot.z);
+		changeTransform(vec3(posX, posY, posZ), vec3(rotX, rotY, rotZ));
 
 	}
 
