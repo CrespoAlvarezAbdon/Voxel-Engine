@@ -14,8 +14,9 @@
 #include <unordered_set>
 #include <atomic>
 #include <cstddef>
+#include <mutex>
+
 #include "model.h"
-#include "entity.h"
 #include "gameWindow.h"
 
 

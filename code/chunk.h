@@ -26,6 +26,7 @@
 #include <utility>
 #include <vector>
 #include <hash.hpp>
+
 #include "atomicRecyclingPool.h"
 #include "block.h"
 #include "definitions.h"
@@ -40,8 +41,6 @@
 #include "vertexBuffer.h"
 #include "vertexBufferLayout.h"
 #include "utilities.h"
-#include "worldGen.h"
-
 #include "time.h"
 
 #if GRAPHICS_API == OPENGL
@@ -59,7 +58,6 @@ namespace VoxelEng {
 	/////////////////////////
 
 	class chunkManager;
-	class worldGen;
 
 
 	/////////////////

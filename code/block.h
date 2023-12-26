@@ -12,7 +12,7 @@ namespace VoxelEng {
 	* @brief A block is the minimal unit of terrain in this engine. This class is the base
 	* for the representation of any type of blocks registered and supported by this engine.
 	*/
-	class block { // TODO. DOC DE ESTE .H
+	class block { // TODO. DOCUMENTAR DE ESTE .H
 
 	public:
 

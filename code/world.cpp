@@ -154,7 +154,7 @@ namespace VoxelEng {
 	void world::createSaveDirectory(unsigned int slot) {
 
 		currentWorldSlot_ = slot;
-		currentWorldPath_ = "saves/slot" + std::to_string(currentWorldSlot_);
+		currentWorldPath_ = "saves/slot" + std::to_string(currentWorldSlot_) + '/';
 		std::filesystem::create_directory(currentWorldPath_);
 
 	}
@@ -189,7 +189,6 @@ namespace VoxelEng {
 		// 2.5º. AÑADIR GRAVITY DIRECTION PARA TODAS LAS ENTIDADES. DONE.
 		// 3º. QUE TODO EL CONTROL DE MOVIMIENTO DEL PLAYER ESTÉ EN PLAYER Y QUE CUANDO SE CALCULEN ESOS VALORES SE PASEN A LA CÁMARA.
 		//  ASÍ LUEGO SE PUEDEN HACER COSAS COMO EL MODO TERCERA PERSONA MÁS FÁCIL. DONE.
-		// 4º. METER MODO GRAVITY-FREE DEL PLAYER.
 		// Por último, ARREGLAR TODOS LOS FALLOS DERIVADOS DE HACER ESTO.
 
 		mainFile.write(data.c_str(), data.size());

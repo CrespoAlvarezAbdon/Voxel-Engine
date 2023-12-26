@@ -8,7 +8,7 @@
 * the user in the world.
 */
 #ifndef _VOXELENG_PLAYER_
-#define _VOXLENEG_PLAYER_
+#define _VOXELENG_PLAYER_
 
 #include "block.h"
 #include "entity.h"
@@ -223,7 +223,7 @@ namespace VoxelEng {
 
 	}
 
-	void player::changeTransform(float posX, float posY, float posZ, float rotX, float rotY, float rotZ) {
+	inline void player::changeTransform(float posX, float posY, float posZ, float rotX, float rotY, float rotZ) {
 
 		changeTransform(vec3(posX, posY, posZ), vec3(rotX, rotY, rotZ));
 

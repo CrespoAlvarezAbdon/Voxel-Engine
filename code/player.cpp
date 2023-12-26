@@ -66,7 +66,7 @@ namespace VoxelEng {
                 rollSpeed_ = 70.0f;
                 pitchViewDir_ = 0.0f;
                 yawViewDir_ = 0.0f;
-                mouseSensibility_ = 0.0f;
+                mouseSensibility_ = 0.25f;
                 mouseX_ = 0.0;
                 mouseY_ = 0.0;
                 oldMouseX_ = 0.0;
@@ -382,6 +382,8 @@ namespace VoxelEng {
         pitchAxis_ = vec3FixedEast;
         yawAxis_ = vec3FixedUp;
         rollAxis_ = vec3FixedNorth;
+
+        playerTransform_->gravityDirection = vec3(-1.0f, -1.0f, -1.0f);
 
         playerTransform_->Yaxis = -glm::normalize(playerTransform_->gravityDirection);
         playerTransform_->Xaxis = vec3FixedNorth;

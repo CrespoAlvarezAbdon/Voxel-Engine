@@ -18,9 +18,6 @@ namespace VoxelEng {
         FOV_(FOV),
         zNear_(zNear),
         zFar_(zFar),
-        pitchViewDir_(0.0f),
-        yawViewDir_(0.0f),
-        mouseSensibility_(0.25f),
         projectionMatrix_(glm::perspective(glm::radians(FOV_), static_cast<float>(window.width()) / window.height(), zNear_, zFar_)),
         viewMatrix_(1.0f),
         modelMatrix_(1.0f) {

@@ -1,5 +1,7 @@
 #include "event.h"
 
+#include "listener.h"
+
 namespace VoxelEng {
 
 	void event::notify() {

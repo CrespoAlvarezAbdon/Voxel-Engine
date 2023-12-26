@@ -3,7 +3,7 @@
 
 #include <unordered_set>
 #include <string>
-#include "listener.h"
+
 #include "logger.h"
 
 namespace VoxelEng {

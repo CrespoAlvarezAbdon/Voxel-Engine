@@ -1,6 +1,9 @@
 #include "batch.h"
+
 #include <string>
 #include <iterator>
+
+#include "entity.h"
 #include "definitions.h"
 #include "logger.h"
 
