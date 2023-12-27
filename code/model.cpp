@@ -238,7 +238,7 @@ namespace VoxelEng {
 		float atlasWidth = texture::blockTextureAtlas()->width(),
 			  atlasHeight = texture::blockTextureAtlas()->height(),
 			  textureWidth = texture::blockAtlasResolution(), // This will depend on texture ID in the future.
-			  textureHeight = texture::blockAtlasResolution(), // This will depend on texture ID  in the future.
+			  textureHeight = texture::blockAtlasResolution(), // This will depend on texture ID in the future.
 			  texCoordX = (textureID % (int)(atlasWidth / textureWidth)) / (atlasWidth / textureWidth),
 			  texCoordY = std::ceil(textureID / (atlasHeight / textureHeight)) / (atlasHeight / textureHeight),
 		      texCoordX2 = texCoordX - 1 / (atlasWidth / textureWidth),

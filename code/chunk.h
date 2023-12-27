@@ -625,7 +625,11 @@ namespace VoxelEng {
 	}
 
 	inline const block& chunk::setBlock(unsigned int linearIndex, const block& b) {
-
+		// NEXT.
+		// 1º. HACER MÉTODO EN UTILITIES.H PARA PASAR DE 3D A LINEAR.
+		// 2º. HACER MÉTODO EN UTILITIES.H PARA PASAR DE LINEAR A 3D.
+		// 3º. HACER MÉTODO EN UTILITIES.H PARA PASAR DE 2D A LINEAR.
+		// 4º. HACER MÉTODO EN UTILITIES.H PARA PASAR DE LINEAR A 2D.
 		return setBlock(linearIndex / (SCZ * SCY), (linearIndex / SCZ) % SCY, linearIndex % SCZ, b);
 
 	}
@@ -864,6 +868,26 @@ namespace VoxelEng {
 		* @brief Returns chunk local coordinates of a global position.
 		*/
 		static vec3 getChunkCoords(float globalX, float globalY, float globalZ);
+
+		/**
+		* @brief Returns region local coordinates of a chunk position.
+		*/
+		static vec3 getRegionRelCoords(const vec3& chunkPos);
+
+		/**
+		* @brief Returns region local coordinates of a chunk position.
+		*/
+		static vec3 getRegionRelCoords(float chunkX, float chunkY, float chunkZ);
+
+		/**
+		* @brief Returns region coordinates of a chunk position.
+		*/
+		static vec3 getRegionCoords(const vec3& chunkPos);
+
+		/**
+		* @brief Returns region local coordinates of a chunk position.
+		*/
+		static vec3 getRegionCoords(float chunkX, float chunkY, float chunkZ);
 
 		/**
 		* @brief Returns chunk coordinates in the X and Z axes of a global position in the X and Z axes.
@@ -1485,6 +1509,24 @@ namespace VoxelEng {
 	inline vec3 chunkManager::getChunkCoords(float globalX, float globalY, float globalZ) {
 
 		return vec3{ (int)floor(globalX / SCX), (int)floor(globalY / SCY), (int)floor(globalZ / SCZ) };
+
+	}
+
+	inline vec3 chunkManager::getRegionRelCoords(const vec3& chunkPos) {
+
+		return getRegionRelCoords(chunkPos.x, chunkPos.y, chunkPos.z);
+
+	}
+
+	inline vec3 chunkManager::getRegionCoords(const vec3& chunkPos) {
+
+		return getRegionCoords(chunkPos.x, chunkPos.y, chunkPos.z);
+
+	}
+
+	inline vec3 chunkManager::getRegionCoords(float chunkX, float chunkY, float chunkZ) {
+
+		return vec3{ (int)floor(chunkX / regionSizeX), (int)floor(chunkY / regionSizeY), (int)floor(chunkZ / regionSizeZ) };
 
 	}
 

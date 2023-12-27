@@ -228,6 +228,43 @@ namespace VoxelEng {
 	template <>
 	bool validatedCinInput(char& var);
 
+	/**
+	* @brief Returns the vector's coordinates in a linear index.
+	* NOTE. 'maxY' and 'maxZ' are equal to their respective dimensions' maximum value minus 1.
+	*/
+	inline unsigned int vec3ToLinear(const vec3& v, int maxY, int maxZ) {
+	
+		return v.x * maxZ * maxY + v.y * maxZ + v.z;
+	
+	}
+
+	/**
+	* @brief Returns the linear index as vector's coordinates.
+	* NOTE. 'maxY' and 'maxZ' are equal to their respective dimensions' maximum value minus 1.
+	*/
+	inline vec3 linearToVec3(unsigned int linearIndex, int maxY, int maxZ) {
+	
+		return vec3(linearIndex / (maxZ * maxY), (linearIndex / maxZ) % maxY, linearIndex % maxZ);
+	
+	}
+	/**
+	* @brief Returns the vector's coordinates in a linear index.
+	* NOTE. 'maxY' is equal to its dimension's maximum value minus 1.
+	*/
+	unsigned int vec2ToLinear(const vec2& v, int maxY) {
+
+		return v.x * maxY + v.y;
+
+	}
+	/**
+	* @brief Returns the linear index as vector's coordinates.
+	* NOTE. 'maxY' is equal to its dimension's maximum value minus 1.
+	*/
+	vec2 linearToVec2(unsigned int linearIndex, int maxY) {
+
+		return vec2(linearIndex / maxY, linearIndex % maxY);
+
+	}
 
 }
 

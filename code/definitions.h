@@ -74,6 +74,21 @@ namespace VoxelEng {
 	const int SCZ = 16;
 
 	/**
+	* @brief Region size (in chunks) in X axis.
+	*/
+	const int regionSizeX = 16;
+
+	/**
+	* @brief Region size (in chunks) in Y axis.
+	*/
+	const int regionSizeY = 16;
+
+	/**
+	* @brief Region size (in chunks) in Z axis.
+	*/
+	const int regionSizeZ = 16;
+
+	/**
 	* @brief The total number of blocks per chunk.
 	*/
 	const int nBlocksChunk = SCX * SCY * SCZ;
