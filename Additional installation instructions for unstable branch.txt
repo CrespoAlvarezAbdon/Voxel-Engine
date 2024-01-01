@@ -1,0 +1,13 @@
+In order to use leveldb with the engine, go to its GitHub repository and clone it.
+Then, build it in Release mode by following the instructions from the repository.
+After that, grab the "leveldb.lib" file from the "build" directory and the files
+in the "include" folder.
+Finally, repeat the steps that were performed for the other dependencies of this
+project in order to properly use the header and the library files from leveldb
+with the engine.
+
+NOTE. In case some linker errors such as LNK2038 arise, it means that the leveldb
+project has some project configuration values that are different from the ones
+in the engine's project.
+To solve this, see what configuration mismatches are reported by the generated
+errors and change the leveldb's project configuration.

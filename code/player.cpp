@@ -109,7 +109,7 @@ namespace VoxelEng {
             blockPos.y = floor(selectedBlockPos_.y);
             blockPos.z = floor(selectedBlockPos_.z);
 
-            selectedBlock_ = (chunkManager::getChunkLoadLevel(chunkManager::getChunkCoords(blockPos)) == VoxelEng::chunkLoadLevel::DECORATED) ? &chunkManager::getBlock(blockPos) : block::emptyBlockP();
+            selectedBlock_ = (chunkManager::getChunkLoadLevel(getChunkCoords(blockPos)) == VoxelEng::chunkLoadLevel::DECORATED) ? &chunkManager::getBlock(blockPos) : block::emptyBlockP();
 
             if (selectedBlock_->isEmptyBlock()) { // No non-empty block found. Continue searching.
 
@@ -144,7 +144,7 @@ namespace VoxelEng {
 
             if (selectedChunk && !selectedBlock_->isEmptyBlock()) {
 
-                vec3 chunkRelPos = chunkManager::getChunkRelCoords(selectedBlockPos_);
+                vec3 chunkRelPos = getChunkRelCoords(selectedBlockPos_);
 
                 selectedChunk->setBlock(chunkRelPos, block::emptyBlock());
 

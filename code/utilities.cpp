@@ -373,4 +373,28 @@ namespace VoxelEng {
 		}
 	}
 
+	vec3 getChunkRelCoords(float globalX, float globalY, float globalZ) {
+
+		int floorX = std::floor(globalX),
+			floorY = std::floor(globalY),
+			floorZ = std::floor(globalZ);
+
+		return vec3{ (int)floorMod((floorX >= 0) ? floorX : SCX + floorX, SCX),
+					 (int)floorMod((floorY >= 0) ? floorY : SCY + floorY, SCY),
+					 (int)floorMod((floorZ >= 0) ? floorZ : SCZ + floorZ, SCZ) };
+
+	}
+
+	vec3 getRegionRelCoords(float chunkX, float chunkY, float chunkZ) {
+
+		int floorX = std::floor(chunkX),
+			floorY = std::floor(chunkY),
+			floorZ = std::floor(chunkZ);
+
+		return vec3{ (int)floorMod((floorX >= 0) ? floorX : SCX + floorX, SCX),
+					 (int)floorMod((floorY >= 0) ? floorY : SCY + floorY, SCY),
+					 (int)floorMod((floorZ >= 0) ? floorZ : SCZ + floorZ, SCZ) };
+
+	}
+
 }

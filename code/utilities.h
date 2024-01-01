@@ -251,7 +251,7 @@ namespace VoxelEng {
 	* @brief Returns the vector's coordinates in a linear index.
 	* NOTE. 'maxY' is equal to its dimension's maximum value minus 1.
 	*/
-	unsigned int vec2ToLinear(const vec2& v, int maxY) {
+	inline unsigned int vec2ToLinear(const vec2& v, int maxY) {
 
 		return v.x * maxY + v.y;
 
@@ -260,9 +260,129 @@ namespace VoxelEng {
 	* @brief Returns the linear index as vector's coordinates.
 	* NOTE. 'maxY' is equal to its dimension's maximum value minus 1.
 	*/
-	vec2 linearToVec2(unsigned int linearIndex, int maxY) {
+	inline vec2 linearToVec2(unsigned int linearIndex, int maxY) {
 
 		return vec2(linearIndex / maxY, linearIndex % maxY);
+
+	}
+
+	/**
+	* @brief Returns chunk local coordinates of a global position.
+	*/
+	vec3 getChunkRelCoords(float globalX, float globalY, float globalZ);
+
+	/**
+	* @brief Returns chunk local coordinates of a global position.
+	*/
+	inline vec3 getChunkRelCoords(const vec3& globalPos) {
+
+		return getChunkRelCoords(globalPos.x, globalPos.y, globalPos.z);
+
+	}
+
+	/**
+	* @brief Returns chunk local coordinates of a global position.
+	*/
+	inline vec3 getChunkCoords(float globalX, float globalY, float globalZ) {
+
+		return vec3{ (int)floor(globalX / SCX), (int)floor(globalY / SCY), (int)floor(globalZ / SCZ) };
+
+	}
+
+	/**
+	* @brief Returns chunk grid coordinates of a global position.
+	*/
+	inline vec3 getChunkCoords(const vec3& globalPos) {
+
+		return getChunkCoords(globalPos.x, globalPos.y, globalPos.z);
+
+	}
+
+	/**
+	* @brief Returns region local coordinates of a chunk position.
+	*/
+	vec3 getRegionRelCoords(float chunkX, float chunkY, float chunkZ);
+
+	/**
+	* @brief Returns region local coordinates of a chunk position.
+	*/
+	inline vec3 getRegionRelCoords(const vec3& chunkPos) {
+
+		return getRegionRelCoords(chunkPos.x, chunkPos.y, chunkPos.z);
+
+	}
+
+	/**
+	* @brief Returns region local coordinates of a chunk position.
+	*/
+	inline vec3 getRegionCoords(float chunkX, float chunkY, float chunkZ) {
+
+		return vec3{ (int)floor(chunkX / regionSizeX), (int)floor(chunkY / regionSizeY), (int)floor(chunkZ / regionSizeZ) };
+
+	}
+
+	/**
+	* @brief Returns region coordinates of a chunk position.
+	*/
+	inline vec3 getRegionCoords(const vec3& chunkPos) {
+
+		return getRegionCoords(chunkPos.x, chunkPos.y, chunkPos.z);
+
+	}
+
+	/**
+	* @brief Returns chunk coordinates in the X and Z axes of a global position in the X and Z axes.
+	*/
+	inline vec2 getChunkXZCoords(int x, int z) {
+
+		return vec2{ (int)floor((double)x / SCX), (int)floor((double)z / SCY) };
+
+	}
+
+	/**
+	* @brief Returns chunk coordinates in the X and Z axes of a global position in the X and Z axes.
+	*/
+	inline vec2 getChunkXZCoords(const vec2& blockXZPos) {
+
+		return getChunkXZCoords(blockXZPos.x, blockXZPos.y);
+
+	}
+
+	/**
+	* @brief Returns global coordinates of a local chunk coordinate from a certain chunk position.
+	*/
+	inline vec3 getGlobalPos(int chunkX, int chunkY, int chunkZ, int inChunkX, int inChunkY, int inChunkZ) {
+
+		return vec3{ (float)chunkX * SCX + inChunkX, (float)chunkY * SCY + inChunkY, (float)chunkZ * SCZ + inChunkZ };
+
+	}
+
+	/**
+	* @brief Returns global coordinates of a local chunk coordinate from a certain chunk position.
+	*/
+	inline vec3 getGlobalPos(const vec3& chunkPos, const vec3& inChunkPos) {
+
+		return getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z, inChunkPos.x, inChunkPos.y, inChunkPos.z);
+
+	}
+
+	/**
+	* @brief Returns global coordinates in the X and Z axes of a local chunk coordinate from a certain chunk position,
+	* both in the X and Z axes.
+	*/
+	inline vec2 getXZGlobalPos(int chunkX, int chunkZ, int inChunkX, int inChunkZ) {
+
+		return vec2{ (float)chunkX * SCX + inChunkX, (float)chunkZ * SCZ + inChunkZ };
+
+	}
+
+	/**
+	* @brief Returns global coordinates in the X and Z axes of a local chunk coordinate from a certain chunk position,
+	* both in the X and Z axes.
+	*/
+	inline vec2 getXZGlobalPos(const vec2& chunkPos, const vec2& inChunkPos) {
+
+		return getXZGlobalPos(chunkPos.x, chunkPos.y, inChunkPos.x, inChunkPos.y);
 
 	}
 

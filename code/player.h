@@ -45,6 +45,8 @@ namespace VoxelEng {
 
 		static const vec3& globalPos();
 
+		static const vec3& chunkPos();
+
 		static const vec3& rotation();
 
 
@@ -208,6 +210,12 @@ namespace VoxelEng {
 	inline const vec3& player::globalPos() {
 
 		return playerTransform_->position;
+
+	}
+
+	inline const vec3& player::chunkPos() {
+
+		return playerTransform_->chunkPosition;
 
 	}
 

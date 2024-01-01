@@ -625,12 +625,8 @@ namespace VoxelEng {
 	}
 
 	inline const block& chunk::setBlock(unsigned int linearIndex, const block& b) {
-		// NEXT.
-		// 1º. HACER MÉTODO EN UTILITIES.H PARA PASAR DE 3D A LINEAR.
-		// 2º. HACER MÉTODO EN UTILITIES.H PARA PASAR DE LINEAR A 3D.
-		// 3º. HACER MÉTODO EN UTILITIES.H PARA PASAR DE 2D A LINEAR.
-		// 4º. HACER MÉTODO EN UTILITIES.H PARA PASAR DE LINEAR A 2D.
-		return setBlock(linearIndex / (SCZ * SCY), (linearIndex / SCZ) % SCY, linearIndex % SCZ, b);
+
+		return setBlock(linearToVec3(linearIndex, SCY, SCZ), b);
 
 	}
 
@@ -849,77 +845,7 @@ namespace VoxelEng {
 		*/
 		static bool initialised();
 
-		/**
-		* @brief Returns chunk local coordinates of a global position.
-		*/
-		static vec3 getChunkRelCoords(const vec3& globalPos);
-
-		/**
-		* @brief Returns chunk local coordinates of a global position.
-		*/
-		static vec3 getChunkRelCoords(float globalX, float globalY, float globalZ);
-
-		/**
-		* @brief Returns chunk grid coordinates of a global position.
-		*/
-		static vec3 getChunkCoords(const vec3& globalPos);
-
-		/**
-		* @brief Returns chunk local coordinates of a global position.
-		*/
-		static vec3 getChunkCoords(float globalX, float globalY, float globalZ);
-
-		/**
-		* @brief Returns region local coordinates of a chunk position.
-		*/
-		static vec3 getRegionRelCoords(const vec3& chunkPos);
-
-		/**
-		* @brief Returns region local coordinates of a chunk position.
-		*/
-		static vec3 getRegionRelCoords(float chunkX, float chunkY, float chunkZ);
-
-		/**
-		* @brief Returns region coordinates of a chunk position.
-		*/
-		static vec3 getRegionCoords(const vec3& chunkPos);
-
-		/**
-		* @brief Returns region local coordinates of a chunk position.
-		*/
-		static vec3 getRegionCoords(float chunkX, float chunkY, float chunkZ);
-
-		/**
-		* @brief Returns chunk coordinates in the X and Z axes of a global position in the X and Z axes.
-		*/
-		static vec2 getChunkXZCoords(const vec2& blockXZPos);
-
-		/**
-		* @brief Returns chunk coordinates in the X and Z axes of a global position in the X and Z axes.
-		*/
-		static vec2 getChunkXZCoords(int blockX, int blockZ);
-
-		/**
-		* @brief Returns global coordinates of a local chunk coordinate from a certain chunk position.
-		*/
-		static vec3 getGlobalPos(const vec3& chunkPos, const vec3& inChunkPos);
-
-		/**
-		* @brief Returns global coordinates of a local chunk coordinate from a certain chunk position.
-		*/
-		static vec3 getGlobalPos(int chunkX, int chunkY, int chunkZ, int inChunkX, int inChunkY, int inChunkZ);
-
-		/**
-		* @brief Returns global coordinates in the X and Z axes of a local chunk coordinate from a certain chunk position,
-		* both in the X and Z axes.
-		*/
-		static vec2 getXZGlobalPos(const vec2& chunkPos, const vec2& inChunkPos);
-
-		/**
-		* @brief Returns global coordinates in the X and Z axes of a local chunk coordinate from a certain chunk position,
-		* both in the X and Z axes.
-		*/
-		static vec2 getXZGlobalPos(int chunkX, int chunkZ, int inChunkX, int inChunkZ);
+		
 
 		/**
 		* @brief Returns the system's dictionary of registered chunks.
@@ -1494,77 +1420,7 @@ namespace VoxelEng {
 	
 	}
 
-	inline vec3 chunkManager::getChunkRelCoords(const vec3& globalPos) {
 	
-		return getChunkRelCoords(globalPos.x, globalPos.y, globalPos.z);
-	
-	}
-
-	inline vec3 chunkManager::getChunkCoords(const vec3& globalPos) {
-	
-		return getChunkCoords(globalPos.x, globalPos.y, globalPos.z);
-	
-	}
-
-	inline vec3 chunkManager::getChunkCoords(float globalX, float globalY, float globalZ) {
-
-		return vec3{ (int)floor(globalX / SCX), (int)floor(globalY / SCY), (int)floor(globalZ / SCZ) };
-
-	}
-
-	inline vec3 chunkManager::getRegionRelCoords(const vec3& chunkPos) {
-
-		return getRegionRelCoords(chunkPos.x, chunkPos.y, chunkPos.z);
-
-	}
-
-	inline vec3 chunkManager::getRegionCoords(const vec3& chunkPos) {
-
-		return getRegionCoords(chunkPos.x, chunkPos.y, chunkPos.z);
-
-	}
-
-	inline vec3 chunkManager::getRegionCoords(float chunkX, float chunkY, float chunkZ) {
-
-		return vec3{ (int)floor(chunkX / regionSizeX), (int)floor(chunkY / regionSizeY), (int)floor(chunkZ / regionSizeZ) };
-
-	}
-
-	inline vec2 chunkManager::getChunkXZCoords(const vec2& blockXZPos) {
-	
-		return getChunkXZCoords(blockXZPos.x, blockXZPos.y);
-	
-	}
-
-	inline vec2 chunkManager::getChunkXZCoords(int x, int z) {
-
-		return vec2{ (int)floor((double)x / SCX), (int)floor((double)z / SCY) };
-
-	}
-
-	inline vec3 chunkManager::getGlobalPos(const vec3& chunkPos, const vec3& inChunkPos) {
-	
-		return getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z, inChunkPos.x, inChunkPos.y, inChunkPos.z);
-	
-	}
-	
-	inline vec3 chunkManager::getGlobalPos(int chunkX, int chunkY, int chunkZ, int inChunkX, int inChunkY, int inChunkZ) {
-
-		return vec3{ (float)chunkX * SCX + inChunkX, (float)chunkY * SCY + inChunkY, (float)chunkZ * SCZ + inChunkZ };
-
-	}
-
-	inline vec2 chunkManager::getXZGlobalPos(const vec2& chunkPos, const vec2& inChunkPos) {
-
-		return getXZGlobalPos(chunkPos.x, chunkPos.y, inChunkPos.x, inChunkPos.y);
-
-	}
-
-	inline vec2 chunkManager::getXZGlobalPos(int chunkX, int chunkZ, int inChunkX, int inChunkZ) {
-
-		return vec2{ (float)chunkX * SCX + inChunkX, (float)chunkZ * SCZ + inChunkZ };
-
-	}
 
 	inline const std::unordered_map<vec3, chunk*>& chunkManager::chunks() {
 

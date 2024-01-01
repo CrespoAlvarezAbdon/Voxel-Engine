@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "database.h"
 #include "definitions.h"
 #include "graphics.h"
 #include "vec.h"

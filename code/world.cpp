@@ -149,6 +149,10 @@ namespace VoxelEng {
 
 		saveMainData_();
 
+		vec3 chunkPos = player::chunkPos();
+
+		saveChunk_(chunkPos);
+
 	}
 
 	void world::createSaveDirectory(unsigned int slot) {
@@ -156,6 +160,7 @@ namespace VoxelEng {
 		currentWorldSlot_ = slot;
 		currentWorldPath_ = "saves/slot" + std::to_string(currentWorldSlot_) + '/';
 		std::filesystem::create_directory(currentWorldPath_);
+		std::filesystem::create_directory(currentWorldPath_ + "regions");
 
 	}
 
@@ -178,28 +183,39 @@ namespace VoxelEng {
 
 	void world::saveMainData_() {
 	
-		std::ofstream mainFile(currentWorldPath_ + "mainData.world", std::ios::binary);
+		std::ofstream mainFile(currentWorldPath_ + "mainData.world", std::ios::binary | std::ios::out | std::ios::app);
 		std::string data;
 
 		data += std::to_string(maxDistanceX_) + '|' + std::to_string(maxDistanceY_) + '|' + std::to_string(maxDistanceZ_) + '|' + 
 			    std::to_string(player::globalPos()) + '|' + std::to_string(player::rotation()) + '|';
-		// NEXT.
-		// 1º. METER DE NUEVO LA FUNCIONALIDAD A LOS BOTONES DE SLOT CUANDO SE GUARDA. DONE.
-		// 2º. SEPARAR COMPLETAMENTE LA CLASE PLAYER EN SU PROPIO .H Y .CPP. DONE.
-		// 2.5º. AÑADIR GRAVITY DIRECTION PARA TODAS LAS ENTIDADES. DONE.
-		// 3º. QUE TODO EL CONTROL DE MOVIMIENTO DEL PLAYER ESTÉ EN PLAYER Y QUE CUANDO SE CALCULEN ESOS VALORES SE PASEN A LA CÁMARA.
-		//  ASÍ LUEGO SE PUEDEN HACER COSAS COMO EL MODO TERCERA PERSONA MÁS FÁCIL. DONE.
-		// Por último, ARREGLAR TODOS LOS FALLOS DERIVADOS DE HACER ESTO.
 
 		mainFile.write(data.c_str(), data.size());
 		mainFile.close();
+
+		database d("testdb.db");
 	
 	}
 
 	void world::saveChunk_(const vec3& chunkPos) {
 	
-	
-	
+		// NEXT.
+		// 
+		// PONER LA ESTRUCTURA DE UN REGION FILE CLARA
+		// MIRA LA IMAGEN EXPLICATIVA QUE HICIMOS AYER Y
+		// PROBAR SI USAR GZIP SOBRE UN FICHERO GENERADO NUESTRO ASÍ AYUDA A REDUCIR EL TAMAÑO DEL ARCHIVO
+		// -AÑADIR QUE SIEMPRE SE CREE UN REGION EMPTY PARA COPIARLO A VER SI ASÍ AYUDA EN RENDIMIENTO (usar std::filesystem::copy para copiarlo)
+		// 
+		// 
+		// 1º. IMPLEMENTAR Y HACER PRUEBA DE GUARDADO CON EL CHUNK DONDE ESTÁ EL PLAYER.
+		// 2º. IMPLEMENTAR Y HACER PRUEBA DE GUARDADO CON EL CHUNK DONDE ESTÁ EL PLAYER MÁS LOS DE ALREDEDOR.
+		// 2.5º. ATOMIC UNORDERED SET DE VEC3 DE REGIONS PARA TENER LOS FICHEROS DE REGION EN EXCLUSIÓN MUTUA.
+		// 3.º IMPLEMENTAR Y HACER PRUEBA DE GUARDADO CON TODOS LOS CHUNKS CARGADOS, INCLUYENDO QUE SE GUARDEN LOS CHUNKS QUE SE DESCARGAN POR LEJANÍA AL JUGADOR.
+
+		
+
+		getRegionCoords(chunkPos);
+		getRegionRelCoords(chunkPos);
+		
 	}
 
 }

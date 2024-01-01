@@ -333,7 +333,7 @@ namespace AIExample {
 			for (inChunkPos.z = 0; inChunkPos.z < VoxelEng::SCZ; inChunkPos.z++)
 				for (inChunkPos.y = 0; inChunkPos.y < VoxelEng::SCY; inChunkPos.y++) {
 
-					blockPos = VoxelEng::chunkManager::getGlobalPos(chunkPos, inChunkPos);
+					blockPos = VoxelEng::getGlobalPos(chunkPos, inChunkPos);
 
 					if (blockPos.y < heightMap[inChunkPos.x][inChunkPos.z] - 3)
 						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer2_);
@@ -378,7 +378,7 @@ namespace AIExample {
 				// Height here is between -1.0 and 1.0.
 				#if GRAPHICS_API == OPENGL
 
-					aux = VoxelEng::chunkManager::getXZGlobalPos(chunkXZPos, pos) / softnessFactor;
+					aux = VoxelEng::getXZGlobalPos(chunkXZPos, pos) / softnessFactor;
 
 					perlinCoords.x = aux.x;
 					perlinCoords.y = aux.y;
