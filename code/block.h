@@ -44,11 +44,18 @@ namespace VoxelEng {
 
 		static block& getBlockC(const std::string& name);
 
+		static block& getBlockC(unsigned int ID);
+
 		static bool isBlockRegistered(const std::string& name);
 
 		static block* emptyBlockP();
 
 		static block& emptyBlock();
+
+		/**
+		* @brief Returns the numerical ID assigned to this block.
+		*/
+		unsigned int intID() const;
 
 		unsigned int textureID() const; // TODO. FILL TEXTURE ID WITH PROPER DYNAMIC ATLAS BUILDING.
 
@@ -75,18 +82,28 @@ namespace VoxelEng {
 
 	private:
 
+		/*
+		Methods.
+		*/
+
 		// Constructors.
+
 		block(const std::string& name, unsigned int textureID);
 
 
-		// Attributes.
+		/*
+		Attributes.
+		*/
 
+		// NEXT. IMPLEMENT THESE CHANGES.
 		static std::unordered_map<std::string, block> blocks_;
+		static std::unordered_map<unsigned int, block*> blocksIntIDs_;
+		unsigned int intID_;
+
 		static block* emptyBlock_;
 		static const std::string emptyBlockName_;
 
 		const std::string name_;
-
 		unsigned int textureID_; // 0 means no texture assigned.
 
 	};
@@ -122,6 +139,12 @@ namespace VoxelEng {
 	
 		return *emptyBlock_;
 	
+	}
+
+	inline unsigned int block::intID() const {
+
+		return intID_;
+
 	}
 
 	inline unsigned int block::textureID() const {

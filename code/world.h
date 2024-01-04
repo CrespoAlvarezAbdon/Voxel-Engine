@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "chunk.h" // IGUAL ESTO DA PROBLEMAS.
 #include "database.h"
 #include "definitions.h"
 #include "graphics.h"
@@ -84,10 +85,6 @@ namespace VoxelEng {
 		* the center of the Z axis on finite worlds.
 		*/
 		static unsigned int maxDistanceZ();
-
-		static vec3 chunkCoordsToRegionCoords(const vec3& chunkPos);
-
-		static vec3 regionCoordsToChunkCoords(const vec3& regionPos);
 
 
 		// Modifiers.
@@ -161,6 +158,7 @@ namespace VoxelEng {
 		static std::mutex tickFunctionsMutex_;
 		static unsigned int currentWorldSlot_;
 		static std::string currentWorldPath_;
+		static database* regions_;
 
 
 		/*
@@ -169,7 +167,9 @@ namespace VoxelEng {
 
 		static void saveMainData_();
 
-		static void saveChunk_(const vec3& chunkPos);
+		static void saveAllChunks_();
+
+		static void saveChunk_(chunk* c);
 	
 	};
 

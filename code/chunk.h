@@ -32,10 +32,11 @@
 #include "definitions.h"
 #include "event.h"
 #include "listener.h"
-#include "shader.h"
 #include "texture.h"
 #include "threadPool.h"
+#include "shader.h"
 #include "model.h"
+#include "palette.h"
 #include "vec.h"
 #include "vertex.h"
 #include "vertexBuffer.h"
@@ -127,9 +128,14 @@ namespace VoxelEng {
 
 		/**
 		* @brief Returns true if the static members of this class are initialised
-		or false otherwise.
+		* or false otherwise.
 		*/
 		static bool initialised();
+
+		/**
+		* @brief Returns the pointer to the first element of the chunk's block array.
+		*/
+		void* getBlocks();
 
 		/**
 		* @brief Get the block at the specified chunk-local coordinates.
@@ -407,17 +413,15 @@ namespace VoxelEng {
 		static const model* blockVertices_;
 		static const modelTriangles* blockTriangles_;
 
-		// Stores the different types of blocks in the chunk and how many
-		// of each type, along with their numerical ID equivalent inside this chunk.
-		// There are two copies of the map, one with the namespaced string ID as key and another
-		// with the in-chunk numerical ID as it (although the number of blocks of the same type is
-		// only save in one of them.
-		// In 'blockPalette_', the first short is the in-chunk numerical ID and the second is
-		// the number of blocks of that type.
-		const block* blocks_[SCX][SCY][SCZ];
+		// NEXT. IMPLEMENT THESE CHANGES.
+		palette<unsigned short, unsigned int> palette_;
+		std::unordered_map<unsigned short, unsigned short> paletteCount_;
+		std::unordered_set<unsigned short> freeLocalIDs_;
+		unsigned short blocksNew_[SCX][SCY][SCZ];
+
 		std::atomic<bool> changed_;
-		std::atomic<short> nBlocks_;
-		std::atomic<short> nBlocksPlusX_,
+		std::atomic<short> nBlocks_,
+						   nBlocksPlusX_,
 						   nBlocksMinusX_,
 						   nBlocksPlusY_,
 						   nBlocksMinusY_,
@@ -443,6 +447,12 @@ namespace VoxelEng {
 		std::shared_mutex blocksMutex_;
 
 	};
+
+	inline void* chunk::getBlocks() {
+
+		return blocksNew_;
+
+	}
 
 	inline bool chunk::initialised() {
 	
@@ -590,7 +600,7 @@ namespace VoxelEng {
 
 	inline bool chunk::isEmptyBlock(GLbyte x, GLbyte y, GLbyte z) const {
 	
-		return blocks_[x][y][z] == 0;
+		return blocksNew_[x][y][z] == 0;
 	
 	}
 

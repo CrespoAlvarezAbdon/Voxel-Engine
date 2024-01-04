@@ -255,7 +255,8 @@ namespace AIExample {
 	  ore3SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 5)),
 	  ore4SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 3)),
       chunkLoadListener_(chunkColHeight_, chunkColHeightUses_, chunkColHeightMutex_),
-	  chunkUnloadListener_(chunkColHeight_, chunkColHeightUses_, chunkColHeightMutex_)
+	  chunkUnloadListener_(chunkColHeight_, chunkColHeightUses_, chunkColHeightMutex_),
+	  maxHeight_(0)
 	{}
 
 	inline const VoxelEng::vec3& miningWorldGen::spawnPos() const {

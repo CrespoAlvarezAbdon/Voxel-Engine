@@ -1,5 +1,7 @@
 #include "world.h"
 
+#include <cstring>
+
 #include "entity.h"
 #include "player.h"
 #include "game.h"
@@ -19,6 +21,7 @@ namespace VoxelEng {
 	std::mutex world::tickFunctionsMutex_;
 	unsigned int world::currentWorldSlot_ = 0;
 	std::string world::currentWorldPath_;
+	database* world::regions_ = nullptr;
 
 
 	void world::init() {
@@ -35,6 +38,8 @@ namespace VoxelEng {
 
 			currentWorldSlot_ = 0;
 			currentWorldPath_.clear();
+
+			regions_ = nullptr;
 
 			initialised_ = true;
 		
@@ -149,9 +154,7 @@ namespace VoxelEng {
 
 		saveMainData_();
 
-		vec3 chunkPos = player::chunkPos();
-
-		saveChunk_(chunkPos);
+		saveAllChunks_();
 
 	}
 
@@ -160,7 +163,6 @@ namespace VoxelEng {
 		currentWorldSlot_ = slot;
 		currentWorldPath_ = "saves/slot" + std::to_string(currentWorldSlot_) + '/';
 		std::filesystem::create_directory(currentWorldPath_);
-		std::filesystem::create_directory(currentWorldPath_ + "regions");
 
 	}
 
@@ -191,31 +193,32 @@ namespace VoxelEng {
 
 		mainFile.write(data.c_str(), data.size());
 		mainFile.close();
-
-		database d("testdb.db");
 	
 	}
 
-	void world::saveChunk_(const vec3& chunkPos) {
-	
+	void world::saveAllChunks_() {
+
 		// NEXT.
-		// 
-		// PONER LA ESTRUCTURA DE UN REGION FILE CLARA
-		// MIRA LA IMAGEN EXPLICATIVA QUE HICIMOS AYER Y
-		// PROBAR SI USAR GZIP SOBRE UN FICHERO GENERADO NUESTRO ASÍ AYUDA A REDUCIR EL TAMAÑO DEL ARCHIVO
-		// -AÑADIR QUE SIEMPRE SE CREE UN REGION EMPTY PARA COPIARLO A VER SI ASÍ AYUDA EN RENDIMIENTO (usar std::filesystem::copy para copiarlo)
-		// 
-		// 
-		// 1º. IMPLEMENTAR Y HACER PRUEBA DE GUARDADO CON EL CHUNK DONDE ESTÁ EL PLAYER.
-		// 2º. IMPLEMENTAR Y HACER PRUEBA DE GUARDADO CON EL CHUNK DONDE ESTÁ EL PLAYER MÁS LOS DE ALREDEDOR.
-		// 2.5º. ATOMIC UNORDERED SET DE VEC3 DE REGIONS PARA TENER LOS FICHEROS DE REGION EN EXCLUSIÓN MUTUA.
-		// 3.º IMPLEMENTAR Y HACER PRUEBA DE GUARDADO CON TODOS LOS CHUNKS CARGADOS, INCLUYENDO QUE SE GUARDEN LOS CHUNKS QUE SE DESCARGAN POR LEJANÍA AL JUGADOR.
+		// 0º. QUE EL BOTON NEW PIDA ELEGIR EL SLOT EN EL QUE IR GUARDANDOLO TODO.
+		// 1º. IMPLEMENTAR Y HACER PRUEBA DE GUARDADO CON TODOS LOS CHUNKS CARGADOS,
+		// INCLUYENDO QUE SE GUARDEN LOS CHUNKS QUE SE DESCARGAN POR LEJANÍA AL JUGADOR.
 
-		
+		//if (regions)
 
-		getRegionCoords(chunkPos);
-		getRegionRelCoords(chunkPos);
-		
+		const std::unordered_map<vec3, chunk*>& chunks = chunkManager::chunks();
+		for (auto it = chunks.cbegin(); it != chunks.cend(); it++)
+			saveChunk_(it->second);
+
+	}
+
+	void world::saveChunk_(chunk* c) {
+
+		c->blockDataMutex().lock();
+
+		leveldb::Slice data((const char*)c->getBlocks(), sizeof(block*) * nBlocksChunk);
+
+		c->blockDataMutex().unlock();
+
 	}
 
 }

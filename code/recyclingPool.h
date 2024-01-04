@@ -43,7 +43,7 @@ namespace VoxelEng {
 
 		void waitUntilAllFree();
 
-		
+
 		// Clean up.
 
 	    void clear();
@@ -76,28 +76,28 @@ namespace VoxelEng {
 	}
 
 	template<typename T>
-	unsigned int recyclingPool<T>::totalSize() const {
+	inline unsigned int recyclingPool<T>::totalSize() const {
 	
 		return freeElements_.size() + occupiedElements_.size();
 	
 	}
 
 	template<typename T>
-	unsigned int recyclingPool<T>::nFreeElements() const {
+	inline unsigned int recyclingPool<T>::nFreeElements() const {
 
 		return freeElements_.size();
 
 	}
 
 	template<typename T>
-	unsigned int recyclingPool<T>::nOccupiedElements() const {
+	inline unsigned int recyclingPool<T>::nOccupiedElements() const {
 
 		return occupiedElements_.size();
 
 	}
 
 	template<typename T>
-	bool recyclingPool<T>::allFreeOnClear() const {
+	inline bool recyclingPool<T>::allFreeOnClear() const {
 	
 		return allFreeOnClear_;
 	
@@ -149,7 +149,7 @@ namespace VoxelEng {
 	}
 
 	template<typename T>
-	bool& recyclingPool<T>::allFreeOnClear() {
+	inline bool& recyclingPool<T>::allFreeOnClear() {
 
 		return allFreeOnClear_;
 

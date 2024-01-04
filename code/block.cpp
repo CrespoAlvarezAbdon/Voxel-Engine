@@ -5,6 +5,7 @@
 namespace VoxelEng {
 	
 	std::unordered_map<std::string, block> block::blocks_;
+	std::unordered_map<unsigned int, block*> block::blocksIntIDs_;
 	block* block::emptyBlock_ = nullptr;
     const std::string block::emptyBlockName_ = "";
 
@@ -22,6 +23,15 @@ namespace VoxelEng {
 			return blocks_[name];
 		else
 			logger::errorLog("Block " + name + " is not registered");
+
+	}
+
+	block& block::getBlockC(unsigned int ID) {
+
+		if (blocksIntIDs_.contains(ID))
+			return *blocksIntIDs_[ID];
+		else
+			logger::errorLog("Block with ID " + std::to_string(ID) + " is not registered");
 
 	}
 
