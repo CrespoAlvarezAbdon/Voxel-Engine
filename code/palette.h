@@ -23,10 +23,10 @@ namespace VoxelEng {
 	////////////
 
 	/**
-	* @brief Container that maps a small set of integer IDs to a larger set of IDs.
+	* @brief Container that maps a T1 set of integer IDs to a T2r set of IDs.
 	*/
-	template<typename small, typename large>
-	requires T1smallerOrEqualToT2<small, large>
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
 	class palette {
 
 	public:
@@ -38,29 +38,41 @@ namespace VoxelEng {
 		* @brief Returns the value associated with the specified key.
 		* Throws an exception if said key is not in the palette.
 		*/
-		const small& getSmall(const large& l) const;
+		const T1& getT1(const T2& l) const;
 
 		/**
 		* @brief Returns the value associated with the specified key.
 		* Throws an exception if said key is not in the palette.
 		*/
-		const large& getLarge(const small& s) const;
+		const T2& getT2(const T1& s) const;
 
 		/**
 		* @brief Returns true if the specified key is found
 		*/
-		bool containsSmall(const small& s) const;
+		bool containsT1(const T1& s) const;
 
 		/**
 		* @brief Returns true if the specified key is found
 		*/
-		bool containsLarge(const large& s) const;
+		bool containsT2(const T2& s) const;
 
 		/**
-		* @brief Returns the current number of pairs of small-large values
+		* @brief Returns the current number of pairs of T1-T2 values
 		* in the palette.
 		*/
 		std::size_t size() const;
+
+		/**
+		* @brief Returns the constant iterator that points to the first element of the palette.
+		* NOTE. The palette is not required to store its elements in a certain order.
+		*/
+		std::unordered_map<T1, T2>::const_iterator cbegin() const;
+
+		/**
+		* @brief Returns the constant iterator that points to the last element of the palette.
+		* NOTE. The palette is not required to store its elements in a certain order.
+		*/
+		std::unordered_map<T1, T2>::const_iterator cend() const;
 
 
 		// Modifiers.
@@ -69,132 +81,148 @@ namespace VoxelEng {
 		* @brief Returns the value associated with the specified key.
 		* Throws an exception if said key is not in the palette.
 		*/
-		small& getSmall(const large& l);
+		T1& getT1(const T2& l);
 
 		/**
 		* @brief Returns the value associated with the specified key.
 		* Throws an exception if said key is not in the palette.
 		*/
-		large& getLarge(const small& s);
+		T2& getT2(const T1& s);
 
 		/**
 		* @brief Establishes a relation between the two values inside the palette.
 		*/
-		void insert(const small& s, const large& l);
+		void insert(const T1& s, const T2& l);
 
 		/**
 		* @brief Erases the specified key.
 		* Does nothing if such key is not in the palette.
 		*/
-		void eraseSmall(const small& s);
+		void eraseT1(const T1& s);
 
 		/**
 		* @brief Erases the specified key.
 		* Does nothing if such key is not in the palette.
 		*/
-		void eraseLarge(const large& l);
+		void eraseT2(const T2& l);
 
 	private:
 
-		std::unordered_map<small, large> smallToLarge_;
-		std::unordered_map<large, small> largeToSmall_;
+		std::unordered_map<T1, T2> T1ToT2_;
+		std::unordered_map<T2, T1> T2ToT1_;
 		
 	};
 
-	template<typename small, typename large>
-	requires T1smallerOrEqualToT2<small, large>
-	inline const small& palette<small, large>::getSmall(const large& l) const {
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	inline const T1& palette<T1, T2>::getT1(const T2& l) const {
 	
-		if (largeToSmall_.contains(l))
-			return largeToSmall_[l];
+		if (T2ToT1_.contains(l))
+			return T2ToT1_[l];
 		else
-			logger::errorLog("The specified large key is not present in the palette");
-	
-	}
-
-	template<typename small, typename large>
-	requires T1smallerOrEqualToT2<small, large>
-	const large& palette<small, large>::getLarge(const small& s) const {
-
-		if (smallToLarge_.contains(s))
-			return smallToLarge_[s];
-		else
-			logger::errorLog("The specified small key is not present in the palette");
-
-	}
-
-	template<typename small, typename large>
-	requires T1smallerOrEqualToT2<small, large>
-	inline bool palette<small, large>::containsSmall(const small& s) const {
-	
-		return smallToLarge_.contains(s);
+			logger::errorLog("The specified T2 key is not present in the palette");
 	
 	}
 
-	template<typename small, typename large>
-	requires T1smallerOrEqualToT2<small, large>
-	inline bool palette<small, large>::containsLarge(const large& l) const {
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	const T2& palette<T1, T2>::getT2(const T1& s) const {
 
-		return largeToSmall_.contains(l);
-
-	}
-
-	template<typename small, typename large>
-	requires T1smallerOrEqualToT2<small, large>
-	inline std::size_t palette<small, large>::size() const {
-
-		return smallToLarge_.size();
-
-	}
-
-	template<typename small, typename large>
-	requires T1smallerOrEqualToT2<small, large>
-	small& palette<small, large>::getSmall(const large& l) {
-
-		if (largeToSmall_.contains(l))
-			return largeToSmall_[l];
+		if (T1ToT2_.contains(s))
+			return T1ToT2_[s];
 		else
-			logger::errorLog("The specified large key is not present in the palette");
+			logger::errorLog("The specified T1 key is not present in the palette");
 
 	}
 
-	template<typename small, typename large>
-	requires T1smallerOrEqualToT2<small, large>
-	large& palette<small, large>::getLarge(const small& s) {
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	inline bool palette<T1, T2>::containsT1(const T1& s) const {
+	
+		return T1ToT2_.contains(s);
+	
+	}
 
-		if (smallToLarge_.contains(s))
-			return smallToLarge_[s];
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	inline bool palette<T1, T2>::containsT2(const T2& l) const {
+
+		return T2ToT1_.contains(l);
+
+	}
+
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	inline std::size_t palette<T1, T2>::size() const {
+
+		return T1ToT2_.size();
+
+	}
+
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	std::unordered_map<T1, T2>::const_iterator palette<T1, T2>::cbegin() const {
+	
+		return T1ToT2_.cbegin();
+	
+	}
+
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	std::unordered_map<T1, T2>::const_iterator palette<T1, T2>::cend() const {
+	
+		return T1ToT2_.cend();
+	
+	}
+
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	T1& palette<T1, T2>::getT1(const T2& l) {
+
+		if (T2ToT1_.contains(l))
+			return T2ToT1_[l];
 		else
-			logger::errorLog("The specified small key is not present in the palette");
+			logger::errorLog("The specified T2 key is not present in the palette");
 
 	}
 
-	template<typename small, typename large>
-	requires T1smallerOrEqualToT2<small, large>
-	void palette<small, large>::insert(const small& s, const large& l) {
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	T2& palette<T1, T2>::getT2(const T1& s) {
 
-		smallToLarge_[s] = l;
-		largeToSmall_[l] = s;
-
-	}
-
-	template<typename small, typename large>
-	requires T1smallerOrEqualToT2<small, large>
-	void palette<small, large>::eraseSmall(const small& s) {
-
-		const large& l = smallToLarge_[s];
-		largeToSmall_.erase(l);
-		smallToLarge_.erase(s);
+		if (T1ToT2_.contains(s))
+			return T1ToT2_[s];
+		else
+			logger::errorLog("The specified T1 key is not present in the palette");
 
 	}
 
-	template<typename small, typename large>
-	requires T1smallerOrEqualToT2<small, large>
-	void palette<small, large>::eraseLarge(const large& l) {
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	void palette<T1, T2>::insert(const T1& s, const T2& l) {
 
-		const small& s = largeToSmall_[l];
-		smallToLarge_.erase(s);
-		largeToSmall_.erase(l);
+		T1ToT2_[s] = l;
+		T2ToT1_[l] = s;
+
+	}
+
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	void palette<T1, T2>::eraseT1(const T1& s) {
+
+		const T2& l = T1ToT2_[s];
+		T2ToT1_.erase(l);
+		T1ToT2_.erase(s);
+
+	}
+
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	void palette<T1, T2>::eraseT2(const T2& l) {
+
+		const T1& s = T2ToT1_[l];
+		T1ToT2_.erase(s);
+		T2ToT1_.erase(l);
 
 	}
 

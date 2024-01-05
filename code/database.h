@@ -105,6 +105,12 @@ namespace VoxelEng {
 
 	};
 
+	inline void database::insert(const std::string& key, const std::string& value) {
+
+		db_->Put(leveldb::WriteOptions(), key, value);
+
+	}
+
 }
 
 #endif

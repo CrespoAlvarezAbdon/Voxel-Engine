@@ -180,7 +180,7 @@ namespace VoxelEng {
 
         unsigned int localID = blocksNew_[x][y][z];
 
-        return localID ? block::getBlockC(palette_.getLarge(localID)) : block::emptyBlock();
+        return localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
     }
 
@@ -191,30 +191,34 @@ namespace VoxelEng {
         unsigned short newLocalID = 0,
                        oldLocalID = blocksNew_[x][y][z];
         unsigned int newGlobalID = b.intID(),
-                     oldGlobalID = palette_.getLarge(oldLocalID);
+                     oldGlobalID = oldLocalID ? palette_.getT2(oldLocalID) : 0;
         changed_ = oldGlobalID != newGlobalID;
 
         // Increase/decrease the palette's size.
         if (changed_) {
 
             // The old local ID is no longer used at (x,y,z).
-            if (paletteCount_[oldLocalID] == 1) {
+            if (oldLocalID) {
             
-                palette_.eraseSmall(oldLocalID);
-                paletteCount_.erase(oldLocalID);
-                freeLocalIDs_.insert(oldLocalID);
+                if (paletteCount_[oldLocalID] == 1) {
+
+                    palette_.eraseT1(oldLocalID);
+                    paletteCount_.erase(oldLocalID);
+                    freeLocalIDs_.insert(oldLocalID);
+
+                }
+                else
+                    paletteCount_[oldLocalID]--;
             
-            }    
-            else
-                paletteCount_[oldLocalID]--;
+            }
 
             if (newGlobalID == 0)// The new block is an empty block.
                 blocksNew_[x][y][z] = 0;
             else {
             
-                if (palette_.containsLarge(newGlobalID)) { // The new block already has a relation in the palette.
+                if (palette_.containsT2(newGlobalID)) { // The new block already has a relation in the palette.
 
-                    newLocalID = palette_.getSmall(newGlobalID);
+                    newLocalID = palette_.getT1(newGlobalID);
                     paletteCount_[newLocalID]++;
 
                 }
@@ -316,7 +320,7 @@ namespace VoxelEng {
                                 // Front face vertices with culling of non-visible faces. z+
                                 if (z < SCZ - 1 && (neighborLocalID = blocksNew_[x][y][z + 1])) {
 
-                                    bNeighbor = &block::getBlockC(palette_.getLarge(neighborLocalID));
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                                     // Create the face's vertices for face z-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -342,7 +346,7 @@ namespace VoxelEng {
                                 // Back face vertices with culling of non-visible faces. z-
                                 if (z > 0 && (neighborLocalID = blocksNew_[x][y][z - 1])) {
 
-                                    bNeighbor = &block::getBlockC(palette_.getLarge(neighborLocalID));
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                                     // Create the face's vertices for z-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -368,7 +372,7 @@ namespace VoxelEng {
                                 // Top face vertices with culling of non-visible faces. y+
                                 if (y < SCY - 1 && (neighborLocalID = blocksNew_[x][y + 1][z])) {
 
-                                    bNeighbor = &block::getBlockC(palette_.getLarge(neighborLocalID));
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                                     // Create the face's vertices for face y-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -394,7 +398,7 @@ namespace VoxelEng {
                                 // Bottom face vertices with culling of non-visible faces. y-
                                 if (y > 0 && (neighborLocalID = blocksNew_[x][y - 1][z])) {
 
-                                    bNeighbor = &block::getBlockC(palette_.getLarge(neighborLocalID));
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                                     // Create the face's vertices for face y+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -420,7 +424,7 @@ namespace VoxelEng {
                                 // Right face vertices with culling of non-visible faces. x+
                                 if (x < SCX - 1 && (neighborLocalID = blocksNew_[x + 1][y][z])) {
 
-                                    bNeighbor = &block::getBlockC(palette_.getLarge(neighborLocalID));
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                                     // Create the face's vertices for face x-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -446,7 +450,7 @@ namespace VoxelEng {
                                 // Left face vertices with culling of non-visible faces. x-
                                 if (x > 0 && (neighborLocalID = blocksNew_[x - 1][y][z])) {
 
-                                    bNeighbor = &block::getBlockC(palette_.getLarge(neighborLocalID));
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                                     // Create the face's vertices for face x+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -499,7 +503,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(neighborPlusX_->blocksNew_[0][y][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(neighborPlusX_->blocksNew_[0][y][z])), renderingData_.vertices);
                         
                         }
                         else if (!neighborPlusX_->blocksNew_[0][y][z] && blocksNew_[x][y][z]) {
@@ -521,7 +525,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(blocksNew_[x][y][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(blocksNew_[x][y][z])), renderingData_.vertices);
                         
                         }
 
@@ -554,7 +558,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(neighborMinusX_->blocksNew_[SCX - 1][y][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(neighborMinusX_->blocksNew_[SCX - 1][y][z])), renderingData_.vertices);
 
                         }
                         else if (!neighborMinusX_->blocksNew_[SCX-1][y][z] && blocksNew_[x][y][z]) {
@@ -576,7 +580,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(blocksNew_[x][y][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(blocksNew_[x][y][z])), renderingData_.vertices);
 
                         }
 
@@ -609,7 +613,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(neighborPlusY_->blocksNew_[x][0][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(neighborPlusY_->blocksNew_[x][0][z])), renderingData_.vertices);
 
                         }
                         else if (!neighborPlusY_->blocksNew_[x][0][z] && blocksNew_[x][y][z]) {
@@ -631,7 +635,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(blocksNew_[x][y][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(blocksNew_[x][y][z])), renderingData_.vertices);
 
                         }
 
@@ -664,7 +668,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(neighborMinusY_->blocksNew_[x][SCY - 1][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(neighborMinusY_->blocksNew_[x][SCY - 1][z])), renderingData_.vertices);
 
                         }
                         else if (!neighborMinusY_->blocksNew_[x][SCY - 1][z] && blocksNew_[x][y][z]) {
@@ -686,7 +690,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(blocksNew_[x][y][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(blocksNew_[x][y][z])), renderingData_.vertices);
 
                         }
 
@@ -719,7 +723,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(neighborPlusZ_->blocksNew_[x][y][0])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(neighborPlusZ_->blocksNew_[x][y][0])), renderingData_.vertices);
 
                         }
                         else if (!neighborPlusZ_->blocksNew_[x][y][0] && blocksNew_[x][y][z]) {
@@ -741,7 +745,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(blocksNew_[x][y][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(blocksNew_[x][y][z])), renderingData_.vertices);
 
                         }
 
@@ -774,7 +778,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(neighborMinusZ_->blocksNew_[x][y][SCZ - 1])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(neighborMinusZ_->blocksNew_[x][y][SCZ - 1])), renderingData_.vertices);
 
                         }
                         else if (!neighborMinusZ_->blocksNew_[x][y][SCZ - 1] && blocksNew_[x][y][z]) {
@@ -796,7 +800,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getLarge(blocksNew_[x][y][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(palette_.getT2(blocksNew_[x][y][z])), renderingData_.vertices);
 
                         }
 

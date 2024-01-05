@@ -2,7 +2,9 @@
 
 #include <cstring>
 
+#include "block.h"
 #include "entity.h"
+#include "palette.h"
 #include "player.h"
 #include "game.h"
 #include "logger.h"
@@ -203,8 +205,6 @@ namespace VoxelEng {
 		// 1º. IMPLEMENTAR Y HACER PRUEBA DE GUARDADO CON TODOS LOS CHUNKS CARGADOS,
 		// INCLUYENDO QUE SE GUARDEN LOS CHUNKS QUE SE DESCARGAN POR LEJANÍA AL JUGADOR.
 
-		//if (regions)
-
 		const std::unordered_map<vec3, chunk*>& chunks = chunkManager::chunks();
 		for (auto it = chunks.cbegin(); it != chunks.cend(); it++)
 			saveChunk_(it->second);
@@ -213,11 +213,27 @@ namespace VoxelEng {
 
 	void world::saveChunk_(chunk* c) {
 
-		c->blockDataMutex().lock();
+		if (regions_) {
+		
+			c->blockDataMutex().lock();
 
-		leveldb::Slice data((const char*)c->getBlocks(), sizeof(block*) * nBlocksChunk);
+			// Obtain local ID data.
+			std::string data((const char*)c->blocks(), sizeof(unsigned short) * nBlocksChunk);
 
-		c->blockDataMutex().unlock();
+			data += '@';
+
+			// Obtain palette data.
+			const palette<unsigned short, unsigned int>& chunkPalette = c->getPalette();
+			for (auto it = chunkPalette.cbegin(); it != chunkPalette.cend(); it++)
+				data += std::to_string(it->first) + '|' + block::getBlockC(it->second).name() + '|';
+
+			regions_->insert(std::to_string(c->chunkPos()), data);
+
+			c->blockDataMutex().unlock();
+		
+		}
+		else
+			logger::errorLog("The chunk cannot be saved becaused the regions database is not opened");
 
 	}
 

@@ -38,14 +38,9 @@ namespace VoxelEng {
 
 	bool database::exists(const std::string& key) const {
 
-		leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &std::string());
+		std::string dummy;
+		leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &dummy);
 		return !status.IsNotFound();
-
-	}
-
-	inline void database::insert(const std::string& key, const std::string& value) {
-
-		db_->Put(leveldb::WriteOptions(), key, value);
 
 	}
 

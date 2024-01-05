@@ -135,7 +135,12 @@ namespace VoxelEng {
 		/**
 		* @brief Returns the pointer to the first element of the chunk's block array.
 		*/
-		void* getBlocks();
+		const void* blocks() const;
+
+		/**
+		* @brief Returns the chunk's palette that maps the local block IDs with the global block IDs.
+		*/
+		const palette<unsigned short, unsigned int>& getPalette() const;
 
 		/**
 		* @brief Get the block at the specified chunk-local coordinates.
@@ -448,10 +453,16 @@ namespace VoxelEng {
 
 	};
 
-	inline void* chunk::getBlocks() {
+	inline const void* chunk::blocks() const {
 
 		return blocksNew_;
 
+	}
+
+	inline const palette<unsigned short, unsigned int>& chunk::getPalette() const {
+	
+		return palette_;
+	
 	}
 
 	inline bool chunk::initialised() {
