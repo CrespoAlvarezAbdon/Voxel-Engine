@@ -323,7 +323,7 @@ namespace VoxelEng {
         if (loopSelection_ == engineMode::AIMENULOOP) {
         
             unsigned int nGames = 0,
-                chosenOption = 0;
+                         chosenOption = 0;
 
             logger::say("AI menu. Please select one of the following options.");
             nGames = AIAPI::aiGame::listAIGames();
@@ -527,7 +527,7 @@ namespace VoxelEng {
                 nFramesDrawn++;
                 if (actualTime - lastSecondTime >= 1.0) {
 
-                    //std::cout << 1000.0 / nFramesDrawn << "ms/frame";
+                    //std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
                     nFramesDrawn = 0;
                     lastSecondTime = glfwGetTime();
 
@@ -551,7 +551,7 @@ namespace VoxelEng {
                 }
                 else if (chunkManager::managerThreadMutex().try_lock()) {
 
-                    chunksToDraw_ = chunkManager::drawableChunksRead();
+                    chunksToDraw_ = chunkManager::drawableChunksRead(); 
 
                     chunkManager::managerThreadMutex().unlock();
                     chunkManager::managerThreadCV().notify_one();

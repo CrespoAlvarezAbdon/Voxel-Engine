@@ -3,6 +3,8 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
+
 #include "logger.h"
 
 
@@ -12,12 +14,15 @@ namespace VoxelEng {
 	* @brief A block is the minimal unit of terrain in this engine. This class is the base
 	* for the representation of any type of blocks registered and supported by this engine.
 	*/
-	class block { // NEXT. DOCUMENTAR DE ESTE .H Y METER EL REGISTRO DE IDS NUMERICAS
+	class block { // NEXT. METER EL REGISTRO DE IDS NUMERICAS
 
 	public:
 
 		// Initialisers.
 
+		/**
+		* @brief Initialise the block system.
+		*/
 		static void init();
 
 
@@ -42,14 +47,30 @@ namespace VoxelEng {
 
 		// Observers.
 
+		/**
+		* @brief Get the specified block.
+		*/
 		static block& getBlockC(const std::string& name);
 
+		/**
+		* @brief Get the specified block.
+		*/
 		static block& getBlockC(unsigned int ID);
 
+		/**
+		* @brief Returns true if the specified block is registered or
+		* false otherwise.
+		*/
 		static bool isBlockRegistered(const std::string& name);
 
+		/**
+		* @brief Returns the empty block.
+		*/
 		static block* emptyBlockP();
 
+		/**
+		* @brief Returns the empty block.
+		*/
 		static block& emptyBlock();
 
 		/**
@@ -57,27 +78,51 @@ namespace VoxelEng {
 		*/
 		unsigned int intID() const;
 
+		/**
+		* @brief Returns the texture ID assigned to this block.
+		* Said ID is used to locate the block's texture inside the texture atlas.
+		*/
 		unsigned int textureID() const; // TODO. FILL TEXTURE ID WITH PROPER DYNAMIC ATLAS BUILDING.
 
+		/**
+		* @brief Returns true if this block is the empty block or
+		* false otherwise.
+		*/
 		bool isEmptyBlock() const;
 
+		/**
+		* @brief Returns the block's namespaced ID.
+		*/
 		const std::string& name() const;
 
 
 		// Modifiers.
 
+		/**
+		* @brief Registers a block into the system.
+		* Its numerical ID is assigned automatically.
+		*/
 		static void registerBlock(const std::string& name, unsigned int textureID);
 
+		/**
+		* @brief Unregisters a block.
+		*/
 		static void unregisterBlock(const std::string& name);
 
 
 		// Destructors.
 
+		/**
+		* @brief Default class destructor.
+		*/
 		~block();
 
 
 		// Clean up.
 
+		/**
+		* @brief Resets the block system.
+		*/
 		static void reset();
 
 	private:
@@ -88,33 +133,36 @@ namespace VoxelEng {
 
 		// Constructors.
 
-		block(const std::string& name, unsigned int textureID);
+		block(const std::string& name, unsigned int indID, unsigned int textureID);
 
 
 		/*
 		Attributes.
 		*/
 
-		// NEXT. IMPLEMENT THESE CHANGES.
+		static bool initialised_;
 		static std::unordered_map<std::string, block> blocks_;
 		static std::unordered_map<unsigned int, block*> blocksIntIDs_;
-		unsigned int intID_;
-
+		static std::unordered_set<unsigned int> freeBlocksIntIDs_;
 		static block* emptyBlock_;
 		static const std::string emptyBlockName_;
 
 		const std::string name_;
+		const unsigned int intID_;
 		unsigned int textureID_; // 0 means no texture assigned.
 
 	};
 
 	inline block::block()
-	: textureID_(0),
-	  name_("")
+	: name_(""),
+	  intID_(0),
+	  textureID_(0)
 	{}
 
-	inline block::block(const std::string& name, unsigned int textureID)
-    : name_(name), textureID_(textureID)
+	inline block::block(const std::string& name, unsigned int intID, unsigned int textureID)
+    : name_(name),
+	  intID_(intID),
+	  textureID_(textureID)
 	{}
 
 	inline bool block::operator==(const block& b) const {
@@ -166,13 +214,6 @@ namespace VoxelEng {
 	}
 
 	inline block::~block() {}
-
-	inline void block::reset() {
-
-		blocks_.clear();
-		emptyBlock_ = nullptr;
-
-	}
 
 }
 

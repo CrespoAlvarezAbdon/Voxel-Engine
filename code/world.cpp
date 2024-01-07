@@ -149,6 +149,14 @@ namespace VoxelEng {
 
 		for (auto it = activeTickFunctions_.cbegin(); it != activeTickFunctions_.cend(); it++)
 			globalTickFunctions_[*it]();
+
+		{
+
+			using namespace std::chrono_literals;
+
+			std::this_thread::sleep_for(1ms);
+
+		}
 	
 	}
 

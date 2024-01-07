@@ -306,7 +306,7 @@ namespace VoxelEng {
             vertex aux;
             int x,
                 y,
-                z;
+                z; // NEXT. VER QUE CAUSA MÁS LAG: EL RENEW MESH O EL GENERADOR DE TERRENO
             const block* bNeighbor = nullptr;
             unsigned short neighborLocalID = 0;
             if (nBlocks_) // Do not iterate through this if there are no blocks to render faces that belong to this chunk.
@@ -503,7 +503,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getT2(neighborPlusX_->blocksNew_[0][y][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(neighborPlusX_->palette_.getT2(neighborPlusX_->blocksNew_[0][y][z])), renderingData_.vertices);
                         
                         }
                         else if (!neighborPlusX_->blocksNew_[0][y][z] && blocksNew_[x][y][z]) {
@@ -558,7 +558,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getT2(neighborMinusX_->blocksNew_[SCX - 1][y][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(neighborMinusX_->palette_.getT2(neighborMinusX_->blocksNew_[SCX - 1][y][z])), renderingData_.vertices);
 
                         }
                         else if (!neighborMinusX_->blocksNew_[SCX-1][y][z] && blocksNew_[x][y][z]) {
@@ -613,7 +613,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getT2(neighborPlusY_->blocksNew_[x][0][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(neighborPlusY_->palette_.getT2(neighborPlusY_->blocksNew_[x][0][z])), renderingData_.vertices);
 
                         }
                         else if (!neighborPlusY_->blocksNew_[x][0][z] && blocksNew_[x][y][z]) {
@@ -668,7 +668,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getT2(neighborMinusY_->blocksNew_[x][SCY - 1][z])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(neighborMinusY_->palette_.getT2(neighborMinusY_->blocksNew_[x][SCY - 1][z])), renderingData_.vertices);
 
                         }
                         else if (!neighborMinusY_->blocksNew_[x][SCY - 1][z] && blocksNew_[x][y][z]) {
@@ -723,7 +723,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getT2(neighborPlusZ_->blocksNew_[x][y][0])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(neighborPlusZ_->palette_.getT2(neighborPlusZ_->blocksNew_[x][y][0])), renderingData_.vertices);
 
                         }
                         else if (!neighborPlusZ_->blocksNew_[x][y][0] && blocksNew_[x][y][z]) {
@@ -778,7 +778,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addTexture(block::getBlockC(palette_.getT2(neighborMinusZ_->blocksNew_[x][y][SCZ - 1])), renderingData_.vertices);
+                            models::addTexture(block::getBlockC(neighborMinusZ_->palette_.getT2(neighborMinusZ_->blocksNew_[x][y][SCZ - 1])), renderingData_.vertices);
 
                         }
                         else if (!neighborMinusZ_->blocksNew_[x][y][SCZ - 1] && blocksNew_[x][y][z]) {
@@ -1658,7 +1658,7 @@ namespace VoxelEng {
             Initialise general parts of the engine related to maintaining
             an "infinite" world type.
             */
-            // NEXT. ADD PROPER WORLDGENERATOR SELECTION.
+            // TODO. ADD PROPER WORLDGENERATOR SELECTION.
             if (!VoxelEng::worldGen::isGenRegistered("miningWorldGen"))
                 VoxelEng::worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
             VoxelEng::worldGen::selectGen("miningWorldGen");
@@ -1777,11 +1777,11 @@ namespace VoxelEng {
     }
 
     void chunkManager::manageChunkPriorityUpdates() {
-    
+
         {
 
             std::unique_lock<std::mutex> lock(priorityManagerThreadMutex_),
-                                         lockNewChunksMeshes(priorityNewChunkMeshesMutex_);
+                lockNewChunksMeshes(priorityNewChunkMeshesMutex_);
 
             priorityNewChunkMeshesCV_.wait(lockNewChunksMeshes);
             while (game::threadsExecute[2]) {
@@ -1797,7 +1797,7 @@ namespace VoxelEng {
             }
 
         }
-    
+
     }
 
     // TODO. CORREGIR

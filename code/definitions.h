@@ -136,7 +136,7 @@ namespace VoxelEng {
 	/**
 	* @brief Maximum number of chunk generation/meshing simultaneous jobs being executed.
 	*/
-	const unsigned int MAX_N_CHUNK_SIMULT_TASKS = 8;
+	const unsigned int MAX_N_CHUNK_SIMULT_TASKS = 4;
 
 
 	/////////////////////
