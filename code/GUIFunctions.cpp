@@ -115,15 +115,10 @@ namespace VoxelEng {
 
 		void saveGame() {
 
-			// Convert character to int number (assuming the last character of the GUIElement's name is a digit).
-			unsigned int saveSlot = GUImanager::lastCheckedGUIElement()->name().back() - '0';
-			game::setSaveSlot(saveSlot);
-
 			// Save chunk data into selected save slot.
-			world::createSaveDirectory(saveSlot);
 			world::saveAll();
 
-			logger::debugLog("Saved on slot " + std::to_string(saveSlot));
+			logger::debugLog("Saved on slot " + std::to_string(GUImanager::lastCheckedGUIElement()->name().back() - '0'));
 
 
 		}
@@ -146,9 +141,11 @@ namespace VoxelEng {
 				for (int i = 1; i <= 5; i++)
 					GUImanager::changeGUIState("saveSlot" + std::to_string(i), false);
 
+				world::setupSaveDirectory(saveSlot);
+
 				game::setLoopSelection(VoxelEng::engineMode::INITLEVEL);
 
-				logger::debugLog("Selected to load slot " + std::to_string(saveSlot));
+				logger::debugLog("Selected load slot " + std::to_string(saveSlot));
 			
 			}
 			else
@@ -162,9 +159,21 @@ namespace VoxelEng {
 
 			changeStateMainMenu(false);
 
+			unsigned int slot = 0;
+			bool correct = false;
+			do {
+
+				logger::say("Enter slot to use (1-5)");
+				correct = validatedCinInput<unsigned int>(slot);
+
+			} while (!correct || slot > 5);
+
+			game::setSaveSlot(slot);
+
+			world::setupSaveDirectory(slot);
+
 			game::setLoopSelection(VoxelEng::engineMode::INITLEVEL);
-			game::setSaveSlot(0);
-			
+
 		}
 
 		void accessSaveSlot() {

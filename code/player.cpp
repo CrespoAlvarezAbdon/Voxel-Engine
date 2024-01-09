@@ -383,7 +383,7 @@ namespace VoxelEng {
         yawAxis_ = vec3FixedUp;
         rollAxis_ = vec3FixedNorth;
 
-        playerTransform_->gravityDirection = vec3(-1.0f, -1.0f, -1.0f);
+        playerTransform_->gravityDirection = vec3(0.0f, -1.0f, 0.0f);
 
         playerTransform_->Yaxis = -glm::normalize(playerTransform_->gravityDirection);
         playerTransform_->Xaxis = vec3FixedNorth;

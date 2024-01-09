@@ -527,7 +527,7 @@ namespace VoxelEng {
                 nFramesDrawn++;
                 if (actualTime - lastSecondTime >= 1.0) {
 
-                    //std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
+                    std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
                     nFramesDrawn = 0;
                     lastSecondTime = glfwGetTime();
 

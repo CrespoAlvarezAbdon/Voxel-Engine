@@ -129,11 +129,14 @@ namespace VoxelEng {
 		static void processGlobalTickFunctions();
 
 		/**
-		* @brief 
+		* @brief Save all data related to the currently opened world.
 		*/
 		static void saveAll();
 
-		static void createSaveDirectory(unsigned int slot);
+		/**
+		* @brief Setup the save directory for the specified save slot.
+		*/
+		static void setupSaveDirectory(unsigned int slot);
 
 
 		// Clean up.

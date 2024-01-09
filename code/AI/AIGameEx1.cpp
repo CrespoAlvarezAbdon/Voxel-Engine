@@ -1,20 +1,16 @@
 #include "AIGameEx1.h"
+
 #include <cmath>
 #include <cstddef>
 #include <filesystem>
 #include <typeinfo>
+#include <type_traits>
+
 #include "../definitions.h"
 #include "../logger.h"
 #include "../utilities.h"
 #include "../game.h"
-#include <type_traits>
-
-#if GRAPHICS_API == OPENGL
-
-#include "../glm/gtc/noise.hpp"
-
-#endif
-
+#include "../noise.h"
 
 namespace AIExample {
 
@@ -369,8 +365,8 @@ namespace AIExample {
 		chunkHeightMap heightsAux = std::array<std::array<int, VoxelEng::SCZ>, VoxelEng::SCX>();
 		float softnessFactor = 64,
 			  height;
-		VoxelEng::vec2 pos;
-		VoxelEng::vec2 aux;
+		VoxelEng::vec2 pos,
+			           aux;
 		glm::vec3 perlinCoords;
 		for (pos.x = 0u; pos.x < VoxelEng::SCX; pos.x++) // x
 			for (pos.y = 0u; pos.y < VoxelEng::SCZ; pos.y++) { // z
@@ -382,9 +378,9 @@ namespace AIExample {
 
 					perlinCoords.x = aux.x;
 					perlinCoords.y = aux.y;
-					perlinCoords.z = seed_;
+					perlinCoords.z = seed_ + 0.1;
 
-					height = glm::perlin(perlinCoords);
+					height = VoxelEng::noise::perlin3D(perlinCoords.x, perlinCoords.y, perlinCoords.z);
 
 				#else
 
@@ -393,7 +389,7 @@ namespace AIExample {
 				#endif
 			
 				// Make height value between 0.0 and 200.0.
-				heightsAux[pos.x][pos.y] = VoxelEng::translateRange(height, -1.0f, 1.0f, 0.0f, 200.0f);
+				heightsAux[pos.x][pos.y] = VoxelEng::translateRange(height, -1.0f, 1.0f, 0.0f, maxHeight_);
 
 			}
 

@@ -168,11 +168,20 @@ namespace VoxelEng {
 
 	}
 
-	void world::createSaveDirectory(unsigned int slot) {
+	void world::setupSaveDirectory(unsigned int slot) {
 
 		currentWorldSlot_ = slot;
 		currentWorldPath_ = "saves/slot" + std::to_string(currentWorldSlot_) + '/';
 		std::filesystem::create_directory(currentWorldPath_);
+
+		if (regions_) {
+		
+			delete regions_;
+			regions_ = nullptr;
+		
+		}
+
+		regions_ = new database(currentWorldPath_ + "regions.db");
 
 	}
 

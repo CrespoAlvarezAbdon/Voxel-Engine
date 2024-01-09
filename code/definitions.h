@@ -136,7 +136,7 @@ namespace VoxelEng {
 	/**
 	* @brief Maximum number of chunk generation/meshing simultaneous jobs being executed.
 	*/
-	const unsigned int MAX_N_CHUNK_SIMULT_TASKS = 4;
+	const unsigned int MAX_N_CHUNK_SIMULT_TASKS = 2;
 
 
 	/////////////////////
@@ -148,9 +148,9 @@ namespace VoxelEng {
 	typedef unsigned int agentID;
 	typedef unsigned int entityID;
 
-	typedef const char* namespacedID_C; // In case the std::string version is not supported in the code.
 	typedef std::string namespacedID;
-	typedef unsigned short numericShortID; // Block's ID.
+	typedef unsigned short numericShortID;
+	typedef unsigned int numID;
 
 	typedef unsigned char byte; // Number with values between 0 and 255.
 

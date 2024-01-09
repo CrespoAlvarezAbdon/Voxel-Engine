@@ -306,10 +306,10 @@ namespace VoxelEng {
             vertex aux;
             int x,
                 y,
-                z; // NEXT. VER QUE CAUSA MÁS LAG: EL RENEW MESH O EL GENERADOR DE TERRENO
+                z;
             const block* bNeighbor = nullptr;
             unsigned short neighborLocalID = 0;
-            if (nBlocks_) // Do not iterate through this if there are no blocks to render faces that belong to this chunk.
+            if (nBlocks_ > 0 && nBlocks_ < nBlocksChunk) // Do not iterate through this if there are no blocks to render faces that belong to this chunk.
                 for (x = 0; x < SCX; x++)
                     for (y = 0; y < SCY; y++)
                         for (z = 0; z < SCZ; z++) {
