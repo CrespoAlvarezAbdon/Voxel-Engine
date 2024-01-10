@@ -8,6 +8,9 @@
 #include "player.h"
 #include "game.h"
 #include "logger.h"
+#include "worldGen.h"
+
+#include "timer.h"
 
 
 namespace VoxelEng {
@@ -208,7 +211,7 @@ namespace VoxelEng {
 		std::string data;
 
 		data += std::to_string(maxDistanceX_) + '|' + std::to_string(maxDistanceY_) + '|' + std::to_string(maxDistanceZ_) + '|' + 
-			    std::to_string(player::globalPos()) + '|' + std::to_string(player::rotation()) + '|';
+			    std::to_string(player::globalPos()) + '|' + std::to_string(player::rotation()) + '|' + std::to_string(worldGen::getSeed()) +  '|';
 
 		mainFile.write(data.c_str(), data.size());
 		mainFile.close();
@@ -216,11 +219,6 @@ namespace VoxelEng {
 	}
 
 	void world::saveAllChunks_() {
-
-		// NEXT.
-		// 0º. QUE EL BOTON NEW PIDA ELEGIR EL SLOT EN EL QUE IR GUARDANDOLO TODO.
-		// 1º. IMPLEMENTAR Y HACER PRUEBA DE GUARDADO CON TODOS LOS CHUNKS CARGADOS,
-		// INCLUYENDO QUE SE GUARDEN LOS CHUNKS QUE SE DESCARGAN POR LEJANÍA AL JUGADOR.
 
 		const std::unordered_map<vec3, chunk*>& chunks = chunkManager::chunks();
 		for (auto it = chunks.cbegin(); it != chunks.cend(); it++)
@@ -244,13 +242,19 @@ namespace VoxelEng {
 			for (auto it = chunkPalette.cbegin(); it != chunkPalette.cend(); it++)
 				data += std::to_string(it->first) + '|' + block::getBlockC(it->second).name() + '|';
 
+			timer t;
+			t.start();
 			regions_->insert(std::to_string(c->chunkPos()), data);
+			t.finish();
+			logger::debugLog("Time for saving chunk is " + std::to_string(t.getDurationMs()));
 
 			c->blockDataMutex().unlock();
 		
 		}
 		else
 			logger::errorLog("The chunk cannot be saved becaused the regions database is not opened");
+
+		
 
 	}
 

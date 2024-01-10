@@ -51,7 +51,8 @@ namespace VoxelEng {
     enum class slotAccessType {
 
         save,
-        load
+        load,
+        createNew
 
     };
 

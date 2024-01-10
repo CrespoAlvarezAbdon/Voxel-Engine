@@ -91,7 +91,7 @@ namespace VoxelEng {
 
     #endif
 
-    slotAccessType game::slotAccessType_ = slotAccessType::load;
+    slotAccessType game::slotAccessType_ = slotAccessType::createNew;
 
 
     void game::init() {

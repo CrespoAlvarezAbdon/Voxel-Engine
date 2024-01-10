@@ -300,8 +300,13 @@ namespace AIExample {
 		minHeight_ = 0.0f;
 		maxHeight_ = 200.0f;
 
-		if (!VoxelEng::game::selectedSaveSlot() && VoxelEng::chunkManager::openedTerrainFileName().empty())
+		// NEXT. Put this before this call because it is not world generator dependent.
+		// Also Start moving the saving of chunks to unloaded modified chunks only.
+		// First of all, add the 'modified' tag
+		if (VoxelEng::game::getSlotAccessType() == VoxelEng::slotAccessType::createNew)
 			setSeed();
+		// else
+			// world::loadMainData()
 
 		playerSpawnPos_.x = 0;
 		playerSpawnPos_.y = chunkHeightMap_({ 0, 0 }, false)[0][0] + 10;

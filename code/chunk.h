@@ -1418,9 +1418,7 @@ namespace VoxelEng {
 		*/
 		static std::atomic<bool> waitInitialTerrainLoaded_;
 
-		static unsigned int parseChunkPosState_; // 0 = parsing x coord, 1 = parsing y coord, 2 = parsing z coord.
-		static const unsigned int parseChunkPosStates_;
-		static std::string openedTerrainFileName_;
+		static std::string openedTerrainFileName_; // TODO. DEPRECEATED. REPLACE WITH THE WORLD SYSTEM EQUIVALENT NAMED 'currentWorldPath_'.
 
 		static std::unordered_map<unsigned int, std::unordered_map<vec3, bool>> AIChunkAvailable_;
 		static std::unordered_map<unsigned int, std::unordered_map<vec3, chunk*>> AIagentChunks_;

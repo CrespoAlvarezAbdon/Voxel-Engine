@@ -1061,8 +1061,6 @@ namespace VoxelEng {
 
     std::atomic<bool> chunkManager::waitInitialTerrainLoaded_ = true;
 
-    unsigned int chunkManager::parseChunkPosState_ = 0;
-    const unsigned int chunkManager::parseChunkPosStates_ = 2;
     std::string chunkManager::openedTerrainFileName_ = "";
 
     std::unordered_map<unsigned int, std::unordered_map<vec3, bool>> chunkManager::AIChunkAvailable_;
@@ -1083,7 +1081,6 @@ namespace VoxelEng {
 
             originalWorldAccess_ = true;
 
-            parseChunkPosState_ = 0;
             selectedAIWorld_ = 0;
 
             drawableChunksRead_ = new std::unordered_map<vec3, model>;

@@ -168,6 +168,7 @@ namespace VoxelEng {
 
 			} while (!correct || slot > 5);
 
+			game::setSlotAccessType(slotAccessType::createNew);
 			game::setSaveSlot(slot);
 
 			world::setupSaveDirectory(slot);
