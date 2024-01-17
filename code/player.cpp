@@ -140,7 +140,7 @@ namespace VoxelEng {
             std::unique_lock<std::recursive_mutex> lock(chunkManager::chunksMutex());
 
             chunk* selectedChunk = chunkManager::selectChunkByRealPos(selectedBlockPos_),
-                * neighbor = nullptr;
+                 * neighbor = nullptr;
 
             if (selectedChunk && !selectedBlock_->isEmptyBlock()) {
 

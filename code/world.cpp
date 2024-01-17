@@ -166,14 +166,49 @@ namespace VoxelEng {
 	void world::saveAll() {
 
 		saveMainData_();
-
+		
 		saveAllChunks_();
 
 	}
 
-	void world::setupSaveDirectory(unsigned int slot) {
+	void world::saveChunk(chunk* c) {
 
-		currentWorldSlot_ = slot;
+		if (regions_) {
+
+			if (c->modified()) {
+
+				timer t;
+				t.start();
+
+				c->blockDataMutex().lock();
+
+				// Obtain local ID data.
+				std::string data((const char*)c->blocks(), sizeof(unsigned short) * nBlocksChunk);
+
+				data += '@';
+
+				// Obtain palette data.
+				const palette<unsigned short, unsigned int>& chunkPalette = c->getPalette();
+				for (auto it = chunkPalette.cbegin(); it != chunkPalette.cend(); it++)
+					data += std::to_string(it->first) + '|' + block::getBlockC(it->second).name() + '|';
+
+				regions_->insert(std::to_string(c->chunkPos()), data);
+
+				c->blockDataMutex().unlock();
+
+				t.finish();
+				logger::debugLog("Time for saving chunks is " + std::to_string(t.getDurationMs()));
+
+			}
+		}
+		else
+			logger::errorLog("The chunk cannot be saved becaused the regions database is not opened");
+
+	}
+
+	void world::setupSaveDirectory() {
+
+		currentWorldSlot_ = game::selectedSaveSlot();
 		currentWorldPath_ = "saves/slot" + std::to_string(currentWorldSlot_) + '/';
 		std::filesystem::create_directory(currentWorldPath_);
 
@@ -184,8 +219,16 @@ namespace VoxelEng {
 		
 		}
 
-		regions_ = new database(currentWorldPath_ + "regions.db");
+		regions_ = new database(currentWorldPath_ + "regions");
 
+	}
+
+	void world::clearSlot() {
+
+		std::string path = "saves/slot" + std::to_string(game::selectedSaveSlot());
+		if (std::filesystem::exists(path))
+			std::filesystem::remove_all(path);
+	
 	}
 
 	void world::reset() {
@@ -222,39 +265,7 @@ namespace VoxelEng {
 
 		const std::unordered_map<vec3, chunk*>& chunks = chunkManager::chunks();
 		for (auto it = chunks.cbegin(); it != chunks.cend(); it++)
-			saveChunk_(it->second);
-
-	}
-
-	void world::saveChunk_(chunk* c) {
-
-		if (regions_) {
-		
-			c->blockDataMutex().lock();
-
-			// Obtain local ID data.
-			std::string data((const char*)c->blocks(), sizeof(unsigned short) * nBlocksChunk);
-
-			data += '@';
-
-			// Obtain palette data.
-			const palette<unsigned short, unsigned int>& chunkPalette = c->getPalette();
-			for (auto it = chunkPalette.cbegin(); it != chunkPalette.cend(); it++)
-				data += std::to_string(it->first) + '|' + block::getBlockC(it->second).name() + '|';
-
-			timer t;
-			t.start();
-			regions_->insert(std::to_string(c->chunkPos()), data);
-			t.finish();
-			logger::debugLog("Time for saving chunk is " + std::to_string(t.getDurationMs()));
-
-			c->blockDataMutex().unlock();
-		
-		}
-		else
-			logger::errorLog("The chunk cannot be saved becaused the regions database is not opened");
-
-		
+			saveChunk(it->second);
 
 	}
 

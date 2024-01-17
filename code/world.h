@@ -134,9 +134,20 @@ namespace VoxelEng {
 		static void saveAll();
 
 		/**
-		* @brief Setup the save directory for the specified save slot.
+		* @brief Save the specific chunk into disk according to the currently opened level slot.
 		*/
-		static void setupSaveDirectory(unsigned int slot);
+		static void saveChunk(chunk* c);
+
+		/**
+		* @brief Setup the save directory in the currently selected save slot.
+		*/
+		static void setupSaveDirectory();
+
+		/**
+		* @brief Remove ALL the contents saved in the currently selected level slot.
+		* Does nothing if the directory for that slot does not exist.
+		*/
+		static void clearSlot();
 
 
 		// Clean up.
@@ -172,7 +183,7 @@ namespace VoxelEng {
 
 		static void saveAllChunks_();
 
-		static void saveChunk_(chunk* c);
+		
 	
 	};
 

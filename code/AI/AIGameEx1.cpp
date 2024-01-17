@@ -300,14 +300,6 @@ namespace AIExample {
 		minHeight_ = 0.0f;
 		maxHeight_ = 200.0f;
 
-		// NEXT. Put this before this call because it is not world generator dependent.
-		// Also Start moving the saving of chunks to unloaded modified chunks only.
-		// First of all, add the 'modified' tag
-		if (VoxelEng::game::getSlotAccessType() == VoxelEng::slotAccessType::createNew)
-			setSeed();
-		// else
-			// world::loadMainData()
-
 		playerSpawnPos_.x = 0;
 		playerSpawnPos_.y = chunkHeightMap_({ 0, 0 }, false)[0][0] + 10;
 		playerSpawnPos_.z = 0;
@@ -337,11 +329,11 @@ namespace AIExample {
 					blockPos = VoxelEng::getGlobalPos(chunkPos, inChunkPos);
 
 					if (blockPos.y < heightMap[inChunkPos.x][inChunkPos.z] - 3)
-						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer2_);
+						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer2_, false);
 					else if (blockPos.y >= heightMap[inChunkPos.x][inChunkPos.z] - 3 && blockPos.y < heightMap[inChunkPos.x][inChunkPos.z])
-						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer1_);
+						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer1_, false);
 					else if (blockPos.y == heightMap[inChunkPos.x][inChunkPos.z])
-						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer0_);
+						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer0_, false);
 
 				}
 

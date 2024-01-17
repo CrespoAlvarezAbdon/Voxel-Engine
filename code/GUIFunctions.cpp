@@ -1,11 +1,13 @@
 #include "GUIfunctions.h"
 #include <string>
 #include <filesystem>
+
 #include "chunk.h"
 #include "gui.h"
 #include "graphics.h"
 #include "logger.h"
 #include "world.h"
+#include "worldGen.h"
 
 
 namespace VoxelEng {
@@ -141,7 +143,7 @@ namespace VoxelEng {
 				for (int i = 1; i <= 5; i++)
 					GUImanager::changeGUIState("saveSlot" + std::to_string(i), false);
 
-				world::setupSaveDirectory(saveSlot);
+				world::setupSaveDirectory();
 
 				game::setLoopSelection(VoxelEng::engineMode::INITLEVEL);
 
@@ -168,10 +170,13 @@ namespace VoxelEng {
 
 			} while (!correct || slot > 5);
 
+			worldGen::setSeed();
+
 			game::setSlotAccessType(slotAccessType::createNew);
 			game::setSaveSlot(slot);
 
-			world::setupSaveDirectory(slot);
+			world::clearSlot();
+			world::setupSaveDirectory();
 
 			game::setLoopSelection(VoxelEng::engineMode::INITLEVEL);
 

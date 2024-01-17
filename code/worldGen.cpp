@@ -174,7 +174,7 @@ namespace VoxelEng {
 
 						}
 
-						chunk.setBlock(x, y, z, *blockToGenerate);
+						chunk.setBlock(x, y, z, *blockToGenerate, false);
 
 					}
 

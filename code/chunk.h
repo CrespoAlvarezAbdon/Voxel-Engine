@@ -188,10 +188,17 @@ namespace VoxelEng {
 		unsigned int getNBlocks();
 
 		/**
-		* @brief Returns true if this chunk's terrain has been modified and it's mesh needs
+		* @brief Returns true if this chunk has been modified
+		* since being generated or loaded from disk or
+		* false otherwise.
+		*/
+		bool modified() const;
+
+		/**
+		* @brief Returns true if this chunk's mesh needs
 		* to be regenerated or false otherwise.
 		*/
-		bool changed() const;
+		bool needsRemesh() const;
 
 		/**
 		* @brief Returns the chunk's load level.
@@ -285,33 +292,30 @@ namespace VoxelEng {
 
 		/**
 		* @brief Sets the value of a block within the chunk.
-		* The chunk is marked as dirty.
-		* Returns the block that was there before.
-		* 'triggerRenderingSync' tells the chunk manager system to perform a forcible
-		* synchronization between all threads related to chunk rendering in order
-		* to update the chunk's mesh that was modified by this method.
+		* Returns the replaced block.
+		* 'modification' tells if the call to this method is NOT part of the
+		* chunk's generation process or otherwise.
+		* WARNING. For world generators that use this method: 'modification' must be set to false.
 		*/
-		const block& setBlock(GLbyte x, GLbyte y, GLbyte z, const block& block);
+		const block& setBlock(GLbyte x, GLbyte y, GLbyte z, const block& block, bool modification = true);
 
 		/**
 		* @brief Sets the value of a block within the chunk.
-		* The chunk is marked as dirty.
-		* Returns the old block.
-		* 'triggerRenderingSync' tells the chunk manager system to perform a forcible
-		* synchronization between all threads related to chunk rendering in order
-		* to update the chunk's mesh that was modified by this method.
+		* Returns the replaced block.
+		* 'modification' tells if the call to this method is NOT part of the
+		* chunk's generation process or otherwise.
+		* WARNING. For world generators that use this method: 'modification' must be set to false.
 		*/
-		const block& setBlock(const vec3& chunkRelPos, const block& block);
+		const block& setBlock(const vec3& chunkRelPos, const block& block, bool modification = true);
 
 		/**
 		* @brief Sets the value of a block within the chunk.
-		* The chunk is marked as dirty.
-		* Returns the old block.
-		* 'triggerRenderingSync' tells the chunk manager system to perform a forcible
-		* synchronization between all threads related to chunk rendering in order
-		* to update the chunk's mesh that was modified by this method.
+		* Returns the replaced block.
+		* 'modification' tells if the call to this method is NOT part of the
+		* chunk's generation process or otherwise.
+		* WARNING. For world generators that use this method: 'modification' must be set to false.
 		*/
-		const block& setBlock(unsigned int linearIndex, const block& block);
+		const block& setBlock(unsigned int linearIndex, const block& block, bool modification = true);
 
 		/**
 		* @brief Returns the chunk's chunk position.
@@ -348,7 +352,14 @@ namespace VoxelEng {
 		* @brief Returns true if this chunk's terrain has been modified and it's mesh needs
 		* to be regenerated or false otherwise.
 		*/
-		std::atomic<bool>& changed();
+		std::atomic<bool>& needsRemesh();
+
+		/**
+		* @brief Returns true if this chunk has been modified
+		* since being generated or loaded from disk or
+		* false otherwise.
+		*/
+		bool& modified();
 
 		/**
 		* @brief Regenerate the chunk's mesh. Returns true if the mesh contains vertices or false if it is empty.
@@ -418,13 +429,13 @@ namespace VoxelEng {
 		static const model* blockVertices_;
 		static const modelTriangles* blockTriangles_;
 
-		// NEXT. IMPLEMENT THESE CHANGES.
 		palette<unsigned short, unsigned int> palette_;
 		std::unordered_map<unsigned short, unsigned short> paletteCount_;
 		std::unordered_set<unsigned short> freeLocalIDs_;
 		unsigned short blocksNew_[SCX][SCY][SCZ];
 
-		std::atomic<bool> changed_;
+		bool modified_;
+		std::atomic<bool> needsRemesh_;
 		std::atomic<short> nBlocks_,
 						   nBlocksPlusX_,
 						   nBlocksMinusX_,
@@ -525,9 +536,15 @@ namespace VoxelEng {
 
 	}
 
-	inline bool chunk::changed() const {
+	inline bool chunk::modified() const {
 
-		return changed_;
+		return modified_;
+
+	}
+
+	inline bool chunk::needsRemesh() const {
+
+		return needsRemesh_;
 
 	}
 
@@ -639,15 +656,15 @@ namespace VoxelEng {
 	
 	}
 
-	inline const block& chunk::setBlock(const vec3& chunkRelPos, const block& b) {
+	inline const block& chunk::setBlock(const vec3& chunkRelPos, const block& b, bool modification) {
 
-		return setBlock(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z, b);
+		return setBlock(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z, b, modification);
 
 	}
 
-	inline const block& chunk::setBlock(unsigned int linearIndex, const block& b) {
+	inline const block& chunk::setBlock(unsigned int linearIndex, const block& b, bool modification) {
 
-		return setBlock(linearToVec3(linearIndex, SCY, SCZ), b);
+		return setBlock(linearToVec3(linearIndex, SCY, SCZ), b, modification);
 
 	}
 
@@ -681,9 +698,15 @@ namespace VoxelEng {
 
 	}
 
-	inline std::atomic<bool>& chunk::changed() {
+	inline std::atomic<bool>& chunk::needsRemesh() {
 
-		return changed_;
+		return needsRemesh_;
+
+	}
+
+	inline bool& chunk::modified() {
+
+		return modified_;
 
 	}
 
@@ -1166,9 +1189,6 @@ namespace VoxelEng {
 		* @brief Unloads the chunk at chunk position 'chunkPos', pushing it into a free chunks deque
 		* to be reused later for another chunk position of the world. Returns the number of chunks
 		* that were converted into frontier chunks because of this operation.
-		* WARNING. Non-atomic operation! Must be called when all meshing threads are synced with
-		* the chunk management thread.
-		* WARNING. This method is used in an infinite world.
 		*/
 		static int unloadFrontierChunk(const vec3& chunkPos);
 
@@ -1177,7 +1197,7 @@ namespace VoxelEng {
 		* It coordinates all meshing threads and manages the chunk unloading process
 		* in order to prevent any race condition between said threads, among other things
 		* such as synchronization and data transfering with the rendering thread.
-		* This method does not handle the chunk priority updates.
+		* NOTE. This method does not handle the chunk priority updates.
 		*/
 		static void manageChunks();
 
@@ -1361,9 +1381,10 @@ namespace VoxelEng {
 
 		// NEW THINGS START HERE
 
+		static bool removeFrontierIt_;
 		static vec3 playerChunkPosCopy_; // Copy of the last value of the player's position in chunk coordinates.
 		static std::list<vec3> frontierChunks_;
-		static std::list<std::list<vec3>::iterator> chunksToDefrontierize_;
+		static std::list<vec3>::iterator frontierIt_;
 		static notInRenderDistance notInRenderDistance_;
 		static closestChunk closestChunk_;
 		static threadPool* chunkTasks_, 
@@ -1392,10 +1413,10 @@ namespace VoxelEng {
 		static int nChunksToCompute_;
 		static std::unordered_map<vec3, chunk*> chunks_;
 		static std::unordered_map<vec3, model>* drawableChunksRead_;
-		static std::deque<chunk*> newChunkMeshes_,
+		static std::list<chunk*> newChunkMeshes_,
 								  priorityNewChunkMeshes_;
 			                      
-		static std::deque<vec3> chunkMeshesToDelete_; // Read-only chunk meshes that need to be deleted.
+		static std::list<vec3> chunkMeshesToDelete_; // Read-only chunk meshes that need to be deleted.
 		static std::mutex managerThreadMutex_,
 						  priorityManagerThreadMutex_,
 						  priorityNewChunkMeshesMutex_,
@@ -1438,8 +1459,6 @@ namespace VoxelEng {
 		return initialised_;
 	
 	}
-
-	
 
 	inline const std::unordered_map<vec3, chunk*>& chunkManager::chunks() {
 
