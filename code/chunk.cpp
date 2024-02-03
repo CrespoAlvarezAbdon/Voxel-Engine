@@ -303,8 +303,6 @@ namespace VoxelEng {
 
             needsRemesh_ = false;
 
-            renderingDataMutex_.lock();
-
             renderingData_.vertices = model();
 
             // Read chunk data section starts.
@@ -486,6 +484,8 @@ namespace VoxelEng {
                         }
  
             // Render faces that require data from neighbor chunks.
+            //neighborsMutex_.lock();
+
             if (neighborPlusX_ && neighborPlusX_->loadLevel_.load() >= chunkLoadLevel::DECORATED) {
 
                 x = SCX - 1;
@@ -816,10 +816,10 @@ namespace VoxelEng {
 
             }
 
+            //neighborsMutex_.unlock();
+
             // Read chunk data section ends.
             blocksMutex_.unlock_shared();
-
-            renderingDataMutex_.unlock();
 
         }
 
@@ -878,9 +878,13 @@ namespace VoxelEng {
 
     void chunk::unlinkNeighbors() {
     
+        neighborsMutex_.lock();
+
         if (neighborPlusY_) {
         
+            neighborPlusY_->neighborsMutex_.lock();
             neighborPlusY_->neighborMinusY_ = nullptr;
+            neighborPlusY_->neighborsMutex_.unlock();
 
             neighborPlusY_ = nullptr;
         
@@ -888,7 +892,9 @@ namespace VoxelEng {
             
         if (neighborMinusY_) {
 
+            neighborMinusY_->neighborsMutex_.lock();
             neighborMinusY_->neighborPlusY_ = nullptr;
+            neighborMinusY_->neighborsMutex_.unlock();
 
             neighborMinusY_ = nullptr;
 
@@ -896,7 +902,9 @@ namespace VoxelEng {
 
         if (neighborPlusX_) {
 
+            neighborPlusX_->neighborsMutex_.lock();
             neighborPlusX_->neighborMinusX_ = nullptr;
+            neighborPlusX_->neighborsMutex_.unlock();
 
             neighborPlusX_ = nullptr;
 
@@ -904,7 +912,9 @@ namespace VoxelEng {
 
         if (neighborMinusX_) {
 
+            neighborMinusX_->neighborsMutex_.lock();
             neighborMinusX_->neighborPlusX_ = nullptr;
+            neighborMinusX_->neighborsMutex_.unlock();
  
             neighborMinusX_ = nullptr;
 
@@ -912,7 +922,9 @@ namespace VoxelEng {
 
         if (neighborPlusZ_) {
 
+            neighborPlusZ_->neighborsMutex_.lock();
             neighborPlusZ_->neighborMinusZ_ = nullptr;
+            neighborPlusZ_->neighborsMutex_.unlock();
 
             neighborPlusZ_ = nullptr;
 
@@ -920,13 +932,17 @@ namespace VoxelEng {
 
         if (neighborMinusZ_ ) {
 
+            neighborMinusZ_->neighborsMutex_.lock();
             neighborMinusZ_->neighborPlusZ_ = nullptr;
+            neighborMinusZ_->neighborsMutex_.unlock();
 
             neighborMinusZ_ = nullptr;
 
         }
 
         nNeighbors_ = 0;
+
+        neighborsMutex_.unlock();
     
     }
 
@@ -936,12 +952,12 @@ namespace VoxelEng {
 
         double distanceUnloadedFrontier = chunkManager::distanceToPlayer(renderingData_.chunkPos);
         int nLoadedFrontiers =
-            chunkManager::onUnloadAsFrontier(neighborPlusX_, distanceUnloadedFrontier) +
-            chunkManager::onUnloadAsFrontier(neighborMinusX_, distanceUnloadedFrontier) +
-            chunkManager::onUnloadAsFrontier(neighborPlusY_, distanceUnloadedFrontier) +
-            chunkManager::onUnloadAsFrontier(neighborMinusY_, distanceUnloadedFrontier) +
-            chunkManager::onUnloadAsFrontier(neighborPlusZ_, distanceUnloadedFrontier) +
-            chunkManager::onUnloadAsFrontier(neighborMinusZ_, distanceUnloadedFrontier);
+            chunkManager::onUnloadAsFrontier(neighborPlusX_, vec3{ renderingData_.chunkPos.x+1, renderingData_.chunkPos.y, renderingData_.chunkPos.z }, distanceUnloadedFrontier) +
+            chunkManager::onUnloadAsFrontier(neighborMinusX_, vec3{ renderingData_.chunkPos.x-1, renderingData_.chunkPos.y, renderingData_.chunkPos.z }, distanceUnloadedFrontier) +
+            chunkManager::onUnloadAsFrontier(neighborPlusY_, vec3{ renderingData_.chunkPos.x, renderingData_.chunkPos.y+1, renderingData_.chunkPos.z }, distanceUnloadedFrontier) +
+            chunkManager::onUnloadAsFrontier(neighborMinusY_, vec3{ renderingData_.chunkPos.x, renderingData_.chunkPos.y-1, renderingData_.chunkPos.z }, distanceUnloadedFrontier) +
+            chunkManager::onUnloadAsFrontier(neighborPlusZ_, vec3{ renderingData_.chunkPos.x, renderingData_.chunkPos.y, renderingData_.chunkPos.z+1 }, distanceUnloadedFrontier) +
+            chunkManager::onUnloadAsFrontier(neighborMinusZ_, vec3{ renderingData_.chunkPos.x, renderingData_.chunkPos.y, renderingData_.chunkPos.z-1 }, distanceUnloadedFrontier);
 
         return nLoadedFrontiers;
     
@@ -949,25 +965,58 @@ namespace VoxelEng {
 
     void chunk::setNeighbors() {
     
+        neighborsMutex_.lock();
+
         // Link with existing neighbors.
-        if (neighborPlusY_ = chunkManager::selectChunk(renderingData_.chunkPos.x, renderingData_.chunkPos.y + 1, renderingData_.chunkPos.z))
+        if (neighborPlusY_ = chunkManager::selectChunk(renderingData_.chunkPos.x, renderingData_.chunkPos.y + 1, renderingData_.chunkPos.z)) {
+        
+            neighborPlusY_->neighborsMutex_.lock();
             neighborPlusY_->neighborMinusY_ = this;
+            neighborPlusY_->neighborsMutex_.unlock();
+        
+        }
+  
+        if (neighborMinusY_ = chunkManager::selectChunk(renderingData_.chunkPos.x, renderingData_.chunkPos.y - 1, renderingData_.chunkPos.z)) {
 
-        if (neighborMinusY_ = chunkManager::selectChunk(renderingData_.chunkPos.x, renderingData_.chunkPos.y - 1, renderingData_.chunkPos.z))
+            neighborMinusY_->neighborsMutex_.lock();
             neighborMinusY_->neighborPlusY_ = this;
+            neighborMinusY_->neighborsMutex_.unlock();
 
-        if (neighborPlusX_ = chunkManager::selectChunk(renderingData_.chunkPos.x + 1, renderingData_.chunkPos.y, renderingData_.chunkPos.z))
+        }
+        
+        if (neighborPlusX_ = chunkManager::selectChunk(renderingData_.chunkPos.x + 1, renderingData_.chunkPos.y, renderingData_.chunkPos.z)) {
+
+            neighborPlusX_->neighborsMutex_.lock();
             neighborPlusX_->neighborMinusX_ = this;
-        nNeighbors_ += neighborPlusX_ != nullptr;
+            neighborPlusX_->neighborsMutex_.unlock();
 
-        if (neighborMinusX_ = chunkManager::selectChunk(renderingData_.chunkPos.x - 1, renderingData_.chunkPos.y, renderingData_.chunkPos.z))
+        }
+            
+        if (neighborMinusX_ = chunkManager::selectChunk(renderingData_.chunkPos.x - 1, renderingData_.chunkPos.y, renderingData_.chunkPos.z)) {
+
+            neighborMinusX_->neighborsMutex_.lock();
             neighborMinusX_->neighborPlusX_ = this;
+            neighborMinusX_->neighborsMutex_.unlock();
 
-        if (neighborPlusZ_ = chunkManager::selectChunk(renderingData_.chunkPos.x, renderingData_.chunkPos.y, renderingData_.chunkPos.z + 1))
+        }
+            
+        if (neighborPlusZ_ = chunkManager::selectChunk(renderingData_.chunkPos.x, renderingData_.chunkPos.y, renderingData_.chunkPos.z + 1)) {
+
+            neighborPlusZ_->neighborsMutex_.lock();
             neighborPlusZ_->neighborMinusZ_ = this;
+            neighborPlusZ_->neighborsMutex_.unlock();
 
-        if (neighborMinusZ_ = chunkManager::selectChunk(renderingData_.chunkPos.x, renderingData_.chunkPos.y, renderingData_.chunkPos.z - 1))
+        }
+
+        if (neighborMinusZ_ = chunkManager::selectChunk(renderingData_.chunkPos.x, renderingData_.chunkPos.y, renderingData_.chunkPos.z - 1)) {
+
+            neighborMinusZ_->neighborsMutex_.lock();
             neighborMinusZ_->neighborPlusZ_ = this;
+            neighborMinusZ_->neighborsMutex_.unlock();
+
+        }
+            
+        neighborsMutex_.lock();
     
     }
 
@@ -1020,6 +1069,8 @@ namespace VoxelEng {
             priorityNewChunkMeshesCV_->notify_all();
 
         pool_->free(*this);
+
+        chunk_->setLoadLevel(chunkLoadLevel::MESHED);
 
     }
 
@@ -1171,6 +1222,15 @@ namespace VoxelEng {
 
         }
         chunkMeshesToDeleteMutex_.unlock();
+
+        for (auto it = drawableChunksRead_->begin(); it != drawableChunksRead_->end();) {
+        
+            if (!chunkInRenderDistance(it->first))
+                it = drawableChunksRead_->erase(it);
+            else
+                it++;
+        
+        }
 
     }
 
@@ -1554,7 +1614,8 @@ namespace VoxelEng {
             // Check if the chunk's neighbors become frontier chunks after it is unloaded.
             int nNewFrontierChunks = unloadedChunk->onUnloadAsFrontier();
 
-            frontierChunks_.erase(std::find(frontierChunks_.begin(), frontierChunks_.end(), chunkPos));
+            frontierChunks_.erase(unloadedChunk->frontierIt_);
+            unloadedChunk->frontierIt_ = frontierChunks_.end();
 
             chunks_.erase(chunkPos);
 
@@ -1576,19 +1637,21 @@ namespace VoxelEng {
 
             onChunkUnload_.notify(chunkPos.x, chunkPos.z);
 
-            return nNewFrontierChunks;
-
             return 0;
 
         }
         
     }
 
-    bool chunkManager::onUnloadAsFrontier(chunk* chunk, double distUnloadedToPlayer) {
+    bool chunkManager::onUnloadAsFrontier(chunk* chunk, const vec3& chunkPos, double distUnloadedToPlayer) {
 
-        if (chunk && std::find(frontierChunks_.begin(), frontierChunks_.end(), chunk->chunkPos()) == frontierChunks_.end()) {
+        if (!chunk && distanceToPlayer(chunkPos) < distUnloadedToPlayer && std::find(frontierChunks_.begin(), frontierChunks_.end(), chunkPos) == frontierChunks_.end())
+            ensureChunkIfVisible(chunkPos);
 
-            frontierChunks_.push_back(chunk->chunkPos());
+        if (chunk && chunk->frontierIt_ == frontierChunks_.end() &&
+            distanceToPlayer(chunkPos) < distUnloadedToPlayer) {
+
+            chunk->frontierIt_ = frontierChunks_.insert(frontierChunks_.end(), chunk->chunkPos());
             return true;
 
         }
@@ -1600,8 +1663,11 @@ namespace VoxelEng {
     void chunkManager::addFrontier(chunk* chunk) {
     
         // NEXT. MIRAR SI BASTANTES CHECKS DE STD::FIND DE FRONTIER CHUNKS SE PUEDEN SUSTITUIR POR COMPROBACIONES EN CHUNKS_ O EN OTRAS COSAS MÁS LIGERAS.
-        if (std::find(frontierChunks_.begin(), frontierChunks_.end(), chunk->chunkPos()) == frontierChunks_.end())
-            frontierChunks_.push_back(chunk->chunkPos());
+        if (true) {
+        
+            chunk->frontierIt_ = frontierChunks_.insert(frontierChunks_.end(), chunk->chunkPos());
+
+        }
 
         updateFrontierNeighbor(chunk, chunk->neighborPlusX());
         updateFrontierNeighbor(chunk, chunk->neighborMinusX());
@@ -1685,6 +1751,7 @@ namespace VoxelEng {
             playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
             ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z);
             timer t;
+            const unsigned int maxIterations = 32;
             while (game::threadsExecute[2]) {
 
                 bool continueCreatingChunks = false;
@@ -1696,15 +1763,24 @@ namespace VoxelEng {
                     // Unload chunks that are outside the maximun render distance.
                     t.start();
                     frontierIt_ = frontierChunks_.begin();
-                    while (frontierIt_ != frontierChunks_.end()) {
+                    unsigned int nIterations = 0;
+                    while (frontierIt_ != frontierChunks_.end() && nIterations < maxIterations) {
 
                         while (priorityUpdatesRemaining_)
                             priorityUpdatesRemainingCV_.wait(priorityUpdatesLock);                           
 
                         const vec3 chunkPos = *frontierIt_++;
 
-                        if (!chunkInRenderDistance(chunkPos))
+                        chunksMutex_.lock();
+                        auto it = chunks_.find(chunkPos);
+                        chunksMutex_.unlock();
+
+                        if (!chunkInRenderDistance(chunkPos) && it->second->loadLevel() == chunkLoadLevel::MESHED) {
+                        
                             unloadFrontierChunk(chunkPos);
+                            nIterations++;
+                        
+                        }
 
                     }
                     t.finish();
@@ -1716,8 +1792,7 @@ namespace VoxelEng {
                     t.start();
                     frontierChunks_.sort(closestChunk_);
                     continueCreatingChunks = false;
-                    unsigned int nIterations = 0;
-                    const unsigned int maxIterations = 32;
+                    nIterations = 0;
                     for (frontierIt_ = frontierChunks_.begin(); frontierIt_ != frontierChunks_.end() && nIterations < maxIterations;) {
 
                         const vec3 chunkPos = *frontierIt_;
@@ -1737,9 +1812,10 @@ namespace VoxelEng {
 
                         }
 
-                        if (removeFrontierIt_) {
+                        if (removeFrontierIt_ && chunks_[chunkPos]->loadLevel() == chunkLoadLevel::MESHED) {
 
                             frontierIt_ = frontierChunks_.erase(frontierIt_);
+                            chunks_[chunkPos]->frontierIt_ = frontierChunks_.end();
 
                             removeFrontierIt_ = false;
 
@@ -2073,14 +2149,16 @@ namespace VoxelEng {
             frontierChunk->nNeighbors()++;
 
             // If a frontier is surrounded in all possible directions, then it is no longer a frontier
-            auto it = std::find(frontierChunks_.begin(), frontierChunks_.end(), neighborChunk->chunkPos()); // NEXTSE PODRÍA PONER UN IT DENTRO DE CADA CHUNK PARA ACCEDER A SU POS EN LA LISTA
-            if (++neighborChunk->nNeighbors() >= 6 && it != frontierChunks_.end()) {
+            if (++neighborChunk->nNeighbors() >= 6 && neighborChunk->frontierIt_ != frontierChunks_.end()) {
             
-                if (it == frontierIt_)
+                if (neighborChunk->frontierIt_ == frontierIt_)
                     removeFrontierIt_ = true;
-                else
-                    frontierChunks_.erase(it);
-            
+                else {
+                
+                    frontierChunks_.erase(neighborChunk->frontierIt_);
+                    neighborChunk->frontierIt_ = frontierChunks_.end();
+                
+                }
             
             }
 
