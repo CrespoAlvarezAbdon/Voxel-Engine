@@ -68,7 +68,7 @@ namespace VoxelEng {
 	/**
 	* @brief The different stages of the chunk's loading process.
 	*/
-	enum class chunkLoadLevel { NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2, MESHED = 3 };
+	enum class chunkLoadLevel { NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2 };
 
 
 	////////////
@@ -418,7 +418,6 @@ namespace VoxelEng {
 		*/ 
 		static void reset();
 
-		std::list<vec3>::iterator frontierIt_;
 		
 	private:
 
@@ -454,7 +453,6 @@ namespace VoxelEng {
 		std::atomic<chunkLoadLevel> loadLevel_;
 		chunkRenderingData renderingData_;
 		std::recursive_mutex renderingDataMutex_;
-		std::recursive_mutex neighborsMutex_;
 
 		/*
 		Used for reading the block data in a chunk.
@@ -1283,7 +1281,7 @@ namespace VoxelEng {
 		* @brief Used on chunkManager::onUnloadAsFrontier to update the neighbor
 		* chunks of a frontier chunk that was unloaded.
 		*/
-		static bool onUnloadAsFrontier(chunk* chunk, const vec3& chunkPos, double distUnloadedToPlayer);
+		static bool onUnloadAsFrontier(chunk* chunk, double distUnloadedToPlayer);
 
 		/**
 		* @brief Convert the specified chunk into a frontier chunk if it is not.
