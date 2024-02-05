@@ -889,24 +889,27 @@ namespace VoxelEng {
 		*/
 		static bool initialised();
 
-		
-
 		/**
 		* @brief Returns the system's dictionary of registered chunks.
 		*/
 		static const std::unordered_map<vec3, chunk*>& chunks();
 
 		/**
-		* Update the read-only copy of the chunks' meshes that are ready to be sent to GPU.
+		* @brief Update the read-only copy of the chunks' meshes that are ready to be sent to GPU.
 		* Only the chunks that were modified with priority updates are updated.
 		*/
 		static void updatePriorityReadChunkMeshes();
 
 		/**
-		* Update the read-only copy of the chunks' meshes that are ready to be sent to GPU.
+		* @brief Update the read-only copy of the chunks' meshes that are ready to be sent to GPU.
 		* Only the chunks that were modified without priority updates are updated.
 		*/
 		static void updateReadChunkMeshes(std::unique_lock<std::mutex>& priorityUpdatesLock);
+
+		/**
+		* @brief Swap the write and read chunk mesh buffers so that the rendering thread may obtain the most updated one.
+		*/
+		static void swapChunkMeshesBuffers();
 
 		/**
 		* @brief Returns the read-onlu copy of chunks' meshes.
@@ -1412,18 +1415,18 @@ namespace VoxelEng {
 		static bool initialised_;
 		static int nChunksToCompute_;
 		static std::unordered_map<vec3, chunk*> chunks_;
-		static std::unordered_map<vec3, model>* drawableChunksRead_;
+		static std::unordered_map<vec3, model>* chunkMeshesUpdated_,
+											  * chunkMeshesWrite_,
+											  * chunkMeshesRead_;
 		static std::list<chunk*> newChunkMeshes_,
-								  priorityNewChunkMeshes_;
+								 priorityNewChunkMeshes_;
 			                      
-		static std::list<vec3> chunkMeshesToDelete_; // Read-only chunk meshes that need to be deleted.
 		static std::mutex managerThreadMutex_,
 						  priorityManagerThreadMutex_,
 						  priorityNewChunkMeshesMutex_,
 						  priorityUpdatesRemainingMutex_,
 						  loadingTerrainMutex_;
 		static std::recursive_mutex newChunkMeshesMutex_,
-								    chunkMeshesToDeleteMutex_,
 						            chunksMutex_;
 		static std::condition_variable managerThreadCV_,
 									   priorityManagerThreadCV_,
@@ -1468,7 +1471,7 @@ namespace VoxelEng {
 
 	inline std::unordered_map<vec3, model> const * chunkManager::drawableChunksRead() {
 
-		return drawableChunksRead_;
+		return chunkMeshesRead_;
 
 	}
 

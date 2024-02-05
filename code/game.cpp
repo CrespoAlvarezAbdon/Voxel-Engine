@@ -543,6 +543,7 @@ namespace VoxelEng {
                 // Receive updated chunk meshes when possible.
                 if (chunkManager::priorityManagerThreadMutex().try_lock()) {
                 
+                    chunkManager::swapChunkMeshesBuffers();
                     chunksToDraw_ = chunkManager::drawableChunksRead();
 
                     chunkManager::priorityManagerThreadMutex().unlock();
@@ -551,6 +552,7 @@ namespace VoxelEng {
                 }
                 else if (chunkManager::managerThreadMutex().try_lock()) {
 
+                    chunkManager::swapChunkMeshesBuffers();
                     chunksToDraw_ = chunkManager::drawableChunksRead(); 
 
                     chunkManager::managerThreadMutex().unlock();

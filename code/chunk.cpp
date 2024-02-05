@@ -1049,11 +1049,11 @@ namespace VoxelEng {
     bool chunkManager::initialised_ = false;
     int chunkManager::nChunksToCompute_ = 0;
     std::unordered_map<vec3, chunk*> chunkManager::chunks_;
-    std::unordered_map<vec3, model>* chunkManager::drawableChunksRead_;
+    std::unordered_map<vec3, model>* chunkManager::chunkMeshesUpdated_,
+                                   * chunkManager::chunkMeshesWrite_,
+                                   * chunkManager::chunkMeshesRead_;
     std::list<chunk*> chunkManager::newChunkMeshes_,
                       chunkManager::priorityNewChunkMeshes_;
-
-    std::list<vec3> chunkManager::chunkMeshesToDelete_;
 
     std::mutex chunkManager::managerThreadMutex_,
                chunkManager::priorityManagerThreadMutex_,
@@ -1061,7 +1061,6 @@ namespace VoxelEng {
                chunkManager::priorityUpdatesRemainingMutex_,
                chunkManager::loadingTerrainMutex_;
     std::recursive_mutex chunkManager::newChunkMeshesMutex_,
-                         chunkManager::chunkMeshesToDeleteMutex_,
                          chunkManager::chunksMutex_;
     std::condition_variable chunkManager::managerThreadCV_,
                             chunkManager::priorityManagerThreadCV_,
@@ -1093,7 +1092,9 @@ namespace VoxelEng {
 
             selectedAIWorld_ = 0;
 
-            drawableChunksRead_ = new std::unordered_map<vec3, model>;
+            chunkMeshesUpdated_ = new std::unordered_map<vec3, model>;
+            chunkMeshesWrite_ = new std::unordered_map<vec3, model>;
+            chunkMeshesRead_ = new std::unordered_map<vec3, model>;
 
             // NEW
             chunkTasks_ = new threadPool(MAX_N_CHUNK_SIMULT_TASKS);
@@ -1122,16 +1123,19 @@ namespace VoxelEng {
 
         for (auto it = priorityNewChunkMeshes_.begin(); it != priorityNewChunkMeshes_.end();) {
 
-            c = *it;
-            it = priorityNewChunkMeshes_.erase(it);
-
+            c = *it;     
             c->lockRenderingDataMutex();
-            model& vertices = c->renderingData().vertices;
-            if (vertices.size())
-                drawableChunksRead_->operator[](c->chunkPos()) = vertices;
+            chunkRenderingData& data = c->renderingData();
+            if (data.vertices.size())
+                chunkMeshesUpdated_->operator[](data.chunkPos) = data.vertices;
+
+            it = priorityNewChunkMeshes_.erase(it);
+                
             c->unlockRenderingDataMutex();
 
         }
+
+        *chunkMeshesWrite_ = *chunkMeshesUpdated_;
 
     }
 
@@ -1149,7 +1153,7 @@ namespace VoxelEng {
             c->lockRenderingDataMutex();
             model& vertices = c->renderingData().vertices;
             if (vertices.size())
-                drawableChunksRead_->operator[](c->chunkPos()) = vertices;
+                chunkMeshesUpdated_->operator[](c->chunkPos()) = vertices;
             c->unlockRenderingDataMutex();
 
             it = newChunkMeshes_.erase(it);
@@ -1157,21 +1161,32 @@ namespace VoxelEng {
         }
         newChunkMeshesMutex_.unlock();
 
-        chunkMeshesToDeleteMutex_.lock();
-        // NEXT
-        // PASAR CHUNKMESHESTODELETE Y NEWCHUNKSMESHES A LISTAS PARA QUITAR O(N) Y HACER PROFILING DEL CHUNK MANAGER
-        for (auto it = chunkMeshesToDelete_.begin(); it != chunkMeshesToDelete_.end();) {
+        for (auto it = chunkMeshesUpdated_->begin(); it != chunkMeshesUpdated_->end();) {
 
             while (priorityUpdatesRemaining_)
                 priorityUpdatesRemainingCV_.wait(priorityUpdatesLock);
 
-            drawableChunksRead_->erase(*it);
-
-            it = chunkMeshesToDelete_.erase(it);
+            if (!chunkInRenderDistance(it->first))
+                it = chunkMeshesUpdated_->erase(it);
+            else
+                it++;
 
         }
-        chunkMeshesToDeleteMutex_.unlock();
 
+        timer t;
+        t.start();
+        *chunkMeshesWrite_ = *chunkMeshesUpdated_;
+        t.finish();
+        logger::debugLog("Time to copy " + std::to_string(t.getDurationMs()));
+
+    }
+
+    void chunkManager::swapChunkMeshesBuffers() {
+    
+        std::unordered_map<vec3, model>* aux = chunkMeshesWrite_;
+        chunkMeshesWrite_ = chunkMeshesRead_;
+        chunkMeshesRead_ = aux;
+    
     }
 
     const block& chunkManager::getBlock(int posX, int posY, int posZ) {
@@ -1558,17 +1573,12 @@ namespace VoxelEng {
 
             chunks_.erase(chunkPos);
 
-            chunkMeshesToDeleteMutex_.lock();
-            chunkMeshesToDelete_.push_back(chunkPos);
-            chunkMeshesToDeleteMutex_.unlock();
-
             if (unloadedChunk->modified())
                 world::saveChunk(unloadedChunk);
 
             chunksPool_.free(*unloadedChunk);
             // NEXT
             // unloadedChunk->getPalette().erase(); // o algo así
-            // averiguar por qué narices se quedan chunks descolgados
             unloadedChunk->makeEmpty();
             unloadedChunk->setLoadLevel(chunkLoadLevel::NOTLOADED);
             unloadedChunk->unlinkNeighbors();
@@ -1709,7 +1719,7 @@ namespace VoxelEng {
                     }
                     t.finish();
                     logger::debugLog("Time T1 is " + std::to_string(t.getDurationMs()));
-                    //logger::print("\r frontier size is" + std::to_string(frontierChunks_.size()));
+                    logger::debugLog("frontier size is " + std::to_string(frontierChunks_.size()));
                     
                     // Load new chunks that are inside render distance if necessary.
                     // Mark frontier chunks that are no longer frontier and delete them.
@@ -1717,7 +1727,7 @@ namespace VoxelEng {
                     frontierChunks_.sort(closestChunk_);
                     continueCreatingChunks = false;
                     unsigned int nIterations = 0;
-                    const unsigned int maxIterations = 32;
+                    const unsigned int maxIterations = 64;
                     for (frontierIt_ = frontierChunks_.begin(); frontierIt_ != frontierChunks_.end() && nIterations < maxIterations;) {
 
                         const vec3 chunkPos = *frontierIt_;
@@ -1976,8 +1986,14 @@ namespace VoxelEng {
         chunks_.clear();
         chunksMutex_.unlock();
 
-        if (drawableChunksRead_)
-            drawableChunksRead_->clear();
+        if (chunkMeshesUpdated_)
+            chunkMeshesUpdated_->clear();
+
+        if (chunkMeshesWrite_)
+            chunkMeshesWrite_->clear();
+
+        if (chunkMeshesRead_)
+            chunkMeshesRead_->clear();
 
         chunksPool_.clear();
 
@@ -1988,10 +2004,6 @@ namespace VoxelEng {
         newChunkMeshesMutex_.lock();
         newChunkMeshes_.clear();
         newChunkMeshesMutex_.unlock();
-
-        chunkMeshesToDeleteMutex_.lock();
-        chunkMeshesToDelete_.clear();
-        chunkMeshesToDeleteMutex_.unlock();
 
         frontierChunks_.clear();
 
@@ -2035,10 +2047,24 @@ namespace VoxelEng {
 
         clear();
 
-        if (drawableChunksRead_) {
+        if (chunkMeshesUpdated_) {
 
-            delete drawableChunksRead_;
-            drawableChunksRead_ = nullptr;
+            delete chunkMeshesUpdated_;
+            chunkMeshesUpdated_ = nullptr;
+
+        }
+
+        if (chunkMeshesWrite_) {
+
+            delete chunkMeshesWrite_;
+            chunkMeshesWrite_ = nullptr;
+
+        }
+
+        if (chunkMeshesRead_) {
+
+            delete chunkMeshesRead_;
+            chunkMeshesRead_ = nullptr;
 
         }
 
