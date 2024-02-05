@@ -1387,6 +1387,7 @@ namespace VoxelEng {
 		static bool removeFrontierIt_;
 		static vec3 playerChunkPosCopy_; // Copy of the last value of the player's position in chunk coordinates.
 		static std::list<vec3> frontierChunks_;
+		static std::unordered_map<vec3, std::list<vec3>::iterator> frontierChunksSet_;
 		static std::list<vec3>::iterator frontierIt_;
 		static notInRenderDistance notInRenderDistance_;
 		static closestChunk closestChunk_;

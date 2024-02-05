@@ -1031,6 +1031,7 @@ namespace VoxelEng {
     bool chunkManager::removeFrontierIt_;
     vec3 chunkManager::playerChunkPosCopy_;
     std::list<vec3> chunkManager::frontierChunks_;
+    std::unordered_map<vec3, std::list<vec3>::iterator> chunkManager::frontierChunksSet_;
     std::list<vec3>::iterator chunkManager::frontierIt_;
     chunkManager::notInRenderDistance chunkManager::notInRenderDistance_;
     chunkManager::closestChunk chunkManager::closestChunk_;
@@ -1569,7 +1570,8 @@ namespace VoxelEng {
             // Check if the chunk's neighbors become frontier chunks after it is unloaded.
             int nNewFrontierChunks = unloadedChunk->onUnloadAsFrontier();
 
-            frontierChunks_.erase(std::find(frontierChunks_.begin(), frontierChunks_.end(), chunkPos));
+            frontierChunks_.erase(frontierChunksSet_.at(chunkPos));
+            frontierChunksSet_.erase(chunkPos);
 
             chunks_.erase(chunkPos);
 
@@ -1596,9 +1598,10 @@ namespace VoxelEng {
 
     bool chunkManager::onUnloadAsFrontier(chunk* chunk, double distUnloadedToPlayer) {
 
-        if (chunk && std::find(frontierChunks_.begin(), frontierChunks_.end(), chunk->chunkPos()) == frontierChunks_.end()) {
+        const vec3& chunkPos = chunk->chunkPos();
+        if (chunk && !frontierChunksSet_.contains(chunkPos)) {
 
-            frontierChunks_.push_back(chunk->chunkPos());
+            frontierChunksSet_[chunkPos] = frontierChunks_.insert(frontierChunks_.end(), chunkPos);
             return true;
 
         }
@@ -1609,9 +1612,9 @@ namespace VoxelEng {
 
     void chunkManager::addFrontier(chunk* chunk) {
     
-        // NEXT. MIRAR SI BASTANTES CHECKS DE STD::FIND DE FRONTIER CHUNKS SE PUEDEN SUSTITUIR POR COMPROBACIONES EN CHUNKS_ O EN OTRAS COSAS MÁS LIGERAS.
-        if (std::find(frontierChunks_.begin(), frontierChunks_.end(), chunk->chunkPos()) == frontierChunks_.end())
-            frontierChunks_.push_back(chunk->chunkPos());
+        const vec3& chunkPos = chunk->chunkPos();
+        if (!frontierChunksSet_.contains(chunkPos))
+            frontierChunksSet_[chunkPos] = frontierChunks_.insert(frontierChunks_.end(), chunkPos);
 
         updateFrontierNeighbor(chunk, chunk->neighborPlusX());
         updateFrontierNeighbor(chunk, chunk->neighborMinusX());
@@ -1749,6 +1752,7 @@ namespace VoxelEng {
 
                         if (removeFrontierIt_) {
 
+                            frontierChunksSet_.erase(*frontierIt_);
                             frontierIt_ = frontierChunks_.erase(frontierIt_);
 
                             removeFrontierIt_ = false;
@@ -1784,6 +1788,7 @@ namespace VoxelEng {
                     chunkTasks_->awaitNoJobs();
                     priorityChunkTasks_->awaitNoJobs();
                     frontierChunks_.clear();
+                    frontierChunksSet_.clear();
                     loadChunkJobs_->waitUntilAllFree();
                     chunksPool_.clear();
 
@@ -2006,6 +2011,7 @@ namespace VoxelEng {
         newChunkMeshesMutex_.unlock();
 
         frontierChunks_.clear();
+        frontierChunksSet_.clear();
 
         for (auto it = AIagentChunks_.cbegin(); it != AIagentChunks_.cend(); it++)
             for (auto itChunks = it->second.cbegin(); itChunks != it->second.cend(); itChunks++)
@@ -2099,14 +2105,17 @@ namespace VoxelEng {
             frontierChunk->nNeighbors()++;
 
             // If a frontier is surrounded in all possible directions, then it is no longer a frontier
-            auto it = std::find(frontierChunks_.begin(), frontierChunks_.end(), neighborChunk->chunkPos()); // NEXTSE PODRÍA PONER UN IT DENTRO DE CADA CHUNK PARA ACCEDER A SU POS EN LA LISTA
-            if (++neighborChunk->nNeighbors() >= 6 && it != frontierChunks_.end()) {
+            auto it = frontierChunksSet_.find(neighborChunk->chunkPos());
+            if (++neighborChunk->nNeighbors() >= 6 && it != frontierChunksSet_.end()) {
             
-                if (it == frontierIt_)
+                if (it->second == frontierIt_)
                     removeFrontierIt_ = true;
-                else
-                    frontierChunks_.erase(it);
-            
+                else {
+                
+                    frontierChunks_.erase(it->second);
+                    frontierChunksSet_.erase(it);
+                
+                }
             
             }
 
