@@ -1049,7 +1049,7 @@ namespace VoxelEng {
 
     bool chunkManager::initialised_ = false;
     int chunkManager::nChunksToCompute_ = 0;
-    std::unordered_map<vec3, chunk*> chunkManager::chunks_;
+    std::unordered_map<vec3, chunk*> chunkManager::clientChunks_;
     std::unordered_map<vec3, model>* chunkManager::chunkMeshesUpdated_,
                                    * chunkManager::chunkMeshesWrite_,
                                    * chunkManager::chunkMeshesRead_;
@@ -1245,7 +1245,7 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        return chunks_.find(chunkPos) != chunks_.cend();
+        return clientChunks_.find(chunkPos) != clientChunks_.cend();
 
     }
 
@@ -1253,7 +1253,7 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        return (chunks_.find(chunkPos) != chunks_.cend()) ? chunks_[chunkPos]->loadLevel() : chunkLoadLevel::NOTLOADED;
+        return (clientChunks_.find(chunkPos) != clientChunks_.cend()) ? clientChunks_[chunkPos]->loadLevel() : chunkLoadLevel::NOTLOADED;
 
     }
 
@@ -1348,12 +1348,12 @@ namespace VoxelEng {
             std::unordered_map<vec3, chunk*>& agentWorld = AIagentChunks_[selectedAIWorld_];
             if (agentWorld.find(chunkPos) == agentWorld.cend()) {
             
-                if (chunks_.find(chunkPos) == chunks_.cend())
+                if (clientChunks_.find(chunkPos) == clientChunks_.cend())
                     logger::errorLog("There is no chunk " + std::to_string(chunkPos.x) + '|' + std::to_string(chunkPos.y) + '|' + std::to_string(chunkPos.z) +
                                      "for AI agent " + std::to_string(selectedAIWorld_));
                 else {
                     
-                    agentWorld[chunkPos] = new chunk(*chunks_[chunkPos]);
+                    agentWorld[chunkPos] = new chunk(*clientChunks_[chunkPos]);
                     AIChunkAvailable_[selectedAIWorld_][chunkPos] = true;
                 
                 }
@@ -1365,11 +1365,11 @@ namespace VoxelEng {
         }
         else {
         
-            if (chunks_.find(chunkPos) == chunks_.cend())
+            if (clientChunks_.find(chunkPos) == clientChunks_.cend())
                 logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
             else {
             
-                block removedBlock = chunks_[chunkPos]->setBlock(getChunkRelCoords(x, y, z), blockID);
+                block removedBlock = clientChunks_[chunkPos]->setBlock(getChunkRelCoords(x, y, z), blockID);
 
                 return removedBlock;
             
@@ -1383,8 +1383,8 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        auto it = chunks_.find(chunkPos);
-        if (it != chunks_.end())
+        auto it = clientChunks_.find(chunkPos);
+        if (it != clientChunks_.end())
             return it->second;
         else
             return nullptr;
@@ -1397,8 +1397,8 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (chunks_.find(chunkPos) != chunks_.end())
-            return chunks_.at(chunkPos);
+        if (clientChunks_.find(chunkPos) != clientChunks_.end())
+            return clientChunks_.at(chunkPos);
         else
             return nullptr;
 
@@ -1410,8 +1410,8 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (chunks_.find(chunkPos) != chunks_.end())
-            return chunks_.at(chunkPos);
+        if (clientChunks_.find(chunkPos) != clientChunks_.end())
+            return clientChunks_.at(chunkPos);
         else
             return nullptr;
 
@@ -1423,14 +1423,14 @@ namespace VoxelEng {
         chunk* c = nullptr;
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (chunks_.find(chunkPos) == chunks_.end()) {
+        if (clientChunks_.find(chunkPos) == clientChunks_.end()) {
         
             c = new chunk(false, chunkPos);
-            chunks_.insert({ chunkPos, c });
+            clientChunks_.insert({ chunkPos, c });
         
         }
         else
-            c = chunks_.at(chunkPos);
+            c = clientChunks_.at(chunkPos);
 
         c->needsRemesh() = true;
 
@@ -1443,14 +1443,14 @@ namespace VoxelEng {
         chunk* c = nullptr;
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (chunks_.find(chunkPos) == chunks_.end()) {
+        if (clientChunks_.find(chunkPos) == clientChunks_.end()) {
 
             c = new chunk(false, chunkPos);
-            chunks_.insert({ chunkPos, c });
+            clientChunks_.insert({ chunkPos, c });
 
         }
         else
-            c = chunks_.at(chunkPos);
+            c = clientChunks_.at(chunkPos);
 
         c->needsRemesh() = true;
 
@@ -1465,8 +1465,8 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (chunks_.find(neighborChunkPos) != chunks_.end())
-            return chunks_.at(neighborChunkPos);
+        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
+            return clientChunks_.at(neighborChunkPos);
         else
             return nullptr;
 
@@ -1479,8 +1479,8 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (chunks_.find(neighborChunkPos) != chunks_.end())
-            return chunks_.at(neighborChunkPos);
+        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
+            return clientChunks_.at(neighborChunkPos);
         else
             return nullptr;
 
@@ -1493,8 +1493,8 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (chunks_.find(neighborChunkPos) != chunks_.end())
-            return chunks_.at(neighborChunkPos);
+        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
+            return clientChunks_.at(neighborChunkPos);
         else
             return nullptr;
 
@@ -1507,8 +1507,8 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (chunks_.find(neighborChunkPos) != chunks_.end())
-            return chunks_.at(neighborChunkPos);
+        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
+            return clientChunks_.at(neighborChunkPos);
         else
             return nullptr;
 
@@ -1521,8 +1521,8 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (chunks_.find(neighborChunkPos) != chunks_.end())
-            return chunks_.at(neighborChunkPos);
+        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
+            return clientChunks_.at(neighborChunkPos);
         else
             return nullptr;
 
@@ -1535,8 +1535,8 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        if (chunks_.find(neighborChunkPos) != chunks_.end())
-            return chunks_.at(neighborChunkPos);
+        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
+            return clientChunks_.at(neighborChunkPos);
         else
             return nullptr;
 
@@ -1558,9 +1558,9 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
         
-        std::unordered_map<vec3, chunk*>::iterator it = chunks_.find(chunkPos);
+        std::unordered_map<vec3, chunk*>::iterator it = clientChunks_.find(chunkPos);
 
-        if (it == chunks_.end())
+        if (it == clientChunks_.end())
             logger::errorLog("Chunk at " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z)
                 + " is not registered");
         else {
@@ -1573,7 +1573,7 @@ namespace VoxelEng {
             frontierChunks_.erase(frontierChunksSet_.at(chunkPos));
             frontierChunksSet_.erase(chunkPos);
 
-            chunks_.erase(chunkPos);
+            clientChunks_.erase(chunkPos);
 
             if (unloadedChunk->modified())
                 world::saveChunk(unloadedChunk);
@@ -1656,8 +1656,8 @@ namespace VoxelEng {
     
         chunksMutex_.lock();
 
-        auto it = chunks_.find(chunkPos);
-        if (it == chunks_.cend()) {
+        auto it = clientChunks_.find(chunkPos);
+        if (it == clientChunks_.cend()) {
 
             chunksMutex_.unlock();
 
@@ -1697,43 +1697,40 @@ namespace VoxelEng {
             // First of all, load the chunk where the player is in.
             playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
             ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z);
-            timer t;
+            bool continueCreatingChunks = false;
+            vec3 chunkPos = vec3Zero;
+            unsigned int nIterations = 0;
+            const unsigned int maxIterations = 64;
             while (game::threadsExecute[2]) {
 
-                bool continueCreatingChunks = false;
+                continueCreatingChunks = false;
 
                 playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
 
                 do {
 
-                    // Unload chunks that are outside the maximun render distance.
-                    t.start();
+                    // Unload frontier chunks that are outside the player's render distance.
                     frontierIt_ = frontierChunks_.begin();
                     while (frontierIt_ != frontierChunks_.end()) {
 
                         while (priorityUpdatesRemaining_)
                             priorityUpdatesRemainingCV_.wait(priorityUpdatesLock);                           
 
-                        const vec3 chunkPos = *frontierIt_++;
+                        chunkPos = *frontierIt_++;
 
                         if (!chunkInRenderDistance(chunkPos))
                             unloadFrontierChunk(chunkPos);
 
                     }
-                    t.finish();
-                    logger::debugLog("Time T1 is " + std::to_string(t.getDurationMs()));
-                    logger::debugLog("frontier size is " + std::to_string(frontierChunks_.size()));
-                    
+
                     // Load new chunks that are inside render distance if necessary.
-                    // Mark frontier chunks that are no longer frontier and delete them.
-                    t.start();
+                    // Mark frontier chunks that are no longer frontier.
                     frontierChunks_.sort(closestChunk_);
                     continueCreatingChunks = false;
-                    unsigned int nIterations = 0;
-                    const unsigned int maxIterations = 64;
+                    nIterations = 0;
                     for (frontierIt_ = frontierChunks_.begin(); frontierIt_ != frontierChunks_.end() && nIterations < maxIterations;) {
 
-                        const vec3 chunkPos = *frontierIt_;
+                        chunkPos = *frontierIt_;
 
                         while (priorityUpdatesRemaining_)
                             priorityUpdatesRemainingCV_.wait(priorityUpdatesLock);
@@ -1763,11 +1760,10 @@ namespace VoxelEng {
 
                     }
 
-                    t.finish();
-                    logger::debugLog("Time T2 is " + std::to_string(t.getDurationMs()));
-
                 } while (continueCreatingChunks);
 
+                // Do not attempt to synchronize with the rendering thread if the initial
+                // preparations for loading a level are not completed yet.
                 if (waitInitialTerrainLoaded_) {
                 
                     waitInitialTerrainLoaded_ = false;
@@ -1775,14 +1771,12 @@ namespace VoxelEng {
                 
                 }
 
-                //logger::print("\r Chunks " + std::to_string(chunks_.size()));
-                t.start();
+                // Sync with the rendering thread in order to pass it the most updated
+                // version of the chunks' meshes.
                 updateReadChunkMeshes(priorityUpdatesLock);
                 managerThreadCV_.wait(lock);
-                t.finish();
-                logger::debugLog("Time T3 is " + std::to_string(t.getDurationMs()));
 
-                // Clear all the chunks in case it is necessary
+                // Clear all the chunks in case it is necessary. TODO: In the future there will be a keybind to reload the client chunk management system.
                 if (false) {
                 
                     chunkTasks_->awaitNoJobs();
@@ -1793,10 +1787,10 @@ namespace VoxelEng {
                     chunksPool_.clear();
 
                     chunksMutex_.lock();
-                    for (auto it = chunks_.begin(); it != chunks_.end(); it++)
+                    for (auto it = clientChunks_.begin(); it != clientChunks_.end(); it++)
                         if (it->second)
                             delete it->second;
-                    chunks_.clear();
+                    clientChunks_.clear();
                     chunksMutex_.unlock();
 
                     priorityNewChunkMeshes_.clear();
@@ -1820,14 +1814,18 @@ namespace VoxelEng {
         {
 
             std::unique_lock<std::mutex> lock(priorityManagerThreadMutex_),
-                lockNewChunksMeshes(priorityNewChunkMeshesMutex_);
+                                         lockNewChunksMeshes(priorityNewChunkMeshesMutex_);
 
             priorityNewChunkMeshesCV_.wait(lockNewChunksMeshes);
             while (game::threadsExecute[2]) {
 
                 priorityUpdatesRemaining_ = true;
+
+                // Sync with the rendering thread in order to pass it the most updated
+                // version of the chunks' meshes.
                 updatePriorityReadChunkMeshes();
                 priorityManagerThreadCV_.wait(lock);
+
                 priorityUpdatesRemaining_ = false;
                 priorityUpdatesRemainingCV_.notify_all();
 
@@ -1859,7 +1857,7 @@ namespace VoxelEng {
 
 
                             //selectedChunk = chunkManager::createChunk(false, chunkPos);
-                            chunks_.insert_or_assign(chunkPos, selectedChunk);
+                            clientChunks_.insert_or_assign(chunkPos, selectedChunk);
 
                         }
 
@@ -1922,7 +1920,7 @@ namespace VoxelEng {
     bool chunkManager::ensureChunkIfVisible(const vec3& chunkPos) {
         
         chunksMutex_.lock();
-        if (chunkInRenderDistance(chunkPos) && !chunks_.contains(chunkPos)) {
+        if (chunkInRenderDistance(chunkPos) && !clientChunks_.contains(chunkPos)) {
 
             chunksMutex_.unlock();
             return loadChunkV2(chunkPos) != nullptr;
@@ -1946,7 +1944,7 @@ namespace VoxelEng {
         c->setLoadLevel(chunkLoadLevel::NOTLOADED);
 
         chunksMutex_.lock();
-        chunks_[chunkPos] = c;
+        clientChunks_[chunkPos] = c;
         chunksMutex_.unlock();
 
         addFrontier(c);
@@ -1985,10 +1983,10 @@ namespace VoxelEng {
             priorityChunkTasks_->awaitNoJobs();
 
         chunksMutex_.lock();
-        for (auto it = chunks_.begin(); it != chunks_.end(); it++)
+        for (auto it = clientChunks_.begin(); it != clientChunks_.end(); it++)
             if (it->second)
                 delete it->second;
-        chunks_.clear();
+        clientChunks_.clear();
         chunksMutex_.unlock();
 
         if (chunkMeshesUpdated_)
@@ -2127,10 +2125,10 @@ namespace VoxelEng {
     
         vec3 chunkPos = getChunkCoords(posX, posY, posZ);
 
-        if (chunks_.find(chunkPos) == chunks_.end())
+        if (clientChunks_.find(chunkPos) == clientChunks_.end())
             logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
         else
-            return chunks_[chunkPos]->getBlock(floorMod(posX, SCX), floorMod(posY, SCY), floorMod(posZ, SCZ));
+            return clientChunks_[chunkPos]->getBlock(floorMod(posX, SCX), floorMod(posY, SCY), floorMod(posZ, SCZ));
     
     }
 

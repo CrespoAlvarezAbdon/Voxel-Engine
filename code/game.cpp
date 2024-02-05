@@ -3,6 +3,7 @@
 #include <deque>
 #include <functional>
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <shared_mutex>
 #include <vector>
@@ -102,6 +103,22 @@ namespace VoxelEng {
 
             // Put here any game initialisation that does not involve
             // the engine's graphical mode.
+
+            // Directory creation.
+            std::filesystem::create_directory("AIData");
+
+            std::filesystem::create_directory("resources");
+
+            std::filesystem::create_directory("saves");
+            std::filesystem::create_directory("saves/slot1");
+            std::filesystem::create_directory("saves/slot2");
+            std::filesystem::create_directory("saves/slot3");
+            std::filesystem::create_directory("saves/slot4");
+            std::filesystem::create_directory("saves/slot5");
+            std::filesystem::create_directory("saves/recordings");
+            std::filesystem::create_directory("saves/recordingWorlds");
+
+            
 
 
             // General variables.
@@ -1046,7 +1063,8 @@ namespace VoxelEng {
 
         input::shouldProcessInputs(true);
 
-        block::reset();
+        if (block::initialised())
+            block::reset();
 
     }
 

@@ -74,6 +74,11 @@ namespace VoxelEng {
 		static block& emptyBlock();
 
 		/**
+		* @brief Returns true if the block system is initialised or false otherwise.
+		*/
+		static bool initialised();
+
+		/**
 		* @brief Returns the numerical ID assigned to this block.
 		*/
 		unsigned int intID() const;
@@ -186,6 +191,12 @@ namespace VoxelEng {
 	inline block& block::emptyBlock() {
 	
 		return *emptyBlock_;
+	
+	}
+
+	inline bool block::initialised() {
+	
+		return initialised_;
 	
 	}
 

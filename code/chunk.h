@@ -1415,7 +1415,16 @@ namespace VoxelEng {
 
 		static bool initialised_;
 		static int nChunksToCompute_;
-		static std::unordered_map<vec3, chunk*> chunks_;
+
+		// Chunks that are loaded by the player.
+		static std::unordered_map<vec3, chunk*> clientChunks_; 
+
+		// Chunks that are not loaded by the player
+		// (for example, chunks loaded by an AI agent 
+		// that is mining blocks far away from it). NEXT <- HACER QUE LOS CHUNKS QUE NO SEAN CARGADOS POR JUGADOR SE METAN AQUI. ESTOS CHUNKS NO SON RENDERIZADOS A NO SER QUE EL PLAYER ESTÉ, EN CUYO CASO ESTARÍA SOLO COMO CLIENT_CHUNK.
+													// ASI, SI SE PIDE UN CHUNK POR UN METODO GENÉRICO, SI NO SE ENCUENTRA ESE CHUNK EN CLIENT CHUNKS, SE CARGA COMO SIMULATED CHUNK.
+		static std::unordered_map<vec3, chunk*> simulatedChunks_; 
+
 		static std::unordered_map<vec3, model>* chunkMeshesUpdated_,
 											  * chunkMeshesWrite_,
 											  * chunkMeshesRead_;
@@ -1466,7 +1475,7 @@ namespace VoxelEng {
 
 	inline const std::unordered_map<vec3, chunk*>& chunkManager::chunks() {
 
-		return chunks_;
+		return clientChunks_;
 
 	}
 
