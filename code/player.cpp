@@ -15,15 +15,16 @@ namespace VoxelEng {
          player::moveEast_ = false,
          player::moveWest_ = false,
          player::rollRight_ = false,
-         player::rollLeft_ = false;
+         player::rollLeft_ = false,
+         player::firstTransformUpdate_ = false;
     window* player::window_ = nullptr;
     camera* player::camera_ = nullptr;
     float player::blockReachRange_ = 0.0f,
           player::blockSearchIncrement_ = 0.0f,
           player::movementSpeed_ = 0.0f,
           player::rollSpeed_ = 0.0f,
-          player::pitchViewDir_ = 0.0f,
-          player::yawViewDir_ = 0.0f,
+          player::pitchAngle_ = 0.0f,
+          player::yawAngle_ = 0.0f,
           player::mouseSensibility_ = 0.0f;
     double player::mouseX_ = 0.0,
            player::mouseY_ = 0.0,
@@ -58,14 +59,15 @@ namespace VoxelEng {
                 moveWest_ = false;
                 rollRight_ = false;
                 rollLeft_ = false;
+                firstTransformUpdate_ = true;
                 window_ = &window;
                 camera_ = new camera(FOV, zNear, zFar, window, true);
                 blockReachRange_ = blockReachRange;
                 blockSearchIncrement_ = 0.1f;
                 movementSpeed_ = 10.0f;
                 rollSpeed_ = 70.0f;
-                pitchViewDir_ = 0.0f;
-                yawViewDir_ = 0.0f;
+                pitchAngle_ = 0.0f;
+                yawAngle_ = 0.0f;
                 mouseSensibility_ = 0.25f;
                 mouseX_ = 0.0;
                 mouseY_ = 0.0;
@@ -336,13 +338,6 @@ namespace VoxelEng {
 
     }
 
-    void player::changeTransform(const vec3& newPos, const vec3& newRot) {
-
-        playerTransform_->position = newPos;
-        playerTransform_->rotation = newRot;
-
-    }
-
     void player::updateTransform(float timeStep) {
 
         // Camera's movement.
@@ -421,13 +416,21 @@ namespace VoxelEng {
 
         #endif
 
-        pitchViewDir_ += (oldMouseY_ - mouseY_) * mouseSensibility_; // LO QUE HAY QUE GUARDAR DE HACIA DONDE MIRA EL PLAYER ES ESTO.
-        yawViewDir_ += (oldMouseX_ - mouseX_) * mouseSensibility_; // GUARDA EL OLD MOUSEY, MOUSEY, OLD MOUSEX Y MOUSEX Y HAZ glfwSetCursorPos
+        if (firstTransformUpdate_) {
+        
+            oldMouseX_ = mouseX_;
+            oldMouseY_ = mouseY_;
+            firstTransformUpdate_ = false;
+        
+        }
 
-        if (pitchViewDir_ > 89.0f)
-            pitchViewDir_ = 89.0f;
-        else if (pitchViewDir_ < -89.0f)
-            pitchViewDir_ = -89.0f;
+        pitchAngle_ += (oldMouseY_ - mouseY_) * mouseSensibility_;
+        yawAngle_ += (oldMouseX_ - mouseX_) * mouseSensibility_;
+
+        if (pitchAngle_ > 89.0f)
+            pitchAngle_ = 89.0f;
+        else if (pitchAngle_ < -89.0f)
+            pitchAngle_ = -89.0f;
 
         // Obtain the angles needed to rotate a vector equal to vec3FixedUp to the current value of the transform's Y axis.
         pitchAxis_ = vec3FixedEast;
@@ -436,7 +439,10 @@ namespace VoxelEng {
 
         playerTransform_->gravityDirection = vec3(0.0f, -1.0f, 0.0f);
 
-        playerTransform_->Yaxis = -glm::normalize(playerTransform_->gravityDirection);
+        // This determines the camera's roll so that the camera is always standing
+        // 'up' depending on the current gravity direction.
+        playerTransform_->Yaxis = -glm::normalize(playerTransform_->gravityDirection); 
+
         playerTransform_->Xaxis = vec3FixedNorth;
 
         playerTransform_->rotation.x = glm::degrees(glm::acos(glm::dot(playerTransform_->Yaxis, vec3FixedNorth))) - 90.0f;
@@ -458,10 +464,12 @@ namespace VoxelEng {
         else // Particular case when glm::cross will return (0,0,0)
             playerTransform_->Xaxis = glm::rotate(playerTransform_->Xaxis, glm::radians(playerTransform_->rotation.y), rollAxis_);
 
-        playerTransform_->viewDirection = quaternion::rotateVector(playerTransform_->Xaxis, yawViewDir_, playerTransform_->Yaxis);
+        // Final result.
+        playerTransform_->viewDirection = quaternion::rotateVector(playerTransform_->Xaxis, yawAngle_, playerTransform_->Yaxis);
         playerTransform_->Zaxis = glm::cross(playerTransform_->viewDirection, playerTransform_->Yaxis);
-        playerTransform_->viewDirection = quaternion::rotateVector(playerTransform_->viewDirection, pitchViewDir_, playerTransform_->Zaxis);
+        playerTransform_->viewDirection = quaternion::rotateVector(playerTransform_->viewDirection, pitchAngle_, playerTransform_->Zaxis);
 
+        // Normalize to avoid strange stuff.
         playerTransform_->Xaxis = glm::normalize(playerTransform_->Xaxis);
         playerTransform_->Zaxis = glm::normalize(playerTransform_->Zaxis);
         playerTransform_->viewDirection = glm::normalize(playerTransform_->viewDirection);

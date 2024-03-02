@@ -1688,65 +1688,6 @@ namespace VoxelEng {
 
     }
 
-    void chunkManager::manageChunksV2() {
-
-        {
-
-            std::unique_lock<std::mutex> lock(managerThreadMutex_),
-                priorityUpdatesLock(priorityUpdatesRemainingMutex_);
-
-            /*
-            Initialise general parts of the engine related to maintaining
-            an "infinite" world type.
-            */
-            // TODO. ADD PROPER WORLDGENERATOR SELECTION.
-            if (!VoxelEng::worldGen::isGenRegistered("miningWorldGen"))
-                VoxelEng::worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
-            VoxelEng::worldGen::selectGen("miningWorldGen");
-            worldGen::prepareGen();
-
-            player::changeTransform(worldGen::playerSpawnPos());
-
-            // First of all, load the chunk where the player is in.
-            playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
-            ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z);
-            bool continueCreatingChunks = false;
-            vec3 chunkPos = vec3Zero;
-            unsigned int nIterations = 0;
-            const unsigned int maxIterations = 64;
-            while (game::threadsExecute[2]) {
-
-                continueCreatingChunks = false;
-
-                playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
-
-                do {
-
-                    
-
-                } while (continueCreatingChunks);
-
-                // Do not attempt to synchronize with the rendering thread if the initial
-                // preparations for loading a level are not completed yet.
-                if (waitInitialTerrainLoaded_) {
-
-                    waitInitialTerrainLoaded_ = false;
-                    loadingTerrainCV_.notify_one();
-
-                }
-
-                // Sync with the rendering thread in order to pass it the most updated
-                // version of the chunks' meshes.
-                updateReadChunkMeshes(priorityUpdatesLock);
-                managerThreadCV_.wait(lock);
-
-            }
-
-        }
-
-    }
-
-
     void chunkManager::manageChunkPriorityUpdates() {
 
         {

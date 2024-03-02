@@ -54,14 +54,14 @@ namespace VoxelEng {
 		static const vec3& chunkPos();
 
 		/**
-		* @brief Returns the player's rotation.
+		* @brief Returns the player camera's pitch angle.
 		*/
-		static const vec3& rotation();
+		static float pitch();
 
 		/**
-		* @brief Returns the player's view direction.
+		* @brief Returns the player camera's yaw angle.
 		*/
-		static const vec3& viewDirection();
+		static float yaw();
 
 
 		// Modifiers.
@@ -110,24 +110,14 @@ namespace VoxelEng {
 		static void globalPos(const vec3& newPos);
 
 		/**
-		* @brief Change user rotation.
+		* @brief Sets the player camera's pitch angle.
 		*/
-		static void rotation(const vec3& newPos);
+		static void pitch(float newValue);
 
 		/**
-		* @brief Change user view direction.
+		* @brief Sets the player camera's yaw angle.
 		*/
-		static void viewDirection(const vec3& newViewDir);
-
-		/**
-		* @brief Change user position and rotation.
-		*/
-		static void changeTransform(const vec3& newPos, const vec3& newRot = vec3Zero);
-
-		/**
-		* @brief Change user position and rotation.
-		*/
-		static void changeTransform(float posX, float posY, float posZ, float rotX = 0.0f, float rotY = 0.0f, float rotZ = 0.0f);
+		static void yaw(float newValue);
 
 		/**
 		* @brief Notify that the camera is to be moved up once according
@@ -203,15 +193,16 @@ namespace VoxelEng {
 					moveEast_,
 					moveWest_,
 					rollRight_,
-					rollLeft_;
+					rollLeft_,
+			        firstTransformUpdate_;
 		static window* window_;
 		static camera* camera_;
 		static float blockReachRange_,
 					 blockSearchIncrement_,
 					 movementSpeed_,
 			         rollSpeed_,
-					 pitchViewDir_,
-					 yawViewDir_,
+					 pitchAngle_,
+					 yawAngle_,
 					 mouseSensibility_;
 		static double mouseX_,
 					  mouseY_,
@@ -248,15 +239,15 @@ namespace VoxelEng {
 
 	}
 
-	inline const vec3& player::rotation() {
-
-		return playerTransform_->rotation;
-
+	inline float player::pitch() {
+	
+		return pitchAngle_;
+	
 	}
 
-	inline const vec3& player::viewDirection() {
+	inline float player::yaw() {
 	
-		return playerTransform_->viewDirection;
+		return yawAngle_;
 	
 	}
 
@@ -272,22 +263,16 @@ namespace VoxelEng {
 	
 	}
 
-	inline void player::rotation(const vec3& newPos) {
+	inline void player::pitch(float newValue) {
 	
-		playerTransform_->rotation = newPos;
-	
-	}
-
-	inline void player::viewDirection(const vec3& newViewDir) {
-	
-		playerTransform_->viewDirection = newViewDir;
+		pitchAngle_ = newValue;
 	
 	}
 
-	inline void player::changeTransform(float posX, float posY, float posZ, float rotX, float rotY, float rotZ) {
-
-		changeTransform(vec3(posX, posY, posZ), vec3(rotX, rotY, rotZ));
-
+	inline void player::yaw(float newValue) {
+	
+		yawAngle_ = newValue;
+	
 	}
 
 	inline void player::moveUp() {

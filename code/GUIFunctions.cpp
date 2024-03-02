@@ -132,12 +132,6 @@ namespace VoxelEng {
 
 			GUImanager::setLevelGUIOpened(false);
 
-			// TODO. ADD PROPER WORLDGENERATOR SELECTION.
-			if (!worldGen::isGenRegistered("miningWorldGen"))
-				worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
-			worldGen::selectGen("miningWorldGen");
-			worldGen::prepareGen();
-
 			// Convert character to int number (assuming the last character of the GUIElement's name is a digit).
 			unsigned int saveSlot = GUImanager::lastCheckedGUIElement()->name().back() - '0';
 			game::setSaveSlot(saveSlot);
@@ -154,6 +148,12 @@ namespace VoxelEng {
 
 				world::setupSaveDirectory();
 				world::loadMainData();
+
+				// TODO. ADD PROPER WORLDGENERATOR SELECTION.
+				if (!worldGen::isGenRegistered("miningWorldGen"))
+					worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
+				worldGen::selectGen("miningWorldGen");
+				worldGen::prepareGen();
 
 				game::setLoopSelection(VoxelEng::engineMode::INITLEVEL);
 
@@ -181,13 +181,13 @@ namespace VoxelEng {
 			} while (!correct || slot > 5);
 
 			// TODO. ADD PROPER WORLDGENERATOR SELECTION.
+			worldGen::setSeed();
 			if (!worldGen::isGenRegistered("miningWorldGen"))
 				worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
 			worldGen::selectGen("miningWorldGen");
 			worldGen::prepareGen();
-			worldGen::setSeed();
-
-			player::changeTransform(worldGen::playerSpawnPos());
+			
+			player::globalPos(worldGen::playerSpawnPos());
 
 			game::setSlotAccessType(slotAccessType::createNew);
 			game::setSaveSlot(slot);

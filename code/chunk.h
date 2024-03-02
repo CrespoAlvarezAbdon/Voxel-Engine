@@ -1290,7 +1290,6 @@ namespace VoxelEng {
 		* NOTE. This method does not handle the chunk priority updates.
 		*/
 		static void manageChunks();
-		static void manageChunksV2();
 
 		/**
 		* @brief Similar to chunkManager::manageChunks() but only for priority chunk updates.

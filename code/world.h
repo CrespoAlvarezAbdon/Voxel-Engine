@@ -68,25 +68,6 @@ namespace VoxelEng {
 		// Observers.
 
 		/**
-		* @brief Returns the maximun distance that any entity (including players) can be from
-		* the center of the X axis on finite worlds.
-		* If the returned distance is 0, it means that there is no maximun distance on said axis.
-		*/
-		static unsigned int maxDistanceX();
-
-		/**
-		* @brief Returns the maximun distance that any entity (including players) can be from
-		* the center of the Y axis on finite worlds.
-		*/
-		static unsigned int maxDistanceY();
-
-		/**
-		* @brief Returns the maximun distance that any entity (including players) can be from
-		* the center of the Z axis on finite worlds.
-		*/
-		static unsigned int maxDistanceZ();
-
-		/**
 		* @brief Returns true if the specified chunkPos corresponds to a chunk that has been
 		* previously saved to the currently selected world or false otherwise.
 		*/

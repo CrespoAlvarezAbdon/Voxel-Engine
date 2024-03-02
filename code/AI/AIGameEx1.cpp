@@ -937,10 +937,11 @@ namespace AIExample {
 		genetic_.setFitnessFunction(miningAIGameFitness);
 		genetic_.setNThreads();
 
+		VoxelEng::worldGen::setSeed();
 		if (!VoxelEng::worldGen::isGenRegistered("miningWorldGen"))
 			VoxelEng::worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
 		VoxelEng::worldGen::selectGen("miningWorldGen");
-		VoxelEng::worldGen::setSeed();
+		
 	
 	}
 

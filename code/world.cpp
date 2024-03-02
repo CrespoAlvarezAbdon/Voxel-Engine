@@ -168,7 +168,7 @@ namespace VoxelEng {
 		std::ofstream mainFile(currentWorldPath_ + "mainData.world", std::ios::binary | std::ios::out | std::ios::trunc);
 		std::string data;
 
-		data += std::to_string(player::globalPos()) + '|' + std::to_string(player::viewDirection()) + '|' + std::to_string(worldGen::getSeed()) + '|';
+		data += std::to_string(player::globalPos()) + '|' + std::to_string(player::pitch()) + '|' + std::to_string(player::yaw()) + '|' + std::to_string(worldGen::getSeed()) + '|';
 
 		mainFile.write(data.c_str(), data.size());
 		mainFile.close();
@@ -197,8 +197,9 @@ namespace VoxelEng {
 		std::ifstream mainFile(currentWorldPath_ + "mainData.world", std::ios::binary);
 		
 		// 0 = Reading player's pos.
-		// 1 = Reading player's rotation.
-		// 2 = Reading world's seed.
+		// 1 = Reading player camera's pitch.
+		// 2 = Reading player camera's yaw.
+		// 3 = Reading world's seed.
 		unsigned int state = 0;
 		unsigned char fillingVec3Pos = 0;
 		vec3 auxVec3;
@@ -221,16 +222,14 @@ namespace VoxelEng {
 					break;
 
 				case 1:
-					if (fillingVec3Pos != 2)
-						logger::errorLog("The vector was not read properly");
-
-					auxVec3[fillingVec3Pos] = sto<float>(word);
-					fillingVec3Pos = 0;
-
-					player::viewDirection(auxVec3);
+					player::pitch(sto<float>(word));
 					break;
 
 				case 2:
+					player::yaw(sto<float>(word));
+					break;
+
+				case 3:
 					worldGen::setSeed(sto<unsigned int>(word));
 					break;
 
