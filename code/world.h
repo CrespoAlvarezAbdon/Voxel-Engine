@@ -18,7 +18,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "chunk.h" // IGUAL ESTO DA PROBLEMAS.
+#include "chunk.h"
 #include "database.h"
 #include "definitions.h"
 #include "graphics.h"
@@ -86,6 +86,12 @@ namespace VoxelEng {
 		*/
 		static unsigned int maxDistanceZ();
 
+		/**
+		* @brief Returns true if the specified chunkPos corresponds to a chunk that has been
+		* previously saved to the currently selected world or false otherwise.
+		*/
+		static bool isSaved(const vec3& chunkPos);
+
 
 		// Modifiers.
 
@@ -134,9 +140,26 @@ namespace VoxelEng {
 		static void saveAll();
 
 		/**
-		* @brief Save the specific chunk into disk according to the currently opened level slot.
+		* @brief Save general information about the currently opened world such
+		* as current player position, the world's seed...
+		*/
+		static void saveMainData();
+
+		/**
+		* @brief Save the specific chunk into disk according to the currently used level slot.
 		*/
 		static void saveChunk(chunk* c);
+
+		/**
+		* @brief Load the chunk's serialized data according to the currently used level slot.
+		*/
+		static std::string loadChunk(const vec3& chunkPos);
+
+		/**
+		* @brief Load general information about the currently opened world such
+		* as current player position, the world's seed...
+		*/
+		static void loadMainData();
 
 		/**
 		* @brief Setup the save directory in the currently selected save slot.
@@ -164,9 +187,6 @@ namespace VoxelEng {
 		*/
 
 		static bool initialised_;
-		static unsigned int maxDistanceX_,
-							maxDistanceY_,
-							maxDistanceZ_;
 		static std::unordered_map<std::string, tickFunc> globalTickFunctions_;
 		static std::unordered_set<std::string> activeTickFunctions_;
 		static std::mutex tickFunctionsMutex_;
@@ -179,30 +199,17 @@ namespace VoxelEng {
 		Methods.
 		*/
 
-		static void saveMainData_();
-
 		static void saveAllChunks_();
-
-		
 	
 	};
 
-	inline unsigned int world::maxDistanceX() {
-
-		return maxDistanceX_;
-
-	}
-
-	inline unsigned int world::maxDistanceY() {
-
-		return maxDistanceY_;
-
-	}
-
-	inline unsigned int world::maxDistanceZ() {
-
-		return maxDistanceZ_;
-
+	inline bool world::isSaved(const vec3& chunkPos) {
+	
+		if (regions_)
+			return regions_->exists(std::to_string(chunkPos));
+		else
+			logger::errorLog("The regions database is not initialised");
+	
 	}
 
 	inline void world::setSkybox(const skybox& background) {

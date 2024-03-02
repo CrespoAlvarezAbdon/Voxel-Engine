@@ -50,6 +50,7 @@ namespace VoxelEng {
 
 				job = jobs_.front();
 				jobs_.pop_front();
+				//logger::debugLog("Job size is " + std::to_string(jobs_.size()));
 
 			}
 
@@ -70,6 +71,7 @@ namespace VoxelEng {
 
 			std::unique_lock<std::mutex> lock(jobsMutex_);
 			jobs_.push_back(job);
+			//logger::debugLog("Job size is " + std::to_string(jobs_.size()));
 
 		}
 

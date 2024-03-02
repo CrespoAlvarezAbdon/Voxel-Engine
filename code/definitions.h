@@ -10,6 +10,7 @@
 #ifndef _VOXELENG_DEFINITIONS_
 #define _VOXELENG_DEFINITIONS_
 
+#include <vector>
 #include <chrono>
 #include <string>
 
@@ -74,19 +75,19 @@ namespace VoxelEng {
 	const int SCZ = 16;
 
 	/**
-	* @brief Region size (in chunks) in X axis.
+	* @brief Chunk size (in blocks) in X axis.
 	*/
-	const int regionSizeX = 16;
+	const int SCXLimit = SCX-1;
 
 	/**
-	* @brief Region size (in chunks) in Y axis.
+	* @brief Chunk size (in blocks) in Y axis.
 	*/
-	const int regionSizeY = 16;
+	const int SCYLimit = SCY-1;
 
 	/**
-	* @brief Region size (in chunks) in Z axis.
+	* @brief Chunk size (in blocks) in Z axis.
 	*/
-	const int regionSizeZ = 16;
+	const int SCZLimit = SCZ-1;
 
 	/**
 	* @brief The total number of blocks per chunk.
@@ -121,7 +122,7 @@ namespace VoxelEng {
 	/**
 	* @brief Default maximum distance in chunk coordinates for chunks to be computed in the X and Z axes.
 	*/
-	const unsigned int DEF_N_CHUNKS_TO_COMPUTE = 20;
+	const unsigned int DEF_N_CHUNKS_TO_COMPUTE = 10;
 
 	/**
 	* @brief Total number of blocks to compute taking into account the total amount of chunks to compute and the size of a chunk in blocks.

@@ -135,16 +135,15 @@ namespace VoxelEng {
 		playerSpawnPos_.y = 150;
 		playerSpawnPos_.z = 0;
 
-		setSeed();
-
 	}
 
 	void defaultWorldGen::generate_(chunk& chunk) {
 
 		const vec3 chunkPos = chunk.chunkPos();
 		const block* blockToGenerate = nullptr;
+		
 		if (chunkPos.y <= 8) {
-			
+
 			for (GLbyte x = 0; x < SCX; x++)
 				for (GLbyte y = 0; y < SCY; y++)
 					for (GLbyte z = 0; z < SCZ; z++) {
@@ -177,8 +176,6 @@ namespace VoxelEng {
 						chunk.setBlock(x, y, z, *blockToGenerate, false);
 
 					}
-
-			chunk.setLoadLevel(VoxelEng::chunkLoadLevel::DECORATED);
 			
 		}
 

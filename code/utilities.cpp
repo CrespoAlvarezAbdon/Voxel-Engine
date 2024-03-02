@@ -308,7 +308,7 @@ namespace VoxelEng {
 		unsigned long result = std::stoul(str);
 
 		if (result > std::numeric_limits<unsigned int>::max())
-			logger::errorOutOfRange(" Thrown when trying to convert '" + str + "' into an unsigned integer");
+			logger::errorOutOfRange(str + "' exceeds unsigned integer range");
 
 		return result;
 

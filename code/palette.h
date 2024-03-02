@@ -106,6 +106,14 @@ namespace VoxelEng {
 		*/
 		void eraseT2(const T2& l);
 
+
+		// Clean-up.
+
+		/**
+		* @brief Clear the contents of the palette.
+		*/
+		void clear();
+
 	private:
 
 		std::unordered_map<T1, T2> T1ToT2_;
@@ -224,6 +232,15 @@ namespace VoxelEng {
 		T1ToT2_.erase(s);
 		T2ToT1_.erase(l);
 
+	}
+
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	void palette<T1, T2>::clear() {
+	
+		T1ToT2_.clear();
+		T2ToT1_.clear();
+	
 	}
 
 }

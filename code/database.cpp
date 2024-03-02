@@ -20,8 +20,8 @@ namespace VoxelEng {
 	std::string database::get(const std::string& key) const {
 	
 		std::string value;
-		db_->Get(leveldb::ReadOptions(), key, &value);
-		return value;
+		leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
+		return status.IsNotFound() ? "" : value;
 	
 	}
 

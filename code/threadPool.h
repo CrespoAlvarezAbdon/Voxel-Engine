@@ -116,7 +116,7 @@ namespace VoxelEng {
 		/**
 		* @brief Class destructor.
 		*/
-		~threadPool();
+	    ~threadPool();
 
 	private:
 

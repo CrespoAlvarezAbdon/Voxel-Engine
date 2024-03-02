@@ -39,7 +39,7 @@ namespace VoxelEng {
 
 		/**
 		* @brief Returns the value with the specified key.
-		* If no such value exists, expect undefined behaviour.
+		* If no such value exists, returns "".
 		*/
 		std::string get(const std::string& key) const;
 

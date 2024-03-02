@@ -153,7 +153,7 @@ namespace VoxelEng {
 	* Throws std::invalid_argument if could not convert.
 	*/
 	template <>
-	inline numericShortID sto(const std::string& str) {
+	inline unsigned short sto(const std::string& str) {
 
 		return std::stoul(str);
 
@@ -299,38 +299,6 @@ namespace VoxelEng {
 	}
 
 	/**
-	* @brief Returns region local coordinates of a chunk position.
-	*/
-	vec3 getRegionRelCoords(float chunkX, float chunkY, float chunkZ);
-
-	/**
-	* @brief Returns region local coordinates of a chunk position.
-	*/
-	inline vec3 getRegionRelCoords(const vec3& chunkPos) {
-
-		return getRegionRelCoords(chunkPos.x, chunkPos.y, chunkPos.z);
-
-	}
-
-	/**
-	* @brief Returns region local coordinates of a chunk position.
-	*/
-	inline vec3 getRegionCoords(float chunkX, float chunkY, float chunkZ) {
-
-		return vec3{ (int)floor(chunkX / regionSizeX), (int)floor(chunkY / regionSizeY), (int)floor(chunkZ / regionSizeZ) };
-
-	}
-
-	/**
-	* @brief Returns region coordinates of a chunk position.
-	*/
-	inline vec3 getRegionCoords(const vec3& chunkPos) {
-
-		return getRegionCoords(chunkPos.x, chunkPos.y, chunkPos.z);
-
-	}
-
-	/**
 	* @brief Returns chunk coordinates in the X and Z axes of a global position in the X and Z axes.
 	*/
 	inline vec2 getChunkXZCoords(int x, int z) {
@@ -363,6 +331,15 @@ namespace VoxelEng {
 	inline vec3 getGlobalPos(const vec3& chunkPos, const vec3& inChunkPos) {
 
 		return getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z, inChunkPos.x, inChunkPos.y, inChunkPos.z);
+
+	}
+
+	/**
+	* @brief Returns global coordinates of a local chunk coordinate from a certain chunk position.
+	*/
+	inline vec3 getGlobalPos(const vec3& chunkPos, int inChunkX, int inChunkY, int inChunkZ) {
+
+		return getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z, inChunkX, inChunkY, inChunkZ);
 
 	}
 

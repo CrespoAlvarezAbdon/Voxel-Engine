@@ -66,13 +66,15 @@ namespace VoxelEng {
 	/////////////////
 
 	/**
-	* @brief The different stages of the chunk's loading process.
+	* @brief The different stages that a chunk has during its lifetime.
 	*/
-	enum class chunkLoadLevel { NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2 };
+	enum class chunkStatus { NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2};
+
+	enum class chunkJobType { NONE = 0, LOAD = 1, ONLYREMESH = 2, UNLOADANDSAVE = 3, PRIORITYREMESH = 4};
 
 
 	////////////
-	//Classes.//
+	//Structs.//
 	////////////
 
 	/**
@@ -84,6 +86,11 @@ namespace VoxelEng {
 		model vertices; // prueba a poner esto como model a secas y donde ponga delete vertices simplemente recrear el objeto
 
 	};
+
+
+	////////////
+	//Classes.//
+	////////////
 
 
 	/**
@@ -138,11 +145,6 @@ namespace VoxelEng {
 		const void* blocks() const;
 
 		/**
-		* @brief Returns the chunk's palette that maps the local block IDs with the global block IDs.
-		*/
-		const palette<unsigned short, unsigned int>& getPalette() const;
-
-		/**
 		* @brief Get the block at the specified chunk-local coordinates.
 		*/
 		const block& getBlock(GLbyte x, GLbyte y, GLbyte z);
@@ -181,11 +183,6 @@ namespace VoxelEng {
 		* @brief Get this chunk's rendering data object.
 		*/
 		const chunkRenderingData& renderingData() const;
-	
-		/**
-		* @brief Get the number of non-null blocks (blocks with ID != 0) that exist in the chunk.
-		*/
-		unsigned int getNBlocks();
 
 		/**
 		* @brief Returns true if this chunk has been modified
@@ -201,69 +198,44 @@ namespace VoxelEng {
 		bool needsRemesh() const;
 
 		/**
-		* @brief Returns the chunk's load level.
+		* @brief Returns the chunk's status.
 		*/
-		chunkLoadLevel loadLevel() const;
+		chunkStatus status() const;
+
+		/**
+		* @brief Get the number of non-null blocks (blocks with ID != 0) that exist in the chunk.
+		*/
+		unsigned short nBlocks() const;
 
 		/**
 		* @brief Returns the number of non-null blocks in the chunk's +X edge.
 		*/
-		short nBlocksPlusX() const;
+		unsigned short nBlocksPlusX() const;
 
 		/**
 		* @brief Returns the number of non-null blocks in the chunk's -X edge.
 		*/
-		short nBlocksMinusX() const;
+		unsigned short nBlocksMinusX() const;
 
 		/**
 		* @brief Returns the number of non-null blocks in the chunk's +Y edge.
 		*/
-		short nBlocksPlusY() const;
+		unsigned short nBlocksPlusY() const;
 
 		/**
 		* @brief Returns the number of non-null blocks in the chunk's -Y edge.
 		*/
-		short nBlocksMinusY() const;
+		unsigned short nBlocksMinusY() const;
 
 		/**
 		* @brief Returns the number of non-null blocks in the chunk's +Z edge.
 		*/
-		short nBlocksPlusZ() const;
+		unsigned short nBlocksPlusZ() const;
 
 		/**
 		* @brief Returns the number of non-null blocks in the chunk's -Z edge.
 		*/
-		short nBlocksMinusZ() const;
-
-		/**
-		* @brief Returns the number of non-null blocks in the chunk's +X edge.
-		*/
-		chunk* neighborPlusX() const;
-
-		/**
-		* @brief Returns the number of non-null blocks in the chunk's -X edge.
-		*/
-		chunk* neighborMinusX() const;
-
-		/**
-		* @brief Returns the number of non-null blocks in the chunk's +Y edge.
-		*/
-		chunk* neighborPlusY() const;
-
-		/**
-		* @brief Returns the number of non-null blocks in the chunk's -Y edge.
-		*/
-		chunk* neighborMinusY() const;
-
-		/**
-		* @brief Returns the number of non-null blocks in the chunk's +Z edge.
-		*/
-		chunk* neighborPlusZ() const;
-
-		/**
-		* @brief Returns the number of non-null blocks in the chunk's -Z edge.
-		*/
-		chunk* neighborMinusZ() const;
+		unsigned short nBlocksMinusZ() const;
 
 		/**
 		* @brief Returns true if the specified block in in-chunk coordinates is
@@ -289,6 +261,52 @@ namespace VoxelEng {
 
 
 		// Modifiers.
+
+		/**
+		* @brief Returns the pointer to the first element of the chunk's block array.
+		*/
+		void* blocks();
+
+		/**
+		* @brief Returns the pointer to the first element of the x+ neighbor chunk's block array.
+		*/
+		void* neighborBlocksPlusX();
+
+		/**
+		* @brief Returns the pointer to the first element of the x- neighbor chunk's block array.
+		*/
+		void* neighborBlocksMinusX();
+
+		/**
+		* @brief Returns the pointer to the first element of the y+ neighbor chunk's block array.
+		*/
+		void* neighborBlocksPlusY();
+
+		/**
+		* @brief Returns the pointer to the first element of the y- neighbor chunk's block array.
+		*/
+		void* neighborBlocksMinusY();
+
+		/**
+		* @brief Returns the pointer to the first element of the z+ neighbor chunk's block array.
+		*/
+		void* neighborBlocksPlusZ();
+
+		/**
+		* @brief Returns the pointer to the first element of the z- neighbor chunk's block array.
+		*/
+		void* neighborBlocksMinusZ();
+
+		/**
+		* @brief Returns the chunk's palette that maps the local block IDs with the global block IDs.
+		*/
+		palette<unsigned short, unsigned int>& getPalette();
+
+		/**
+		* @brief Returns the chunk's palette count that contains the number of global IDs mapped to
+		* local IDs for this chunk.
+		*/
+		std::unordered_map<unsigned short, unsigned short>& getPaletteCount();
 
 		/**
 		* @brief Sets the value of a block within the chunk.
@@ -318,6 +336,13 @@ namespace VoxelEng {
 		const block& setBlock(unsigned int linearIndex, const block& block, bool modification = true);
 
 		/**
+		* @brief Set a neighbor block.
+		* A neighbor block is a copy of a block that is bordering this chunk. This copy is stored for mesh optimization
+		* purposes.
+		*/
+		void setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block);
+
+		/**
 		* @brief Returns the chunk's chunk position.
 		*/
 		vec3& chunkPos();
@@ -328,9 +353,25 @@ namespace VoxelEng {
 		chunkRenderingData& renderingData();
 
 		/**
-		* @brief Locks the rendering data mutex.
+		* @brief Locks the block data mutex.
 		*/
-		void lockRenderingDataMutex();
+		std::shared_mutex& blockDataMutex();
+
+		/**
+		* @brief Locks the rendering data mutex for shared ownership.
+		*/
+		void lockSharedRenderingDataMutex();
+
+		/**
+		* @brief Returns true if the rendering data mutex could be locked or false otherwise.
+		*/
+		bool tryLockRenderingDataMutex();
+
+		/**
+		* @brief Unlocks the rendering data mutex for shared ownership.
+		* WARNING. Said lock must be unlock by the same thread that locked it previously.
+		*/
+		void unlockSharedRenderingDataMutex();
 
 		/**
 		* @brief Unlocks the rendering data mutex.
@@ -339,20 +380,10 @@ namespace VoxelEng {
 		void unlockRenderingDataMutex();
 
 		/**
-		* @brief Set the number of non-null blocks in the chunk.
+		* @brief Set if this chunk's terrain has been modified and it's mesh needs
+		* to be regenerated.
 		*/
-		void setNBlocks(unsigned int nBlocks);
-
-		/**
-		* @brief Returns the chunk's mutex that guards its block data.
-		*/
-		std::shared_mutex& blockDataMutex();
-
-		/**
-		* @brief Returns true if this chunk's terrain has been modified and it's mesh needs
-		* to be regenerated or false otherwise.
-		*/
-		std::atomic<bool>& needsRemesh();
+		void needsRemesh(bool newValue);
 
 		/**
 		* @brief Returns true if this chunk has been modified
@@ -372,33 +403,51 @@ namespace VoxelEng {
 		void makeEmpty();
 
 		/**
-		* @brief Set the chunk's load level.
+		* @brief Set the chunk's status.
 		*/
-		void setLoadLevel(chunkLoadLevel level);
+		void status(chunkStatus level);
 
 		/**
-		* @brief Reuse a chunk object by assigning it a new chunk position and generating/loading
-		* new terrain on it by previously cleaning any previous data.
+		* @brief Set the number of non-null blocks (blocks with ID != 0) that exist in the chunk.
 		*/
-		void regenChunk(bool empty, const vec3& chunkPos);
+		void nBlocks(unsigned short newValue);
 
 		/**
-		* @brief Unlinks this chunk with all its neighbors.
+		* @brief Set the number of non-null blocks in the chunk's +X edge.
 		*/
-		void unlinkNeighbors();
+		void nBlocksPlusX(unsigned short newValue);
+
+		/**
+		* @brief Set the number of non-null blocks in the chunk's -X edge.
+		*/
+		void nBlocksMinusX(unsigned short newValue);
+
+		/**
+		* @brief Set the number of non-null blocks in the chunk's +Y edge.
+		*/
+		void nBlocksPlusY(unsigned short newValue);
+
+		/**
+		* @brief Set the number of non-null blocks in the chunk's -Y edge.
+		*/
+		void nBlocksMinusY(unsigned short newValue);
+
+		/**
+		* @brief Set the number of non-null blocks in the chunk's +Z edge.
+		*/
+		void nBlocksPlusZ(unsigned short newValue);
+
+		/**
+		* @brief Set the number of non-null blocks in the chunk's -Z edge.
+		*/
+		void nBlocksMinusZ(unsigned short newValue);
 
 		/**
 		* @brief Executed when the frontier chunk is unloaded.
 		* Checks if the neighbors of this chunk become frontier chunks
 		* after this one stops being loaded.
 		*/
-		int onUnloadAsFrontier();
-
-		/**
-		* @brief Update this chunks pointers to its neigbors according to its current chunk
-		* position.
-		*/
-		void setNeighbors();
+		void onUnloadAsFrontier();
 
 		/**
 		* @brief Set the number of neighbors that this chunk has.
@@ -429,10 +478,17 @@ namespace VoxelEng {
 		static const model* blockVertices_;
 		static const modelTriangles* blockTriangles_;
 
+		// Serializable data.
 		palette<unsigned short, unsigned int> palette_;
 		std::unordered_map<unsigned short, unsigned short> paletteCount_;
 		std::unordered_set<unsigned short> freeLocalIDs_;
-		unsigned short blocksNew_[SCX][SCY][SCZ];
+		unsigned short blocksLocalIDs[SCX][SCY][SCZ];
+		unsigned short neighborBlocksPlusX_[SCY][SCZ];
+		unsigned short neighborBlocksMinusX_[SCY][SCZ];
+		unsigned short neighborBlocksPlusY_[SCX][SCZ];
+		unsigned short neighborBlocksMinusY_[SCX][SCZ];
+		unsigned short neighborBlocksPlusZ_[SCX][SCY];
+		unsigned short neighborBlocksMinusZ_[SCX][SCY];
 
 		bool modified_;
 		std::atomic<bool> needsRemesh_;
@@ -443,16 +499,13 @@ namespace VoxelEng {
 						   nBlocksMinusY_,
 						   nBlocksPlusZ_,
 						   nBlocksMinusZ_;
+
 		unsigned int nNeighbors_;
-		chunk* neighborPlusY_,
-			 * neighborMinusY_,
-			 * neighborPlusX_,
-			 * neighborMinusX_,
-			 * neighborPlusZ_,
-			 * neighborMinusZ_;
-		std::atomic<chunkLoadLevel> loadLevel_;
+
+		std::atomic<chunkStatus> loadLevel_;
+
 		chunkRenderingData renderingData_;
-		std::recursive_mutex renderingDataMutex_;
+		std::shared_mutex renderingDataMutex_;
 
 		/*
 		Used for reading the block data in a chunk.
@@ -462,18 +515,19 @@ namespace VoxelEng {
 		*/
 		std::shared_mutex blocksMutex_;
 
+
+		/*
+		Methods.
+		*/
+		
+		void placeNewBlock(unsigned short& oldLocalID, const block& newBlock);
+
 	};
 
 	inline const void* chunk::blocks() const {
 
-		return blocksNew_;
+		return blocksLocalIDs;
 
-	}
-
-	inline const palette<unsigned short, unsigned int>& chunk::getPalette() const {
-	
-		return palette_;
-	
 	}
 
 	inline bool chunk::initialised() {
@@ -530,12 +584,6 @@ namespace VoxelEng {
 
 	}
 
-	inline unsigned int chunk::getNBlocks() {
-
-		return nBlocks_;
-
-	}
-
 	inline bool chunk::modified() const {
 
 		return modified_;
@@ -548,87 +596,57 @@ namespace VoxelEng {
 
 	}
 
-	inline chunkLoadLevel chunk::loadLevel() const {
+	inline chunkStatus chunk::status() const {
 
 		return loadLevel_;
 
 	}
 
-	inline short chunk::nBlocksPlusX() const {
+	inline unsigned short chunk::nBlocks() const {
+
+		return nBlocks_;
+
+	}
+
+	inline unsigned short chunk::nBlocksPlusX() const {
 	
 		return nBlocksPlusX_;
 	
 	}
 
-	inline short chunk::nBlocksMinusX() const {
+	inline unsigned short chunk::nBlocksMinusX() const {
 
 		return nBlocksMinusX_;
 
 	}
 
-	inline short chunk::nBlocksPlusY() const {
+	inline unsigned short chunk::nBlocksPlusY() const {
 
 		return nBlocksPlusY_;
 
 	}
 
-	inline short chunk::nBlocksMinusY() const {
+	inline unsigned short chunk::nBlocksMinusY() const {
 
 		return nBlocksMinusY_;
 
 	}
 
-	inline short chunk::nBlocksPlusZ() const {
+	inline unsigned short chunk::nBlocksPlusZ() const {
 
 		return nBlocksPlusZ_;
 
 	}
 
-	inline short chunk::nBlocksMinusZ() const {
+	inline unsigned short chunk::nBlocksMinusZ() const {
 
 		return nBlocksMinusZ_;
 
 	}
 
-	inline chunk* chunk::neighborPlusX() const {
-
-		return neighborPlusX_;
-
-	}
-
-	inline chunk* chunk::neighborMinusX() const {
-
-		return neighborMinusX_;
-
-	}
-
-	inline chunk* chunk::neighborPlusY() const {
-
-		return neighborPlusY_;
-
-	}
-
-	inline chunk* chunk::neighborMinusY() const {
-
-		return neighborMinusY_;
-
-	}
-
-	inline chunk* chunk::neighborPlusZ() const {
-
-		return neighborPlusZ_;
-
-	}
-
-	inline chunk* chunk::neighborMinusZ() const {
-
-		return neighborMinusZ_;
-
-	}
-
 	inline bool chunk::isEmptyBlock(GLbyte x, GLbyte y, GLbyte z) const {
 	
-		return blocksNew_[x][y][z] == 0;
+		return blocksLocalIDs[x][y][z] == 0;
 	
 	}
 
@@ -640,19 +658,68 @@ namespace VoxelEng {
 
 	inline bool chunk::isVisible() const {
 	
-		return ((nBlocks_ > 0 || nBlocks_ <= nBlocksChunk) && 
-			(neighborPlusZ_ && neighborPlusZ_->nBlocksMinusZ_ != nBlocksChunkEdge) ||
-			(neighborMinusZ_ && neighborMinusZ_->nBlocksPlusZ_ != nBlocksChunkEdge) ||
-			(neighborPlusY_ && neighborPlusY_->nBlocksMinusY_ != nBlocksChunkEdge) ||
-			(neighborMinusY_ && neighborMinusY_->nBlocksPlusY_ != nBlocksChunkEdge) ||
-			(neighborPlusX_ && neighborPlusX_->nBlocksMinusX_ != nBlocksChunkEdge) ||
-			(neighborMinusX_ && neighborMinusX_->nBlocksPlusX_ != nBlocksChunkEdge));
+		// TODO. ADD CONDITIONS TO TAKE INTO ACCOUNT FUSTRUM CULLING OTHER ALGORITHMS TO AVOID RENDERING UNSEEABLE CHUNKS.
+		return (nBlocks_ > 0 || nBlocks_ <= nBlocksChunk);
 	
 	}
 
 	inline unsigned int chunk::nNeighbors() const {
 	
 		return nNeighbors_;
+	
+	}
+
+	inline void* chunk::blocks() {
+	
+		return blocksLocalIDs;
+	
+	}
+
+	inline void* chunk::neighborBlocksPlusX() {
+
+		return neighborBlocksPlusX_;
+
+	}
+
+	inline void* chunk::neighborBlocksMinusX() {
+
+		return neighborBlocksMinusX_;
+
+	}
+
+	inline void* chunk::neighborBlocksPlusY() {
+
+		return neighborBlocksPlusY_;
+
+	}
+
+	inline void* chunk::neighborBlocksMinusY() {
+
+		return neighborBlocksMinusY_;
+
+	}
+
+	inline void* chunk::neighborBlocksPlusZ() {
+
+		return neighborBlocksPlusZ_;
+
+	}
+
+	inline void* chunk::neighborBlocksMinusZ() {
+
+		return neighborBlocksMinusZ_;
+
+	}
+
+	inline palette<unsigned short, unsigned int>& chunk::getPalette() {
+	
+		return palette_;
+	
+	}
+
+	inline std::unordered_map<unsigned short, unsigned short>& chunk::getPaletteCount() {
+	
+		return paletteCount_;
 	
 	}
 
@@ -674,33 +741,39 @@ namespace VoxelEng {
 
 	}
 
-	inline void chunk::lockRenderingDataMutex() {
+	inline std::shared_mutex& chunk::blockDataMutex() {
 	
-		renderingDataMutex_.lock();
+		return blocksMutex_;
+	
+	}
+
+	inline void chunk::lockSharedRenderingDataMutex() {
+	
+		renderingDataMutex_.lock_shared();
+	
+	}
+
+	inline bool chunk::tryLockRenderingDataMutex() {
+
+		 return renderingDataMutex_.try_lock();
+
+	}
+
+	inline void chunk::unlockSharedRenderingDataMutex() {
+	
+		renderingDataMutex_.unlock_shared();
 	
 	}
 
 	inline void chunk::unlockRenderingDataMutex() {
-	
+
 		renderingDataMutex_.unlock();
-	
-	}
-
-	inline void chunk::setNBlocks(unsigned int nBlocks) {
-
-		nBlocks_ = nBlocks;
 
 	}
 
-	inline std::shared_mutex& chunk::blockDataMutex() {
+	inline void chunk::needsRemesh(bool newValue) {
 
-		return blocksMutex_;
-
-	}
-
-	inline std::atomic<bool>& chunk::needsRemesh() {
-
-		return needsRemesh_;
+		needsRemesh_ = newValue;
 
 	}
 
@@ -710,9 +783,51 @@ namespace VoxelEng {
 
 	}
 
-	inline void chunk::setLoadLevel(chunkLoadLevel level) {
+	inline void chunk::status(chunkStatus level) {
 
 		loadLevel_ = level;
+
+	}
+
+	inline void chunk::nBlocks(unsigned short newValue) {
+
+		nBlocks_ = newValue;
+
+	}
+
+	inline void chunk::nBlocksPlusX(unsigned short newValue) {
+
+		nBlocksPlusX_ = newValue;
+
+	}
+
+	inline void chunk::nBlocksMinusX(unsigned short newValue) {
+
+		nBlocksMinusX_ = newValue;
+
+	}
+
+	inline void chunk::nBlocksPlusY(unsigned short newValue) {
+
+		nBlocksPlusY_ = newValue;
+
+	}
+
+	inline void chunk::nBlocksMinusY(unsigned short newValue) {
+
+		nBlocksMinusY_ = newValue;
+
+	}
+
+	inline void chunk::nBlocksPlusZ(unsigned short newValue) {
+
+		nBlocksPlusZ_ = newValue;
+
+	}
+
+	inline void chunk::nBlocksMinusZ(unsigned short newValue) {
+
+		nBlocksMinusZ_ = newValue;
 
 	}
 
@@ -800,7 +915,7 @@ namespace VoxelEng {
 	* @brief Task that loads a chunk either by reading its data from disk
 	* or by generating it using the currently selected world generator.
 	*/
-	class meshChunkJob : public job {
+	class chunkJob : public job {
 	public:
 
 		// Constructors.
@@ -808,22 +923,17 @@ namespace VoxelEng {
 		/**
 		* @brief Default class constructor.
 		*/
-		meshChunkJob();
-
-		/**
-		* @brief Class constructor.
-		*/
-		meshChunkJob(chunk* chunk, atomicRecyclingPool<meshChunkJob>* pool, bool generateTerrain, bool isPriorityUpdate,
-			std::condition_variable* priorityNewChunkMeshesCV);
+		chunkJob();
 
 
 		// Modifiers.
 
 		/**
 		* @brief Change the attributes used in the construction of this object.
+		* WARNING. 'type' most NOT BE chunkJobType::REMESHNEIGBHOR. Method setRemeshNeighborAttributes is specialized
+		* for that job.
 		*/
-		void setAttributes(chunk* chunk, atomicRecyclingPool<meshChunkJob>* pool, bool generateTerrain, bool isPriorityUpdate,
-			std::condition_variable* priorityNewChunkMeshesCV);
+		void setAttributes(chunk* c, chunkJobType type, atomicRecyclingPool<chunkJob>* pool, std::condition_variable* priorityNewChunkMeshesCV, atomicRecyclingPool<chunk>* chunkPool);
 
 
 	private:
@@ -840,28 +950,19 @@ namespace VoxelEng {
 		*/
 
 		chunk* chunk_;
-		atomicRecyclingPool<meshChunkJob>* pool_;
-		bool generateTerrain_,
-			 isPriorityUpdate_;
+		chunkJobType type_;
+		atomicRecyclingPool<chunkJob>* pool_;
 		std::condition_variable* priorityNewChunkMeshesCV_;
+		atomicRecyclingPool<chunk>* chunkPool_;
 	
 	};
 
-	inline meshChunkJob::meshChunkJob()
+	inline chunkJob::chunkJob()
 	: chunk_(nullptr),
+	  type_(chunkJobType::NONE),
 	  pool_(nullptr),
-	  generateTerrain_(false),
-	  isPriorityUpdate_(false),
-      priorityNewChunkMeshesCV_(nullptr)
-	{}
-
-	inline meshChunkJob::meshChunkJob(chunk* chunk, atomicRecyclingPool<meshChunkJob>* pool, bool generateTerrain, bool isPriorityUpdate,
-		std::condition_variable* priorityNewChunkMeshesCV)
-	: chunk_(chunk),
-	  pool_(pool),
-	  generateTerrain_(generateTerrain),
-	  isPriorityUpdate_(isPriorityUpdate),
-      priorityNewChunkMeshesCV_(priorityNewChunkMeshesCV)
+      priorityNewChunkMeshesCV_(nullptr),
+	  chunkPool_(nullptr)
 	{}
 
 	
@@ -966,12 +1067,12 @@ namespace VoxelEng {
 		/**
 		* @brief Returns the chunk's load level.
 		*/
-		static chunkLoadLevel getChunkLoadLevel(const vec3& chunkPos);
+		static chunkStatus getChunkLoadLevel(const vec3& chunkPos);
 
 		/**
 		* @brief Returns the chunk's load level.
 		*/
-		static chunkLoadLevel getChunkLoadLevel(int chunkX, int chunkY, int chunkZ);
+		static chunkStatus getChunkLoadLevel(int chunkX, int chunkY, int chunkZ);
 
 		/**
 		* @brief Returns the currently opened terrain file.
@@ -1098,20 +1199,6 @@ namespace VoxelEng {
 		static chunk* selectChunkByRealPos(const vec3& pos);
 
 		/**
-		* @brief Select a chunk with the specified chunk position.
-		* If said chunk is not created, create everything except its mesh.
-		* WARNING. Not meant for use in AI mode.
-		*/
-		static chunk* selectChunkOrCreate(int x, int y, int z);
-
-		/**
-		* @brief Select a chunk with the specified chunk position.
-		* If said chunk is not created, create everything except its mesh.
-		* WARNING. Not meant for use in AI mode.
-		*/
-		static chunk* selectChunkOrCreate(const vec3& chunkPos);
-
-		/**
 		* @brief Select the neighbor -X chunk for the chunk with the specified chunk position
 		* WARNING. Not meant for use in AI mode.
 		*/
@@ -1193,7 +1280,7 @@ namespace VoxelEng {
 		* to be reused later for another chunk position of the world. Returns the number of chunks
 		* that were converted into frontier chunks because of this operation.
 		*/
-		static int unloadFrontierChunk(const vec3& chunkPos);
+		static void unloadFrontierChunk(const vec3& chunkPos);
 
 		/**
 		* @brief Method called by the chunk management thread to use with infinite world types.
@@ -1203,6 +1290,7 @@ namespace VoxelEng {
 		* NOTE. This method does not handle the chunk priority updates.
 		*/
 		static void manageChunks();
+		static void manageChunksV2();
 
 		/**
 		* @brief Similar to chunkManager::manageChunks() but only for priority chunk updates.
@@ -1266,25 +1354,31 @@ namespace VoxelEng {
 		static bool ensureChunkIfVisible(int x, int y, int z);
 
 		/**
+		* @brief Serialize the chunk's data in order to save it into auxiliary memory.
+		*/
+		static std::string serializeChunk(chunk* c);
+
+		/**
 		* @brief Load chunk at specified chunk coordinates.
 		* Returns a pointer to the loaded chunk.
+		* NOTE. If it founds serialized data corresponding to this chunk, it will fill the chunk
+		* with said data instead of using the world generator.
 		* WARNING. DOES NOT CHECK IF THERE IS ALREADY A CHUNK AT THE SPECIFIED POSITION.
 		*/
-		static chunk* loadChunkV2(const vec3& chunkPos);
+		static chunk* loadChunk(const vec3& chunkPos);
 
 		/**
 		* @brief Issue a job that will consists of rengerating the mesh of the specified chunk.
-		* If 'generateTerrain' is true, it's terrain will be regenerated.
 		* The job will be executed on another thread and will lock the chunk's mutexes that
-		* ara required.
+		* are required.
 		*/
-		static void issueChunkMeshJob(chunk* c, bool generateTerrain , bool isPriorityUpdate);
+		static void issueChunkMeshJob(chunk* c, chunkJobType type);
 
 		/** 
 		* @brief Used on chunkManager::onUnloadAsFrontier to update the neighbor
 		* chunks of a frontier chunk that was unloaded.
 		*/
-		static bool onUnloadAsFrontier(chunk* chunk, double distUnloadedToPlayer);
+		static void onUnloadAsFrontier(const vec3& chunkPos);
 
 		/**
 		* @brief Convert the specified chunk into a frontier chunk if it is not.
@@ -1384,7 +1478,6 @@ namespace VoxelEng {
 
 		// NEW THINGS START HERE
 
-		static bool removeFrontierIt_;
 		static vec3 playerChunkPosCopy_; // Copy of the last value of the player's position in chunk coordinates.
 		static std::list<vec3> frontierChunks_;
 		static std::unordered_map<vec3, std::list<vec3>::iterator> frontierChunksSet_;
@@ -1393,19 +1486,13 @@ namespace VoxelEng {
 		static closestChunk closestChunk_;
 		static threadPool* chunkTasks_, 
 						 * priorityChunkTasks_;
-		static atomicRecyclingPool<meshChunkJob>* loadChunkJobs_;
+		static atomicRecyclingPool<chunkJob>* loadChunkJobs_;
 		static atomicRecyclingPool<chunk> chunksPool_;
 		static chunkEvent onChunkLoad_;
 		static chunkEvent onChunkUnload_;
 		static vertexBuffer* vbo_;
 		static std::atomic<bool> clearChunksFlag_,
 			                     priorityUpdatesRemaining_;
-
-		/**
-		* @brief Called by chunkManager::addFrontier(chunk* chunk) to make the neighbors
-		* frontier if necessary.
-		*/
-		static void updateFrontierNeighbor(chunk* frontierChunk, chunk* neighborChunk);
 
 		// NEW THINGS END HERE
 
@@ -1536,7 +1623,7 @@ namespace VoxelEng {
 
 	}
 
-	inline chunkLoadLevel chunkManager::getChunkLoadLevel(int chunkX, int chunkY, int chunkZ) {
+	inline chunkStatus chunkManager::getChunkLoadLevel(int chunkX, int chunkY, int chunkZ) {
 
 		return getChunkLoadLevel(vec3{ chunkX, chunkY, chunkZ });
 

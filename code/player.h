@@ -43,11 +43,25 @@ namespace VoxelEng {
 
 		// Observers.
 
+		/**
+		* @brief Returns the player's global position.
+		*/
 		static const vec3& globalPos();
-
+		
+		/**
+		* @brief Returns the player's chunk position.
+		*/
 		static const vec3& chunkPos();
 
+		/**
+		* @brief Returns the player's rotation.
+		*/
 		static const vec3& rotation();
+
+		/**
+		* @brief Returns the player's view direction.
+		*/
+		static const vec3& viewDirection();
 
 
 		// Modifiers.
@@ -91,12 +105,27 @@ namespace VoxelEng {
 		static void setBlockToPlace(block& block);
 
 		/**
-		* @brief Change user position and viewing direction.
+		* @brief Change user position.
+		*/
+		static void globalPos(const vec3& newPos);
+
+		/**
+		* @brief Change user rotation.
+		*/
+		static void rotation(const vec3& newPos);
+
+		/**
+		* @brief Change user view direction.
+		*/
+		static void viewDirection(const vec3& newViewDir);
+
+		/**
+		* @brief Change user position and rotation.
 		*/
 		static void changeTransform(const vec3& newPos, const vec3& newRot = vec3Zero);
 
 		/**
-		* @brief Change user position and viewing direction.
+		* @brief Change user position and rotation.
 		*/
 		static void changeTransform(float posX, float posY, float posZ, float rotX = 0.0f, float rotY = 0.0f, float rotZ = 0.0f);
 
@@ -225,10 +254,34 @@ namespace VoxelEng {
 
 	}
 
+	inline const vec3& player::viewDirection() {
+	
+		return playerTransform_->viewDirection;
+	
+	}
+
 	inline camera& player::getCamera() {
 
 		return *camera_;
 
+	}
+
+	inline void player::globalPos(const vec3& newPos) {
+	
+		playerTransform_->position = newPos;
+	
+	}
+
+	inline void player::rotation(const vec3& newPos) {
+	
+		playerTransform_->rotation = newPos;
+	
+	}
+
+	inline void player::viewDirection(const vec3& newViewDir) {
+	
+		playerTransform_->viewDirection = newViewDir;
+	
 	}
 
 	inline void player::changeTransform(float posX, float posY, float posZ, float rotX, float rotY, float rotZ) {

@@ -316,28 +316,130 @@ namespace AIExample {
 	void miningWorldGen::generate_(VoxelEng::chunk& chunk) {
 
 		VoxelEng::vec3 chunkPos = chunk.chunkPos(),
-					    blockPos,
-					    inChunkPos;
-		VoxelEng::vec2 chunkXZPos{ chunkPos.x, chunkPos.z };
-		const chunkHeightMap& heightMap = chunkHeightMap_(chunkXZPos);
+					   blockPos;
+		const chunkHeightMap& heightMap = chunkHeightMap_({ chunkPos.x, chunkPos.z });
+		const chunkHeightMap& heightMapPlusX = chunkHeightMap_({ chunkPos.x+1, chunkPos.z });
+		const chunkHeightMap& heightMapMinusX = chunkHeightMap_({ chunkPos.x-1, chunkPos.z });
+		const chunkHeightMap& heightMapPlusZ = chunkHeightMap_({ chunkPos.x, chunkPos.z+1 });
+		const chunkHeightMap& heightMapMinusZ = chunkHeightMap_({ chunkPos.x, chunkPos.z-1 });
+		int height;
+		int x, y, z;
 		// TODO. Optimise when terrainFeature class and ore subclass are properly defined.
 
-		for (inChunkPos.x = 0; inChunkPos.x < VoxelEng::SCX; inChunkPos.x++)
-			for (inChunkPos.z = 0; inChunkPos.z < VoxelEng::SCZ; inChunkPos.z++)
-				for (inChunkPos.y = 0; inChunkPos.y < VoxelEng::SCY; inChunkPos.y++) {
+		for (x = 0; x < VoxelEng::SCX; x++)
+			for (z = 0; z < VoxelEng::SCZ; z++)
+				for (y = 0; y < VoxelEng::SCY; y++) {
 
-					blockPos = VoxelEng::getGlobalPos(chunkPos, inChunkPos);
+					blockPos = VoxelEng::getGlobalPos(chunkPos, x, y, z);
+					height = heightMap[x][z];
 
-					if (blockPos.y < heightMap[inChunkPos.x][inChunkPos.z] - 3)
-						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer2_, false);
-					else if (blockPos.y >= heightMap[inChunkPos.x][inChunkPos.z] - 3 && blockPos.y < heightMap[inChunkPos.x][inChunkPos.z])
-						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer1_, false);
-					else if (blockPos.y == heightMap[inChunkPos.x][inChunkPos.z])
-						chunk.setBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, layer0_, false);
+					if (blockPos.y < height - 3)
+						chunk.setBlock(x, y, z, layer2_, false);
+					else if (blockPos.y < height)
+						chunk.setBlock(x, y, z, layer1_, false);
+					else if (blockPos.y == height)
+						chunk.setBlock(x, y, z, layer0_, false);
 
 				}
 
-		chunk.setLoadLevel(VoxelEng::chunkLoadLevel::DECORATED);
+		// Set neighbor blocks.
+		// X+
+		for (y = 0; y < VoxelEng::SCY; y++)
+			for (z = 0; z < VoxelEng::SCZ; z++) {
+
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x+1, chunkPos.y, chunkPos.z, 0, y, z);
+				height = heightMapPlusX[0][z];
+
+				if (blockPos.y < height - 3)
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::PLUSX, layer2_);
+				else if (blockPos.y < height)
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::PLUSX, layer1_);
+				else if (blockPos.y == height)
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::PLUSX, layer0_);
+
+			}
+
+		// X-
+		for (y = 0; y < VoxelEng::SCY; y++)
+			for (z = 0; z < VoxelEng::SCZ; z++) {
+
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x-1, chunkPos.y, chunkPos.z, VoxelEng::SCX-1, y, z);
+				height = heightMapMinusX[VoxelEng::SCX-1][z];
+
+				if (blockPos.y < height - 3)
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer2_);
+				else if (blockPos.y < height)
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer1_);
+				else if (blockPos.y == height)
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer0_);
+
+			}
+
+		// Y+
+		for (x = 0; x < VoxelEng::SCX; x++)
+			for (z = 0; z < VoxelEng::SCZ; z++) {
+
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y+1, chunkPos.z, x, 0, z);
+				height = heightMap[x][z];
+
+				if (blockPos.y < height - 3)
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::PLUSY, layer2_);
+				else if (blockPos.y < height)
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::PLUSY, layer1_);
+				else if (blockPos.y == height)
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::PLUSY, layer0_);
+
+			}
+
+		// Y-
+		for (x = 0; x < VoxelEng::SCX; x++)
+			for (z = 0; z < VoxelEng::SCZ; z++) {
+
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y-1, chunkPos.z, x, VoxelEng::SCY-1, z);
+				height = heightMap[x][z];
+
+				if (blockPos.y < height - 3)
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer2_);
+				else if (blockPos.y < height)
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer1_);
+				else if (blockPos.y == height)
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer0_);
+
+			}
+
+		// Z+
+		for (x = 0; x < VoxelEng::SCX; x++)
+			for (y = 0; y < VoxelEng::SCY; y++) {
+
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z+1, x, y, 0);
+				height = heightMapPlusZ[x][0];
+
+				if (blockPos.y < height - 3)
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::PLUSZ, layer2_);
+				else if (blockPos.y < height)
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::PLUSZ, layer1_);
+				else if (blockPos.y == height)
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::PLUSZ, layer0_);
+
+			}
+
+		// Z-
+		for (x = 0; x < VoxelEng::SCX; x++)
+			for (y = 0; y < VoxelEng::SCY; y++) {
+
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z-1, x, y, VoxelEng::SCZ - 1);
+				height = heightMapMinusZ[x][VoxelEng::SCZ-1];
+
+				if (blockPos.y < height - 3)
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer2_);
+				else if (blockPos.y < height)
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer1_);
+				else if (blockPos.y == height)
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer0_);
+
+			}
+
+		
 
 	}
 
@@ -535,7 +637,7 @@ namespace AIExample {
 		
 			cascadeChunk = VoxelEng::chunkManager::selectChunk(chunkPos);
 
-			if (cascadeChunk->loadLevel() == VoxelEng::chunkLoadLevel::NOTLOADED)
+			if (cascadeChunk->status() == VoxelEng::chunkStatus::NOTLOADED)
 				worldGen::generate(*cascadeChunk);
 		
 		}
@@ -629,7 +731,7 @@ namespace AIExample {
 
 			VoxelEng::chunkEvent* aChunkEvent = dynamic_cast<VoxelEng::chunkEvent*>(e);
 			if (std::is_polymorphic<VoxelEng::event>() && aChunkEvent == nullptr)
-				VoxelEng::logger::errorLog("The chunkLoadListener is attached to the event '" + e->name() + "', which is not a chunkEvent");
+				VoxelEng::logger::errorLog("The chunkLoadListener is attached to the event '" + e->name() + "', which is not a chunkEvent object");
 			else {
 			
 				chunkColHeightMutex_.lock();

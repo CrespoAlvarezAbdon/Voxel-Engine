@@ -2,7 +2,10 @@
 #include <string>
 #include <filesystem>
 
+#include "AI/AIGameEx1.h"
+
 #include "chunk.h"
+#include "player.h"
 #include "gui.h"
 #include "graphics.h"
 #include "logger.h"
@@ -129,12 +132,18 @@ namespace VoxelEng {
 
 			GUImanager::setLevelGUIOpened(false);
 
+			// TODO. ADD PROPER WORLDGENERATOR SELECTION.
+			if (!worldGen::isGenRegistered("miningWorldGen"))
+				worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
+			worldGen::selectGen("miningWorldGen");
+			worldGen::prepareGen();
+
 			// Convert character to int number (assuming the last character of the GUIElement's name is a digit).
 			unsigned int saveSlot = GUImanager::lastCheckedGUIElement()->name().back() - '0';
 			game::setSaveSlot(saveSlot);
 
 			// Check if save slot has valid data written.
-			if (std::filesystem::exists(std::filesystem::path("saves/slot" + std::to_string(game::selectedSaveSlot()) + "/level.terrain"))) {
+			if (std::filesystem::exists(std::filesystem::path("saves/slot" + std::to_string(game::selectedSaveSlot()) + "/mainData.world"))) {
 
 				// Hide load menu and don't show the main menu like the hideLoadMenu() function.
 				GUImanager::changeGUIState("loadMenu", false);
@@ -144,6 +153,7 @@ namespace VoxelEng {
 					GUImanager::changeGUIState("saveSlot" + std::to_string(i), false);
 
 				world::setupSaveDirectory();
+				world::loadMainData();
 
 				game::setLoopSelection(VoxelEng::engineMode::INITLEVEL);
 
@@ -170,13 +180,21 @@ namespace VoxelEng {
 
 			} while (!correct || slot > 5);
 
+			// TODO. ADD PROPER WORLDGENERATOR SELECTION.
+			if (!worldGen::isGenRegistered("miningWorldGen"))
+				worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
+			worldGen::selectGen("miningWorldGen");
+			worldGen::prepareGen();
 			worldGen::setSeed();
+
+			player::changeTransform(worldGen::playerSpawnPos());
 
 			game::setSlotAccessType(slotAccessType::createNew);
 			game::setSaveSlot(slot);
 
 			world::clearSlot();
 			world::setupSaveDirectory();
+			world::saveMainData();
 
 			game::setLoopSelection(VoxelEng::engineMode::INITLEVEL);
 

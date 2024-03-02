@@ -8,9 +8,8 @@
 #include "player.h"
 #include "game.h"
 #include "logger.h"
+#include "utilities.h"
 #include "worldGen.h"
-
-#include "timer.h"
 
 
 namespace VoxelEng {
@@ -18,9 +17,6 @@ namespace VoxelEng {
 	// 'world' class.
 
 	bool world::initialised_ = false;
-	unsigned int world::maxDistanceX_ = 0,
-				 world::maxDistanceY_ = 0,
-				 world::maxDistanceZ_ = 0;
 	std::unordered_map<std::string, tickFunc> world::globalTickFunctions_;
 	std::unordered_set<std::string> world::activeTickFunctions_;
 	std::mutex world::tickFunctionsMutex_;
@@ -36,10 +32,6 @@ namespace VoxelEng {
 		if (initialised_)
 			logger::errorLog("The world class is already initialised");
 		else {
-
-			maxDistanceX_ = 0;
-			maxDistanceY_ = 0;
-			maxDistanceZ_ = 0;
 
 			currentWorldSlot_ = 0;
 			currentWorldPath_.clear();
@@ -165,45 +157,112 @@ namespace VoxelEng {
 
 	void world::saveAll() {
 
-		saveMainData_();
+		saveMainData();
 		
 		saveAllChunks_();
 
 	}
 
+	void world::saveMainData() {
+
+		std::ofstream mainFile(currentWorldPath_ + "mainData.world", std::ios::binary | std::ios::out | std::ios::trunc);
+		std::string data;
+
+		data += std::to_string(player::globalPos()) + '|' + std::to_string(player::viewDirection()) + '|' + std::to_string(worldGen::getSeed()) + '|';
+
+		mainFile.write(data.c_str(), data.size());
+		mainFile.close();
+
+	}
+
 	void world::saveChunk(chunk* c) {
 
-		if (regions_) {
-
-			if (c->modified()) {
-
-				timer t;
-				t.start();
-
-				c->blockDataMutex().lock();
-
-				// Obtain local ID data.
-				std::string data((const char*)c->blocks(), sizeof(unsigned short) * nBlocksChunk);
-
-				data += '@';
-
-				// Obtain palette data.
-				const palette<unsigned short, unsigned int>& chunkPalette = c->getPalette();
-				for (auto it = chunkPalette.cbegin(); it != chunkPalette.cend(); it++)
-					data += std::to_string(it->first) + '|' + block::getBlockC(it->second).name() + '|';
-
-				regions_->insert(std::to_string(c->chunkPos()), data);
-
-				c->blockDataMutex().unlock();
-
-				t.finish();
-				logger::debugLog("Time for saving chunks is " + std::to_string(t.getDurationMs()));
-
-			}
-		}
+		if (regions_)
+			regions_->insert(std::to_string(c->chunkPos()), chunkManager::serializeChunk(c));
 		else
 			logger::errorLog("The chunk cannot be saved becaused the regions database is not opened");
 
+	}
+
+	std::string world::loadChunk(const vec3& chunkPos) {
+	
+		if (regions_)
+			return regions_->get(std::to_string(chunkPos));
+		else
+			logger::errorLog("The chunk cannot be saved becaused the regions database is not opened");
+	}
+
+	void world::loadMainData() {
+	
+		std::ifstream mainFile(currentWorldPath_ + "mainData.world", std::ios::binary);
+		
+		// 0 = Reading player's pos.
+		// 1 = Reading player's rotation.
+		// 2 = Reading world's seed.
+		unsigned int state = 0;
+		unsigned char fillingVec3Pos = 0;
+		vec3 auxVec3;
+		char c = mainFile.get();
+		std::string word;
+		while (!mainFile.eof()) {
+		
+			if (c == '|') {
+			
+				switch (state) {
+				
+				case 0:
+					if (fillingVec3Pos != 2)
+						logger::errorLog("The vector was not read properly");
+
+					auxVec3[fillingVec3Pos] = sto<float>(word);
+					fillingVec3Pos = 0;
+
+					player::globalPos(auxVec3);
+					break;
+
+				case 1:
+					if (fillingVec3Pos != 2)
+						logger::errorLog("The vector was not read properly");
+
+					auxVec3[fillingVec3Pos] = sto<float>(word);
+					fillingVec3Pos = 0;
+
+					player::viewDirection(auxVec3);
+					break;
+
+				case 2:
+					worldGen::setSeed(sto<unsigned int>(word));
+					break;
+
+				default:
+					logger::errorLog("Unknown reading state");
+				
+				}
+
+				state++;
+				word = "";
+
+			}
+			else if (c == ',') {
+			
+				auxVec3[fillingVec3Pos] = sto<float>(word);
+				word = "";
+
+				fillingVec3Pos++;
+			
+			}
+			else {
+			
+				word += c;
+			
+			}
+
+			c = mainFile.get();
+
+		}
+
+		mainFile.close();
+	
 	}
 
 	void world::setupSaveDirectory() {
@@ -248,24 +307,14 @@ namespace VoxelEng {
 	
 	}
 
-	void world::saveMainData_() {
 	
-		std::ofstream mainFile(currentWorldPath_ + "mainData.world", std::ios::binary | std::ios::out | std::ios::app);
-		std::string data;
-
-		data += std::to_string(maxDistanceX_) + '|' + std::to_string(maxDistanceY_) + '|' + std::to_string(maxDistanceZ_) + '|' + 
-			    std::to_string(player::globalPos()) + '|' + std::to_string(player::rotation()) + '|' + std::to_string(worldGen::getSeed()) +  '|';
-
-		mainFile.write(data.c_str(), data.size());
-		mainFile.close();
-	
-	}
 
 	void world::saveAllChunks_() {
 
 		const std::unordered_map<vec3, chunk*>& chunks = chunkManager::chunks();
 		for (auto it = chunks.cbegin(); it != chunks.cend(); it++)
-			saveChunk(it->second);
+			if (it->second->modified())
+				saveChunk(it->second);
 
 	}
 
