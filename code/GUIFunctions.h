@@ -33,25 +33,21 @@ namespace VoxelEng {
 		void hideLoadMenu();
 
 		/**
-		* @brief Show the level slot save menu.
+		* @brief Save all the data regarding the currently opened save slot
+		* (including chunks).
 		*/
-		void showSaveMenu();
+		void saveGame();
 
 		/**
-		* @brief Hide the level slot save menu.
+		* @brief Load the selected save slot.
+		* WARNING. Must be called from a save slot button.
 		*/
-		void hideSaveMenu();
+		void loadGame();
 
 		/**
 		* @brief Proceed to generate a new level and load it.
 		*/
 		void enterNewLevel();
-
-		/**
-		* @brief Access the corresponding save slot associated with the GUIbutton that called this function
-		* with the set slot access type specified in the 'game' class.
-		*/
-		void accessSaveSlot();
 
 		/**
 		* @brief Exit into the upper level of execution of the engine. For example, if the engine is currently

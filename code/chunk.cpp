@@ -1002,7 +1002,7 @@ namespace VoxelEng {
             if (chunk_->modified()) {
            
                 world::saveChunk(chunk_);
-                chunk_->modified() = false;
+                chunk_->modified(false);
             
             }
             

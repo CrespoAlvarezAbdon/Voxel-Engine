@@ -18,8 +18,8 @@ namespace VoxelEng {
 	std::unordered_map<std::string, worldGen*> worldGen::generators_;
 	worldGen* worldGen::defaultGen_ = nullptr;
 	worldGen* worldGen::selectedGen_ = nullptr;
+	const std::string* worldGen::selectedGenName_ = nullptr;
 
-	
 
 	void worldGen::init() {
 	
@@ -37,7 +37,7 @@ namespace VoxelEng {
 
 			defaultGen_ = generators_["default"];
 			selectedGen_ = defaultGen_;
-
+			selectedGenName_ = &generators_.begin()->first;
 			playerSpawnPos_ = vec3Zero;
 
 			initialised_ = true;

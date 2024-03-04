@@ -306,14 +306,16 @@ namespace VoxelEng {
 	
 	}
 
-	
-
 	void world::saveAllChunks_() {
 
 		const std::unordered_map<vec3, chunk*>& chunks = chunkManager::chunks();
 		for (auto it = chunks.cbegin(); it != chunks.cend(); it++)
-			if (it->second->modified())
+			if (it->second->modified()) {
+			
 				saveChunk(it->second);
+				it->second->modified(false);
+			
+			}
 
 	}
 

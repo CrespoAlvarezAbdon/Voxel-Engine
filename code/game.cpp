@@ -92,8 +92,6 @@ namespace VoxelEng {
 
     #endif
 
-    slotAccessType game::slotAccessType_ = slotAccessType::createNew;
-
 
     void game::init() {
 
@@ -248,10 +246,6 @@ namespace VoxelEng {
             GUImanager::addGUIBox("loadMenu", 0.5, 0.5, 0.3, 0.35, 1009, false, GUIcontainer::both);
             GUImanager::addGUIButton("loadMenu.exitButton", 0.5, 0.1, 0.10, 0.05, 1017, false, GUIcontainer::both, "loadMenu", 1);
 
-            // Save menu.
-            GUImanager::addGUIBox("saveMenu", 0.5, 0.5, 0.3, 0.35, 1013, false, GUIcontainer::both);
-            GUImanager::addGUIButton("saveMenu.exitButton", 0.5, 0.1, 0.10, 0.05, 1017, false, GUIcontainer::both, "saveMenu", 1);
-
             // Save slot buttons.
             GUImanager::addGUIButton("saveSlot1", 0.3, 0.65, 0.10, 0.05, 999, false, GUIcontainer::both, "loadMenu", 1);
             GUImanager::addGUIButton("saveSlot2", 0.7, 0.65, 0.10, 0.05, 1001, false, GUIcontainer::both, "loadMenu", 1);
@@ -267,22 +261,19 @@ namespace VoxelEng {
             // Main Menu/Level.
             GUImanager::bindActKeyFunction("mainMenu", GUIfunctions::changeStateLevelMenu, controlCode::escape);
             GUImanager::bindActMouseButtonFunction("mainMenu.loadButton", GUIfunctions::showLoadMenu, controlCode::leftButton);
-            GUImanager::bindActMouseButtonFunction("mainMenu.saveButton", GUIfunctions::showSaveMenu, controlCode::leftButton);
+            GUImanager::bindActMouseButtonFunction("mainMenu.saveButton", GUIfunctions::saveGame, controlCode::leftButton);
             GUImanager::bindActMouseButtonFunction("mainMenu.exitButton", GUIfunctions::exit, controlCode::leftButton);
             GUImanager::bindActMouseButtonFunction("mainMenu.newButton", GUIfunctions::enterNewLevel, controlCode::leftButton);
 
             // Load menu.
             GUImanager::bindActMouseButtonFunction("loadMenu.exitButton", GUIfunctions::hideLoadMenu, controlCode::leftButton);
 
-            // Save menu.
-            GUImanager::bindActMouseButtonFunction("saveMenu.exitButton", GUIfunctions::hideSaveMenu, controlCode::leftButton);
-
             // Save slot buttons.
-            GUImanager::bindActMouseButtonFunction("saveSlot1", GUIfunctions::accessSaveSlot, controlCode::leftButton);
-            GUImanager::bindActMouseButtonFunction("saveSlot2", GUIfunctions::accessSaveSlot, controlCode::leftButton);
-            GUImanager::bindActMouseButtonFunction("saveSlot3", GUIfunctions::accessSaveSlot, controlCode::leftButton);
-            GUImanager::bindActMouseButtonFunction("saveSlot4", GUIfunctions::accessSaveSlot, controlCode::leftButton);
-            GUImanager::bindActMouseButtonFunction("saveSlot5", GUIfunctions::accessSaveSlot, controlCode::leftButton);
+            GUImanager::bindActMouseButtonFunction("saveSlot1", GUIfunctions::loadGame, controlCode::leftButton);
+            GUImanager::bindActMouseButtonFunction("saveSlot2", GUIfunctions::loadGame, controlCode::leftButton);
+            GUImanager::bindActMouseButtonFunction("saveSlot3", GUIfunctions::loadGame, controlCode::leftButton);
+            GUImanager::bindActMouseButtonFunction("saveSlot4", GUIfunctions::loadGame, controlCode::leftButton);
+            GUImanager::bindActMouseButtonFunction("saveSlot5", GUIfunctions::loadGame, controlCode::leftButton);
 
 
             // Finish connecting some objects.
@@ -769,7 +760,7 @@ namespace VoxelEng {
 
                     case engineMode::EXITLEVEL:
 
-                        game::stopAuxiliaryThreads();
+                        stopAuxiliaryThreads();
                         loopSelection_ = engineMode::EXITLEVEL;
 
                         break;
@@ -794,25 +785,14 @@ namespace VoxelEng {
 
                         break;
 
-                    case engineMode::INITLEVEL:
-
-                        // Reload anything necessary between changing worlds.
-                        setLoopSelection(engineMode::EXITLEVEL);
-                        resetLevel();
-                        threadsExecute[0] = true;
-                        threadsExecute[1] = true;
-                        threadsExecute[2] = true;
-                        loopSelection_ = engineMode::INITLEVEL;
-
-                        break;
-
                     case engineMode::EDITLEVEL:
                         break;
 
                     case engineMode::EXITLEVEL:
 
-                        game::stopAuxiliaryThreads();
+                        stopAuxiliaryThreads();
                         chunkManager::clear();
+                        resetLevel();
                         loopSelection_ = engineMode::EXITLEVEL;
 
                         break;
@@ -830,8 +810,16 @@ namespace VoxelEng {
                 
                     case engineMode::GRAPHICALMENU:
 
-                        resetLevel();
                         loopSelection_ = engineMode::GRAPHICALMENU;
+
+                        break;
+
+                    case engineMode::INITLEVEL:
+
+                        threadsExecute[0] = true;
+                        threadsExecute[1] = true;
+                        threadsExecute[2] = true;
+                        loopSelection_ = engineMode::INITLEVEL;
 
                         break;
 

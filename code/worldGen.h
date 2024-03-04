@@ -77,6 +77,12 @@ namespace VoxelEng {
 		static bool isGenRegistered(const std::string& name);
 
 		/**
+		* @brief Returns true if the specified world generator is selected
+		* or false otherwise or if it is not registered.
+		*/
+		static bool isGenSelected(const std::string& name);
+
+		/**
 		* @brief Returns the current level's seed. Used for adding a controlled randomness
 		* factor to world generation.
 		*/
@@ -181,7 +187,7 @@ namespace VoxelEng {
 		Methods.
 		*/
 
-		//Modifiers.
+		// Modifiers.
 		
 		/*
 		Any preparations before generating a new level are made here.
@@ -205,6 +211,7 @@ namespace VoxelEng {
 		static std::unordered_map<std::string, worldGen*> generators_;
 		static worldGen* selectedGen_,
 					   * defaultGen_;
+		static const std::string* selectedGenName_;
 		
 	};
 
@@ -223,6 +230,12 @@ namespace VoxelEng {
 	inline bool worldGen::isGenRegistered(const std::string& name) {
 	
 		return generators_.find(name) != generators_.cend();
+	
+	}
+
+	inline bool worldGen::isGenSelected(const std::string& name) {
+	
+		return *selectedGenName_ == name;
 	
 	}
 

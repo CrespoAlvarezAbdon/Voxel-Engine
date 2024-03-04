@@ -390,7 +390,7 @@ namespace VoxelEng {
 		* since being generated or loaded from disk or
 		* false otherwise.
 		*/
-		bool& modified();
+		void modified(bool newValue);
 
 		/**
 		* @brief Regenerate the chunk's mesh. Returns true if the mesh contains vertices or false if it is empty.
@@ -777,9 +777,9 @@ namespace VoxelEng {
 
 	}
 
-	inline bool& chunk::modified() {
+	inline void chunk::modified(bool newValue) {
 
-		return modified_;
+		modified_ = newValue;
 
 	}
 

@@ -70,8 +70,6 @@ namespace VoxelEng {
 
 		void showLoadMenu() {
 
-			game::setSlotAccessType(slotAccessType::load);
-
 			changeStateMainMenu(false);
 			GUImanager::changeGUIState("loadMenu", true);
 			GUImanager::changeGUIState("loadMenu.exitButton", true);
@@ -93,38 +91,12 @@ namespace VoxelEng {
 
 		}
 
-		void showSaveMenu() {
-
-			game::setSlotAccessType(slotAccessType::save);
-
-			changeStateMainMenu(false);
-			GUImanager::changeGUIState("saveMenu", true);
-			GUImanager::changeGUIState("saveMenu.exitButton", true);
-
-			for (int i = 1; i <= 5; i++)
-				GUImanager::changeGUIState("saveSlot" + std::to_string(i), true);
-
-		}
-
-		void hideSaveMenu() {
-
-			GUImanager::changeGUIState("saveMenu", false);
-			GUImanager::changeGUIState("saveMenu.exitButton", false);
-
-			for (int i = 1; i <= 5; i++)
-				GUImanager::changeGUIState("saveSlot" + std::to_string(i), false);
-
-			changeStateMainMenu(true);
-
-		}
-
 		void saveGame() {
 
 			// Save chunk data into selected save slot.
 			world::saveAll();
 
-			logger::debugLog("Saved on slot " + std::to_string(GUImanager::lastCheckedGUIElement()->name().back() - '0'));
-
+			logger::debugLog("Saved on slot " + std::to_string(game::selectedSaveSlot()));
 
 		}
 
@@ -146,14 +118,22 @@ namespace VoxelEng {
 				for (int i = 1; i <= 5; i++)
 					GUImanager::changeGUIState("saveSlot" + std::to_string(i), false);
 
+				if (game::selectedEngineMode() == VoxelEng::engineMode::EDITLEVEL)
+					game::setLoopSelection(VoxelEng::engineMode::EXITLEVEL);
+
+				// Start preparing for the next level.
 				world::setupSaveDirectory();
 				world::loadMainData();
 
 				// TODO. ADD PROPER WORLDGENERATOR SELECTION.
 				if (!worldGen::isGenRegistered("miningWorldGen"))
 					worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
-				worldGen::selectGen("miningWorldGen");
-				worldGen::prepareGen();
+				if (!worldGen::isGenSelected("miningWorldGen")) {
+								
+					worldGen::selectGen("miningWorldGen");
+					worldGen::prepareGen();
+				
+				}
 
 				game::setLoopSelection(VoxelEng::engineMode::INITLEVEL);
 
@@ -184,12 +164,15 @@ namespace VoxelEng {
 			worldGen::setSeed();
 			if (!worldGen::isGenRegistered("miningWorldGen"))
 				worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
-			worldGen::selectGen("miningWorldGen");
-			worldGen::prepareGen();
+			if (!worldGen::isGenSelected("miningWorldGen")) {
+
+				worldGen::selectGen("miningWorldGen");
+				worldGen::prepareGen();
+
+			}
 			
 			player::globalPos(worldGen::playerSpawnPos());
 
-			game::setSlotAccessType(slotAccessType::createNew);
 			game::setSaveSlot(slot);
 
 			world::clearSlot();
@@ -198,20 +181,6 @@ namespace VoxelEng {
 
 			game::setLoopSelection(VoxelEng::engineMode::INITLEVEL);
 
-		}
-
-		void accessSaveSlot() {
-		
-			if (game::getSlotAccessType() == slotAccessType::load)
-				loadGame();
-			else {
-			
-				hideSaveMenu();
-
-				saveGame();
-			
-			}
-			
 		}
 
 		void exit() {

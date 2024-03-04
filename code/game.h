@@ -46,17 +46,6 @@ namespace VoxelEng {
     enum class engineMode {EXIT, AIMENULOOP, GRAPHICALMENU, INITLEVEL, EDITLEVEL, EXITLEVEL, INITRECORD, PLAYINGRECORD, EXITRECORD};
 
     /**
-    * @brief The different access modes when accessing a level save slot.
-    */
-    enum class slotAccessType {
-
-        save,
-        load,
-        createNew
-
-    };
-
-    /**
     * @brief Game engine API responsible for all the basic engines operations (startup, menu/level/AI mode loops, access to save slots...).
     * This class also serves as a way to abstract classes that directly implement the engine.
     * For example, instead of storing a reference to the player camera for the engines' graphical mode and polluting the code,
@@ -95,11 +84,6 @@ namespace VoxelEng {
 
 
         // Observers.
-
-        /**
-        * @brief Get the engine's current level save slot access type.
-        */
-        static slotAccessType getSlotAccessType();
 
         /**
         * @brief Get the currently selected save slot.
@@ -161,11 +145,6 @@ namespace VoxelEng {
         * If the specified slot doesn't have any data or doesn't exists, a new level will be generated.
         */
         static void setSaveSlot(unsigned int saveSlot);
-
-        /**
-        * @brief Set the engine's current level save slot mode.
-        */
-        static void setSlotAccessType(slotAccessType type);
 
         /**
         * @brief Returns the user's camera.
@@ -259,16 +238,8 @@ namespace VoxelEng {
             static glm::mat4 MVPmatrix_;
 
         #endif
-        
-        static slotAccessType slotAccessType_;
 
 	};
-
-    inline slotAccessType game::getSlotAccessType() {
-    
-        return slotAccessType_;
-    
-    }
 
     inline unsigned int game::selectedSaveSlot() {
     
@@ -297,12 +268,6 @@ namespace VoxelEng {
     inline void game::setSaveSlot(unsigned int slot) {
     
         saveSlot_ = slot;
-    
-    }
-
-    inline void game::setSlotAccessType(slotAccessType type) {
-    
-        slotAccessType_ = type;
     
     }
 
