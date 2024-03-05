@@ -351,11 +351,11 @@ namespace AIExample {
 				height = heightMapPlusX[0][z];
 
 				if (blockPos.y < height - 3)
-					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::PLUSX, layer2_);
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::PLUSX, layer2_, false);
 				else if (blockPos.y < height)
-					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::PLUSX, layer1_);
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::PLUSX, layer1_, false);
 				else if (blockPos.y == height)
-					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::PLUSX, layer0_);
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::PLUSX, layer0_, false);
 
 			}
 
@@ -367,11 +367,11 @@ namespace AIExample {
 				height = heightMapMinusX[VoxelEng::SCX-1][z];
 
 				if (blockPos.y < height - 3)
-					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer2_);
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer2_, false);
 				else if (blockPos.y < height)
-					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer1_);
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer1_, false);
 				else if (blockPos.y == height)
-					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer0_);
+					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer0_, false);
 
 			}
 
@@ -383,11 +383,11 @@ namespace AIExample {
 				height = heightMap[x][z];
 
 				if (blockPos.y < height - 3)
-					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::PLUSY, layer2_);
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::PLUSY, layer2_, false);
 				else if (blockPos.y < height)
-					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::PLUSY, layer1_);
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::PLUSY, layer1_, false);
 				else if (blockPos.y == height)
-					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::PLUSY, layer0_);
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::PLUSY, layer0_, false);
 
 			}
 
@@ -399,11 +399,11 @@ namespace AIExample {
 				height = heightMap[x][z];
 
 				if (blockPos.y < height - 3)
-					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer2_);
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer2_, false);
 				else if (blockPos.y < height)
-					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer1_);
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer1_, false);
 				else if (blockPos.y == height)
-					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer0_);
+					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer0_, false);
 
 			}
 
@@ -415,11 +415,11 @@ namespace AIExample {
 				height = heightMapPlusZ[x][0];
 
 				if (blockPos.y < height - 3)
-					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::PLUSZ, layer2_);
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::PLUSZ, layer2_, false);
 				else if (blockPos.y < height)
-					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::PLUSZ, layer1_);
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::PLUSZ, layer1_, false);
 				else if (blockPos.y == height)
-					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::PLUSZ, layer0_);
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::PLUSZ, layer0_, false);
 
 			}
 
@@ -431,15 +431,13 @@ namespace AIExample {
 				height = heightMapMinusZ[x][VoxelEng::SCZ-1];
 
 				if (blockPos.y < height - 3)
-					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer2_);
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer2_, false);
 				else if (blockPos.y < height)
-					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer1_);
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer1_, false);
 				else if (blockPos.y == height)
-					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer0_);
+					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer0_, false);
 
 			}
-
-		
 
 	}
 

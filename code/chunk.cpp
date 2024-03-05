@@ -161,12 +161,14 @@ namespace VoxelEng {
         unsigned short& actualLocalID = blocksLocalIDs[x][y][z];
         unsigned short oldLocalID = actualLocalID;
         unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
-
+ 
         placeNewBlock(actualLocalID, b);
 
-        needsRemesh_ = needsRemesh_ || oldLocalID != actualLocalID;
+        bool blockWasModified = oldLocalID != actualLocalID;
 
-        modified_ = needsRemesh_ && (modified_ || modification);
+        needsRemesh_ = needsRemesh_ || blockWasModified;
+
+        modified_ = modified_ || (blockWasModified && modification);
 
         if (!oldLocalID && actualLocalID)
             nBlocks_++;
@@ -231,19 +233,20 @@ namespace VoxelEng {
 
     }
 
-    void chunk::setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block) {
+    void chunk::setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification) {
 
         unsigned short oldLocalID = 0;
+        bool blockWasModified = false;
         
         if (neighbor == blockViewDir::NONE)
             logger::errorLog("No block view direction was specified");
-
         else if (neighbor == blockViewDir::PLUSX) {
 
             unsigned short& actualLocalID = neighborBlocksPlusX_[firstIndex][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
-            needsRemesh_ = needsRemesh_ || oldLocalID != actualLocalID && blocksLocalIDs[VoxelEng::SCX - 1][firstIndex][secondIndex];
+            blockWasModified = oldLocalID != actualLocalID;
+            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[VoxelEng::SCX - 1][firstIndex][secondIndex];
             if (!oldLocalID && actualLocalID)
                 nBlocksPlusX_++;
             else if (oldLocalID && !actualLocalID)
@@ -255,7 +258,8 @@ namespace VoxelEng {
             unsigned short& actualLocalID = neighborBlocksMinusX_[firstIndex][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
-            needsRemesh_ = needsRemesh_ || oldLocalID != actualLocalID && blocksLocalIDs[0][firstIndex][secondIndex];
+            blockWasModified = oldLocalID != actualLocalID;
+            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[0][firstIndex][secondIndex];
             if (!oldLocalID && actualLocalID)
                 nBlocksMinusX_++;
             else if (oldLocalID && !actualLocalID)
@@ -267,7 +271,8 @@ namespace VoxelEng {
             unsigned short& actualLocalID = neighborBlocksPlusY_[firstIndex][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
-            needsRemesh_ = needsRemesh_ || oldLocalID != actualLocalID && blocksLocalIDs[firstIndex][VoxelEng::SCX - 1][secondIndex];
+            blockWasModified = oldLocalID != actualLocalID;
+            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[firstIndex][VoxelEng::SCX - 1][secondIndex];
             if (!oldLocalID && actualLocalID)
                 nBlocksPlusY_++;
             else if (oldLocalID && !actualLocalID)
@@ -279,7 +284,8 @@ namespace VoxelEng {
             unsigned short& actualLocalID = neighborBlocksMinusY_[firstIndex][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
-            needsRemesh_ = needsRemesh_ || oldLocalID != actualLocalID && blocksLocalIDs[firstIndex][0][secondIndex];
+            blockWasModified = oldLocalID != actualLocalID;
+            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[firstIndex][0][secondIndex];
             if (!oldLocalID && actualLocalID)
                 nBlocksMinusY_++;
             else if (oldLocalID && !actualLocalID)
@@ -291,7 +297,8 @@ namespace VoxelEng {
             unsigned short& actualLocalID = neighborBlocksPlusZ_[firstIndex][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
-            needsRemesh_ = needsRemesh_ || oldLocalID != actualLocalID && blocksLocalIDs[firstIndex][secondIndex][VoxelEng::SCX - 1];
+            blockWasModified = oldLocalID != actualLocalID;
+            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[firstIndex][secondIndex][VoxelEng::SCX - 1];
             if (!oldLocalID && actualLocalID)
                 nBlocksPlusZ_++;
             else if (oldLocalID && !actualLocalID)
@@ -303,7 +310,8 @@ namespace VoxelEng {
             unsigned short& actualLocalID = neighborBlocksMinusZ_[firstIndex][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
-            needsRemesh_ = needsRemesh_ || oldLocalID != actualLocalID && blocksLocalIDs[firstIndex][secondIndex][0];
+            blockWasModified = oldLocalID != actualLocalID;
+            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[firstIndex][secondIndex][0];
             if (!oldLocalID && actualLocalID)
                 nBlocksMinusZ_++;
             else if (oldLocalID && !actualLocalID)
@@ -312,6 +320,8 @@ namespace VoxelEng {
         }
         else
             logger::errorLog("Unsupported block view direction specified");
+
+        modified_ = modified_ || (blockWasModified && modification);
 
     }
 
@@ -981,7 +991,7 @@ namespace VoxelEng {
                 
                 }
 
-                chunk_->needsRemesh(true);
+                chunk_->needsRemesh(true); // EL BUG ES QUE SI MODIFICO UN BLOCK EN UN BORDE, TAMBIEN HAY QUE GUARDAR EL CHUNK VECINO QUE LE HACE FRONTERA.
 
             }
             else // Generate new chunk.

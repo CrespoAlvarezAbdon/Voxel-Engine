@@ -330,17 +330,17 @@ namespace VoxelEng {
 		* @brief Sets the value of a block within the chunk.
 		* Returns the replaced block.
 		* 'modification' tells if the call to this method is NOT part of the
-		* chunk's generation process or otherwise.
-		* WARNING. For world generators that use this method: 'modification' must be set to false.
+		* chunk's generation process or otherwise. For world generators that use this method, it must be set to false.
 		*/
 		const block& setBlock(unsigned int linearIndex, const block& block, bool modification = true);
 
 		/**
 		* @brief Set a neighbor block.
-		* A neighbor block is a copy of a block that is bordering this chunk. This copy is stored for mesh optimization
-		* purposes.
+		* A neighbor block is a copy of a block that is bordering this chunk. This copy is stored for mesh optimization purposes.
+		* 'modification' tells if the call to this method is NOT part of the
+		* chunk's generation process or otherwise. For world generators that use this method, it must be set to false.
 		*/
-		void setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block);
+		void setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification = true);
 
 		/**
 		* @brief Returns the chunk's chunk position.
