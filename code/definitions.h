@@ -122,7 +122,7 @@ namespace VoxelEng {
 	/**
 	* @brief Default maximum distance in chunk coordinates for chunks to be computed in the X and Z axes.
 	*/
-	const unsigned int DEF_N_CHUNKS_TO_COMPUTE = 10;
+	const unsigned int DEF_N_CHUNKS_TO_COMPUTE = 20;
 
 	/**
 	* @brief Total number of blocks to compute taking into account the total amount of chunks to compute and the size of a chunk in blocks.

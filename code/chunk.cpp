@@ -1629,7 +1629,8 @@ namespace VoxelEng {
             bool continueCreatingChunks = false;
             vec3 chunkPos = vec3Zero;
             unsigned int nIterations = 0;
-            const unsigned int maxIterations = 64;
+            const unsigned int defaultMaxIterations = 128;
+            unsigned int maxIterations = defaultMaxIterations;
             while (game::threadsExecute[2]) {
 
                 continueCreatingChunks = false;
@@ -1637,7 +1638,10 @@ namespace VoxelEng {
                 do {
 
                     playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
-                    ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z);
+                    ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // ALSO NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
+
+                    maxIterations = chunkTasks_->size() < 10000 ? defaultMaxIterations : 1;
+                    logger::debugLog("N chunk jobs is " + std::to_string(chunkTasks_->size()) + " and maxIterations is " + std::to_string(maxIterations));
 
                     // Load new chunks that are inside render distance if necessary.
                     // Mark frontier chunks that are no longer frontier.
@@ -1692,6 +1696,13 @@ namespace VoxelEng {
                 updateReadChunkMeshes(priorityUpdatesLock);
                 managerThreadCV_.wait(lock);
 
+                {
+                
+                    using namespace std::chrono_literals;
+                    std::this_thread::sleep_for(1ms);
+                
+                }
+
             }
 
         }
@@ -1719,6 +1730,13 @@ namespace VoxelEng {
                 priorityUpdatesRemainingCV_.notify_all();
 
                 priorityNewChunkMeshesCV_.wait(lockNewChunksMeshes);
+
+                {
+
+                    using namespace std::chrono_literals;
+                    std::this_thread::sleep_for(1ms);
+
+                }
 
             }
 
@@ -1809,7 +1827,7 @@ namespace VoxelEng {
     bool chunkManager::ensureChunkIfVisible(const vec3& chunkPos) {
         
         chunksMutex_.lock();
-        if (chunkInRenderDistance(chunkPos)) {
+        if (chunkInRenderDistance(chunkPos)) { // NEXT. PROBAR A METER UN AGOBIATED RENDER DISTANCE Y UN METODO CHUNKTASKS IS AGOBIATED PARA SETTEAR EL MAX N ITERACIONES Y QUE AQUI SE COMPRUEBE EL AGOBIATED RENDER DISTANCE EN VEZ DEL NORMAL.
 
             if (clientChunks_.contains(chunkPos)) {
 

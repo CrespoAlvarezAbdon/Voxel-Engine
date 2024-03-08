@@ -123,6 +123,13 @@ namespace VoxelEng {
 
 				entityManager::manageEntities();
 
+				{
+
+					using namespace std::chrono_literals;
+					std::this_thread::sleep_for(1ms);
+
+				}
+
 			}
 
 			// Unlock any mutexes required for synchronisation with the rendering thread and used in the functions inside the loop below.
