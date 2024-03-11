@@ -68,7 +68,7 @@ namespace VoxelEng {
 	/**
 	* @brief The different stages that a chunk has during its lifetime.
 	*/
-	enum class chunkStatus { NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2};
+	enum class chunkStatus { NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2, MESHED = 3};
 
 	enum class chunkJobType { NONE = 0, LOAD = 1, ONLYREMESH = 2, UNLOADANDSAVE = 3, PRIORITYREMESH = 4};
 
@@ -1386,6 +1386,7 @@ namespace VoxelEng {
 
 		/**
 		* @brief Renews the mesh of the specified chunk and marks it if it is ready to be drawn.
+		* Sets the chunk's status to MESHED.
 		*/
 		static void renewMesh(chunk* chunk, bool isPriorityUpdate);
 
@@ -1474,33 +1475,24 @@ namespace VoxelEng {
 
 		};
 
-
-		// NEW THINGS START HERE
-
-		static vec3 playerChunkPosCopy_; // Copy of the last value of the player's position in chunk coordinates.
-		static std::list<vec3> frontierChunks_;
-		static std::unordered_map<vec3, std::list<vec3>::iterator> frontierChunksSet_;
-		static std::list<vec3>::iterator frontierIt_;
-		static notInRenderDistance notInRenderDistance_;
-		static closestChunk closestChunk_;
-		static threadPool* chunkTasks_, 
-						 * priorityChunkTasks_;
-		static atomicRecyclingPool<chunkJob>* loadChunkJobs_;
-		static atomicRecyclingPool<chunk> chunksPool_;
-		static chunkEvent onChunkLoad_;
-		static chunkEvent onChunkUnload_;
-		static vertexBuffer* vbo_;
-		static std::atomic<bool> clearChunksFlag_,
-			                     priorityUpdatesRemaining_;
-
-		// NEW THINGS END HERE
-
 		/*
 		Attributes.
 		*/
 
 		static bool initialised_;
+		static bool chunkJobSystemOverloaded_;
 		static int nChunksToCompute_;
+
+		static std::atomic<bool> clearChunksFlag_;
+		static std::atomic<bool> priorityUpdatesRemaining_;
+
+		/*
+		Used to force all meshing threads to synchronize with
+		the rendering thread when a high priority
+		chunk update is issued and it's imperative than the update
+		made is reflected in the rendering thread as quickly as possible.
+		*/
+		static std::atomic<bool> waitInitialTerrainLoaded_;
 
 		// Chunks that are loaded by the player.
 		static std::unordered_map<vec3, chunk*> clientChunks_; 
@@ -1514,8 +1506,9 @@ namespace VoxelEng {
 		static std::unordered_map<vec3, model>* chunkMeshesUpdated_,
 											  * chunkMeshesWrite_,
 											  * chunkMeshesRead_;
-		static std::list<chunk*> newChunkMeshes_,
-								 priorityNewChunkMeshes_;
+
+		static std::list<chunk*> newChunkMeshes_;
+		static std::list<chunk*> priorityNewChunkMeshes_;
 			                      
 		static std::mutex managerThreadMutex_,
 						  priorityManagerThreadMutex_,
@@ -1530,25 +1523,36 @@ namespace VoxelEng {
 									   loadingTerrainCV_;
 		static std::condition_variable_any priorityUpdatesRemainingCV_;
 
-		/*
-		Used to force all meshing threads to synchronize with
-		the rendering thread when a high priority
-		chunk update is issued and it's imperative than the update
-		made is reflected in the rendering thread as quickly as possible.
-		*/
-		static std::atomic<bool> waitInitialTerrainLoaded_;
-
-		static std::string openedTerrainFileName_; // TODO. DEPRECEATED. REPLACE WITH THE WORLD SYSTEM EQUIVALENT NAMED 'currentWorldPath_'.
-
 		static std::unordered_map<unsigned int, std::unordered_map<vec3, bool>> AIChunkAvailable_;
 		static std::unordered_map<unsigned int, std::unordered_map<vec3, chunk*>> AIagentChunks_;
 		static unsigned int selectedAIWorld_;
 		static bool originalWorldAccess_;
 
+		static vec3 playerChunkPosCopy_; // Copy of the last value of the player's position in chunk coordinates.
+
+		static std::list<vec3> frontierChunks_;
+		static std::unordered_map<vec3, std::list<vec3>::iterator> frontierChunksSet_;
+		static std::list<vec3>::iterator frontierIt_;
+
+		static closestChunk closestChunk_;
+
+		static threadPool* chunkTasks_;
+		static threadPool* priorityChunkTasks_;
+
+		static atomicRecyclingPool<chunkJob>* loadChunkJobs_;
+		static atomicRecyclingPool<chunk> chunksPool_;
+
+		static chunkEvent onChunkLoad_;
+		static chunkEvent onChunkUnload_;
+
+		static vertexBuffer* vbo_;
+
+		static std::string openedTerrainFileName_; // TODO. DEPRECEATED. REPLACE WITH THE WORLD SYSTEM EQUIVALENT NAMED 'currentWorldPath_'.
 
 		/*
 		Methods.
 		*/
+
 		static const block& getBlockOGWorld_(int posX, int posY, int posZ);
 
 	};

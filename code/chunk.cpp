@@ -325,7 +325,6 @@ namespace VoxelEng {
 
     }
 
-    // LO QUE PASA ES QUE NO SE GUARDAN LOS NEIGHBOR BLOCKS.
     bool chunk::renewMesh() {
 
         std::unique_lock<std::shared_mutex> lock(renderingDataMutex_);
@@ -1001,6 +1000,8 @@ namespace VoxelEng {
 
             chunkManager::renewMesh(chunk_, false);
 
+
+
         }
         else if (type_ == chunkJobType::ONLYREMESH) {
         
@@ -1038,34 +1039,21 @@ namespace VoxelEng {
 
     // 'chunkManager' class.
 
-    // NEW STARTS HERE
-
-    vec3 chunkManager::playerChunkPosCopy_;
-    std::list<vec3> chunkManager::frontierChunks_;
-    std::unordered_map<vec3, std::list<vec3>::iterator> chunkManager::frontierChunksSet_;
-    std::list<vec3>::iterator chunkManager::frontierIt_;
-    chunkManager::notInRenderDistance chunkManager::notInRenderDistance_;
-    chunkManager::closestChunk chunkManager::closestChunk_;
-    threadPool* chunkManager::chunkTasks_ = nullptr,
-              * chunkManager::priorityChunkTasks_ = nullptr;
-    atomicRecyclingPool<chunkJob>* chunkManager::loadChunkJobs_;
-    atomicRecyclingPool<chunk> chunkManager::chunksPool_;
-    chunkEvent chunkManager::onChunkLoad_("On chunk load");
-    chunkEvent chunkManager::onChunkUnload_("On chunk unload");
-    vertexBuffer* chunkManager::vbo_ = nullptr;
-    std::atomic<bool> chunkManager::clearChunksFlag_ = false,
-                      chunkManager::priorityUpdatesRemaining_ = false;
-
-    // NEW ENDS HERE
-
     bool chunkManager::initialised_ = false;
+    bool chunkManager::chunkJobSystemOverloaded_ = false;
     int chunkManager::nChunksToCompute_ = 0;
+
+    std::atomic<bool> chunkManager::clearChunksFlag_ = false;
+    std::atomic<bool> chunkManager::priorityUpdatesRemaining_ = false;
+
+    std::atomic<bool> chunkManager::waitInitialTerrainLoaded_ = true;
+
     std::unordered_map<vec3, chunk*> chunkManager::clientChunks_;
     std::unordered_map<vec3, model>* chunkManager::chunkMeshesUpdated_,
                                    * chunkManager::chunkMeshesWrite_,
                                    * chunkManager::chunkMeshesRead_;
-    std::list<chunk*> chunkManager::newChunkMeshes_,
-                      chunkManager::priorityNewChunkMeshes_;
+    std::list<chunk*> chunkManager::newChunkMeshes_;
+    std::list<chunk*> chunkManager::priorityNewChunkMeshes_;
 
     std::mutex chunkManager::managerThreadMutex_,
                chunkManager::priorityManagerThreadMutex_,
@@ -1080,21 +1068,39 @@ namespace VoxelEng {
                             chunkManager::loadingTerrainCV_;
     std::condition_variable_any chunkManager::priorityUpdatesRemainingCV_;
 
-    std::atomic<bool> chunkManager::waitInitialTerrainLoaded_ = true;
-
-    std::string chunkManager::openedTerrainFileName_ = "";
-
     std::unordered_map<unsigned int, std::unordered_map<vec3, bool>> chunkManager::AIChunkAvailable_;
     std::unordered_map<unsigned int, std::unordered_map<vec3, chunk*>> chunkManager::AIagentChunks_;
     unsigned int chunkManager::selectedAIWorld_ = 0;
-
     bool chunkManager::originalWorldAccess_ = true;
+
+    vec3 chunkManager::playerChunkPosCopy_;
+    std::list<vec3> chunkManager::frontierChunks_;
+    std::unordered_map<vec3, std::list<vec3>::iterator> chunkManager::frontierChunksSet_;
+    std::list<vec3>::iterator chunkManager::frontierIt_;
+
+    chunkManager::closestChunk chunkManager::closestChunk_;
+
+    threadPool* chunkManager::chunkTasks_ = nullptr;
+    threadPool* chunkManager::priorityChunkTasks_ = nullptr;
+
+    atomicRecyclingPool<chunkJob>* chunkManager::loadChunkJobs_;
+    atomicRecyclingPool<chunk> chunkManager::chunksPool_;
+
+    chunkEvent chunkManager::onChunkLoad_("On chunk load");
+    chunkEvent chunkManager::onChunkUnload_("On chunk unload");
+
+    vertexBuffer* chunkManager::vbo_ = nullptr;
+
+    std::string chunkManager::openedTerrainFileName_;
+    
 
     void chunkManager::init() {
 
         if (initialised_)
             logger::errorLog("Chunk management system was already initialised");
         else {
+            
+            nChunksToCompute_ = 0;
 
             waitInitialTerrainLoaded_ = true;
 
@@ -1153,25 +1159,9 @@ namespace VoxelEng {
 
         chunk* c = nullptr;
 
-        newChunkMeshesMutex_.lock();
-        for (auto it = newChunkMeshes_.begin(); it != newChunkMeshes_.end();) {
-
-            while (priorityUpdatesRemaining_)
-                priorityUpdatesRemainingCV_.wait(priorityUpdatesLock);
-
-            c = *it;
-            c->lockSharedRenderingDataMutex();
-            model& vertices = c->renderingData().vertices;
-            if (vertices.size())
-                chunkMeshesUpdated_->operator[](c->chunkPos()) = vertices;
-            c->unlockSharedRenderingDataMutex();
-
-            it = newChunkMeshes_.erase(it);
-
-        }
-        newChunkMeshesMutex_.unlock();
-
         for (auto it = chunkMeshesUpdated_->begin(); it != chunkMeshesUpdated_->end();) {
+
+            playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
 
             while (priorityUpdatesRemaining_)
                 priorityUpdatesRemainingCV_.wait(priorityUpdatesLock);
@@ -1182,6 +1172,30 @@ namespace VoxelEng {
                 it++;
 
         }
+
+        newChunkMeshesMutex_.lock();
+        for (auto it = newChunkMeshes_.begin(); it != newChunkMeshes_.end();) {
+
+            while (priorityUpdatesRemaining_)
+                priorityUpdatesRemainingCV_.wait(priorityUpdatesLock);
+
+            c = *it;
+            if (c->status() == chunkStatus::MESHED) {
+
+                c->lockSharedRenderingDataMutex();
+                model& vertices = c->renderingData().vertices;
+                if (vertices.size())
+                    chunkMeshesUpdated_->operator[](c->chunkPos()) = vertices;
+                c->unlockSharedRenderingDataMutex();
+
+                it = newChunkMeshes_.erase(it);
+
+            }
+            else
+                it++;
+
+        }
+        newChunkMeshesMutex_.unlock();
 
         *chunkMeshesWrite_ = *chunkMeshesUpdated_; // Possible way to solve this bottleneck in the future?
 
@@ -1389,7 +1403,7 @@ namespace VoxelEng {
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
         auto it = clientChunks_.find(chunkPos);
-        if (it != clientChunks_.end() && it->second->status() == chunkStatus::DECORATED)
+        if (it != clientChunks_.end() && it->second->status() >= chunkStatus::DECORATED)
             return it->second;
         else
             return nullptr;
@@ -1402,7 +1416,7 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
         auto it = clientChunks_.find(chunkPos);
-        if (it != clientChunks_.end() && it->second->status() == chunkStatus::DECORATED)
+        if (it != clientChunks_.end() && it->second->status() >= chunkStatus::DECORATED)
             return clientChunks_.at(chunkPos);
         else
             return nullptr;
@@ -1415,7 +1429,7 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
         auto it = clientChunks_.find(chunkPos);
-        if (it != clientChunks_.end() && it->second->status() == chunkStatus::DECORATED)
+        if (it != clientChunks_.end() && it->second->status() >= chunkStatus::DECORATED)
             return clientChunks_.at(chunkPos);
         else
             return nullptr;
@@ -1568,6 +1582,7 @@ namespace VoxelEng {
     void chunkManager::renewMesh(chunk* chunk, bool isPriorityUpdate) {
     
         unsigned int vertexSize = chunk->renewMesh();
+        chunk->status(chunkStatus::MESHED);
 
         if (isPriorityUpdate) {
 
@@ -1587,7 +1602,7 @@ namespace VoxelEng {
             newChunkMeshesMutex_.unlock();
 
         }
-        
+
     }
 
     void chunkManager::renewMesh(const vec3& chunkPos, bool isPriorityUpdate) {
@@ -1635,13 +1650,12 @@ namespace VoxelEng {
 
                 continueCreatingChunks = false;
 
+                
+                ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // ALSO NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
+
                 do {
 
-                    playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
-                    ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // ALSO NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
-
                     maxIterations = chunkTasks_->size() < 10000 ? defaultMaxIterations : 1;
-                    logger::debugLog("N chunk jobs is " + std::to_string(chunkTasks_->size()) + " and maxIterations is " + std::to_string(maxIterations));
 
                     // Load new chunks that are inside render distance if necessary.
                     // Mark frontier chunks that are no longer frontier.
@@ -1650,6 +1664,7 @@ namespace VoxelEng {
                     nIterations = 0;
                     for (frontierIt_ = frontierChunks_.begin(); frontierIt_ != frontierChunks_.end() && nIterations < maxIterations;) {
 
+                        playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
                         chunkPos = *frontierIt_;
 
                         while (priorityUpdatesRemaining_)
@@ -1668,6 +1683,19 @@ namespace VoxelEng {
                             ensureChunkIfVisible(chunkPos.x, chunkPos.y - 1, chunkPos.z) +
                             ensureChunkIfVisible(chunkPos.x, chunkPos.y, chunkPos.z + 1) +
                             ensureChunkIfVisible(chunkPos.x, chunkPos.y, chunkPos.z - 1) == 6) {
+
+                            chunksMutex_.lock();
+                            chunk* c = clientChunks_[*frontierIt_];
+                            chunksMutex_.unlock();
+                            if (c->renderingData().vertices.size()) {
+;
+                                newChunkMeshesMutex_.lock();
+
+                                newChunkMeshes_.push_back(c);
+
+                                newChunkMeshesMutex_.unlock();
+
+                            }
 
                             continueCreatingChunks = ++nIterations < maxIterations;
 
@@ -1825,9 +1853,11 @@ namespace VoxelEng {
     }
 
     bool chunkManager::ensureChunkIfVisible(const vec3& chunkPos) {
-        
+       
+        bool chunkInDistance = chunkInRenderDistance(chunkPos);
+
         chunksMutex_.lock();
-        if (chunkInRenderDistance(chunkPos)) { // NEXT. PROBAR A METER UN AGOBIATED RENDER DISTANCE Y UN METODO CHUNKTASKS IS AGOBIATED PARA SETTEAR EL MAX N ITERACIONES Y QUE AQUI SE COMPRUEBE EL AGOBIATED RENDER DISTANCE EN VEZ DEL NORMAL.
+        if (chunkInDistance) { 
 
             if (clientChunks_.contains(chunkPos)) {
 
@@ -1907,7 +1937,7 @@ namespace VoxelEng {
     }
 
     chunk* chunkManager::loadChunk(const vec3& chunkPos) {
-    
+
         chunk* c = &chunksPool_.get();
 
         c->chunkPos() = chunkPos;
