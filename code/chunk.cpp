@@ -345,7 +345,6 @@ namespace VoxelEng {
                 z;
             const block* bNeighbor = nullptr;
             unsigned short neighborLocalID = 0;
-            // Do not iterate through this if there are no blocks to render faces that belong to this chunk.
             if (nBlocks_ && nBlocks_ < nBlocksChunk) 
                 for (x = 0; x < SCX; x++)
                     for (y = 0; y < SCY; y++)
@@ -354,7 +353,7 @@ namespace VoxelEng {
                             // Add block's model to the mesh if necessary.
                             if (!blocksLocalIDs[x][y][z]) {
 
-                                // Front face vertices with culling of non-visible faces. z+
+                                // Culling of non-visible faces.
                                 if (z < SCZLimit && (neighborLocalID = blocksLocalIDs[x][y][z + 1])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
@@ -376,16 +375,16 @@ namespace VoxelEng {
                                     }
 
                                     // Add texture to the face.
-                                    models::addTexture(*bNeighbor, renderingData_.vertices);
+                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceZ-");
 
                                 }
 
-                                // Back face vertices with culling of non-visible faces. z-
+                                // Culling of non-visible faces.
                                 if (z > 0 && (neighborLocalID = blocksLocalIDs[x][y][z - 1])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
-                                    // Create the face's vertices for z-.
+                                    // Create the face's vertices for z+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = renderingData_.chunkPos.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
@@ -402,11 +401,11 @@ namespace VoxelEng {
                                     }
 
                                     // Add texture to the face.
-                                    models::addTexture(*bNeighbor, renderingData_.vertices);
+                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceZ+");
 
                                 }
                                 
-                                // Top face vertices with culling of non-visible faces. y+
+                                // Culling of non-visible faces. y+
                                 if (y < SCYLimit && (neighborLocalID = blocksLocalIDs[x][y + 1][z])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
@@ -428,11 +427,11 @@ namespace VoxelEng {
                                     }
 
                                     // Add texture to the face.
-                                    models::addTexture(*bNeighbor, renderingData_.vertices);
+                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceY-");
 
                                 }
                                 
-                                // Bottom face vertices with culling of non-visible faces. y-
+                                // Culling of non-visible faces. y-
                                 if (y > 0 && (neighborLocalID = blocksLocalIDs[x][y - 1][z])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
@@ -454,11 +453,11 @@ namespace VoxelEng {
                                     }
 
                                     // Add texture to the face.
-                                    models::addTexture(*bNeighbor, renderingData_.vertices);
+                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceY+");
 
                                 }
                                 
-                                // Right face vertices with culling of non-visible faces. x+
+                                // Culling of non-visible faces. x+
                                 if (x < SCXLimit && (neighborLocalID = blocksLocalIDs[x + 1][y][z])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
@@ -480,11 +479,11 @@ namespace VoxelEng {
                                     }
 
                                     // Add texture to the face.
-                                    models::addTexture(*bNeighbor, renderingData_.vertices);
+                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceX-");
 
                                 }
                                 
-                                // Left face vertices with culling of non-visible faces. x-
+                                // Culling of non-visible faces. x-
                                 if (x > 0 && (neighborLocalID = blocksLocalIDs[x - 1][y][z])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
@@ -506,7 +505,7 @@ namespace VoxelEng {
                                     }
 
                                     // Add texture to the face.
-                                    models::addTexture(*bNeighbor, renderingData_.vertices);
+                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceX+");
 
                                 }
                                 
@@ -544,7 +543,7 @@ namespace VoxelEng {
                                 }
 
                                 // Add texture to the face.
-                                models::addTexture(*bNeighbor, renderingData_.vertices);
+                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceZ-");
 
                             }
 
@@ -566,7 +565,7 @@ namespace VoxelEng {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
-                                // Create the face's vertices for z-.
+                                // Create the face's vertices for z+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                     aux.positions[0] = renderingData_.chunkPos.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
@@ -583,7 +582,7 @@ namespace VoxelEng {
                                 }
 
                                 // Add texture to the face.
-                                models::addTexture(*bNeighbor, renderingData_.vertices);
+                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceZ+");
 
                             }
 
@@ -605,7 +604,7 @@ namespace VoxelEng {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
-                                // Create the face's vertices for face y+.
+                                // Create the face's vertices for face y-.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                     aux.positions[0] = renderingData_.chunkPos.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
@@ -622,7 +621,7 @@ namespace VoxelEng {
                                 }
 
                                 // Add texture to the face.
-                                models::addTexture(*bNeighbor, renderingData_.vertices);
+                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceY-");
 
                             }
 
@@ -661,7 +660,7 @@ namespace VoxelEng {
                                 }
 
                                 // Add texture to the face.
-                                models::addTexture(*bNeighbor, renderingData_.vertices);
+                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceY+");
 
                             }
 
@@ -683,7 +682,7 @@ namespace VoxelEng {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
-                                // Create the face's vertices for face x+.
+                                // Create the face's vertices for face x-.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                     aux.positions[0] = (renderingData_.chunkPos.x + 1) * SCX + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
@@ -700,7 +699,7 @@ namespace VoxelEng {
                                 }
 
                                 // Add texture to the face.
-                                models::addTexture(*bNeighbor, renderingData_.vertices);
+                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceX-");
 
                             }
 
@@ -739,7 +738,7 @@ namespace VoxelEng {
                                 }
 
                                 // Add texture to the face.
-                                models::addTexture(*bNeighbor, renderingData_.vertices);
+                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceX+");
 
                             }
 
@@ -1632,6 +1631,8 @@ namespace VoxelEng {
 
         {
 
+            // FIXME. LOS JOBS DE NEIGHBOR QUE SE TIENE QUE ACTUALIZAR CON PRIORITY DEBEN IR EN UN MISMO JOB SINO DA PROBLEMAS.
+
             std::unique_lock<std::mutex> lock(managerThreadMutex_),
                                          priorityUpdatesLock(priorityUpdatesRemainingMutex_);
 
@@ -1688,7 +1689,7 @@ namespace VoxelEng {
                             chunk* c = clientChunks_[*frontierIt_];
                             chunksMutex_.unlock();
                             if (c->renderingData().vertices.size()) {
-;
+
                                 newChunkMeshesMutex_.lock();
 
                                 newChunkMeshes_.push_back(c);

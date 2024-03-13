@@ -125,15 +125,16 @@ namespace VoxelEng {
             AImodeON_ = false;
 
             // Block registration.
-            block::registerBlock("starminer::grass", 1); // manual texture ID assignemt is temporary
-            block::registerBlock("starminer::stone", 2);
-            block::registerBlock("starminer::sand", 3);
-            block::registerBlock("starminer::marbleBlock", 4);
-            block::registerBlock("starminer::dirt", 6);
-            block::registerBlock("starminer::coalOre", 7);
-            block::registerBlock("starminer::ironOre", 8);
-            block::registerBlock("starminer::goldOre", 9);
-            block::registerBlock("starminer::diamondOre", 10);
+            block::registerBlock("starminer::grass", { {"all", 1} }); // manual texture ID assignemt is temporary
+            block::registerBlock("starminer::stone", { {"all", 2} });
+            block::registerBlock("starminer::sand", { {"all", 3} });
+            block::registerBlock("starminer::marbleBlock", { {"all", 4} });
+            block::registerBlock("starminer::dirt", { {"all", 6} });
+            block::registerBlock("starminer::coalOre", { {"all", 7} });
+            block::registerBlock("starminer::ironOre", { {"all", 8} });
+            block::registerBlock("starminer::goldOre", { {"all", 9} });
+            block::registerBlock("starminer::diamondOre", { {"all", 10}});
+            block::registerBlock("starminer::log", { {"all", 11}, {"faceY+", 12}, {"faceY-", 12}});
 
             // Worldgen initialisation.
 

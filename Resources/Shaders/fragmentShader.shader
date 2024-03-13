@@ -15,9 +15,9 @@ uniform int u_renderMode;
 uniform int u_useComplexLighting;
 
 // Local variables.
-vec4 ambient = vec4(0.6, 0.6, 0.6, 1);
+vec4 ambient = vec4(0.8, 0.8, 0.8, 1);
 vec3 lightColor = vec3(1, 1, 1);
-float specularStrength = 1;
+float specularStrength = 2;
 float distance = length(u_sunLightPos - v_fragPos);
 
 // Main.
@@ -40,11 +40,8 @@ void main() {
 		vec3 reflectLightDir = lightDir;
 
 		float specular = 0;
-		if (diff > 0) { // SEE IF THIS IS NECESSARRY.
 
-			specular = pow(clamp(dot(viewDir, reflectLightDir), 0.0, 1.0), 32) / (distance / 10);
-
-		}
+		specular = pow(clamp(dot(viewDir, reflectLightDir), 0.0, 1.0), 32) / (distance / 10);
 
 		vec4 specularLighting = vec4(specularStrength * specular * lightColor, 1.0);
 

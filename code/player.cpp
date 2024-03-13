@@ -331,7 +331,7 @@ namespace VoxelEng {
 
             GUIelement& element = GUImanager::getGUIElement("blockPreview");
             element.lockMutex();
-            element.changeTextureID(block.textureID());
+            element.changeTextureID(block.textureID("faceY+"));
             element.unlockMutex();
 
         }

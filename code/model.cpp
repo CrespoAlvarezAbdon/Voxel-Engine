@@ -233,66 +233,23 @@ namespace VoxelEng {
 
     }
 
-	void models::addTexture(const block& block, unsigned int textureID, model& m) {
-		
-		float atlasWidth = texture::blockTextureAtlas()->width(),
-			  atlasHeight = texture::blockTextureAtlas()->height(),
-			  textureWidth = texture::blockAtlasResolution(), // This will depend on texture ID in the future.
-			  textureHeight = texture::blockAtlasResolution(), // This will depend on texture ID in the future.
-			  texCoordX = (textureID % (int)(atlasWidth / textureWidth)) / (atlasWidth / textureWidth),
-			  texCoordY = std::ceil(textureID / (atlasHeight / textureHeight)) / (atlasHeight / textureHeight),
-		      texCoordX2 = texCoordX - 1 / (atlasWidth / textureWidth),
-			  texCoordY2 = texCoordY - 1 / (atlasHeight / textureHeight);
-		
+    void models::addBlockFaceTexture(const block& block, model& m, const std::string& textureName) {
 
-        if (!block.isEmptyBlock() && textureID != 0) {
-            
-            unsigned int modelSize = m.size();
+        unsigned int textureID = 0;
+        textureID = block.textureID(textureName);
 
-            if (modelSize >= 6) {
+        const std::pair<int, int>& widthHeight = texture::getTextureWH(textureID);
 
-                m.operator[](modelSize - 6).textureCoords[0] = texCoordX2;
-                m.operator[](modelSize - 6).textureCoords[1] = texCoordY2;
-
-                m.operator[](modelSize - 5).textureCoords[0] = texCoordX2;
-                m.operator[](modelSize - 5).textureCoords[1] = texCoordY;
-
-                m.operator[](modelSize - 4).textureCoords[0] = texCoordX;
-                m.operator[](modelSize - 4).textureCoords[1] = texCoordY2;
-
-                m.operator[](modelSize - 3).textureCoords[0] = texCoordX;
-                m.operator[](modelSize - 3).textureCoords[1] = texCoordY2;
-
-                m.operator[](modelSize - 2).textureCoords[0] = texCoordX2;
-                m.operator[](modelSize - 2).textureCoords[1] = texCoordY;
-
-                m.operator[](modelSize - 1).textureCoords[0] = texCoordX;
-                m.operator[](modelSize - 1).textureCoords[1] = texCoordY;
-
-            }
-            else
-                logger::errorLog("Not enough vertices to add face's texture.");
-            
-        }
-
-	}
-
-    void models::addTexture(const block& block, model& m) {
-
-        unsigned int textureID = block.textureID();
         float atlasWidth = texture::blockTextureAtlas()->width(),
               atlasHeight = texture::blockTextureAtlas()->height(),
-              textureWidth = texture::blockAtlasResolution(), // This will depend on block type in the future.
-              textureHeight = texture::blockAtlasResolution(), // This will depend on block type in the future.
-              widthRatio = atlasWidth / textureWidth,
-              heightRatio = atlasHeight / textureHeight,
+              widthRatio = atlasWidth / widthHeight.first,
+              heightRatio = atlasHeight / widthHeight.second,
               texCoordX = (textureID % (int)widthRatio) / (widthRatio),
               texCoordY = std::ceil(textureID / heightRatio) / heightRatio,
               texCoordX2 = texCoordX - 1 / widthRatio,
               texCoordY2 = texCoordY - 1 / heightRatio;
 
-
-        if (&block && textureID) {
+        if (textureID) {
 
             unsigned int modelSize = m.size();
 

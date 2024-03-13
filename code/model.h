@@ -96,19 +96,12 @@ namespace VoxelEng {
 		static const modelTriangles& getModelTriangles(unsigned int modelID);
 
 		/**
-		* @brief Add a specified texture for a face of a terrain block.
+		* @brief Add a texture for a face of a terrain block. The added texture is specified
+		* by giving the name of a texture corresponding to said block.
 		* WARNING. Only call when just all the face's vertices have been added
 		* to the model.
 		*/
-		static void addTexture(const block& block, unsigned int textureID, model& m);
-
-		/**
-		* @brief Add a texture for a face of a terrain block. The added texture is 
-		* the one corresponding to the specified block.
-		* WARNING. Only call when just all the face's vertices have been added
-		* to the model.
-		*/
-		static void addTexture(const block& block, model& m);
+		static void addBlockFaceTexture(const block& block, model& m, const std::string& textureName);
 
 
 		// Clean up.

@@ -192,7 +192,7 @@ namespace VoxelEng {
 
 	void GUIbox::addTextures() {
 
-		const std::pair<int, int>& textureHW = texture::getTextureWH(textureID_);
+		const std::pair<int, int>& textureWH = texture::getTextureWH(textureID_);
 		float atlasWidth = texture::blockTextureAtlas()->width(),
 			  atlasHeight = texture::blockTextureAtlas()->height(),
 			  texCoordX = (textureID_ % (int)(atlasWidth / MIN_TEX_RES)) / (atlasWidth / MIN_TEX_RES) - (MIN_TEX_RES / atlasWidth),
@@ -204,19 +204,19 @@ namespace VoxelEng {
 			vertices_[0].textureCoords[1] = texCoordY;
 
 			vertices_[1].textureCoords[0] = texCoordX + 0.005 / atlasWidth; // +0.005 / atlasWidth is used to correct some texture bleeding.
-			vertices_[1].textureCoords[1] = texCoordY - (textureHW.second / atlasHeight);
+			vertices_[1].textureCoords[1] = texCoordY - (textureWH.second / atlasHeight);
 
-			vertices_[2].textureCoords[0] = texCoordX + (textureHW.first / atlasWidth);
-			vertices_[2].textureCoords[1] = texCoordY - (textureHW.second / atlasHeight);
+			vertices_[2].textureCoords[0] = texCoordX + (textureWH.first / atlasWidth);
+			vertices_[2].textureCoords[1] = texCoordY - (textureWH.second / atlasHeight);
 
-			vertices_[3].textureCoords[0] = texCoordX + (textureHW.first / atlasWidth);
+			vertices_[3].textureCoords[0] = texCoordX + (textureWH.first / atlasWidth);
 			vertices_[3].textureCoords[1] = texCoordY;
 
 			vertices_[4].textureCoords[0] = texCoordX;
 			vertices_[4].textureCoords[1] = texCoordY;
 
-			vertices_[5].textureCoords[0] = texCoordX + (textureHW.first / atlasWidth);
-			vertices_[5].textureCoords[1] = texCoordY - (textureHW.second / atlasHeight);
+			vertices_[5].textureCoords[0] = texCoordX + (textureWH.first / atlasWidth);
+			vertices_[5].textureCoords[1] = texCoordY - (textureWH.second / atlasHeight);
 
 		}
 		else

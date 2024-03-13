@@ -69,7 +69,7 @@ namespace VoxelEng {
 		/**
 		* @brief Returns the currently used block texture atlas' resolution per block.
 		*/
-		static int blockAtlasResolution();
+		static int blockTextureAtlasResolution();
 
 		/**
 		* @brief Returns the width and height of the specified texture with the 'textureID'.
@@ -120,8 +120,8 @@ namespace VoxelEng {
 
 		static texture const* blockTextureAtlas_;
 		static unsigned int blockAtlasResolution_;
-		static std::unordered_map<unsigned int, std::pair<int, int>> texturesHW_;
-		static std::pair<int, int> defaultTextureHW_;
+		static std::unordered_map<unsigned int, std::pair<int, int>> texturesWH_;
+		static std::pair<int, int> defaultTextureWH_;
 
 		GLuint rendererID_;
 		std::string textureFilepath_; 
@@ -157,7 +157,7 @@ namespace VoxelEng {
 
 	}
 
-	inline int texture::blockAtlasResolution() {
+	inline int texture::blockTextureAtlasResolution() {
 
 		return blockAtlasResolution_;
 
@@ -165,7 +165,7 @@ namespace VoxelEng {
 
 	inline const std::pair<int, int>& texture::getTextureWH(unsigned int textureID) {
 
-		return texturesHW_.find(textureID) == texturesHW_.cend() ? defaultTextureHW_ : texturesHW_[textureID];
+		return texturesWH_.find(textureID) == texturesWH_.cend() ? defaultTextureWH_ : texturesWH_[textureID];
 
 	}
 

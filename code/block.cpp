@@ -17,9 +17,12 @@ namespace VoxelEng {
 			logger::errorLog("Block system is already initialised");
 		else {
 		
-			auto it = blocks_.emplace(std::pair<std::string, block>(emptyBlockName_, block(emptyBlockName_, 0, 0)));
+			auto it = blocks_.emplace(std::pair<std::string, block>(emptyBlockName_, block(emptyBlockName_, 0)));
 			emptyBlock_ = &it.first->second;
 			blocksIntIDs_.insert(std::pair<unsigned int, block*>(0, emptyBlock_));
+
+			// Init empty block.
+			emptyBlock_->textureID("all", 0); // Texture ID 0 means no texture.
 
 			initialised_ = true;
 
@@ -44,7 +47,20 @@ namespace VoxelEng {
 
 	}
 
-	void block::registerBlock(const std::string& name, unsigned int textureID) {
+	unsigned int block::textureID(const std::string& textureName, bool returnDefault) const {
+
+		if (textures_.contains(textureName))
+			return textures_.at(textureName);
+		else {
+			if (returnDefault)
+				return textures_.at("all");
+			else
+				logger::errorLog("The specified texture " + textureName + " is not associated with block " + name_);
+		}
+
+	}
+
+	void block::registerBlock(const std::string& name, std::initializer_list<std::pair<std::string, unsigned int>> textures) {
 	
 		if (blocks_.contains(name))
 			logger::errorLog("Block " + name + " already registered");
@@ -60,9 +76,24 @@ namespace VoxelEng {
 
 			}
 
-			auto it = blocks_.emplace(std::pair<std::string, block>(name, block(name, intID, textureID)));
+			auto it = blocks_.emplace(std::pair<std::string, block>(name, block(name, intID)));
 			blocksIntIDs_.emplace(std::pair<unsigned int, block*>(intID, &it.first->second));
-		
+
+			// Init block.
+			block& block = it.first->second;
+
+			if (textures.size()) {
+
+				for (auto it = textures.begin(); it != textures.end(); it++)
+					block.textureID(it->first, it->second);
+				
+				if (!block.containsTexture("all"))
+					block.textureID("all", textures.begin()->second);
+
+			}
+			else
+				block.textureID("all", 0);
+			
 		}
 		
 	}

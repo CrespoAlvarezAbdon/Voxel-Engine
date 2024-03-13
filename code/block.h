@@ -1,7 +1,17 @@
+/**
+* @file block.h
+* @version 1.0
+* @date 25/04/2023
+* @author Abdon Crespo Alvarez
+* @title Block
+* @brief A block is the minimal (for now) unit of terrain in the engine.
+*/
 #ifndef _VOXELENG_BLOCK_
 #define _VOXELENG_BLOCK_
 
+#include <initializer_list>
 #include <string>
+#include <utility>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -11,7 +21,7 @@
 namespace VoxelEng {
 
 	/**
-	* @brief A block is the minimal unit of terrain in this engine. This class is the base
+	* @brief A block is the minimal (for now) unit of terrain in the engine. This class is the base
 	* for the representation of any type of blocks registered and supported by this engine.
 	*/
 	class block { // NEXT. METER EL REGISTRO DE IDS NUMERICAS
@@ -84,10 +94,25 @@ namespace VoxelEng {
 		unsigned int intID() const;
 
 		/**
-		* @brief Returns the texture ID assigned to this block.
+		* @brief Returns the specified texture ID of this block. A block can have many textures assigned.
+		* Each one of them is identified by
 		* Said ID is used to locate the block's texture inside the texture atlas.
 		*/
-		unsigned int textureID() const; // TODO. FILL TEXTURE ID WITH PROPER DYNAMIC ATLAS BUILDING.
+		unsigned int textureIDAt(const std::string& textureName) const; // TODO. FILL TEXTURE ID WITH PROPER DYNAMIC ATLAS BUILDING.
+
+		/**
+		* @brief Returns the specified texture ID of this block. A block can have many textures assigned.
+		* Each one of them is identified by
+		* Said ID is used to locate the block's texture inside the texture atlas.
+		* Returns the default texture named "all" assigned to each block or throws an exception if returnDefault is true or false respectively
+		* and the specified texture is not associated with this block.
+		*/
+		unsigned int textureID(const std::string& textureName, bool returnDefault = true) const;
+
+		/**
+		* @brief Returns true if the specified texture is associated with the block or false otherwise.
+		*/
+		bool containsTexture(const std::string& textureName);
 
 		/**
 		* @brief Returns true if this block is the empty block or
@@ -107,12 +132,17 @@ namespace VoxelEng {
 		* @brief Registers a block into the system.
 		* Its numerical ID is assigned automatically.
 		*/
-		static void registerBlock(const std::string& name, unsigned int textureID);
+		static void registerBlock(const std::string& name, std::initializer_list<std::pair<std::string, unsigned int>> textures);
 
 		/**
 		* @brief Unregisters a block.
 		*/
 		static void unregisterBlock(const std::string& name);
+
+		/**
+		* @brief Sets the texture specified with 'name' for this block.
+		*/
+		void textureID(const std::string& name, unsigned int ID);
 
 
 		// Destructors.
@@ -138,7 +168,7 @@ namespace VoxelEng {
 
 		// Constructors.
 
-		block(const std::string& name, unsigned int indID, unsigned int textureID);
+		block(const std::string& name, unsigned int indID);
 
 
 		/*
@@ -154,20 +184,18 @@ namespace VoxelEng {
 
 		const std::string name_;
 		const unsigned int intID_;
-		unsigned int textureID_; // 0 means no texture assigned.
+		std::unordered_map<std::string, unsigned int> textures_;
 
 	};
 
 	inline block::block()
 	: name_(""),
-	  intID_(0),
-	  textureID_(0)
+	  intID_(0)
 	{}
 
-	inline block::block(const std::string& name, unsigned int intID, unsigned int textureID)
+	inline block::block(const std::string& name, unsigned int intID)
     : name_(name),
-	  intID_(intID),
-	  textureID_(textureID)
+	  intID_(intID)
 	{}
 
 	inline bool block::operator==(const block& b) const {
@@ -206,9 +234,17 @@ namespace VoxelEng {
 
 	}
 
-	inline unsigned int block::textureID() const {
+	inline unsigned int block::textureIDAt(const std::string& name) const {
 	
-		return textureID_;
+		return textures_.at(name);
+	
+	}
+
+	
+
+	inline bool block::containsTexture(const std::string& textureName) {
+	
+		return textures_.contains(textureName);
 	
 	}
 
@@ -221,6 +257,12 @@ namespace VoxelEng {
 	inline const std::string& block::name() const {
 	
 		return name_;
+	
+	}
+
+	inline void block::textureID(const std::string& name, unsigned int ID) {
+	
+		textures_[name] = ID;
 	
 	}
 

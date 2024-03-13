@@ -6,7 +6,8 @@ namespace VoxelEng {
 
 	// 'texture' class.
 
-	std::unordered_map<unsigned int, std::pair<int, int>> texture::texturesHW_ = {
+	// TODO. THIS WILL BE DYNAMICALLY CREATED WITH THE DYNAMIC ATLAS.
+	std::unordered_map<unsigned int, std::pair<int, int>> texture::texturesWH_ = {
 
 		{929, {32, 16}},
 		{961, {32, 16}},
@@ -25,7 +26,7 @@ namespace VoxelEng {
 	};
 	texture const* texture::blockTextureAtlas_ = nullptr;
 	unsigned int texture::blockAtlasResolution_ = 0;
-	std::pair<int, int> texture::defaultTextureHW_ = {16, 16};
+	std::pair<int, int> texture::defaultTextureWH_ = {16, 16};
 
 
 	texture::texture(const std::string& filepath)
