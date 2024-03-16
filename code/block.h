@@ -20,6 +20,17 @@
 
 namespace VoxelEng {
 
+	//////////
+	//Enums.//
+	//////////
+
+	enum class blockOpacity {EMPTYBLOCK = -1, FULLTRANSPARENT = 0, TRANSLUCENTBLOCK = 1, OPAQUEBLOCK = 2};
+
+
+	////////////
+	//Classes.//
+	////////////
+
 	/**
 	* @brief A block is the minimal (for now) unit of terrain in the engine. This class is the base
 	* for the representation of any type of blocks registered and supported by this engine.
@@ -125,6 +136,11 @@ namespace VoxelEng {
 		*/
 		const std::string& name() const;
 
+		/**
+		* @brief Returns the block's opacity.
+		*/
+		blockOpacity opacity() const;
+
 
 		// Modifiers.
 
@@ -132,17 +148,12 @@ namespace VoxelEng {
 		* @brief Registers a block into the system.
 		* Its numerical ID is assigned automatically.
 		*/
-		static void registerBlock(const std::string& name, std::initializer_list<std::pair<std::string, unsigned int>> textures);
+		static void registerBlock(const std::string& name, blockOpacity opacity, const std::initializer_list<std::pair<std::string, unsigned int>>& textures);
 
 		/**
 		* @brief Unregisters a block.
 		*/
 		static void unregisterBlock(const std::string& name);
-
-		/**
-		* @brief Sets the texture specified with 'name' for this block.
-		*/
-		void textureID(const std::string& name, unsigned int ID);
 
 
 		// Destructors.
@@ -168,7 +179,8 @@ namespace VoxelEng {
 
 		// Constructors.
 
-		block(const std::string& name, unsigned int indID);
+		block(const std::string& name, unsigned int intID, blockOpacity opacity,
+			const std::initializer_list<std::pair<std::string, unsigned int>>& texture);
 
 
 		/*
@@ -184,18 +196,15 @@ namespace VoxelEng {
 
 		const std::string name_;
 		const unsigned int intID_;
+		blockOpacity opacity_;
 		std::unordered_map<std::string, unsigned int> textures_;
 
 	};
 
 	inline block::block()
 	: name_(""),
-	  intID_(0)
-	{}
-
-	inline block::block(const std::string& name, unsigned int intID)
-    : name_(name),
-	  intID_(intID)
+	  intID_(0),
+	  opacity_(blockOpacity::OPAQUEBLOCK)
 	{}
 
 	inline bool block::operator==(const block& b) const {
@@ -240,8 +249,6 @@ namespace VoxelEng {
 	
 	}
 
-	
-
 	inline bool block::containsTexture(const std::string& textureName) {
 	
 		return textures_.contains(textureName);
@@ -260,9 +267,9 @@ namespace VoxelEng {
 	
 	}
 
-	inline void block::textureID(const std::string& name, unsigned int ID) {
+	inline blockOpacity block::opacity() const {
 	
-		textures_[name] = ID;
+		return opacity_;
 	
 	}
 

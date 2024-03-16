@@ -16,6 +16,7 @@ uniform int u_useComplexLighting;
 
 // Local variables.
 vec4 ambient = vec4(0.8, 0.8, 0.8, 1);
+vec4 textureColor = vec4(0, 0, 0, 0);
 vec3 lightColor = vec3(1, 1, 1);
 float specularStrength = 2;
 float distance = length(u_sunLightPos - v_fragPos);
@@ -45,8 +46,15 @@ void main() {
 
 		vec4 specularLighting = vec4(specularStrength * specular * lightColor, 1.0);
 
+		// Get texture color.
+		textureColor = texture(u_Texture, v_TexCoord);
+		
+		// Discard transparent fragments.
+		if (textureColor.a < 0.1)
+			discard;
+
 		// Final color calculation.
-		color = (ambient + (diffuseLighting + specularLighting) * u_useComplexLighting) * texture(u_Texture, v_TexCoord);
+		color = (ambient + (diffuseLighting + specularLighting) * u_useComplexLighting) * textureColor;
 	
 	}
 	else {

@@ -283,19 +283,19 @@ namespace VoxelEng {
 
 	inline void inputFunctions::selectBlockSlot6() {
 
-		player::setBlockToPlace(block::getBlockC("starminer::ironOre"));
+		player::setBlockToPlace(block::getBlockC("starminer::glassBlue"));
 
 	}
 
 	inline void inputFunctions::selectBlockSlot7() {
 
-		player::setBlockToPlace(block::getBlockC("starminer::goldOre"));
+		player::setBlockToPlace(block::getBlockC("starminer::glassRed"));
 
 	}
 
 	inline void inputFunctions::selectBlockSlot8() {
 
-		player::setBlockToPlace(block::getBlockC("starminer::diamondOre"));
+		player::setBlockToPlace(block::getBlockC("starminer::glass"));
 
 	}
 

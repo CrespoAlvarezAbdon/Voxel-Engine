@@ -344,17 +344,22 @@ namespace VoxelEng {
                 y,
                 z;
             const block* bNeighbor = nullptr;
+            unsigned short localID = 0;
             unsigned short neighborLocalID = 0;
+            bool letsLightPass = false;
             if (nBlocks_ && nBlocks_ < nBlocksChunk) 
                 for (x = 0; x < SCX; x++)
                     for (y = 0; y < SCY; y++)
                         for (z = 0; z < SCZ; z++) {
 
+                            localID = blocksLocalIDs[x][y][z];
+                            block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+
                             // Add block's model to the mesh if necessary.
-                            if (!blocksLocalIDs[x][y][z]) {
+                            if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
 
                                 // Culling of non-visible faces.
-                                if (z < SCZLimit && (neighborLocalID = blocksLocalIDs[x][y][z + 1])) {
+                                if (z < SCZLimit && (neighborLocalID = blocksLocalIDs[x][y][z + 1]) && neighborLocalID != localID) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -380,7 +385,7 @@ namespace VoxelEng {
                                 }
 
                                 // Culling of non-visible faces.
-                                if (z > 0 && (neighborLocalID = blocksLocalIDs[x][y][z - 1])) {
+                                if (z > 0 && (neighborLocalID = blocksLocalIDs[x][y][z - 1]) && neighborLocalID != localID) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -405,8 +410,8 @@ namespace VoxelEng {
 
                                 }
                                 
-                                // Culling of non-visible faces. y+
-                                if (y < SCYLimit && (neighborLocalID = blocksLocalIDs[x][y + 1][z])) {
+                                // Culling of non-visible faces.
+                                if (y < SCYLimit && (neighborLocalID = blocksLocalIDs[x][y + 1][z]) && neighborLocalID != localID) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -431,8 +436,8 @@ namespace VoxelEng {
 
                                 }
                                 
-                                // Culling of non-visible faces. y-
-                                if (y > 0 && (neighborLocalID = blocksLocalIDs[x][y - 1][z])) {
+                                // Culling of non-visible faces.
+                                if (y > 0 && (neighborLocalID = blocksLocalIDs[x][y - 1][z]) && neighborLocalID != localID) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -457,8 +462,8 @@ namespace VoxelEng {
 
                                 }
                                 
-                                // Culling of non-visible faces. x+
-                                if (x < SCXLimit && (neighborLocalID = blocksLocalIDs[x + 1][y][z])) {
+                                // Culling of non-visible faces.
+                                if (x < SCXLimit && (neighborLocalID = blocksLocalIDs[x + 1][y][z]) && neighborLocalID != localID) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -483,8 +488,8 @@ namespace VoxelEng {
 
                                 }
                                 
-                                // Culling of non-visible faces. x-
-                                if (x > 0 && (neighborLocalID = blocksLocalIDs[x - 1][y][z])) {
+                                // Culling of non-visible faces.
+                                if (x > 0 && (neighborLocalID = blocksLocalIDs[x - 1][y][z]) && neighborLocalID != localID) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -517,12 +522,15 @@ namespace VoxelEng {
             
                 for (x = 0; x < SCX; x++)
                     for (y = 0; y < SCY; y++) {
-                    
+
+                        localID = blocksLocalIDs[x][y][SCZLimit];
+                        block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+
                         // Add block's model to the mesh if necessary.
-                        if (!blocksLocalIDs[x][y][SCZLimit]) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
 
                             // Front face vertices with culling of non-visible faces. z+
-                            if (neighborLocalID = neighborBlocksPlusZ_[x][y]) {
+                            if ((neighborLocalID = neighborBlocksPlusZ_[x][y]) && neighborLocalID != localID) {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -558,10 +566,13 @@ namespace VoxelEng {
                 for (x = 0; x < SCX; x++)
                     for (y = 0; y < SCY; y++) {
 
-                        // Add block's model to the mesh if necessary.
-                        if (!blocksLocalIDs[x][y][0]) {
+                        localID = blocksLocalIDs[x][y][0];
+                        block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                            if (neighborLocalID = neighborBlocksMinusZ_[x][y]) {
+                        // Add block's model to the mesh if necessary.
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+
+                            if ((neighborLocalID = neighborBlocksMinusZ_[x][y]) && neighborLocalID != localID) {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -597,10 +608,13 @@ namespace VoxelEng {
                 for (x = 0; x < SCX; x++)
                     for (z = 0; z < SCZ; z++) {
 
-                        // Add block's model to the mesh if necessary.
-                        if (!blocksLocalIDs[x][SCYLimit][z]) {
+                        localID = blocksLocalIDs[x][SCYLimit][z];
+                        block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                            if (neighborLocalID = neighborBlocksPlusY_[x][z]) {
+                        // Add block's model to the mesh if necessary.
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+
+                            if ((neighborLocalID = neighborBlocksPlusY_[x][z]) && neighborLocalID != localID) {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -636,10 +650,13 @@ namespace VoxelEng {
                 for (x = 0; x < SCX; x++)
                     for (z = 0; z < SCZ; z++) {
 
-                        // Add block's model to the mesh if necessary.
-                        if (!blocksLocalIDs[x][0][z]) {
+                        localID = blocksLocalIDs[x][0][z];
+                        block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                            if (neighborLocalID = neighborBlocksMinusY_[x][z]) {
+                        // Add block's model to the mesh if necessary.
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+
+                            if ((neighborLocalID = neighborBlocksMinusY_[x][z]) && neighborLocalID != localID) {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -675,10 +692,13 @@ namespace VoxelEng {
                 for (y = 0; y < SCY; y++)
                     for (z = 0; z < SCZ; z++) {
 
-                        // Add block's model to the mesh if necessary.
-                        if (!blocksLocalIDs[SCXLimit][y][z]) {
+                        localID = blocksLocalIDs[SCXLimit][y][z];
+                        block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                            if (neighborLocalID = neighborBlocksPlusX_[y][z]) {
+                        // Add block's model to the mesh if necessary.
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+
+                            if ((neighborLocalID = neighborBlocksPlusX_[y][z]) && neighborLocalID != localID) {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -714,10 +734,13 @@ namespace VoxelEng {
                 for (y = 0; y < SCY; y++)
                     for (z = 0; z < SCZ; z++) {
 
-                        // Add block's model to the mesh if necessary.
-                        if (!blocksLocalIDs[0][y][z]) {
+                        localID = blocksLocalIDs[0][y][z];
+                        block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                            if (neighborLocalID = neighborBlocksMinusX_[y][z]) {
+                        // Add block's model to the mesh if necessary.
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+
+                            if ((neighborLocalID = neighborBlocksMinusX_[y][z]) && neighborLocalID != localID) {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 

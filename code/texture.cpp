@@ -51,7 +51,7 @@ namespace VoxelEng {
 		// If the last parameter is nullptr, 
 		// we are only allocating space in OpenGL,
 		// not providing it any data.
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer_);	
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer_);	
 
 		// Clear the local buffer.
 		if (buffer_) 
