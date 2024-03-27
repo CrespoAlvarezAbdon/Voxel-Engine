@@ -475,6 +475,7 @@ namespace VoxelEng {
         playerTransform_->viewDirection = glm::normalize(playerTransform_->viewDirection);
 
         camera_->updateTransform(playerTransform_);
+        //entityManager::setTransform(playerEntity_->ID(), *playerTransform_); // TODO. MAKE PLAYER ENTITY MOVE WITH ENTITY
     
     }
 

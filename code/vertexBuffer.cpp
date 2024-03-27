@@ -1,10 +1,13 @@
 #include "vertexBuffer.h"
 #include "renderer.h"
 #include "logger.h"
-
 #include "graphics.h"
-#include <iostream>
-#include <ostream>
+
+#if GRAPHICS_API == OPENGL
+
+#include <GL/glew.h> // POSSIBLE ERROR AQUÍ POR PONERLO EN ESTE ORDEN?
+
+#endif
 
 
 namespace VoxelEng {

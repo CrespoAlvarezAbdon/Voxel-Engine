@@ -30,11 +30,16 @@
     <ClCompile Include="code\camera.cpp" />
     <ClCompile Include="code\chunk.cpp" />
     <ClCompile Include="code\controls.cpp" />
+    <ClCompile Include="code\database.cpp" />
     <ClCompile Include="code\event.cpp" />
     <ClCompile Include="code\External code\stb_image.cpp" />
     <ClCompile Include="code\game.cpp" />
     <ClCompile Include="code\gameWindow.cpp" />
     <ClCompile Include="code\graphics.cpp" />
+    <ClCompile Include="code\Graphics\framebuffer.cpp" />
+    <ClCompile Include="code\Graphics\Fustrum\fustrum.cpp" />
+    <ClCompile Include="code\Graphics\Fustrum\plane.cpp" />
+    <ClCompile Include="code\Graphics\transform.cpp" />
     <ClCompile Include="code\gui.cpp" />
     <ClCompile Include="code\GUIfunctions.cpp" />
     <ClCompile Include="code\indexBuffer.cpp" />
@@ -44,6 +49,8 @@
     <ClCompile Include="code\logger.cpp" />
     <ClCompile Include="code\model.cpp" />
     <ClCompile Include="code\noise.cpp" />
+    <ClCompile Include="code\palette.cpp" />
+    <ClCompile Include="code\player.cpp" />
     <ClCompile Include="code\quaternion.cpp" />
     <ClCompile Include="code\recyclingPool.cpp" />
     <ClCompile Include="code\renderer.cpp" />
@@ -53,6 +60,7 @@
     <ClCompile Include="code\tickFunctions.cpp" />
     <ClCompile Include="code\time.cpp" />
     <ClCompile Include="code\timer.cpp" />
+    <ClCompile Include="code\Trees\TreeNode.cpp" />
     <ClCompile Include="code\utilities.cpp" />
     <ClCompile Include="code\vec.cpp" />
     <ClCompile Include="code\vertexArray.cpp" />
@@ -73,11 +81,16 @@
     <ClInclude Include="code\camera.h" />
     <ClInclude Include="code\chunk.h" />
     <ClInclude Include="code\controls.h" />
+    <ClInclude Include="code\database.h" />
     <ClInclude Include="code\event.h" />
     <ClInclude Include="code\External code\stb_image.h" />
     <ClInclude Include="code\game.h" />
     <ClInclude Include="code\gameWindow.h" />
     <ClInclude Include="code\graphics.h" />
+    <ClInclude Include="code\Graphics\framebuffer.h" />
+    <ClInclude Include="code\Graphics\Fustrum\fustrum.h" />
+    <ClInclude Include="code\Graphics\Fustrum\plane.h" />
+    <ClInclude Include="code\Graphics\transform.h" />
     <ClInclude Include="code\gui.h" />
     <ClInclude Include="code\GUIfunctions.h" />
     <ClInclude Include="code\indexBuffer.h" />
@@ -87,6 +100,8 @@
     <ClInclude Include="code\logger.h" />
     <ClInclude Include="code\model.h" />
     <ClInclude Include="code\noise.h" />
+    <ClInclude Include="code\palette.h" />
+    <ClInclude Include="code\player.h" />
     <ClInclude Include="code\quaternion.h" />
     <ClInclude Include="code\recyclingPool.h" />
     <ClInclude Include="code\renderer.h" />
@@ -97,6 +112,7 @@
     <ClInclude Include="code\tickFunctions.h" />
     <ClInclude Include="code\time.h" />
     <ClInclude Include="code\timer.h" />
+    <ClInclude Include="code\Trees\TreeNode.h" />
     <ClInclude Include="code\utilities.h" />
     <ClInclude Include="code\vec.h" />
     <ClInclude Include="code\vertex.h" />
@@ -193,7 +209,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\glm\gtc;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\glm\gtx;$(AF_PATH)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\glm\gtc;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\glm\gtx;$(AF_PATH)\include;$(SolutionDir)Dependencies\leveldb\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -201,8 +217,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32s.lib;glfw3_mt.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;afcuda.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLEW\lib\Release\x64;$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(AF_PATH)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;glfw3_mt.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;afcuda.lib;leveldb.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLEW\lib\Release\x64;$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(AF_PATH)\lib;$(SolutionDir)Dependencies\leveldb\lib</AdditionalLibraryDirectories>
     </Link>
     <ProjectReference>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
@@ -237,7 +253,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\glm\gtc;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\glm\gtx;$(AF_PATH)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\glm\gtc;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\glm\gtx;$(AF_PATH)\include;$(SolutionDir)Dependencies\leveldb\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -247,8 +263,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32s.lib;glfw3_mt.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;afcuda.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLEW\lib\Release\x64;$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(AF_PATH)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;glfw3_mt.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;afcuda.lib;leveldb.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLEW\lib\Release\x64;$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(AF_PATH)\lib;$(SolutionDir)Dependencies\leveldb\lib</AdditionalLibraryDirectories>
     </Link>
     <ProjectReference>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>

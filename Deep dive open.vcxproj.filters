@@ -43,6 +43,14 @@
     <ClCompile Include="code\event.cpp" />
     <ClCompile Include="code\listener.cpp" />
     <ClCompile Include="code\quaternion.cpp" />
+    <ClCompile Include="code\player.cpp" />
+    <ClCompile Include="code\database.cpp" />
+    <ClCompile Include="code\palette.cpp" />
+    <ClCompile Include="code\Trees\TreeNode.cpp" />
+    <ClCompile Include="code\Graphics\framebuffer.cpp" />
+    <ClCompile Include="code\Graphics\Fustrum\fustrum.cpp" />
+    <ClCompile Include="code\Graphics\Fustrum\plane.cpp" />
+    <ClCompile Include="code\Graphics\transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="code\camera.h" />
@@ -88,5 +96,13 @@
     <ClInclude Include="code\event.h" />
     <ClInclude Include="code\listener.h" />
     <ClInclude Include="code\quaternion.h" />
+    <ClInclude Include="code\player.h" />
+    <ClInclude Include="code\database.h" />
+    <ClInclude Include="code\palette.h" />
+    <ClInclude Include="code\Trees\TreeNode.h" />
+    <ClInclude Include="code\Graphics\framebuffer.h" />
+    <ClInclude Include="code\Graphics\Fustrum\fustrum.h" />
+    <ClInclude Include="code\Graphics\Fustrum\plane.h" />
+    <ClInclude Include="code\Graphics\transform.h" />
   </ItemGroup>
 </Project>

@@ -3,11 +3,10 @@
 * @version 1.0
 * @date 25/04/2023
 * @author Abdon Crespo Alvarez
-* @title Entity models.
-* @brief Contains the definition of entity model as well
+* @title Models.
+* @brief Contains the definition of model as well
 * as the declaration of the "models" class, used to provide
-* all utilities required for managing the models that represent
-* the entities inside a level.
+* all utilities required for managing them.
 */
 #ifndef _VOXELENG_MODEL_
 #define _VOXELENG_MODEL_
@@ -18,6 +17,7 @@
 #include "vertex.h"
 #include "block.h"
 #include "definitions.h"
+#include "Graphics/transform.h"
 
 
 namespace VoxelEng {
@@ -103,6 +103,17 @@ namespace VoxelEng {
 		*/
 		static void addBlockFaceTexture(const block& block, model& m, const std::string& textureName);
 
+		/**
+		* @brief Apply the given transform to the provided model.
+		*/
+		static void applyTransform(model& aModel, const transform& transform, bool rotateX = false, bool rotateY = false, bool rotateZ = false);
+
+		/**
+		* @brief Apply the given transform to the provided model and add it to the given batch model.
+		*/
+		static void applyTransform(model& aModel, const transform& transform, model& batchModel,
+								   bool rotateX = false, bool rotateY = false, bool rotateZ = false);
+
 
 		// Clean up.
 
@@ -115,8 +126,8 @@ namespace VoxelEng {
 	private:
 
 		static bool initialised_;
-		static std::unordered_map<unsigned int, model*> models_;
-		static std::unordered_map<unsigned int, modelTriangles*> triangles_;
+		static std::unordered_map<unsigned int, model*> models_; // RENOMBRAR ESTO COMO modelsVertices_ Y METER UN models_ QUE YA TENGA LOS MODELOS "BAKEADOS" Y METER MÉTODO REGISTER MODELO PARA TODOS CON UNA OPCION DE GUARDAR SUS VERTICES Y TRIANGULOS POR SEPARADO O SOLO SU MODELO BAKEADO O AMBAS COSAS.
+		static std::unordered_map<unsigned int, modelTriangles*> triangles_; // NOTE. If a model has a nullptr here, it means that no triangle indexing is used.
 
 	};
 

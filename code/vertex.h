@@ -38,6 +38,7 @@ namespace VoxelEng {
 
 	};
 
+
 	/**
 	* @brief Represents a 2D vertex (usually used for drawing GUI).
 	*/

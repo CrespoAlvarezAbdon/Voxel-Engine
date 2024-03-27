@@ -13,12 +13,10 @@ namespace VoxelEng {
 
     // 'entity' class.
 
-    const float entity::piDiv = 3.1415926f / 180.0f;
-
-
-    entity::entity(unsigned int modelID, const vec3& pos, const vec3& rot, tickFunc func)
-        : model_(&models::getModelAt(modelID)),
-        updateXRotation_(false), updateYRotation_(false), updateZRotation_(false),
+    entity::entity(entityID ID, unsigned int modelID, const vec3& pos, const vec3& rot, tickFunc func)
+        : ID_(ID),
+        model_(&models::getModelAt(modelID)),
+        updateXRotation_(true), updateYRotation_(true), updateZRotation_(true),
         tickFunc_(func) {
     
         rotate(rot);
@@ -318,14 +316,13 @@ namespace VoxelEng {
         entityID entityID = 0,
                  batchID = 0;
 
-
         std::unique_lock<std::recursive_mutex> lockEntities(entitiesMutex_);
 
         // Get entity's ID and register it inside the 'entities_' structure.
         if (freeEntityID_.empty()) {
 
             entityID = entities_.size();
-            entities_.emplace_back(modelID, vec3{ posX, posY, posZ }, vec3{ rotX, rotY, rotZ }, func);
+            entities_.emplace_back(entityID, modelID, vec3{ posX, posY, posZ }, vec3{ rotX, rotY, rotZ }, func);
 
         }
         else {
@@ -333,10 +330,12 @@ namespace VoxelEng {
             entityID = *freeEntityID_.begin();
             freeEntityID_.erase(entityID);
             
-            entities_[entityID].setModelID(modelID);
-            entities_[entityID].transform_.position = vec3{ posX, posY, posZ };
-            entities_[entityID].rotate(rotX, rotY, rotZ);
-            entities_[entityID].tickFunc_ = func;
+            entity& repurposedEntity = entities_[entityID];
+            repurposedEntity.ID(entityID);
+            repurposedEntity.setModelID(modelID);
+            repurposedEntity.transform_.position = vec3{ posX, posY, posZ };
+            repurposedEntity.rotate(rotX, rotY, rotZ);
+            repurposedEntity.tickFunc_ = func;
 
         }
         activeEntityID_.insert(entityID);
@@ -405,6 +404,8 @@ namespace VoxelEng {
             entityBatch_[entityID] = batchID;
 
         }
+
+
 
         return entityID;
 
@@ -524,9 +525,6 @@ namespace VoxelEng {
             pos.y += y;
             pos.z += z;
 
-            if (y != 0)
-                y = y - 1 + 1;
-
             if (!game::AImodeON())
                 batches_[entityBatch_[entityID]].isDirty() = true;
 
@@ -534,6 +532,22 @@ namespace VoxelEng {
         else
             logger::errorLog("Entity with ID " + std::to_string(entityID) + " was not found");
     
+    }
+
+    void entityManager::setTransform(entityID ID, transform newTransform) {
+
+        if (entityManager::isEntityRegistered(ID)) {
+
+            entity& theEntity = entityManager::getEntity(ID);
+            theEntity.getTransform() = newTransform;
+
+            if (!game::AImodeON())
+                batches_[entityBatch_[ID]].isDirty() = true;
+
+        }
+        else
+            logger::errorLog("Entity with ID " + std::to_string(ID) + " was not found");
+
     }
 
     void entityManager::clear() {

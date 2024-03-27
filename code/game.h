@@ -25,6 +25,7 @@
 #include "shader.h"
 #include "world.h"
 #include "vec.h"
+#include "Graphics/framebuffer.h"
 
 
 namespace VoxelEng {
@@ -228,10 +229,19 @@ namespace VoxelEng {
         static texture* blockTextureAtlas_;
         static std::unordered_map<vec3, model> const* chunksToDraw_;
         static const std::vector<model>* batchesToDraw_;
+
         static shader* defaultShader_;
-        static vertexBuffer* chunksVbo_,
-                           * entitiesVbo_;
-        static vertexArray * vao_;
+        static shader* debugShader_;
+        static shader* screenShader_;
+
+        static vertexBuffer* chunksVbo_;
+        static vertexBuffer* entitiesVbo_;
+        static vertexBuffer* screenVbo_;
+        static vertexArray* vao_;
+        static vertexArray* entitiesVao_; // TODO. QUE SE USE SOLO UN VAO ENTRE ENTIDADES Y TERRENO. 
+        static vertexArray* screenVao_;
+
+        static framebuffer* screenFB_;
 
         #if GRAPHICS_API == OPENGL
 

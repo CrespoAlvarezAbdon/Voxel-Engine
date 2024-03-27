@@ -184,75 +184,14 @@ namespace VoxelEng {
 
 
 		std::unique_lock<std::recursive_mutex> lock(mutex_);
-
-		model_.clear();
+		model_ = model(); // TODO. HACER QUE SE "REUSEN" VERTICES Y SI HAY UN MENOR NUMERO SE ELIMINEN SOLO LOS SOBRANTES PARA AHORRAR TIEMPO DE EJECUCIÓN?
 		for (auto it = activeEntityID_.cbegin(); it != activeEntityID_.cend(); it++) {
 
 			entity& selectedEntity = entityManager::getEntity(*it);
 			entityModel = selectedEntity.entityModel();
 
-			if (entityModel.size()) {
-			
-				sinAngleX = selectedEntity.sinAngleX();
-				cosAngleX = selectedEntity.cosAngleX();
-				sinAngleY = selectedEntity.sinAngleY();
-				cosAngleY = selectedEntity.cosAngleY();
-				sinAngleZ = selectedEntity.sinAngleZ();
-				cosAngleZ = selectedEntity.cosAngleZ();
-				updateXRot = selectedEntity.updateXRotation();
-				updateYRot = selectedEntity.updateYRotation();
-				updateZRot = selectedEntity.updateZRotation();
-
-				// Translate the model's copy to the entity's position and apply rotations if necessary.
-				for (unsigned int j = 0; j < entityModel.size(); j++) {
-
-					// Rotate.
-					if (updateXRot) {
-
-						oldFirstCoord = entityModel[j].positions[1];
-						oldSecondCoord = entityModel[j].positions[2];
-
-						entityModel[j].positions[1] = oldFirstCoord * cosAngleX -
-							oldSecondCoord * sinAngleX;
-						entityModel[j].positions[2] = oldFirstCoord * sinAngleX +
-							oldSecondCoord * cosAngleX;
-
-					}
-
-					if (updateYRot) {
-
-						oldFirstCoord = entityModel[j].positions[0];
-						oldSecondCoord = entityModel[j].positions[2];
-
-						entityModel[j].positions[0] = oldFirstCoord * cosAngleY +
-							oldSecondCoord * sinAngleY;
-						entityModel[j].positions[2] = oldSecondCoord * cosAngleY -
-							oldFirstCoord * sinAngleY;
-
-					}
-
-					if (updateZRot) {
-
-						oldFirstCoord = entityModel[j].positions[0];
-						oldSecondCoord = entityModel[j].positions[1];
-
-						entityModel[j].positions[0] = oldFirstCoord * cosAngleZ -
-							oldSecondCoord * sinAngleZ;
-						entityModel[j].positions[1] = oldFirstCoord * sinAngleZ +
-							oldSecondCoord * cosAngleZ;
-
-					}
-
-					// Translate.
-					entityModel[j].positions[0] += selectedEntity.x();
-					entityModel[j].positions[1] += selectedEntity.y();
-					entityModel[j].positions[2] += selectedEntity.z();
-
-					model_.push_back(entityModel[j]);
-
-				}
-			
-			}
+			models::applyTransform(entityModel, selectedEntity.getTransform(), model_,
+				selectedEntity.updateXRotation(), selectedEntity.updateYRotation(), selectedEntity.updateZRotation());
 
 		}
 

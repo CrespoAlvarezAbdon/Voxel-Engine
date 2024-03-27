@@ -1,4 +1,6 @@
 #include "model.h"
+#include <cmath>
+#include <cstddef>
 #include <stdexcept>
 #include <iostream>
 #include <istream>
@@ -6,11 +8,12 @@
 #include <sstream>
 #include <string>
 #include <filesystem>
-#include <cmath>
 #include "texture.h"
 #include "chunk.h"
 #include "logger.h"
 
+
+// TODO. QUE EL MAP DE MODELOS VAYA POR NOMBRE NO POR ID.
 
 namespace VoxelEng {
 
@@ -37,27 +40,28 @@ namespace VoxelEng {
             logger::errorLog("Models system is already initialised");
         else {
         
-           ///////////////////
-           //Oficial models.//
-           ///////////////////
+            ///////////////////
+            //Oficial models.//
+            ///////////////////
 
             model* emptyVertices = new model{};
             modelTriangles* emptyTriangles = new modelTriangles{};
 
-            model* blockVertices = new model{
+            // Block model.
+            model* blockVertices = new model {
 
-                vertex{0, 0, 0},
-                vertex{1, 0, 0},
-                vertex{1, 1, 0},
-                vertex{0, 1, 0},
-                vertex{0, 0, 1},
-                vertex{1, 0, 1},
-                vertex{1, 1, 1},
-                vertex{0, 1, 1}
+                {0, 0, 0},
+                {1, 0, 0},
+                {1, 1, 0},
+                {0, 1, 0},
+                {0, 0, 1},
+                {1, 0, 1},
+                {1, 1, 1},
+                {0, 1, 1}
 
             };
 
-            modelTriangles* blockTriangles = new modelTriangles{
+            modelTriangles* blockTriangles = new modelTriangles {
 
                 {0, 3, 1, 1, 3, 2}, // Back Face.
                 {5, 6, 4, 4, 6, 7}, // Front Face.
@@ -65,6 +69,22 @@ namespace VoxelEng {
                 {1, 5, 0, 0, 5, 4}, // Bottom Face.
                 {4, 7, 0, 0, 7, 3}, // Left Face.
                 {1, 2, 5, 5, 2, 6}  // Right Face.
+
+            };
+
+            // Plane model.
+            model* planeVertices = new model {
+            
+                {0,0,1},
+                {0,0,0},
+                {1,0,0},
+                {1,0,1}
+            
+            };
+
+            modelTriangles* planeTriangles = new modelTriangles {
+
+                {0, 1, 2, 2, 3, 0}
 
             };
 
@@ -76,14 +96,16 @@ namespace VoxelEng {
             models_ = {
 
                 {0, emptyVertices},
-                {1, blockVertices}
+                {1, blockVertices},
+                {3, planeVertices}
 
             };
 
             triangles_ = {
 
                 {0, emptyTriangles},
-                {1, blockTriangles}
+                {1, blockTriangles},
+                {3, planeTriangles}
 
             };
 
@@ -280,6 +302,148 @@ namespace VoxelEng {
         }
 
     }
+
+    void models::applyTransform(model& aModel, const transform& transform, bool rotateX, bool rotateY, bool rotateZ) {
+    
+        std::size_t size = aModel.size();
+        if (size) {
+
+            float sinAngleX = transform.sinRotX();
+            float cosAngleX = transform.cosRotX();
+            float sinAngleY = transform.sinRotY();
+            float cosAngleY = transform.cosRotY();
+            float sinAngleZ = transform.sinRotZ();
+            float cosAngleZ = transform.cosRotZ();
+           
+            float oldFirstCoord = 0.0f;
+            float oldSecondCoord = 0.0f;
+
+            // Translate the model's copy to the entity's position and apply rotations if necessary.
+            for (unsigned int j = 0; j < size; j++) {
+
+                // TODO. Scale.
+                aModel[j].positions[0] *= transform.scale.x;
+                aModel[j].positions[1] *= transform.scale.y;
+                aModel[j].positions[2] *= transform.scale.z;
+
+                // Rotate.
+                if (rotateX) {
+
+                    oldFirstCoord = aModel[j].positions[1];
+                    oldSecondCoord = aModel[j].positions[2];
+
+                    aModel[j].positions[1] = oldFirstCoord * cosAngleX -
+                        oldSecondCoord * sinAngleX;
+                    aModel[j].positions[2] = oldFirstCoord * sinAngleX +
+                        oldSecondCoord * cosAngleX;
+
+                }
+
+                if (rotateY) {
+
+                    oldFirstCoord = aModel[j].positions[0];
+                    oldSecondCoord = aModel[j].positions[2];
+
+                    aModel[j].positions[0] = oldFirstCoord * cosAngleY +
+                        oldSecondCoord * sinAngleY;
+                    aModel[j].positions[2] = oldSecondCoord * cosAngleY -
+                        oldFirstCoord * sinAngleY;
+
+                }
+
+                if (rotateZ) {
+
+                    oldFirstCoord = aModel[j].positions[0];
+                    oldSecondCoord = aModel[j].positions[1];
+
+                    aModel[j].positions[0] = oldFirstCoord * cosAngleZ -
+                        oldSecondCoord * sinAngleZ;
+                    aModel[j].positions[1] = oldFirstCoord * sinAngleZ +
+                        oldSecondCoord * cosAngleZ;
+
+                }
+
+                // Translate.
+                aModel[j].positions[0] += transform.position.x;
+                aModel[j].positions[1] += transform.position.y;
+                aModel[j].positions[2] += transform.position.z;
+
+            }
+
+        }
+    
+    }
+
+    void models::applyTransform(model& aModel, const transform& transform, model& batchModel, bool rotateX, bool rotateY, bool rotateZ) {
+
+        std::size_t size = aModel.size();
+        if (size) {
+
+            float sinAngleX = transform.sinRotX();
+            float cosAngleX = transform.cosRotX();
+            float sinAngleY = transform.sinRotY();
+            float cosAngleY = transform.cosRotY();
+            float sinAngleZ = transform.sinRotZ();
+            float cosAngleZ = transform.cosRotZ();
+
+            float oldFirstCoord = 0.0f;
+            float oldSecondCoord = 0.0f;
+
+            // Translate the model's copy to the entity's position and apply rotations if necessary.
+            for (unsigned int j = 0; j < size; j++) {
+
+                // Rotate.
+                if (rotateX) {
+
+                    oldFirstCoord = aModel[j].positions[1];
+                    oldSecondCoord = aModel[j].positions[2];
+
+                    aModel[j].positions[1] = oldFirstCoord * cosAngleX -
+                        oldSecondCoord * sinAngleX;
+                    aModel[j].positions[2] = oldFirstCoord * sinAngleX +
+                        oldSecondCoord * cosAngleX;
+
+                }
+
+                if (rotateY) {
+
+                    oldFirstCoord = aModel[j].positions[0];
+                    oldSecondCoord = aModel[j].positions[2];
+
+                    aModel[j].positions[0] = oldFirstCoord * cosAngleY +
+                        oldSecondCoord * sinAngleY;
+                    aModel[j].positions[2] = oldSecondCoord * cosAngleY -
+                        oldFirstCoord * sinAngleY;
+
+                }
+
+                if (rotateZ) {
+
+                    oldFirstCoord = aModel[j].positions[0];
+                    oldSecondCoord = aModel[j].positions[1];
+
+                    aModel[j].positions[0] = oldFirstCoord * cosAngleZ -
+                        oldSecondCoord * sinAngleZ;
+                    aModel[j].positions[1] = oldFirstCoord * sinAngleZ +
+                        oldSecondCoord * cosAngleZ;
+
+                }
+
+                // Translate.
+                aModel[j].positions[0] += transform.position.x; // TODO. PROBAR CON ESTO EN EL PLANO PONER ANGULOS DE ROTACION A DEDO A VER QUE PASA
+                aModel[j].positions[1] += transform.position.y;
+                aModel[j].positions[2] += transform.position.z;
+
+                // TODO. Scale.
+
+                batchModel.push_back(aModel[j]);
+
+            }
+
+        }
+
+    }
+
 
     void models::reset() {
     

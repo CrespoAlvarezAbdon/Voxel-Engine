@@ -11,10 +11,10 @@
 
 #include "chunk.h"
 #include "definitions.h"
-#include "transform.h"
 #include "gameWindow.h"
 #include "quaternion.h"
 #include "vec.h"
+#include "Graphics/transform.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -79,6 +79,12 @@ namespace VoxelEng {
 		* @brief Provide access to the user camera's zFar parameter, which gives the limit
 		in the camera's local Z axis at which vertices are no longer included for rendering.
 		*/
+		float zNear() const;
+
+		/**
+		* @brief Provide access to the user camera's zFar parameter, which gives the limit
+		in the camera's local Z axis at which vertices are no longer included for rendering.
+		*/
 		float zFar() const;
 
 		/**
@@ -115,6 +121,29 @@ namespace VoxelEng {
 		* @brief Provide access to the user camera's direction.
 		*/
 		const vec3& viewDirection() const;
+
+		/**
+		* @brief Get the camera's front axis or local X axis.
+		* NOTE. The local X axis only rotates when the local Y axis is changed and it
+		* is always 90º degrees away from it. That is what makes it different from the camera's view direction.
+		*/
+		const vec3& Xaxis() const;
+
+		/**
+		* @brief Get the camera's up axis or local Y axis.
+		* Generally, it will always be the opposite vector to the current gravity vector applied to the camera.
+		* However, there is an exception and that exception occurs when the camera is in free-mode, that is, when
+		* it's Y axis depends only on the camera's roll (changed by user input usually if the keybind is assigned and enabled)
+		* and no gravity affects it.
+		*/
+		const vec3& Yaxis() const;
+
+		/**
+		* @brief Get the camera's right axis or local Z axis.
+		* NOTE. This axis is always the result of the cross-product
+		* of the camera's viewing direction (not the local X-axis) with the camera's local Y axis.
+		*/
+		const vec3& Zaxis() const;
 
 
 		// Modifiers.
@@ -243,6 +272,12 @@ namespace VoxelEng {
 
 	}
 
+	inline float camera::zNear() const {
+
+		return zNear_;
+
+	}
+
 	inline float camera::zFar() const {
 
 		return zFar_;
@@ -276,6 +311,24 @@ namespace VoxelEng {
 	inline const vec3& camera::viewDirection() const {
 	
 		return transform_.viewDirection;
+	
+	}
+
+	inline const vec3& camera::Xaxis() const {
+
+		return transform_.Xaxis;
+
+	}
+
+	inline const vec3& camera::Yaxis() const {
+
+		return transform_.Yaxis;
+
+	}
+
+	inline const vec3& camera::Zaxis() const {
+	
+		return transform_.Zaxis;
 	
 	}
 

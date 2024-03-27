@@ -51,7 +51,6 @@ namespace VoxelEng {
 				if (!glfwInit())
 					logger::errorLog("Failed to initialize the GLFW library!");
 
-
 				// Select GLFW version.
 				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 				glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -81,21 +80,32 @@ namespace VoxelEng {
 
 				// Initialise VBO, VAO and VBO layouts.
 
-				vaos_.insert({ "3D", vertexArray() });
+				vaos_.insert({ "3D", vertexArray()});
+				vaos_.insert({ "3Dentities", vertexArray() });
+				vaos_.insert({ "3Ddebug", vertexArray() });
 				vaos_.insert({ "2D", vertexArray() });
+				vaos_.insert({ "screen", vertexArray() });
 
 				vbos_.insert({ "chunks", vertexBuffer() });
 				vbos_.insert({ "entities", vertexBuffer() });
+				vbos_.insert({ "3Ddebug", vertexBuffer() });
 				vbos_.insert({ "GUI", vertexBuffer() });
+				vbos_.insert({ "screen", vertexBuffer() });
 
 				vaos_.at("3D").generate();
+				vaos_.at("3Dentities").generate();
+				vaos_.at("3Ddebug").generate();
 				vaos_.at("2D").generate();
+				vaos_.at("screen").generate();
 				vbos_.at("chunks").generate();
 				vbos_.at("entities").generate();
+				vbos_.at("3Ddebug").generate();
 				vbos_.at("GUI").generate();
+				vbos_.at("screen").generate();
 
 				vertexBufferLayout& layout3D = vboLayouts_.insert({ "3D", vertexBufferLayout() }).first->second,
-								  & layout2D = vboLayouts_.insert({ "2D", vertexBufferLayout() }).first->second;
+								  & layout2D = vboLayouts_.insert({ "2D", vertexBufferLayout() }).first->second,
+								  & layoutScreen = vboLayouts_.insert({ "screen", vertexBufferLayout() }).first->second;
 
 				// Configure the vertex layout for 3D rendering.
 				layout3D.push<GLfloat>(3);
@@ -105,12 +115,27 @@ namespace VoxelEng {
 				vbos_.at("chunks").bind();
 				vaos_.at("3D").addLayout(layout3D);
 
+				vaos_.at("3Dentities").bind();
+				vbos_.at("entities").bind();
+				vaos_.at("3Dentities").addLayout(layout3D);
+
+				vaos_.at("3Ddebug").bind();
+				vbos_.at("3Ddebug").bind();
+				vaos_.at("3Ddebug").addLayout(layout3D);
+
 				// The same for 2D rendering.
 				layout2D.push<GLfloat>(2);
 				layout2D.push<GLfloat>(2);
 				vaos_.at("2D").bind();
 				vbos_.at("GUI").bind();
 				vaos_.at("2D").addLayout(layout2D);
+
+				// The same for screen rendering.
+				layoutScreen.push<GLfloat>(2);
+				layoutScreen.push<GLfloat>(2);
+				vaos_.at("screen").bind();
+				vbos_.at("screen").bind();
+				vaos_.at("screen").addLayout(layoutScreen);
 
 			#else
 
@@ -209,8 +234,12 @@ namespace VoxelEng {
 
 	void graphics::setBasicFaceCulling(bool isEnabled) {
 
-		if (isEnabled)
+		if (isEnabled) {
+		
 			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+		
+		}
 		else
 			glDisable(GL_CULL_FACE);
 

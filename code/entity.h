@@ -18,12 +18,12 @@
 #include <vector>
 #include <mutex>
 #include "batch.h"
-#include "camera.h" // IGUAL ESTO DA PROBLEMAS Y HAY QUE HACER FORWARD DELCARATION Y METER EL INCLUDE EN EL .CPP
+#include "camera.h"
 #include "chunk.h"
 #include "definitions.h"
-#include "transform.h"
 #include "model.h"
 #include "vec.h"
+#include "Graphics/transform.h"
 
 
 
@@ -57,7 +57,7 @@ namespace VoxelEng {
 		* WARNING. To create an entity use entityManager::registerEntity(). Otherwise the
 		* created entity will not be registered in the entity management system.
 		*/
-		entity(unsigned int modelID, const vec3& pos, const vec3& rot, tickFunc func = nullptr);
+		entity(entityID ID, unsigned int modelID, const vec3& pos, const vec3& rot, tickFunc func = nullptr);
 
 
 		// Observers.
@@ -112,35 +112,12 @@ namespace VoxelEng {
 		*/
 		bool updateZRotation() const;
 
-		/**
-		* @brief Get sin(entity's last rotation angle) in X-axis
-		*/
-		float sinAngleX() const;
+		
 
 		/**
-		* @brief Get cos(entity's last rotation angle) in X-axis.
+		* @brief Get the entity's ID.
 		*/
-		float cosAngleX() const;
-
-		/**
-		* @brief Get sin(entity's last rotation angle) in Y-axis.
-		*/
-		float sinAngleY() const;
-
-		/**
-		* @brief Get cos(entity's last rotation angle) in Y-axis.
-		*/
-		float cosAngleY() const;
-
-		/**
-		* @brief Get sin(entity's last rotation angle) in Z-axis.
-		*/
-		float sinAngleZ() const;
-
-		/**
-		* @brief Get cos(entity's last rotation angle) in Z-axis.
-		*/
-		float cosAngleZ() const;
+		entityID ID() const;
 
 
 		// Modifiers.
@@ -237,21 +214,25 @@ namespace VoxelEng {
 		*/
 		void rotateViewYaw(float angle);
 
+		/**
+		* @brief Set the entity's ID.
+ 		*/
+		void ID(entityID newValue);
+
 	protected:
 
 		/*
 		Friend classes.
 		*/
 
-		friend entityManager;
+		friend entityManager; // TODO. REMOVE THIS.
 
 
 		/*
 		Attributes.
 		*/
 
-		static const float piDiv;
-
+		entityID ID_;
 		bool updateXRotation_,
 			 updateYRotation_,
 			 updateZRotation_;
@@ -321,40 +302,12 @@ namespace VoxelEng {
 
 	}
 
-	inline float entity::sinAngleX() const {
+	
 
-		return std::sin(transform_.rotation.x * piDiv);
-
-	}
-
-	inline float entity::cosAngleX() const {
-
-		return std::cos(transform_.rotation.x * piDiv);
-
-	}
-
-	inline float entity::sinAngleY() const {
-
-		return std::sin(transform_.rotation.y * piDiv);
-
-	}
-
-	inline float entity::cosAngleY() const {
-
-		return std::cos(transform_.rotation.y * piDiv);
-
-	}
-
-	inline float entity::sinAngleZ() const {
-
-		return std::sin(transform_.rotation.z * piDiv);
-
-	}
-
-	inline float entity::cosAngleZ() const {
-
-		return std::cos(transform_.rotation.z * piDiv);
-
+	inline entityID entity::ID() const {
+	
+		return ID_;
+	
 	}
 
 	inline transform& entity::getTransform() {
@@ -404,6 +357,13 @@ namespace VoxelEng {
 		model_ = &models::getModelAt(modelID);
 
 	}
+
+	inline void entity::ID(entityID newValue) {
+	
+		ID_ = newValue;
+	
+	}
+		
 
 	/**
 	* @brief This class is in charge of encapsulating and abstracting
@@ -540,9 +500,17 @@ namespace VoxelEng {
 		static const std::vector<model>* renderingData();
 
 
-		// Modifiers: actions on entities.
+		// Modifiers.
 
+		/**
+		* @brief Move the entity.
+		*/
 		static void moveEntity(entityID entityID, float x, float y, float z);
+
+		/**
+		* @brief Set the entity's transform, marking its mesh as dirty in the process.
+		*/
+		static void setTransform(entityID ID, transform newTransform);
 
 		
 		// Clean up.
@@ -582,8 +550,8 @@ namespace VoxelEng {
 		// to execute.
 		static std::list<unsigned int> tickingEntityID_; 	
 
-		static std::vector <model>* renderingDataWrite_,
-						          * renderingDataRead_;
+		static std::vector<model>* renderingDataWrite_,
+						         * renderingDataRead_;
 		
 		static std::recursive_mutex entitiesMutex_,
 									batchesMutex_;

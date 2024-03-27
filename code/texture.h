@@ -30,6 +30,7 @@ namespace VoxelEng {
 	* @brief Represents a texture, a 2D image usually applied to vertex data
 	* in order to give their models an alternative to using solid colors
 	* to draw them.
+	* WARNING. All methods must be called in a thread with valid graphics API context.
 	*/
 	class texture {
 
@@ -39,7 +40,14 @@ namespace VoxelEng {
 
 		/**
 		* @brief Class constructor.
-		* WARNING. Must be called in a thread with valid graphics API context.
+		* Creates an empty texture with the specified size.
+		*/
+		texture(unsigned int width, unsigned int height);
+
+
+		/**
+		* @brief Class constructor.
+		* Creates a texture out of an image.
 		*/
 		texture(const std::string& filepath);
 
@@ -97,13 +105,11 @@ namespace VoxelEng {
 
 		/**
 		* @brief Bind the texture to an graphics API texture slot (slot 0 by default).
-		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		void bind(unsigned int slot = 0) const;
 
 		/**
 		* @brief Unbind the texture.
-		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		void unbind() const;
 
@@ -112,7 +118,6 @@ namespace VoxelEng {
 
 		/**
 		* @brief Class destructor.
-		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		~texture();
 

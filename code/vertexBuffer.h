@@ -11,11 +11,7 @@
 
 #include <vector>
 
-#if GRAPHICS_API == OPENGL
 
-#include <GL/glew.h>
-
-#endif
 
 
 namespace VoxelEng {
@@ -89,7 +85,7 @@ namespace VoxelEng {
 		
 	private:
 
-		GLuint rendererID_;
+		unsigned int rendererID_; // POSIBLE ERROR AQUI POR CAMBIAR DE GLUINT?
 
 	};
 

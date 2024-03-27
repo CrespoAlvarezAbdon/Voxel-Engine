@@ -29,6 +29,31 @@ namespace VoxelEng {
 	std::pair<int, int> texture::defaultTextureWH_ = {16, 16};
 
 
+	texture::texture(unsigned int width, unsigned int height)
+	: rendererID_(0), textureFilepath_(""), buffer_(nullptr), width_(width), height_(height), bitsPerPixel_(0) {
+	
+		glCreateTextures(GL_TEXTURE_2D, 1, &rendererID_); // POSIBLE ERROR HAY QUE USAR glGenTextures(1, &rendererID_);
+		glBindTexture(GL_TEXTURE_2D, rendererID_);
+
+		// Options used when we need to scale down the texture.
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+		// Options used when we need to scale up the texture.
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // POSIBLE ERROR POR NO PONER GL_LINEAR???
+
+		// Everything ready. Send the texture to OpenGL. 
+		// If the last parameter is nullptr, 
+		// we are only allocating space in OpenGL,
+		// not providing it any data.
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr); // POSIBLE ERROR ESTO VA A ANTES QUE TEXPARAMETERI???
+		// POSIBLE ERROR GL_RGB EN VEZ DE GL_RGBA???
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+
+		// NEXT. HACER FRAMBUFFER ATTACTH THIS TEXTURE
+	}
+
 	texture::texture(const std::string& filepath)
 	: rendererID_(0), textureFilepath_(filepath), buffer_(nullptr), width_(0), height_(0), bitsPerPixel_(0) {
 
@@ -61,6 +86,7 @@ namespace VoxelEng {
 
 	void texture::bind(unsigned int slot) const {
 
+		glActiveTexture(GL_TEXTURE0 + slot); // POSIBLE ERROR? IGUAL HAY QUE HACER SWI O INCLUSO NO USAR ESTO?? ESTO BASICAMENTE DICE QUE CAMBIES EL SLOT DE TEXTURA ACTIVA.
 		glBindTextureUnit(slot, rendererID_);
 
 	}

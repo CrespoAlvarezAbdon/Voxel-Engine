@@ -26,6 +26,8 @@
 #include "utilities.h"
 #include "vertex.h"
 #include "worldGen.h"
+#include "Graphics/Fustrum/plane.h"
+
 
 #if GRAPHICS_API == OPENGL
 
@@ -78,9 +80,16 @@ namespace VoxelEng {
     const std::vector<model>* game::batchesToDraw_ = nullptr;
 
     shader* game::defaultShader_ = nullptr;
-    vertexBuffer* game::chunksVbo_ = nullptr,
-                * game::entitiesVbo_ = nullptr;
+    shader* game::debugShader_ = nullptr;
+    shader* game::screenShader_ = nullptr;
+    vertexBuffer* game::chunksVbo_ = nullptr;
+    vertexBuffer* game::entitiesVbo_ = nullptr;
+    vertexBuffer* game::screenVbo_ = nullptr;
     vertexArray* game::vao_ = nullptr;
+    vertexArray* game::entitiesVao_ = nullptr;
+    vertexArray* game::screenVao_ = nullptr;
+    
+    framebuffer* game::screenFB_ = nullptr;
 
     #if GRAPHICS_API == OPENGL
 
@@ -115,9 +124,6 @@ namespace VoxelEng {
             std::filesystem::create_directory("saves/slot5");
             std::filesystem::create_directory("saves/recordings");
             std::filesystem::create_directory("saves/recordingWorlds");
-
-            
-
 
             // General variables.
             loopSelection_ = engineMode::AIMENULOOP;
@@ -181,13 +187,21 @@ namespace VoxelEng {
 
             chunksVbo_ = &graphics::vbo("chunks"),
             entitiesVbo_ = &graphics::vbo("entities");
+            screenVbo_ = &graphics::vbo("screen");
             vao_ = &graphics::vao("3D");
+            entitiesVao_ = &graphics::vao("3Dentities");
+            screenVao_ = &graphics::vao("screen");
 
             // Load model system.
             models::init();
 
             // Custom model loading.
+            plane::init();
+
             models::loadCustomModel("resources/Models/Warden.obj", 2);
+
+            // Create framebuffers.
+            screenFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height());
 
             // Load texture atlas and configure it.
             blockTextureAtlas_ = new texture("resources/Textures/atlas.png");
@@ -230,6 +244,8 @@ namespace VoxelEng {
 
             // Load shaders.
             defaultShader_ = new shader("resources/Shaders/vertexShader.shader", "resources/Shaders/fragmentShader.shader");
+            debugShader_ = new shader("resources/Shaders/debugVertexShader.shader", "resources/Shaders/debugFragmentShader.shader");
+            screenShader_ = new shader("resources/Shaders/screenVertexShader.shader", "resources/Shaders/screenFragmentShader.shader");
 
 
             /*
@@ -287,7 +303,7 @@ namespace VoxelEng {
             glfwSetWindowSizeCallback(mainWindow_->windowAPIpointer(), window::windowSizeCallback);
 
 
-            // Bind the currently used VAO, shaders and atlases for 3D rendering.
+            // Bind the default shaders and atlases for 3D and 2D rendering.
             defaultShader_->bind();
             blockTextureAtlas_->bind();
 
@@ -512,7 +528,26 @@ namespace VoxelEng {
                    actualTime;
             int nFramesDrawn = 0; 
             unsigned int nVertices = 0;
+
+
+            // TESTING
+            plane p({ 110.0f, 110.0f, 110.0f }, { 0.5f, 0.5f, 0.0f });
+            plane p2({ 110.0f, 110.0f, 110.0f }, { 0.0f, 1.0f, 0.0f });
+            //plane p({ 110.0f, 110.0f, 110.0f }, vec3FixedUp);
+            p.generateVertices(10); // TESTING.
+            p2.generateVertices(10);
+
+            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             while (loopSelection_ == engineMode::EDITLEVEL || loopSelection_ == engineMode::PLAYINGRECORD) {
+
+                screenFB_->bind();
+                defaultShader_->bind();
+                defaultShader_->setUniform1i("blockTexture", 0);
+                defaultShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
+                blockTextureAtlas_->bind();
+
+                // Clear the window to draw the next frame.
+                renderer::clearWindow();
 
                 // The window size callback by GLFW gets called every time the user is resizing the window so the heavy resize processing is done here
                 // after the player has stopped resizing the window.
@@ -531,9 +566,6 @@ namespace VoxelEng {
                 actualTime = glfwGetTime();
                 timeStep_ = actualTime - lastFrameTime;
                 lastFrameTime = actualTime;
-
-                // Clear the window to draw the next frame.
-                renderer::clearWindow();
 
                 // ms/frame calculation and display.
                 nFramesDrawn++;
@@ -602,8 +634,9 @@ namespace VoxelEng {
 
                 }
 
+                entitiesVao_->bind();
                 entitiesVbo_->bind();
-
+                
                 // Render batches.
                 if (batchesToDraw_) {
 
@@ -621,16 +654,59 @@ namespace VoxelEng {
 
                 }
 
+                // Render 3D debug things.
+                graphics::setBasicFaceCulling(false);
+                debugShader_->bind();
+                debugShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
+
+                graphics::vao("3Ddebug").bind();
+                graphics::vbo("3Ddebug").bind();
+
+                graphics::vbo("3Ddebug").prepareStatic(p.vertices().data(), sizeof(vertex) * p.vertices().size());
+                renderer::draw3D(p.vertices().size());
+
+                graphics::vbo("3Ddebug").prepareStatic(p2.vertices().data(), sizeof(vertex) * p2.vertices().size());
+                renderer::draw3D(p2.vertices().size());
+
+                graphics::setBasicFaceCulling(true);
 
                 /*
                 2D rendering.
                 */
-                graphics::setDepthTest(false);
+                defaultShader_->bind();
+                graphics::setDepthTest(false); // Depth test is not needed in 2D rendering and in screen rendering.
                 defaultShader_->setUniform1i("u_renderMode", 1);
 
                 GUImanager::drawGUI();
 
-                graphics::setDepthTest(true);
+                blockTextureAtlas_->unbind();
+                screenFB_->unbind(); // Necessary to bind the default framebuffer again.
+
+
+                /*
+                Screen rendering.
+                */
+                screenShader_->bind();
+                screenShader_->setUniform1i("screenTexture", 0);
+                screenVao_->bind();
+                screenVbo_->bind();
+                // FIXME. Put me in a proper place pliz :'v
+                float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+                       // positions   // texCoords
+                       -1.0f,  1.0f,  0.0f, 1.0f,
+                       -1.0f, -1.0f,  0.0f, 0.0f,
+                        1.0f, -1.0f,  1.0f, 0.0f,
+
+                       -1.0f,  1.0f,  0.0f, 1.0f,
+                        1.0f, -1.0f,  1.0f, 0.0f,
+                        1.0f,  1.0f,  1.0f, 1.0f
+                };
+                screenVbo_->prepareStatic(quadVertices, 6*sizeof(float)*4);
+                screenFB_->colorBuffer()->bind();
+
+                renderer::draw2D(6);
+                
+                
 
                 // Swap front and back buffers.
                 glfwSwapBuffers(mainWindow_->windowAPIpointer());
@@ -640,6 +716,9 @@ namespace VoxelEng {
 
                 // Handle user inputs.
                 input::handleInputs();
+
+                // Reset things for the next iteration.
+                graphics::setDepthTest(true);
 
             }
 
@@ -1102,13 +1181,36 @@ namespace VoxelEng {
 
         }
 
+        if (debugShader_) {
+        
+            delete debugShader_;
+            debugShader_ = nullptr;
+        
+        }
+
+        if (screenShader_) {
+        
+            delete screenShader_;
+            screenShader_ = nullptr;
+        
+        }
+
         // These pointers where not the original owners of the object they point to.
         // They were allocated in the 'graphics' class and they have been properly deallocated before this.
         chunksVbo_ = nullptr;
         entitiesVbo_ = nullptr;
+        screenVbo_ = nullptr;
         vao_ = nullptr;
+        screenVao_ = nullptr;
         playerCamera_ = nullptr;
         chunksToDraw_ = nullptr;
+
+        if (screenFB_) {
+        
+            delete screenFB_;
+            screenFB_ = nullptr;
+        
+        }
 
         if (mainWindow_) {
 
@@ -1117,7 +1219,6 @@ namespace VoxelEng {
 
         }
 
-       
 
         if (batchesToDraw_) {
 

@@ -53,7 +53,6 @@ namespace VoxelEng {
 	*/
 	const graphicsAPI graphicsAPIUsed = graphicsAPI::OPENGL;
 	
-
 	/**
 	* @brief Minimal block texture size in pixels.
 	*/
@@ -138,6 +137,8 @@ namespace VoxelEng {
 	* @brief Maximum number of chunk generation/meshing simultaneous jobs being executed.
 	*/
 	const unsigned int MAX_N_CHUNK_SIMULT_TASKS = 2;
+
+	const float piDiv = 3.1415926f / 180.0f;
 
 
 	/////////////////////
