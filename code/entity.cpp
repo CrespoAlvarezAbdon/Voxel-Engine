@@ -4,7 +4,7 @@
 #include <string>
 #include "camera.h"
 #include "game.h"
-#include "graphics.h"
+#include "graphics/graphics.h"
 #include "logger.h"
 #include "utilities.h"
 #include "worldGen.h"
@@ -14,11 +14,12 @@ namespace VoxelEng {
     // 'entity' class.
 
     entity::entity(entityID ID, unsigned int modelID, const vec3& pos, const vec3& rot, tickFunc func)
-        : ID_(ID),
-        model_(&models::getModelAt(modelID)),
-        updateXRotation_(true), updateYRotation_(true), updateZRotation_(true),
-        tickFunc_(func) {
+    : ID_(ID),
+    model_(&models::getModelAt(modelID)),
+    updateXRotation_(true), updateYRotation_(true), updateZRotation_(true),
+    tickFunc_(func) {
     
+        transform_.position = pos;
         rotate(rot);
     
     }
@@ -404,8 +405,6 @@ namespace VoxelEng {
             entityBatch_[entityID] = batchID;
 
         }
-
-
 
         return entityID;
 

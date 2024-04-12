@@ -7,7 +7,7 @@
 #include "chunk.h"
 #include "player.h"
 #include "gui.h"
-#include "graphics.h"
+#include "Graphics/graphics.h"
 #include "logger.h"
 #include "world.h"
 #include "worldGen.h"

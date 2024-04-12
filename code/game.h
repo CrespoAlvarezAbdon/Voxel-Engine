@@ -231,7 +231,6 @@ namespace VoxelEng {
         static const std::vector<model>* batchesToDraw_;
 
         static shader* defaultShader_;
-        static shader* debugShader_;
         static shader* screenShader_;
 
         static vertexBuffer* chunksVbo_;

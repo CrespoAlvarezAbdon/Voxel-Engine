@@ -1,7 +1,7 @@
 #include "graphics.h"
 
-#include "logger.h"
-#include "definitions.h"
+#include "../logger.h"
+#include "../definitions.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -82,24 +82,20 @@ namespace VoxelEng {
 
 				vaos_.insert({ "3D", vertexArray()});
 				vaos_.insert({ "3Dentities", vertexArray() });
-				vaos_.insert({ "3Ddebug", vertexArray() });
 				vaos_.insert({ "2D", vertexArray() });
 				vaos_.insert({ "screen", vertexArray() });
 
 				vbos_.insert({ "chunks", vertexBuffer() });
 				vbos_.insert({ "entities", vertexBuffer() });
-				vbos_.insert({ "3Ddebug", vertexBuffer() });
 				vbos_.insert({ "GUI", vertexBuffer() });
 				vbos_.insert({ "screen", vertexBuffer() });
 
 				vaos_.at("3D").generate();
 				vaos_.at("3Dentities").generate();
-				vaos_.at("3Ddebug").generate();
 				vaos_.at("2D").generate();
 				vaos_.at("screen").generate();
 				vbos_.at("chunks").generate();
 				vbos_.at("entities").generate();
-				vbos_.at("3Ddebug").generate();
 				vbos_.at("GUI").generate();
 				vbos_.at("screen").generate();
 
@@ -110,6 +106,7 @@ namespace VoxelEng {
 				// Configure the vertex layout for 3D rendering.
 				layout3D.push<GLfloat>(3);
 				layout3D.push<GLfloat>(2);
+				layout3D.push<unsigned char>(4);
 				layout3D.push<normalVec>(1);
 				vaos_.at("3D").bind();
 				vbos_.at("chunks").bind();
@@ -118,10 +115,6 @@ namespace VoxelEng {
 				vaos_.at("3Dentities").bind();
 				vbos_.at("entities").bind();
 				vaos_.at("3Dentities").addLayout(layout3D);
-
-				vaos_.at("3Ddebug").bind();
-				vbos_.at("3Ddebug").bind();
-				vaos_.at("3Ddebug").addLayout(layout3D);
 
 				// The same for 2D rendering.
 				layout2D.push<GLfloat>(2);
@@ -273,6 +266,8 @@ namespace VoxelEng {
 
 
         #endif
+
+		mainWindow_ = nullptr;
 
 		initialised_ = false;
 	

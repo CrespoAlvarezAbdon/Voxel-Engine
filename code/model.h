@@ -40,11 +40,22 @@ namespace VoxelEng {
 	* correspond to the ones that form it.
 	*/
 	typedef std::vector<unsigned short> triangle;
+
 	/**
 	* @brief Representation of the collection of triangles that forms up
 	* an entity's model.
 	*/
 	typedef std::vector<triangle> modelTriangles;
+
+	
+	/////////////////
+	//Enum classes.//
+	/////////////////
+
+	/**
+	* @brief The mode in which to apply the rotation of a transform to a model.
+	*/
+	enum class applyRotationMode {EULER_ANGLES = 0, DIRECTION_VECTOR = 1};
 
 
 	///////////
@@ -106,12 +117,13 @@ namespace VoxelEng {
 		/**
 		* @brief Apply the given transform to the provided model.
 		*/
-		static void applyTransform(model& aModel, const transform& transform, bool rotateX = false, bool rotateY = false, bool rotateZ = false);
+		static void applyTransform(model& aModel, const transform& transform, applyRotationMode rotMode,
+								   bool rotateX = false, bool rotateY = false, bool rotateZ = false);
 
 		/**
 		* @brief Apply the given transform to the provided model and add it to the given batch model.
 		*/
-		static void applyTransform(model& aModel, const transform& transform, model& batchModel,
+		static void applyTransform(model& aModel, const transform& transform, model& batchModel, applyRotationMode rotMode,
 								   bool rotateX = false, bool rotateY = false, bool rotateZ = false);
 
 

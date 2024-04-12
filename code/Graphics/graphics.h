@@ -11,14 +11,17 @@
 #ifndef _VOXELENG_GRAPHICS_
 #define _VOXELENG_GRAPHICS_
 
+#include <atomic>
 #include <initializer_list>
-#include <unordered_map>
 #include <string>
-#include "indexBuffer.h"
-#include "vertexArray.h"
-#include "vertexBuffer.h"
-#include "vertexBufferLayout.h"
-#include "gameWindow.h"
+#include <mutex>
+#include <unordered_map>
+#include "../batch.h" // CUIDADO POR SI ESTO METE ERRORES
+#include "../indexBuffer.h"
+#include "../vertexArray.h"
+#include "../vertexBuffer.h"
+#include "../vertexBufferLayout.h"
+#include "../gameWindow.h"
 
 
 namespace VoxelEng {	
@@ -206,6 +209,11 @@ namespace VoxelEng {
 		*/
 		static const vertexBufferLayout& cVboLayout(const std::string& vboName);
 
+		/**
+		* @brief Returns the current read-only batch list for GUMs.
+		*/
+		static const std::unordered_map<std::string, model>* readBatchList();
+
 
 		// Modifiers.
 
@@ -247,6 +255,7 @@ namespace VoxelEng {
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		static void setTransparency(bool isEnabled);
+
 
 		// Clean up.
 

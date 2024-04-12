@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include "camera.h"
 #include "gui.h"
-#include "graphics.h"
+#include "Graphics/graphics.h"
 
 
 namespace VoxelEng {

@@ -34,8 +34,8 @@ namespace VoxelEng {
 		textureCoord textureCoords[2];
 		// The member 'normals' follows GL_INT_2_10_10_10_REV format. That is, 10 first bits are assigned for first normal coord, 
 		// the 10 next for the second normal coord... and the last 2 bits are unused (for now) because of alignment reasons.
+		unsigned char color[4] = {255,255,255,255}; // RGBA stored in 32-bits.
 		normalVec normals = 0;
-
 	};
 
 

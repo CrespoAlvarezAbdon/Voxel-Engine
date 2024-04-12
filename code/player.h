@@ -215,8 +215,7 @@ namespace VoxelEng {
 					pitchAxis_,
 					yawAxis_,
 					rollAxis_;
-		static entity* playerEntity_;
-		static transform* playerTransform_;
+		static transform playerTransform_;
 
 		/*
 		Flags used to coordinate the callbacks called
@@ -229,13 +228,13 @@ namespace VoxelEng {
 
 	inline const vec3& player::globalPos() {
 
-		return playerTransform_->position;
+		return playerTransform_.position;
 
 	}
 
 	inline const vec3& player::chunkPos() {
 
-		return playerTransform_->chunkPosition;
+		return playerTransform_.chunkPosition;
 
 	}
 
@@ -259,7 +258,7 @@ namespace VoxelEng {
 
 	inline void player::globalPos(const vec3& newPos) {
 	
-		playerTransform_->position = newPos;
+		playerTransform_.position = newPos;
 	
 	}
 

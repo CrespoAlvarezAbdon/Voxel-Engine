@@ -29,7 +29,7 @@ namespace VoxelEng {
 	void vertexBufferLayout::push<GLfloat>(unsigned int count)
 	{
 
-		elements_.push_back({ GL_FLOAT, count, true }); // POSIBLE ERROR QUE ISNORMALIZED DEBERÍA ESTAR A FALSE PARA SCREEN QUAD?
+		elements_.push_back({ GL_FLOAT, count, true });
 
 		stride_ += count * graphicsAPISizeOf(GL_FLOAT);
 

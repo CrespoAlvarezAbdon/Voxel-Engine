@@ -16,7 +16,7 @@
 #include "input.h"
 #include "gui.h"
 #include "game.h"
-#include "graphics.h"
+#include "Graphics/graphics.h"
 #include "logger.h"
 #include "timer.h"
 #include "AI/AIGameEx1.h"
@@ -354,6 +354,7 @@ namespace VoxelEng {
 
                             localID = blocksLocalIDs[x][y][z];
                             block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+                            aux = vertex();
 
                             // Add block's model to the mesh if necessary.
                             if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {

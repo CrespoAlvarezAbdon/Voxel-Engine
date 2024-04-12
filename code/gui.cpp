@@ -7,7 +7,7 @@
 #include "input.h"
 #include "game.h"
 #include "gameWindow.h"
-#include "graphics.h"
+#include "Graphics/graphics.h"
 #include "texture.h"
 #include "logger.h"
 #include "renderer.h"

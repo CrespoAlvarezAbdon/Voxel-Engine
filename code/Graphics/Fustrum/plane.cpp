@@ -65,11 +65,10 @@ namespace VoxelEng {
 				model_.push_back(planeVertices_->operator[](triangles->operator[](vertex)));
 		
 		}
-
 		transform_.position = vec3(0, 110, 0);
-		transform_.rotation = vec3(45, 45, 270);
+		transform_.Yaxis = glm::normalize(vec3(0, 1, 1));
 		transform_.scale = vec3(2, 2, 2);
-		models::applyTransform(model_, transform_, true, true, true);
+		models::applyTransform(model_, transform_, applyRotationMode::DIRECTION_VECTOR, true, true, true);
 	
 	}
 

@@ -17,7 +17,7 @@
 #include "player.h"
 #include "tickFunctions.h"
 #include "texture.h"
-#include "graphics.h"
+#include "Graphics/graphics.h"
 #include "gui.h"
 #include "GUIfunctions.h"
 #include "input.h"
@@ -80,7 +80,6 @@ namespace VoxelEng {
     const std::vector<model>* game::batchesToDraw_ = nullptr;
 
     shader* game::defaultShader_ = nullptr;
-    shader* game::debugShader_ = nullptr;
     shader* game::screenShader_ = nullptr;
     vertexBuffer* game::chunksVbo_ = nullptr;
     vertexBuffer* game::entitiesVbo_ = nullptr;
@@ -244,7 +243,6 @@ namespace VoxelEng {
 
             // Load shaders.
             defaultShader_ = new shader("resources/Shaders/vertexShader.shader", "resources/Shaders/fragmentShader.shader");
-            debugShader_ = new shader("resources/Shaders/debugVertexShader.shader", "resources/Shaders/debugFragmentShader.shader");
             screenShader_ = new shader("resources/Shaders/screenVertexShader.shader", "resources/Shaders/screenFragmentShader.shader");
 
 
@@ -529,15 +527,11 @@ namespace VoxelEng {
             int nFramesDrawn = 0; 
             unsigned int nVertices = 0;
 
+            // Spawn test entities.
+            entityManager::registerEntity(2, 0, 111, 0, 0, 90, 0);
+            entityManager::registerEntity(3, 0, 111, 0, 0, 0, 42);
 
-            // TESTING
-            plane p({ 110.0f, 110.0f, 110.0f }, { 0.5f, 0.5f, 0.0f });
-            plane p2({ 110.0f, 110.0f, 110.0f }, { 0.0f, 1.0f, 0.0f });
-            //plane p({ 110.0f, 110.0f, 110.0f }, vec3FixedUp);
-            p.generateVertices(10); // TESTING.
-            p2.generateVertices(10);
-
-            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //TODO. ADD THIS AS AN OPTION.
             while (loopSelection_ == engineMode::EDITLEVEL || loopSelection_ == engineMode::PLAYINGRECORD) {
 
                 screenFB_->bind();
@@ -634,10 +628,11 @@ namespace VoxelEng {
 
                 }
 
+
                 entitiesVao_->bind();
                 entitiesVbo_->bind();
                 
-                // Render batches.
+                // Render batches. TODO. LOS GUMS SE RENDERIZAN AQUI
                 if (batchesToDraw_) {
 
                     for (auto const& batch : *batchesToDraw_) {
@@ -653,22 +648,6 @@ namespace VoxelEng {
                     }
 
                 }
-
-                // Render 3D debug things.
-                graphics::setBasicFaceCulling(false);
-                debugShader_->bind();
-                debugShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
-
-                graphics::vao("3Ddebug").bind();
-                graphics::vbo("3Ddebug").bind();
-
-                graphics::vbo("3Ddebug").prepareStatic(p.vertices().data(), sizeof(vertex) * p.vertices().size());
-                renderer::draw3D(p.vertices().size());
-
-                graphics::vbo("3Ddebug").prepareStatic(p2.vertices().data(), sizeof(vertex) * p2.vertices().size());
-                renderer::draw3D(p2.vertices().size());
-
-                graphics::setBasicFaceCulling(true);
 
                 /*
                 2D rendering.
@@ -1181,13 +1160,6 @@ namespace VoxelEng {
 
         }
 
-        if (debugShader_) {
-        
-            delete debugShader_;
-            debugShader_ = nullptr;
-        
-        }
-
         if (screenShader_) {
         
             delete screenShader_;
@@ -1203,7 +1175,6 @@ namespace VoxelEng {
         vao_ = nullptr;
         screenVao_ = nullptr;
         playerCamera_ = nullptr;
-        chunksToDraw_ = nullptr;
 
         if (screenFB_) {
         
@@ -1219,13 +1190,8 @@ namespace VoxelEng {
 
         }
 
-
-        if (batchesToDraw_) {
-
-            delete batchesToDraw_;
-            batchesToDraw_ = nullptr;
-
-        }
+        chunksToDraw_ = nullptr; // TODO. IGUAL ESTO DA ERROR??
+        batchesToDraw_ = nullptr;
 
         graphicalModeInitialised_ = false;
 

@@ -48,7 +48,7 @@ namespace VoxelEng {
             // Fourth parameter = size of a vertex.
             // Fifth parameter = attributes offset (size to go to the second attribute if there is one. If not, simply put 0 in this parameter) (if you have to put a number, use const void * cast).
             glVertexAttribPointer(i, element.count, element.type, element.is_normalized ? GL_TRUE : GL_FALSE, layout.stride(), (const void*) offset); 
-        
+
             offset += element.count * graphicsAPISizeOf(element.type);
 
         }

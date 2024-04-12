@@ -69,6 +69,11 @@ namespace VoxelEng {
 		*/
 		float cosRotZ() const;
 
+		/**
+		* @brief Get the transform's rotation axis and angle while comparing the fixed Up vector with the current Y axis.
+		*/
+		void getRotationFromYaxis(vec3& axis, float& angles) const;
+
 
 		/*
 		Attributes.

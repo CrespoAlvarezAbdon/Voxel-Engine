@@ -21,7 +21,7 @@
 #include "chunk.h"
 #include "database.h"
 #include "definitions.h"
-#include "graphics.h"
+#include "Graphics/graphics.h"
 #include "vec.h"
 
 #if GRAPHICS_API == OPENGL

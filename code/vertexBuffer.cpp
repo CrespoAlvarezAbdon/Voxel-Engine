@@ -1,11 +1,11 @@
 #include "vertexBuffer.h"
 #include "renderer.h"
 #include "logger.h"
-#include "graphics.h"
+#include "Graphics/graphics.h"
 
 #if GRAPHICS_API == OPENGL
 
-#include <GL/glew.h> // POSSIBLE ERROR AQUÍ POR PONERLO EN ESTE ORDEN?
+#include <GL/glew.h>
 
 #endif
 
