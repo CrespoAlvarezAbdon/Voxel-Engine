@@ -77,6 +77,11 @@ namespace VoxelEng {
 	vec3 uDirectionToVec3(blockViewDir direction);
 
 	/**
+	* @brief Returns 'direction' in three floats.
+	*/
+	void uDirectionToVec3(blockViewDir direction, float& x, float& y, float& z);
+
+	/**
 	* @brief Returns 'direction' in as a Block View Direction by rounding to the
 	* nearest direction.
 	*/

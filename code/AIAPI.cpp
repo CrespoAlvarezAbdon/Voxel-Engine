@@ -1411,13 +1411,18 @@ namespace VoxelEng {
 			if (recording_)
 				recordAction("createEntity", { entityTypeID, posX, posY, posZ, rotX, rotY, rotZ });
 
-			return entityManager::registerEntity(entityTypeID, posX, posY, posZ, rotX, rotY, rotZ);
+			return entityManager::spawnEntity(entityTypeID, posX, posY, posZ, VoxelEng::applyRotationMode::EULER_ANGLES, rotX, rotY, rotZ);
 
 		}
 
 		unsigned int aiGame::createAgent(unsigned int entityTypeID, float x, float y, float z, blockViewDir direction) {
 
-			unsigned int ID = entityManager::registerEntity(entityTypeID, x, y, z, uDirectionToVec3(direction));
+			float vecX = 0.0f;
+			float vecY = 0.0f;
+			float vecZ = 0.0f;
+			uDirectionToVec3(direction, x, y, z);
+
+			unsigned int ID = entityManager::spawnEntity(entityTypeID, x, y, z, VoxelEng::applyRotationMode::EULER_ANGLES, vecX, vecY, vecZ);
 
 			if (recording_)
 				recordAction("createAgent", {entityTypeID, x, y, z, direction});

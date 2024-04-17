@@ -10,6 +10,7 @@
 #define _VOXELENG_PLANE_
 
 #include "../transform.h"
+#include "../../entity.h"
 #include "../../vec.h"
 #include "../../model.h"
 
@@ -26,10 +27,9 @@
 namespace VoxelEng {
 
 	/**
-	* @brief A mathematical plane can be defined with a normal vector and a distance to the origin. Said distance
-	* can be defined with a point.
+	* @brief An entity that represents a 2D plane.
 	*/
-	class plane {
+	class plane : public entity {
 
 	public:
 
@@ -52,14 +52,13 @@ namespace VoxelEng {
 		*/
 		plane(const vec3& point, const vec3& normal);
 
+
 		// Observers.
 
 		/**
-		* @brief Returns the plane's last generated vertices.
-		* NOTE. After constructing the plane, it has no generated vertices, so at least one call to plane::generateVertices() should
-		* be made before calling this method.
+		* @brief Get the plane's normal.
 		*/
-		const model& vertices() const;
+		const vec3& normal() const;
 
 
 		// Modifiers.
@@ -75,36 +74,18 @@ namespace VoxelEng {
 		*/
 		void distance(const vec3& pointWithNewDistance);
 
-		/**
-		* @brief Generate (or regenerate if already created) the vertices to draw the plane at the specified position.
-		* Since planes are mathematically defined as infinite, 'planeSize' is provided to delimit it.
-		*/
-		void generateVertices(float planeSize);
-
 
 		// Deinitializers.
 
 		static void reset();
 
-
 	private:
 
 		static bool initialized_;
-		static const model* planeVertices_;
-		static const modelTriangles* planeTriangles_;
 
-		vec3 normal_;
 		float distance_;
-		model model_;
-		transform transform_;
 
 	};
-
-	inline const model& plane::vertices() const {
-	
-		return model_;
-	
-	}
 
 }
 

@@ -11,6 +11,7 @@
 #define _VOXENG_ENTITY_
 
 #include <atomic>
+#include <concepts>
 #include <condition_variable>
 #include <list>
 #include <unordered_map>
@@ -57,7 +58,7 @@ namespace VoxelEng {
 		* WARNING. To create an entity use entityManager::registerEntity(). Otherwise the
 		* created entity will not be registered in the entity management system.
 		*/
-		entity(entityID ID, unsigned int modelID, const vec3& pos, const vec3& rot, tickFunc func = nullptr);
+		entity();
 
 
 		// Observers.
@@ -112,25 +113,38 @@ namespace VoxelEng {
 		*/
 		bool updateZRotation() const;
 
+		/**
+		* @brief Get the entity's rotation mode to apply when applying the entity's rotation to its model.
+		*/
+		applyRotationMode getApplyRotationMode() const;
 		
-
 		/**
 		* @brief Get the entity's ID.
 		*/
 		entityID ID() const;
 
+		/**
+		* @brief Return true if the entity has an associated tick function or false otherwise.
+		*/
+		bool hasTickFunction() const;
+
 
 		// Modifiers.
 
 		/**
-		* @brief Get the entity's transform.
+		* @brief Set the entity's transform.
 		*/
 		transform& getTransform();
 
 		/**
-		* @brief Get the entity's position.
+		* @brief Set the entity's position.
 		*/
 		vec3& pos();
+
+		/**
+		* @brief Set the entity's position.
+		*/
+		void pos(float x, float y, float z);
 
 		/**
 		* @brief Set entity's postion in X axis.
@@ -150,7 +164,7 @@ namespace VoxelEng {
 		/**
 		* @brief Change the entity's model.
 		*/
-		void setModelID(unsigned int modelID);
+		void entityModel(unsigned int modelID);
 
 		/**
 		* @brief Rotate the entity.
@@ -159,6 +173,7 @@ namespace VoxelEng {
 
 		/**
 		* @brief Rotate the entity.
+		* NOTE. This is only valid with entities that have applyRotationMode::EULER_ANGLES.
 		*/
 		void rotate(float x, float y, float z);
 
@@ -217,15 +232,35 @@ namespace VoxelEng {
 		/**
 		* @brief Set the entity's ID.
  		*/
-		void ID(entityID newValue);
+		void ID(entityID ID);
+
+		/**
+		* @brief Set the entity's tick function.
+		*/
+		void setTickFunc(tickFunc func);
+
+		/**
+		* @brief Set the entity's apply rotation mode.
+		*/
+		void setApplyRotationMode(applyRotationMode rotMode);
+
+		/**
+		* @brief Execute the tick function associated to this entity.
+		* Throws exception if there is no function associated.
+		*/
+		void executeTickFunc();
+
+		/**
+		* @brief Set the entity's up vector or Y axis.
+		*/
+		void setYAxis(const vec3& axis);
+
+		/**
+		* @brief Set the entity's up vector or Y axis.
+		*/
+		void setYAxis(float x, float y, float z);
 
 	protected:
-
-		/*
-		Friend classes.
-		*/
-
-		friend entityManager; // TODO. REMOVE THIS.
 
 
 		/*
@@ -233,14 +268,24 @@ namespace VoxelEng {
 		*/
 
 		entityID ID_;
+
 		bool updateXRotation_,
 			 updateYRotation_,
 			 updateZRotation_;
 		transform transform_;
 		const model* model_;
+
+		applyRotationMode applyRotationMode_;
+
 		tickFunc tickFunc_;
 
 	};
+
+	inline entity::entity()
+	: ID_(0),
+	model_(nullptr),
+	applyRotationMode_(applyRotationMode::NOT_SPECIFIED),
+	tickFunc_(nullptr) {}
 
 	inline const transform& entity::getTransform() const {
 	
@@ -302,11 +347,21 @@ namespace VoxelEng {
 
 	}
 
+	inline applyRotationMode entity::getApplyRotationMode() const {
 	
+		return applyRotationMode_;
+	
+	}
 
 	inline entityID entity::ID() const {
 	
 		return ID_;
+	
+	}
+
+	inline bool entity::hasTickFunction() const {
+	
+		return tickFunc_;
 	
 	}
 
@@ -319,6 +374,14 @@ namespace VoxelEng {
 	inline vec3& entity::pos() {
 
 		return transform_.position;
+
+	}
+
+	inline void entity::pos(float x, float y, float z) {
+
+		transform_.position.x = x;
+		transform_.position.y = y;
+		transform_.position.z = z;
 
 	}
 
@@ -352,16 +415,48 @@ namespace VoxelEng {
 
 	}
 
-	inline void entity::setModelID(unsigned int modelID) {
+	inline void entity::entityModel(unsigned int modelID) {
 
 		model_ = &models::getModelAt(modelID);
 
 	}
 
-	inline void entity::ID(entityID newValue) {
+	inline void entity::ID(entityID ID) {
 	
-		ID_ = newValue;
+		ID_ = ID;
 	
+	}
+
+	inline void entity::setTickFunc(tickFunc func) {
+
+		tickFunc_ = func;
+
+	}
+
+	inline void entity::setApplyRotationMode(applyRotationMode rotMode) {
+
+		applyRotationMode_ = rotMode;
+
+	}
+
+	inline void entity::executeTickFunc() {
+	
+		tickFunc_();
+	
+	}
+
+	inline void entity::setYAxis(const vec3& axis) {
+	
+		transform_.Yaxis = axis;
+	
+	}
+
+	inline void entity::setYAxis(float x, float y, float z) {
+
+		transform_.Yaxis.x = x;
+		transform_.Yaxis.y = y;
+		transform_.Yaxis.z = z;
+
 	}
 		
 
@@ -429,22 +524,19 @@ namespace VoxelEng {
 		static unsigned int nEntities();
 
 		/**
-		* @brief Registers a new entity in the entity management system.
+		* @brief Spawns a new entity.
 		* Returns the ID of the registered entity.
 		*/
-		static entityID registerEntity(unsigned int modelID, const vec3& pos, const vec3& rot = vec3Zero, tickFunc func = nullptr);
+		static entityID spawnEntity(unsigned int modelID, float posX, float posY, float posZ, applyRotationMode applyRotMode = applyRotationMode::EULER_ANGLES, 
+			float rotX = 0, float rotY = 0, float rotZ = 0, tickFunc func = nullptr);
 
 		/**
-		* @brief Registers a new entity in the entity management system.
+		* @brief Spawns a new entity of type T, with T being a type that derives from entity.
 		* Returns the ID of the registered entity.
 		*/
-		static entityID registerEntity(unsigned int modelID, float posX, float posY, float posZ, const vec3& rot = vec3Zero, tickFunc func = nullptr);
-
-		/**
-		* @brief Registers a new entity in the entity management system.
-		* Returns the ID of the registered entity.
-		*/
-		static entityID registerEntity(unsigned int modelID, float posX, float posY, float posZ, float rotX, float rotY, float rotZ, tickFunc func = nullptr);
+		template<typename T = entity>
+		requires std::derived_from<T, entity>
+		static entityID spawnEntity(float posX, float posY, float posZ, float rotX = 0, float rotY = 0, float rotZ = 0);
 
 		/**
 		* @brief Returns the entity with the specified entity ID (with bounds checking).
@@ -533,7 +625,7 @@ namespace VoxelEng {
 
 		static bool initialised_,
 					firstManagementIteration_;
-		static std::vector<entity> entities_;
+		static std::vector<entity*> entities_;
 		static std::vector<batch> batches_;
 
 		static std::unordered_map<unsigned int, unsigned int> entityBatch_; // Relates entity's ID with the batch it belongs to.
@@ -606,6 +698,11 @@ namespace VoxelEng {
 		*/
 		static void deleteBatch_(unsigned int batchID);
 
+		/*
+		Insert entity into the entity manager system.
+		NOTE. Entity must be created with a entityManager::spawnEntity method.
+		*/
+		static entityID insertEntity_(entity* entityToInsert);
 
 	};
 
@@ -615,15 +712,20 @@ namespace VoxelEng {
 	
 	}
 
-	inline entityID entityManager::registerEntity(unsigned int entityTypeID, const vec3& pos, const vec3& rot, tickFunc func) {
-	
-		return registerEntity(entityTypeID, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, func);
-	
-	}
+	template<typename T>
+	requires std::derived_from<T, entity>
+	entityID entityManager::spawnEntity(float posX, float posY, float posZ, float rotX, float rotY, float rotZ) {
 
-	inline entityID entityManager::registerEntity(unsigned int entityTypeID, float posX, float posY, float posZ, const vec3& rot, tickFunc func) {
+		entity* createdEntity = new T();
+		
+		createdEntity->pos(posX, posY, posZ);
+		applyRotationMode applyRotMode = createdEntity->getApplyRotationMode();
+		if (applyRotMode == applyRotationMode::EULER_ANGLES)
+			createdEntity->rotate(rotX, rotY, rotZ);
+		else if (applyRotMode == applyRotationMode::DIRECTION_VECTOR)
+			createdEntity->setYAxis(rotX, rotY, rotZ);
 
-		return registerEntity(entityTypeID, posX, posY, posZ, rot.x, rot.y, rot.z, func);
+		return insertEntity_(createdEntity);
 
 	}
 

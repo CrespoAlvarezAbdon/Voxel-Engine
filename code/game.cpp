@@ -528,8 +528,9 @@ namespace VoxelEng {
             unsigned int nVertices = 0;
 
             // Spawn test entities.
-            entityManager::registerEntity(2, 0, 111, 0, 0, 90, 0);
-            entityManager::registerEntity(3, 0, 111, 0, 0, 0, 42);
+            entityManager::spawnEntity(2, 0, 110, 0, applyRotationMode::EULER_ANGLES, 90, 0, 0);
+            entityManager::spawnEntity(3, 0, 110, 0, applyRotationMode::EULER_ANGLES, 90, 0, 0);
+            entityManager::spawnEntity<plane>(0, 110, 0, 90, 0, 0);
 
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //TODO. ADD THIS AS AN OPTION.
             while (loopSelection_ == engineMode::EDITLEVEL || loopSelection_ == engineMode::PLAYINGRECORD) {

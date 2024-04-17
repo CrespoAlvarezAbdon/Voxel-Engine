@@ -22,6 +22,13 @@
 
 namespace VoxelEng {
 
+	//////////////
+	//Constants.//
+	//////////////
+
+	const unsigned int planeModelID = 3;
+
+
 	/////////////////////
 	//Type definitions.//
 	/////////////////////
@@ -55,7 +62,7 @@ namespace VoxelEng {
 	/**
 	* @brief The mode in which to apply the rotation of a transform to a model.
 	*/
-	enum class applyRotationMode {EULER_ANGLES = 0, DIRECTION_VECTOR = 1};
+	enum class applyRotationMode {NOT_SPECIFIED = 0, EULER_ANGLES = 1, DIRECTION_VECTOR = 2};
 
 
 	///////////

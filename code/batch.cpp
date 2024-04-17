@@ -190,7 +190,7 @@ namespace VoxelEng {
 			entity& selectedEntity = entityManager::getEntity(*it);
 			entityModel = selectedEntity.entityModel();
 
-			models::applyTransform(entityModel, selectedEntity.getTransform(), model_, applyRotationMode::EULER_ANGLES,
+			models::applyTransform(entityModel, selectedEntity.getTransform(), model_, selectedEntity.getApplyRotationMode(),
 				selectedEntity.updateXRotation(), selectedEntity.updateYRotation(), selectedEntity.updateZRotation());
 
 		}

@@ -57,6 +57,40 @@ namespace VoxelEng {
 	
 	}
 
+	void uDirectionToVec3(blockViewDir direction, float& x, float& y, float& z) {
+
+		x = 0.0f;
+		y = 0.0f;
+		z = 0.0f;
+
+		switch (direction) {
+
+		case blockViewDir::PLUSY:
+			y = 1.0f;
+			break;
+		case blockViewDir::NEGY:
+			y = -1.0f;
+			break;
+		case blockViewDir::PLUSX:
+			x = 1.0f;
+			break;
+		case blockViewDir::NEGX:
+			x = -1.0f;
+			break;
+		case blockViewDir::PLUSZ:
+			z = 1.0f;
+			break;
+		case blockViewDir::NEGZ:
+			z = -1.0f;
+			break;
+		default:
+			logger::errorLog("Undefined direction specified when converting to vec3");
+			break;
+
+		}
+
+	}
+
 	blockViewDir vec3ToUDirection(const vec3& direction) {
 	
 		unsigned int iMax = indMaxVec(direction);

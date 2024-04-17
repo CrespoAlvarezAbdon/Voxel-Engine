@@ -85,6 +85,22 @@ namespace VoxelEng {
             model* planeVertices = new model { // This is read as a .OBJ model and therefore it has no vertex indexing.
             
                 // Front face.
+                /*{-0.5,0,-0.5},// 0
+                {-0.5,0,0.5}, // 1
+                {0.5,0,0.5}, // 2
+                {0.5,0,0.5}, // 2
+                {0.5,0,-0.5}, // 3
+                {-0.5,0,-0.5},// 0
+
+                // Back face.
+                {-0.5,0,0.5}, // 0
+                {-0.5,0,-0.5}, // 1
+                {0.5,0,-0.5}, // 2
+                {0.5,0,-0.5}, // 2
+                {0.5,0,0.5}, // 3
+                {-0.5,0,0.5}, // 0*/
+
+                // Front face.
                 {-0.5,0,-0.5, 0,0, 255,0,0,255},// 0
                 {-0.5,0,0.5, 0,0, 255,0,0,255}, // 1
                 {0.5,0,0.5, 0,0, 255,0,0,255}, // 2
@@ -110,7 +126,7 @@ namespace VoxelEng {
 
                 {0, emptyVertices},
                 {1, blockVertices},
-                {3, planeVertices}
+                {planeModelID, planeVertices}
 
             };
 
@@ -118,7 +134,7 @@ namespace VoxelEng {
 
                 {0, emptyTriangles},
                 {1, blockTriangles},
-                {3, nullptr}
+                {planeModelID, nullptr}
 
             };
 
@@ -418,56 +434,71 @@ namespace VoxelEng {
 
             float oldFirstCoord = 0.0f;
             float oldSecondCoord = 0.0f;
+            vec3 vertexAux = vec3Zero;
+
+            vec3 axis = vec3Zero;
+            float angle = 0.0f;
+            if (rotMode == applyRotationMode::DIRECTION_VECTOR)
+                transform.getRotationFromYaxis(axis, angle);
 
             // Translate the model's copy to the entity's position and apply rotations if necessary.
             for (unsigned int j = 0; j < size; j++) {
 
                 // Scale.
-                aModel[j].positions[0] *= transform.scale.x;
-                aModel[j].positions[1] *= transform.scale.y;
-                aModel[j].positions[2] *= transform.scale.z;
+                vertexAux.x = aModel[j].positions[0] * transform.scale.x;
+                vertexAux.y = aModel[j].positions[1] * transform.scale.y;
+                vertexAux.z = aModel[j].positions[2] * transform.scale.z;
 
                 // Rotate.
-                if (rotateX) {
+                if (rotMode == applyRotationMode::EULER_ANGLES) {
 
-                    oldFirstCoord = aModel[j].positions[1];
-                    oldSecondCoord = aModel[j].positions[2];
+                    if (rotateX) {
 
-                    aModel[j].positions[1] = oldFirstCoord * cosAngleX -
-                        oldSecondCoord * sinAngleX;
-                    aModel[j].positions[2] = oldFirstCoord * sinAngleX +
-                        oldSecondCoord * cosAngleX;
+                        oldFirstCoord = vertexAux.y;
+                        oldSecondCoord = vertexAux.z;
+
+                        vertexAux.y = oldFirstCoord * cosAngleX -
+                            oldSecondCoord * sinAngleX;
+                        vertexAux.z = oldFirstCoord * sinAngleX +
+                            oldSecondCoord * cosAngleX;
+
+                    }
+
+                    if (rotateY) {
+
+                        oldFirstCoord = vertexAux.x;
+                        oldSecondCoord = vertexAux.z;
+
+                        vertexAux.x = oldFirstCoord * cosAngleY +
+                            oldSecondCoord * sinAngleY;
+                        vertexAux.z = oldSecondCoord * cosAngleY -
+                            oldFirstCoord * sinAngleY;
+
+                    }
+
+                    if (rotateZ) {
+
+                        oldFirstCoord = vertexAux.x;
+                        oldSecondCoord = vertexAux.y;
+
+                        vertexAux.x = oldFirstCoord * cosAngleZ -
+                            oldSecondCoord * sinAngleZ;
+                        vertexAux.y = oldFirstCoord * sinAngleZ +
+                            oldSecondCoord * cosAngleZ;
+
+                    }
 
                 }
+                else { // applyRotationMode::DIRECTION_VECTOR
 
-                if (rotateY) {
-
-                    oldFirstCoord = aModel[j].positions[0];
-                    oldSecondCoord = aModel[j].positions[2];
-
-                    aModel[j].positions[0] = oldFirstCoord * cosAngleY +
-                        oldSecondCoord * sinAngleY;
-                    aModel[j].positions[2] = oldSecondCoord * cosAngleY -
-                        oldFirstCoord * sinAngleY;
-
-                }
-
-                if (rotateZ) {
-
-                    oldFirstCoord = aModel[j].positions[0];
-                    oldSecondCoord = aModel[j].positions[1];
-
-                    aModel[j].positions[0] = oldFirstCoord * cosAngleZ -
-                        oldSecondCoord * sinAngleZ;
-                    aModel[j].positions[1] = oldFirstCoord * sinAngleZ +
-                        oldSecondCoord * cosAngleZ;
+                    vertexAux = glm::rotate(vertexAux, glm::radians(angle), axis);
 
                 }
 
                 // Translate.
-                aModel[j].positions[0] += transform.position.x;
-                aModel[j].positions[1] += transform.position.y;
-                aModel[j].positions[2] += transform.position.z;
+                aModel[j].positions[0] = vertexAux.x + transform.position.x;
+                aModel[j].positions[1] = vertexAux.y + transform.position.y;
+                aModel[j].positions[2] = vertexAux.z + transform.position.z;
 
                 batchModel.push_back(aModel[j]);
 
