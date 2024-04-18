@@ -402,7 +402,7 @@ namespace VoxelEng {
                     }
                 
                 }
-                else { // applyRotationMode::DIRECTION_VECTOR
+                else if (axis != vec3Zero && angle != 0) { // applyRotationMode::DIRECTION_VECTOR
                     
                     vertexAux = glm::rotate(vertexAux, glm::radians(angle), axis);
 
@@ -489,7 +489,7 @@ namespace VoxelEng {
                     }
 
                 }
-                else { // applyRotationMode::DIRECTION_VECTOR
+                else if(axis != vec3Zero && angle != 0) { // applyRotationMode::DIRECTION_VECTOR
 
                     vertexAux = glm::rotate(vertexAux, glm::radians(angle), axis);
 

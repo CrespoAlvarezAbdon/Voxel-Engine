@@ -529,8 +529,7 @@ namespace VoxelEng {
 
             // Spawn test entities.
             entityManager::spawnEntity(2, 0, 110, 0, applyRotationMode::EULER_ANGLES, 90, 0, 0);
-            entityManager::spawnEntity(3, 0, 110, 0, applyRotationMode::EULER_ANGLES, 90, 0, 0);
-            entityManager::spawnEntity<plane>(0, 110, 0, 90, 0, 0);
+            entityManager::spawnEntity<plane>(0, 110, 0, 55, 45, 45);
 
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //TODO. ADD THIS AS AN OPTION.
             while (loopSelection_ == engineMode::EDITLEVEL || loopSelection_ == engineMode::PLAYINGRECORD) {

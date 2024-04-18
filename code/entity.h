@@ -447,7 +447,7 @@ namespace VoxelEng {
 
 	inline void entity::setYAxis(const vec3& axis) {
 	
-		transform_.Yaxis = axis;
+		transform_.Yaxis = glm::normalize(axis);
 	
 	}
 
@@ -456,6 +456,7 @@ namespace VoxelEng {
 		transform_.Yaxis.x = x;
 		transform_.Yaxis.y = y;
 		transform_.Yaxis.z = z;
+		transform_.Yaxis = glm::normalize(transform_.Yaxis);
 
 	}
 		
@@ -722,7 +723,7 @@ namespace VoxelEng {
 		applyRotationMode applyRotMode = createdEntity->getApplyRotationMode();
 		if (applyRotMode == applyRotationMode::EULER_ANGLES)
 			createdEntity->rotate(rotX, rotY, rotZ);
-		else if (applyRotMode == applyRotationMode::DIRECTION_VECTOR)
+		else if (applyRotMode == applyRotationMode::DIRECTION_VECTOR && (rotX != 0 || rotY != 0 || rotZ != 0))
 			createdEntity->setYAxis(rotX, rotY, rotZ);
 
 		return insertEntity_(createdEntity);

@@ -310,7 +310,7 @@ namespace VoxelEng {
         createdEntity->pos(posX, posY, posZ);
         if (applyRotMode == applyRotationMode::EULER_ANGLES)
             createdEntity->rotate(rotX, rotY, rotZ);
-        else if (applyRotMode == applyRotationMode::DIRECTION_VECTOR)
+        else if (applyRotMode == applyRotationMode::DIRECTION_VECTOR && (rotX != 0 || rotY != 0 || rotZ != 0))
             createdEntity->setYAxis(rotX, rotY, rotZ);
         createdEntity->setApplyRotationMode(applyRotMode);
         createdEntity->setTickFunc(func);
