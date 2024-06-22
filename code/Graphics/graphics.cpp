@@ -52,8 +52,8 @@ namespace VoxelEng {
 					logger::errorLog("Failed to initialize the GLFW library!");
 
 				// Select GLFW version.
-				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-				glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 				glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 				// Create API rendering window.
@@ -76,7 +76,7 @@ namespace VoxelEng {
 				graphics::setVSync(true);
 				graphics::setDepthTest(true);
 				graphics::setBasicFaceCulling(true);
-				graphics::setTransparency(true);
+				graphics::blending(true);
 
 				// Initialise VBO, VAO and VBO layouts.
 
@@ -189,6 +189,35 @@ namespace VoxelEng {
 
 	}
 
+	void graphics::textureTypeToAPITextureType(const textureType& type, std::vector<unsigned int>& APIValues) {
+
+		switch (type) {
+		
+		case textureType::NONE:
+			logger::errorLog("No textureType was specified");
+			break;
+
+		case textureType::COLOR:
+		case textureType::REVEAL:
+			APIValues = {GL_COLOR};
+			break;
+
+		case textureType::DEPTH_AND_STENCIL:
+			APIValues = {GL_DEPTH, GL_STENCIL};
+			break;
+
+		case textureType::IMAGE:
+			logger::errorLog("Getting a graphics API's value for image texture type is unsupported");
+			break;
+
+		default:
+			logger::errorLog("Unknown texture type " + std::to_string(static_cast<int>(type)));
+			break;
+		
+		}
+	
+	}
+
 	vertexBuffer& graphics::vbo(const std::string& vboName) {
 
 		if (vbos_.contains(vboName))
@@ -228,27 +257,61 @@ namespace VoxelEng {
 	void graphics::setBasicFaceCulling(bool isEnabled) {
 
 		if (isEnabled) {
-		
+
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
-		
+
 		}
 		else
 			glDisable(GL_CULL_FACE);
 
 	}
 
-	void graphics::setTransparency(bool isEnabled) {
-	
+	void graphics::blending(bool isEnabled) {
+
 		if (isEnabled) {
-		
+
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
+
 		}
 		else
 			glDisable(GL_BLEND);
-		
+
+	}
+
+	void graphics::setOpaquePassConfig() {
+	
+		glDepthFunc(GL_LESS);
+		glDepthMask(GL_TRUE);
+		graphics::blending(false);
+	
+	}
+
+	void graphics::setTranslucidPassConfig() {
+
+		glDepthMask(GL_FALSE);
+		glEnable(GL_BLEND);
+		glBlendFunci(0, GL_ONE, GL_ONE);
+		glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+		glBlendEquation(GL_FUNC_ADD);
+
+	}
+
+	void graphics::setCompositePassConfig() {
+
+		glDepthFunc(GL_ALWAYS);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	}
+
+	void graphics::setScreenPassConfig() {
+
+		glDisable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE); // this way glClear will clear the depth buffer
+		glDisable(GL_BLEND);
+
 	}
 	
 	void graphics::reset() {

@@ -301,7 +301,7 @@ namespace VoxelEng {
 
 	inline void inputFunctions::selectBlockSlot9() {
 
-		player::setBlockToPlace(block::getBlockC("starminer::log"));
+		player::setBlockToPlace(block::getBlockC("starminer::marbleBlock2"));
 
 	}
 

@@ -25,14 +25,12 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-#include <hash.hpp>
 
 #include "atomicRecyclingPool.h"
 #include "block.h"
 #include "definitions.h"
 #include "event.h"
 #include "listener.h"
-#include "texture.h"
 #include "threadPool.h"
 #include "shader.h"
 #include "model.h"
@@ -43,11 +41,13 @@
 #include "vertexBufferLayout.h"
 #include "utilities.h"
 #include "time.h"
+#include "Graphics/Textures/texture.h"
 
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
 #include <glm.hpp>
+#include <hash.hpp> // POSIBLE ERROR POR MOVER ESTO?
 
 #endif
 
@@ -82,8 +82,19 @@ namespace VoxelEng {
 	*/
 	struct chunkRenderingData {
 
-		vec3 chunkPos;
-		model vertices; // prueba a poner esto como model a secas y donde ponga delete vertices simplemente recrear el objeto
+		vec3 globalChunkPos = vec3Zero;
+
+		// LOD 1.
+		model vertices;
+		model verticesBoundary;
+		model translucentVertices;
+		model translucentVerticesBoundary;
+
+		// LOD 2.
+		model verticesLOD2;
+		model verticesLOD2Boundary;
+		model translucentVerticesLOD2;
+		model translucentVerticesLOD2Boundary;
 
 	};
 
@@ -340,12 +351,12 @@ namespace VoxelEng {
 		* 'modification' tells if the call to this method is NOT part of the
 		* chunk's generation process or otherwise. For world generators that use this method, it must be set to false.
 		*/
-		void setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification = true);
+		void setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification = true, unsigned int LOD = 1);
 
 		/**
-		* @brief Returns the chunk's chunk position.
+		* @brief Set the chunk's chunk position.
 		*/
-		vec3& chunkPos();
+		void chunkPos(const vec3& newChunkPos);
 
 		/**
 		* @brief Returns the chunk's rendering data object.
@@ -466,7 +477,7 @@ namespace VoxelEng {
 		* @brief Clean up any resources allocated for this system.
 		*/ 
 		static void reset();
-
+		std::atomic<bool> needsRemesh_;
 		
 	private:
 
@@ -483,6 +494,7 @@ namespace VoxelEng {
 		std::unordered_map<unsigned short, unsigned short> paletteCount_;
 		std::unordered_set<unsigned short> freeLocalIDs_;
 		unsigned short blocksLocalIDs[SCX][SCY][SCZ];
+
 		unsigned short neighborBlocksPlusX_[SCY][SCZ];
 		unsigned short neighborBlocksMinusX_[SCY][SCZ];
 		unsigned short neighborBlocksPlusY_[SCX][SCZ];
@@ -490,8 +502,12 @@ namespace VoxelEng {
 		unsigned short neighborBlocksPlusZ_[SCX][SCY];
 		unsigned short neighborBlocksMinusZ_[SCX][SCY];
 
+		unsigned short neighborBlocksMinusXLOD2_[SCY][SCZ];
+		unsigned short neighborBlocksMinusYLOD2_[SCX][SCZ];
+		unsigned short neighborBlocksMinusZLOD2_[SCX][SCY];
+
 		bool modified_;
-		std::atomic<bool> needsRemesh_;
+		
 		std::atomic<short> nBlocks_,
 						   nBlocksPlusX_,
 						   nBlocksMinusX_,
@@ -503,6 +519,8 @@ namespace VoxelEng {
 		unsigned int nNeighbors_;
 
 		std::atomic<chunkStatus> loadLevel_;
+
+		vec3 chunkPos_;
 
 		chunkRenderingData renderingData_;
 		std::shared_mutex renderingDataMutex_;
@@ -544,37 +562,31 @@ namespace VoxelEng {
 
 	inline GLbyte chunk::x() const {
 
-		return renderingData_.chunkPos.x;
+		return chunkPos_.x;
 
 	}
 
 	inline GLbyte chunk::y() const {
 
-		return renderingData_.chunkPos.y;
+		return chunkPos_.y;
 
 	}
 
 	inline GLbyte chunk::z() const {
 
-		return renderingData_.chunkPos.z;
+		return chunkPos_.z;
 
 	}
 
 	inline const vec3& chunk::chunkPos() const {
 
-		return renderingData_.chunkPos;
+		return chunkPos_;
 
-	}
-
-	inline vec3& chunk::chunkPos() {
-
-		return renderingData_.chunkPos;
-	
 	}
 
 	inline const vec3& chunk::pos() const {
 
-		return vec3{ (float)renderingData_.chunkPos.x * SCX, (float)renderingData_.chunkPos.y * SCY, (float)renderingData_.chunkPos.z * SCZ };
+		return vec3{ (float)chunkPos_.x * SCX, (float)chunkPos_.y * SCY, (float)chunkPos_.z * SCZ };
 
 	}
 
@@ -1015,7 +1027,7 @@ namespace VoxelEng {
 		/**
 		* @brief Returns the read-onlu copy of chunks' meshes.
 		*/
-		static std::unordered_map<vec3, model> const * drawableChunksRead();
+		static std::unordered_map<vec3, chunkRenderingData> const * drawableChunksRead();
 
 		/**
 		* @brief Returns the current number of chunks to compute i n the X and Z axes from the position of the player.
@@ -1104,6 +1116,30 @@ namespace VoxelEng {
 		static bool chunkInRenderDistance(int chunkPosX, int chunkPosY, int chunkPosZ);
 
 		/**
+		* @brief Returns true if the specified chunk position is inside the specified player's LOD level distance or
+		* false otherwise.
+		* The last three parameters are output parameters and describe, respectivelly:
+		* - Whether the chunk position is at the border of LOD 'LODlevel' and LOD 'LODlevel' + 1.
+		* - For each axis, if the position is at a positive or negative distance from the player's camera 
+		*   (based on fixed axes-directions not on the player camera's) or if the distance in said axis is 0.
+		*   For example, if 'chunkPos' is (1,-1,0) and the player is at (0,0,0), it will return, for the following axes:
+		*   blockViewDir::PlusX, blockViewDir::MinusY, and blockViewDir::NONE.
+		*/
+		static bool chunkInLODDistance(const vec3& chunkPos, unsigned int LODlevel, bool& inBorder, blockViewDir& dirX, blockViewDir& dirY, blockViewDir& dirZ);
+
+		/**
+		* @brief Returns true if the specified chunk position is inside the specified player's LOD level distance or
+		* false otherwise.
+		* The last three parameters are output parameters and describe, respectivelly:
+		* - Whether the chunk position is at the border of LOD 'LODlevel' and LOD 'LODlevel' + 1.
+		* - For each axis, if the position is at a positive or negative distance from the player's camera
+		*   (based on fixed axes-directions not on the player camera's) or if the distance in said axis is 0.
+		*   For example, if 'chunkPos' is (1,-1,0) and the player is at (0,0,0), it will return, for the following axes:
+		*   blockViewDir::PlusX, blockViewDir::MinusY, and blockViewDir::NONE.
+		*/
+		static bool chunkInLODDistance(int chunkPosX, int chunkPosY, int chunkPosZ, unsigned int LODlevel, bool& inBorder, blockViewDir& dirX, blockViewDir& dirY, blockViewDir& dirZ);
+
+		/**
 		* @brief Returns distance between the player and the specified chunk position in the three axes in chunk coordinates.
 		*/
 		static vec3 chunkDistanceToPlayer(const vec3& chunkPos);
@@ -1112,6 +1148,11 @@ namespace VoxelEng {
 		* @brief Returns the distance between two chunk positions in chunk coordinates.
 		*/
 		static vec3 chunkDistance(const vec3& chunkPos1, const vec3& chunkPos2);
+
+		/**
+		* @brief Returns the distance between two chunk positions in chunk coordinates.
+		*/
+		static vec3 chunkSignedDistance(const vec3& chunkPos1, const vec3& chunkPos2);
 
 		/**
 		* @brief Returns the SQUARED distance in global position between the specified chunk position and the player's position.
@@ -1503,9 +1544,9 @@ namespace VoxelEng {
 													// ASI, SI SE PIDE UN CHUNK POR UN METODO GENÉRICO, SI NO SE ENCUENTRA ESE CHUNK EN CLIENT CHUNKS, SE CARGA COMO SIMULATED CHUNK.
 		static std::unordered_map<vec3, chunk*> simulatedChunks_; 
 
-		static std::unordered_map<vec3, model>* chunkMeshesUpdated_,
-											  * chunkMeshesWrite_,
-											  * chunkMeshesRead_;
+		static std::unordered_map<vec3, chunkRenderingData>* chunkMeshesUpdated_;
+		static std::unordered_map<vec3, chunkRenderingData>* chunkMeshesWrite_;
+		static std::unordered_map<vec3, chunkRenderingData>* chunkMeshesRead_;
 
 		static std::list<chunk*> newChunkMeshes_;
 		static std::list<chunk*> priorityNewChunkMeshes_;
@@ -1569,7 +1610,7 @@ namespace VoxelEng {
 
 	}
 
-	inline std::unordered_map<vec3, model> const * chunkManager::drawableChunksRead() {
+	inline std::unordered_map<vec3, chunkRenderingData> const * chunkManager::drawableChunksRead() {
 
 		return chunkMeshesRead_;
 
@@ -1636,6 +1677,12 @@ namespace VoxelEng {
 
 		return openedTerrainFileName_;
 		
+	}
+
+	inline bool chunkManager::chunkInLODDistance(int chunkPosX, int chunkPosY, int chunkPosZ, unsigned int LODlevel, bool& inBorder, blockViewDir& dirX, blockViewDir& dirY, blockViewDir& dirZ) {
+	
+		return chunkInLODDistance(vec3{ chunkPosX, chunkPosY, chunkPosZ }, LODlevel, inBorder, dirX, dirY, dirZ);
+	
 	}
 
 	inline const chunkEvent& chunkManager::onChunkLoadC() {

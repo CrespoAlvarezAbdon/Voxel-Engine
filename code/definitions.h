@@ -109,6 +109,16 @@ namespace VoxelEng {
 	const int totalYChunks = yChunksRange * 2;
 
 	/**
+	* @brief Maximum distance in chunk coordinates from the player for anything rendered in LOD level 1 (100% resolution).
+	*/
+	const int LODlevel1Range = 10;
+
+	/**
+	* @brief Maximum distance in chunk coordinates from the player for anything rendered in LOD level 2 (50% resolution).
+	*/
+	const int LODlevel2Range = 20;
+
+	/**
 	* @brief Default width for a game window.
 	*/
 	const unsigned int DEF_WIDTH = 800;

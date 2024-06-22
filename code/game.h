@@ -227,10 +227,12 @@ namespace VoxelEng {
         static camera* playerCamera_;
 
         static texture* blockTextureAtlas_;
-        static std::unordered_map<vec3, model> const* chunksToDraw_;
+        static std::unordered_map<vec3, chunkRenderingData> const* chunksToDraw_;
         static const std::vector<model>* batchesToDraw_;
 
-        static shader* defaultShader_;
+        static shader* opaqueShader_;
+        static shader* translucidShader_;
+        static shader* compositeShader_;
         static shader* screenShader_;
 
         static vertexBuffer* chunksVbo_;
@@ -240,6 +242,8 @@ namespace VoxelEng {
         static vertexArray* entitiesVao_; // TODO. QUE SE USE SOLO UN VAO ENTRE ENTIDADES Y TERRENO. 
         static vertexArray* screenVao_;
 
+        static framebuffer* opaqueFB_;
+        static framebuffer* translucidFB_;
         static framebuffer* screenFB_;
 
         #if GRAPHICS_API == OPENGL

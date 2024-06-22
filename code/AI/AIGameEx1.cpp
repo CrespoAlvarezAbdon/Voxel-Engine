@@ -326,6 +326,10 @@ namespace AIExample {
 		int x, y, z;
 		// TODO. Optimise when terrainFeature class and ore subclass are properly defined.
 
+		// DUMMY.
+		unsigned int LOD = 2;
+		unsigned int limit = (VoxelEng::SCX / LOD - 1) * LOD;
+
 		for (x = 0; x < VoxelEng::SCX; x++)
 			for (z = 0; z < VoxelEng::SCZ; z++)
 				for (y = 0; y < VoxelEng::SCY; y++) {
@@ -342,7 +346,7 @@ namespace AIExample {
 
 				}
 
-		// Set neighbor blocks.
+		// Set neighbor blocks. TODO. OPTIMIZE THIS.
 		// X+
 		for (y = 0; y < VoxelEng::SCY; y++)
 			for (z = 0; z < VoxelEng::SCZ; z++) {
@@ -363,8 +367,8 @@ namespace AIExample {
 		for (y = 0; y < VoxelEng::SCY; y++)
 			for (z = 0; z < VoxelEng::SCZ; z++) {
 
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x-1, chunkPos.y, chunkPos.z, VoxelEng::SCX-1, y, z);
-				height = heightMapMinusX[VoxelEng::SCX-1][z];
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x-1, chunkPos.y, chunkPos.z, VoxelEng::SCXLimit, y, z);
+				height = heightMapMinusX[VoxelEng::SCXLimit][z];
 
 				if (blockPos.y < height - 3)
 					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer2_, false);
@@ -372,6 +376,21 @@ namespace AIExample {
 					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer1_, false);
 				else if (blockPos.y == height)
 					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer0_, false);
+
+				// Generate data for the chunk's low resolution meshes.
+				if ((y == 0 || y % LOD == 0) && (z == 0 || z % LOD == 0)) {
+				
+					blockPos = VoxelEng::getGlobalPos(chunkPos.x - 1, chunkPos.y, chunkPos.z, limit, y, z);
+					height = heightMapMinusX[limit][z];
+
+					if (blockPos.y < height - 3)
+						chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer2_, false, LOD);
+					else if (blockPos.y < height)
+						chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer1_, false, LOD);
+					else if (blockPos.y == height)
+						chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer0_, false, LOD);
+				
+				}
 
 			}
 
@@ -395,7 +414,7 @@ namespace AIExample {
 		for (x = 0; x < VoxelEng::SCX; x++)
 			for (z = 0; z < VoxelEng::SCZ; z++) {
 
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y-1, chunkPos.z, x, VoxelEng::SCY-1, z);
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y-1, chunkPos.z, x, VoxelEng::SCYLimit, z);
 				height = heightMap[x][z];
 
 				if (blockPos.y < height - 3)
@@ -404,6 +423,20 @@ namespace AIExample {
 					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer1_, false);
 				else if (blockPos.y == height)
 					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer0_, false);
+
+				// Generate data for the chunk's low resolution meshes.
+				if ((x == 0 || x % LOD == 0) && (z == 0 || z % LOD == 0)) {
+
+					blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y - 1, chunkPos.z, x, limit, z);
+
+					if (blockPos.y < height - 3)
+						chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer2_, false, LOD);
+					else if (blockPos.y < height)
+						chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer1_, false, LOD);
+					else if (blockPos.y == height)
+						chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer0_, false, LOD);
+
+				}
 
 			}
 
@@ -427,8 +460,8 @@ namespace AIExample {
 		for (x = 0; x < VoxelEng::SCX; x++)
 			for (y = 0; y < VoxelEng::SCY; y++) {
 
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z-1, x, y, VoxelEng::SCZ - 1);
-				height = heightMapMinusZ[x][VoxelEng::SCZ-1];
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z-1, x, y, VoxelEng::SCZLimit);
+				height = heightMapMinusZ[x][VoxelEng::SCZLimit];
 
 				if (blockPos.y < height - 3)
 					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer2_, false);
@@ -436,6 +469,21 @@ namespace AIExample {
 					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer1_, false);
 				else if (blockPos.y == height)
 					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer0_, false);
+
+				// Generate data for the chunk's low resolution meshes.
+				if ((x == 0 || x % LOD == 0) && (y == 0 || y % LOD == 0)) {
+
+					blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z - 1, x, y, limit);
+					height = heightMapMinusZ[x][limit];
+
+					if (blockPos.y < height - 3)
+						chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer2_, false, LOD);
+					else if (blockPos.y < height)
+						chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer1_, false, LOD);
+					else if (blockPos.y == height)
+						chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer0_, false, LOD);
+
+				}
 
 			}
 
@@ -460,7 +508,7 @@ namespace AIExample {
 	void miningWorldGen::generateChunkHeightMap_(const VoxelEng::vec2& chunkXZPos) {
 
 		chunkHeightMap heightsAux = std::array<std::array<int, VoxelEng::SCZ>, VoxelEng::SCX>();
-		float softnessFactor = 64,
+		float softnessFactor = 128,
 			  height;
 		VoxelEng::vec2 pos,
 			           aux;
@@ -486,7 +534,8 @@ namespace AIExample {
 				#endif
 			
 				// Make height value between 0.0 and 200.0.
-				heightsAux[pos.x][pos.y] = VoxelEng::translateRange(height, -1.0f, 1.0f, 0.0f, maxHeight_);
+				//heightsAux[pos.x][pos.y] = VoxelEng::translateRange(height, -1.0f, 1.0f, 0.0f, maxHeight_);
+				heightsAux[pos.x][pos.y] = 128.0f;
 
 			}
 

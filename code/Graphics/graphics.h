@@ -16,6 +16,7 @@
 #include <string>
 #include <mutex>
 #include <unordered_map>
+#include <vector>
 #include "../batch.h" // CUIDADO POR SI ESTO METE ERRORES
 #include "../indexBuffer.h"
 #include "../vertexArray.h"
@@ -25,6 +26,13 @@
 
 
 namespace VoxelEng {	
+
+	//////////
+	//Enums.//
+	//////////
+
+	enum class textureType { NONE = 0, COLOR, DEPTH_AND_STENCIL, REVEAL, IMAGE };
+
 
 	////////////
 	//Classes.//
@@ -153,6 +161,7 @@ namespace VoxelEng {
 	* @brief Class used to abstract the graphics operations independently
 	* of the underlying graphics API (directX, OpenGL...) that is
 	* being used.
+	* WARNING. All calls to methods from this class must be made in a thread with valid graphics API context.
 	*/
 	class graphics {
 	
@@ -171,8 +180,7 @@ namespace VoxelEng {
 
 		/**
 		* @brief Gets the pointer to the 'VoxelEng::window' class object that is being used
-		* to handle the game window's callbacks.
-		* WARNING. Must be called in a thread with valid graphic API context.
+		* to handle the game window's callbacks..
 		*/
 		static window* getMainWindow();
 
@@ -183,14 +191,12 @@ namespace VoxelEng {
 
 		/**
 		* @brief Clear all previous thrown graphics API errors prior to this function's call.
-		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		static void eraseErrors();
 
 		/**
 		* @brief Obtain the graphics API's last errors.
 		* The last three parameters should be used to help locate the error when debugging.
-		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		static void GLCheckErrors(std::ostream& os, const char* file, const char* function, unsigned int line);
 
@@ -210,9 +216,9 @@ namespace VoxelEng {
 		static const vertexBufferLayout& cVboLayout(const std::string& vboName);
 
 		/**
-		* @brief Returns the current read-only batch list for GUMs.
+		* @brief Get the corresponding textureType value to the underlying graphics API texture type values.
 		*/
-		static const std::unordered_map<std::string, model>* readBatchList();
+		static void textureTypeToAPITextureType(const textureType& type, std::vector<unsigned int>& APIValues);
 
 
 		// Modifiers.
@@ -234,27 +240,43 @@ namespace VoxelEng {
 
 		/**
 		* @brief Set Vertical Synchronization (VSync) on (true) or off (false).
-		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		static void setVSync(bool isEnabled);
 
 		/**
 		* @brief Set Depth test on (true) or off (false).
-		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		static void setDepthTest(bool isEnabled);
 
 		/**
 		* @brief Set basic face culling on (true) or off (false).
-		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		static void setBasicFaceCulling(bool isEnabled);
 
 		/**
-		* @brief Set transparency on (true) or off (false).
-		* WARNING. Must be called in a thread with valid graphics API context.
+		* @brief Set blending on (true) or off (false).
 		*/
-		static void setTransparency(bool isEnabled);
+		static void blending(bool isEnabled);
+
+		/**
+		* @brief Configure the graphics API for the opaque rendering pass.
+		*/
+		static void setOpaquePassConfig();
+
+		/**
+		* @brief Configure the graphics API for the translucid rendering pass.
+		*/
+		static void setTranslucidPassConfig();
+
+		/**
+		* @brief Configure the graphics API for the composite rendering pass.
+		*/
+		static void setCompositePassConfig();
+
+		/**
+		* @brief Configure the graphics API for the screen rendering pass.
+		*/
+		static void setScreenPassConfig();
 
 
 		// Clean up.

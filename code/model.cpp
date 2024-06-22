@@ -8,9 +8,9 @@
 #include <sstream>
 #include <string>
 #include <filesystem>
-#include "texture.h"
 #include "chunk.h"
 #include "logger.h"
+#include "Graphics/Textures/texture.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -101,20 +101,28 @@ namespace VoxelEng {
                 {-0.5,0,0.5}, // 0*/
 
                 // Front face.
-                {-0.5,0,-0.5, 0,0, 255,0,0,255},// 0
-                {-0.5,0,0.5, 0,0, 255,0,0,255}, // 1
-                {0.5,0,0.5, 0,0, 255,0,0,255}, // 2
-                {0.5,0,0.5, 0,0, 0,255,0,0}, // 2
-                {0.5,0,-0.5, 0,0, 0,255,255,255}, // 3
-                {-0.5,0,-0.5, 0,0, 0,0,255,255},// 0
+                {-0.5,0,-0.5, 0,0, 255,0,0,128},// 0
+                {-0.5,0,0.5, 0,0, 255,0,0,128}, // 1
+                {0.5,0,0.5, 0,0, 255,0,0,128}, // 2
+                {0.5,0,0.5, 0,0, 255,0,0,128}, // 2
+                {0.5,0,-0.5, 0,0, 255,0,0,128}, // 3
+                {-0.5,0,-0.5, 0,0, 255,0,0,128},// 0
                 
                 // Back face.
+                {-0.5,0,0.5, 0,0, 255,0,0,128}, // 0
+                {-0.5,0,-0.5, 0,0, 255,0,0,128}, // 1
+                {0.5,0,-0.5, 0,0, 255,0,0,128}, // 2
+                {0.5,0,-0.5, 0,0, 255,0,0,128}, // 2
+                {0.5,0,0.5, 0,0, 255,0,0,128}, // 3
+                {-0.5,0,0.5, 0,0, 255,0,0,128}, // 0
+
+                /*// Back face.
                 {-0.5,0,0.5, 1, 1}, // 0
                 {-0.5,0,-0.5, 0, 1}, // 1
                 {0.5,0,-0.5, 0, 0}, // 2
                 {0.5,0,-0.5, 0, 0}, // 2
                 {0.5,0,0.5, 1, 0}, // 3
-                {-0.5,0,0.5, 1, 1}, // 0
+                {-0.5,0,0.5, 1, 1}, // 0*/
             
             };
 
@@ -300,28 +308,33 @@ namespace VoxelEng {
               texCoordX2 = texCoordX - 1 / widthRatio,
               texCoordY2 = texCoordY - 1 / heightRatio;
 
+        // X and Y2 is lower right corner.
+        // X2 and Y2 is lower left corner.
+        // X and Y is upper right corner.
+        // X2 and Y is upper left corner.
+
         if (textureID) {
 
             unsigned int modelSize = m.size();
 
             if (modelSize >= 6) {
 
-                m.operator[](modelSize - 6).textureCoords[0] = texCoordX2;
+                m.operator[](modelSize - 6).textureCoords[0] = texCoordX;
                 m.operator[](modelSize - 6).textureCoords[1] = texCoordY2;
 
-                m.operator[](modelSize - 5).textureCoords[0] = texCoordX2;
+                m.operator[](modelSize - 5).textureCoords[0] = texCoordX;
                 m.operator[](modelSize - 5).textureCoords[1] = texCoordY;
 
-                m.operator[](modelSize - 4).textureCoords[0] = texCoordX;
+                m.operator[](modelSize - 4).textureCoords[0] = texCoordX2;
                 m.operator[](modelSize - 4).textureCoords[1] = texCoordY2;
 
-                m.operator[](modelSize - 3).textureCoords[0] = texCoordX;
+                m.operator[](modelSize - 3).textureCoords[0] = texCoordX2;
                 m.operator[](modelSize - 3).textureCoords[1] = texCoordY2;
 
-                m.operator[](modelSize - 2).textureCoords[0] = texCoordX2;
+                m.operator[](modelSize - 2).textureCoords[0] = texCoordX;
                 m.operator[](modelSize - 2).textureCoords[1] = texCoordY;
 
-                m.operator[](modelSize - 1).textureCoords[0] = texCoordX;
+                m.operator[](modelSize - 1).textureCoords[0] = texCoordX2;
                 m.operator[](modelSize - 1).textureCoords[1] = texCoordY;
 
             }
@@ -333,8 +346,8 @@ namespace VoxelEng {
     }
 
     void models::applyTransform(model& aModel, const transform& transform, applyRotationMode rotMode,
-        bool rotateX, bool rotateY, bool rotateZ) {
-    
+        bool rotateX, bool rotateY, bool rotateZ, model* batchModel) {
+
         std::size_t size = aModel.size();
         if (size) {
 
@@ -344,103 +357,22 @@ namespace VoxelEng {
             float cosAngleY = transform.cosRotY();
             float sinAngleZ = transform.sinRotZ();
             float cosAngleZ = transform.cosRotZ();
-           
+
             float oldFirstCoord = 0.0f;
             float oldSecondCoord = 0.0f;
             vec3 vertexAux = vec3Zero;
 
             vec3 axis = vec3Zero;
             float angle = 0.0f;
-            if (rotMode == applyRotationMode::DIRECTION_VECTOR)
+            bool dirVectorShouldRotate = false;
+            if (rotMode == applyRotationMode::DIRECTION_VECTOR) {
+            
                 transform.getRotationFromYaxis(axis, angle);
 
-            // Translate the model's copy to the entity's position and apply rotations if necessary.
-            for (unsigned int j = 0; j < size; j++) {
-
-                // Scale.
-                vertexAux.x = aModel[j].positions[0] * transform.scale.x;
-                vertexAux.y = aModel[j].positions[1] * transform.scale.y;
-                vertexAux.z = aModel[j].positions[2] * transform.scale.z;
-
-                // Rotate.
-                if (rotMode == applyRotationMode::EULER_ANGLES) {
-                
-                    if (rotateX) {
-
-                        oldFirstCoord = aModel[j].positions[1];
-                        oldSecondCoord = aModel[j].positions[2];
-
-                        aModel[j].positions[1] = oldFirstCoord * cosAngleX -
-                            oldSecondCoord * sinAngleX;
-                        aModel[j].positions[2] = oldFirstCoord * sinAngleX +
-                            oldSecondCoord * cosAngleX;
-
-                    }
-
-                    if (rotateY) {
-
-                        oldFirstCoord = aModel[j].positions[0];
-                        oldSecondCoord = aModel[j].positions[2];
-
-                        aModel[j].positions[0] = oldFirstCoord * cosAngleY +
-                            oldSecondCoord * sinAngleY;
-                        aModel[j].positions[2] = oldSecondCoord * cosAngleY -
-                            oldFirstCoord * sinAngleY;
-
-                    }
-
-                    if (rotateZ) {
-
-                        oldFirstCoord = aModel[j].positions[0];
-                        oldSecondCoord = aModel[j].positions[1];
-
-                        aModel[j].positions[0] = oldFirstCoord * cosAngleZ -
-                            oldSecondCoord * sinAngleZ;
-                        aModel[j].positions[1] = oldFirstCoord * sinAngleZ +
-                            oldSecondCoord * cosAngleZ;
-
-                    }
-                
-                }
-                else if (axis != vec3Zero && angle != 0) { // applyRotationMode::DIRECTION_VECTOR
-                    
-                    vertexAux = glm::rotate(vertexAux, glm::radians(angle), axis);
-
-                }
-                
-                // Translate.
-                aModel[j].positions[0] = vertexAux.x + transform.position.x;
-                aModel[j].positions[1] = vertexAux.y + transform.position.y;
-                aModel[j].positions[2] = vertexAux.z + transform.position.z;
-
+                dirVectorShouldRotate = (axis != vec3Zero && angle != 0);
+            
             }
-
-        }
-    
-    }
-
-    void models::applyTransform(model& aModel, const transform& transform, model& batchModel, applyRotationMode rotMode,
-        bool rotateX, bool rotateY, bool rotateZ) {
-
-        std::size_t size = aModel.size();
-        if (size) {
-
-            float sinAngleX = transform.sinRotX();
-            float cosAngleX = transform.cosRotX();
-            float sinAngleY = transform.sinRotY();
-            float cosAngleY = transform.cosRotY();
-            float sinAngleZ = transform.sinRotZ();
-            float cosAngleZ = transform.cosRotZ();
-
-            float oldFirstCoord = 0.0f;
-            float oldSecondCoord = 0.0f;
-            vec3 vertexAux = vec3Zero;
-
-            vec3 axis = vec3Zero;
-            float angle = 0.0f;
-            if (rotMode == applyRotationMode::DIRECTION_VECTOR)
-                transform.getRotationFromYaxis(axis, angle);
-
+                
             // Translate the model's copy to the entity's position and apply rotations if necessary.
             for (unsigned int j = 0; j < size; j++) {
 
@@ -489,9 +421,13 @@ namespace VoxelEng {
                     }
 
                 }
-                else if(axis != vec3Zero && angle != 0) { // applyRotationMode::DIRECTION_VECTOR
+                else if(rotMode == applyRotationMode::DIRECTION_VECTOR) {
 
-                    vertexAux = glm::rotate(vertexAux, glm::radians(angle), axis);
+                    if (dirVectorShouldRotate) {
+
+                        vertexAux = glm::rotate(vertexAux, glm::radians(angle), axis);
+
+                    }
 
                 }
 
@@ -500,7 +436,8 @@ namespace VoxelEng {
                 aModel[j].positions[1] = vertexAux.y + transform.position.y;
                 aModel[j].positions[2] = vertexAux.z + transform.position.z;
 
-                batchModel.push_back(aModel[j]);
+                if(batchModel)
+                    batchModel->push_back(aModel[j]);
 
             }
 

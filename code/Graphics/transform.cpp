@@ -11,10 +11,10 @@
 
 namespace VoxelEng {
 
-	void transform::getRotationFromYaxis(vec3& axis, float& angles) const {
+	void transform::getRotationFromYaxis(vec3& axis, float& angle) const {
 
-		axis = glm::cross(Yaxis, vec3FixedUp);
-		angles = glm::degrees(glm::angle(Yaxis, vec3FixedUp));
+		axis = glm::normalize(glm::cross(Yaxis, vec3FixedUp));
+		angle = glm::degrees(glm::angle(Yaxis, vec3FixedUp));
 
 	}
 

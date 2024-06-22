@@ -9,6 +9,8 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <utility>
+
 #include "AIAPI.h"
 #include "batch.h"
 #include "block.h"
@@ -16,8 +18,6 @@
 #include "entity.h"
 #include "player.h"
 #include "tickFunctions.h"
-#include "texture.h"
-#include "Graphics/graphics.h"
 #include "gui.h"
 #include "GUIfunctions.h"
 #include "input.h"
@@ -26,7 +26,12 @@
 #include "utilities.h"
 #include "vertex.h"
 #include "worldGen.h"
-#include "Graphics/Fustrum/plane.h"
+#include "Graphics/graphics.h"
+#include "Graphics/Textures/texture.h"
+#include "Graphics/Frustum/frustum.h"
+#include "Entities/plane.h"
+
+#include "timer.h"
 
 
 #if GRAPHICS_API == OPENGL
@@ -76,10 +81,12 @@ namespace VoxelEng {
     camera* game::playerCamera_ = nullptr;
     texture* game::blockTextureAtlas_ = nullptr;
 
-    std::unordered_map<vec3, model> const* game::chunksToDraw_ = nullptr;
+    std::unordered_map<vec3, chunkRenderingData> const* game::chunksToDraw_ = nullptr;
     const std::vector<model>* game::batchesToDraw_ = nullptr;
 
-    shader* game::defaultShader_ = nullptr;
+    shader* game::opaqueShader_ = nullptr;
+    shader* game::translucidShader_ = nullptr;
+    shader* game::compositeShader_ = nullptr;
     shader* game::screenShader_ = nullptr;
     vertexBuffer* game::chunksVbo_ = nullptr;
     vertexBuffer* game::entitiesVbo_ = nullptr;
@@ -88,6 +95,8 @@ namespace VoxelEng {
     vertexArray* game::entitiesVao_ = nullptr;
     vertexArray* game::screenVao_ = nullptr;
     
+    framebuffer* game::opaqueFB_ = nullptr;
+    framebuffer* game::translucidFB_ = nullptr;
     framebuffer* game::screenFB_ = nullptr;
 
     #if GRAPHICS_API == OPENGL
@@ -143,6 +152,7 @@ namespace VoxelEng {
             block::registerBlock("starminer::glass", blockOpacity::FULLTRANSPARENT, { {"all", 13} });
             block::registerBlock("starminer::glassRed", blockOpacity::TRANSLUCENTBLOCK, { {"all", 14} });
             block::registerBlock("starminer::glassBlue", blockOpacity::TRANSLUCENTBLOCK, { {"all", 15} });
+            block::registerBlock("starminer::marbleBlock2", blockOpacity::OPAQUEBLOCK, { {"all", 16} });
 
             // Worldgen initialisation.
 
@@ -195,12 +205,16 @@ namespace VoxelEng {
             models::init();
 
             // Custom model loading.
-            plane::init();
-
             models::loadCustomModel("resources/Models/Warden.obj", 2);
 
             // Create framebuffers.
-            screenFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height());
+            opaqueFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR, textureType::DEPTH_AND_STENCIL});
+            translucidFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR, textureType::COLOR});
+
+            translucidFB_->bind();
+            translucidFB_->pushBack(opaqueFB_->getTexture(textureType::DEPTH_AND_STENCIL, 0));
+
+            screenFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR});
 
             // Load texture atlas and configure it.
             blockTextureAtlas_ = new texture("resources/Textures/atlas.png");
@@ -242,8 +256,10 @@ namespace VoxelEng {
             input::setControlAction(controlCode::r, inputFunctions::switchComplexLighting, false);
 
             // Load shaders.
-            defaultShader_ = new shader("resources/Shaders/vertexShader.shader", "resources/Shaders/fragmentShader.shader");
-            screenShader_ = new shader("resources/Shaders/screenVertexShader.shader", "resources/Shaders/screenFragmentShader.shader");
+            opaqueShader_ = new shader("resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader");
+            translucidShader_ = new shader("resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader");
+            compositeShader_ = new shader("resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
+            screenShader_ = new shader("resources/Shaders/screenVertex.shader", "resources/Shaders/screenFragment.shader");
 
 
             /*
@@ -251,7 +267,7 @@ namespace VoxelEng {
             WARNING. The engine currently only supports initialization of GUIElements
             before the main menu loop starts for the first time in the game's execution.
             */
-            GUImanager::init(*mainWindow_, *defaultShader_);
+            GUImanager::init(*mainWindow_, *opaqueShader_);
 
             // Main menu.
             GUImanager::addGUIBox("mainMenu", 0.5, 0.5, 0.3, 0.35, 995, true, GUIcontainer::both);
@@ -301,8 +317,8 @@ namespace VoxelEng {
             glfwSetWindowSizeCallback(mainWindow_->windowAPIpointer(), window::windowSizeCallback);
 
 
-            // Bind the default shaders and atlases for 3D and 2D rendering.
-            defaultShader_->bind();
+            // Bind the default shaders and atlases for 3D and 2D rendering before entering a level.
+            opaqueShader_->bind();
             blockTextureAtlas_->bind();
 
             graphicalModeInitialised_ = true;
@@ -393,7 +409,7 @@ namespace VoxelEng {
         if (game::loopSelection_ == engineMode::GRAPHICALMENU) {
 
             // Set 3D rendering mode uniforms.
-            defaultShader_->setUniform1i("u_renderMode", 1);
+            opaqueShader_->setUniform1i("u_renderMode", 1);
             graphics::setDepthTest(false);
 
             /*
@@ -517,8 +533,20 @@ namespace VoxelEng {
 
             // Set shader options.
             vec3 lightpos{ 10.0f, 150.0f, -10.0f };
-            defaultShader_->setUniformVec3f("u_sunLightPos", lightpos);
-            defaultShader_->setUniform1i("u_useComplexLighting", 0);
+            opaqueShader_->setUniformVec3f("u_sunLightPos", lightpos);
+            opaqueShader_->setUniform1i("u_useComplexLighting", 0);
+
+            // Frame buffer things go here.
+            float screenShaderQuad[] = {
+                // positions   // texCoords
+                -1.0f,  1.0f,  0.0f, 1.0f,
+                -1.0f, -1.0f,  0.0f, 0.0f,
+                1.0f, -1.0f,  1.0f, 0.0f,
+
+                -1.0f,  1.0f,  0.0f, 1.0f,
+                1.0f, -1.0f,  1.0f, 0.0f,
+                1.0f,  1.0f,  1.0f, 1.0f
+            };
 
             // Time/FPS related stuff.
             double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
@@ -526,22 +554,29 @@ namespace VoxelEng {
                    actualTime;
             int nFramesDrawn = 0; 
             unsigned int nVertices = 0;
+            unsigned int nTranslucentVertices = 0;
 
-            // Spawn test entities.
-            entityManager::spawnEntity(2, 0, 110, 0, applyRotationMode::EULER_ANGLES, 90, 0, 0);
-            entityManager::spawnEntity<plane>(0, 110, 0, 55, 45, 45);
+            // LOD related stuff.
+            bool inLODborder = false;
+            blockViewDir dirX = blockViewDir::NONE;
+            blockViewDir dirY = blockViewDir::NONE;
+            blockViewDir dirZ = blockViewDir::NONE;
 
+            // Spawn test entities here.
+            
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //TODO. ADD THIS AS AN OPTION.
             while (loopSelection_ == engineMode::EDITLEVEL || loopSelection_ == engineMode::PLAYINGRECORD) {
 
-                screenFB_->bind();
-                defaultShader_->bind();
-                defaultShader_->setUniform1i("blockTexture", 0);
-                defaultShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
-                blockTextureAtlas_->bind();
+                graphics::setDepthTest(true);
+                graphics::setOpaquePassConfig();
 
-                // Clear the window to draw the next frame.
-                renderer::clearWindow();
+                opaqueFB_->bind();
+                opaqueFB_->clearAllTextures();
+
+                opaqueShader_->bind();
+                opaqueShader_->setUniform1i("blockTexture", 0);
+                opaqueShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
+                blockTextureAtlas_->bind();
 
                 // The window size callback by GLFW gets called every time the user is resizing the window so the heavy resize processing is done here
                 // after the player has stopped resizing the window.
@@ -551,30 +586,17 @@ namespace VoxelEng {
                 if (!mainWindow_->isMouseFree())
                     player::updateTransform(game::timeStep());
                 playerCamera_->updateView();
+                frustum frustitum(*playerCamera_); // TODO. PUT THIS PROPERLY
 
                 MVPmatrix_ = playerCamera_->projectionMatrix() * playerCamera_->viewMatrix();
-                defaultShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
-                defaultShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
+                opaqueShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
+                opaqueShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
 
-                // Times calculation.
-                actualTime = glfwGetTime();
-                timeStep_ = actualTime - lastFrameTime;
-                lastFrameTime = actualTime;
-
-                // ms/frame calculation and display.
-                nFramesDrawn++;
-                if (actualTime - lastSecondTime >= 1.0) {
-
-                    //std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
-                    nFramesDrawn = 0;
-                    lastSecondTime = glfwGetTime();
-
-                }
 
                 /*
                 3D rendering.
                 */
-                defaultShader_->setUniform1i("u_renderMode", 0); // renderMode = 0 stands for 3D rendering mode.
+                opaqueShader_->setUniform1i("u_renderMode", 0); // renderMode = 0 stands for 3D rendering mode.
                 vao_->bind();
                 chunksVbo_->bind();
 
@@ -598,6 +620,7 @@ namespace VoxelEng {
 
                 }
 
+                // TODO. METER KEYBIND PARA HACER REMESH DEL CHUNK DONDE ESTÁ EL PLAYER ACTUALMENTE FOR DEBUGGING PURPOSES.
                 // Coordinate rendering thread and the thread in charge of generating entity render data if necessary.
                 if (entityManager::syncMutex().try_lock()) {
 
@@ -609,30 +632,92 @@ namespace VoxelEng {
 
                 }
 
-                // Render chunks.
+                /*
+                Opaque pass
+                */
+
+                // Terrain rendering.
                 if (chunksToDraw_) {
 
-                    // chunk.first refers to the chunk's postion.
+                    // chunk.first refers to the chunk's center global postion.
                     // chunk.second refers to the chunk's vertex data.
                     for (auto const& chunk : *chunksToDraw_) {
 
-                        if (nVertices = chunk.second.size()) {
+                        if (frustitum.isInside(chunk.second.globalChunkPos)) {
 
-                            chunksVbo_->setDynamicData(chunk.second.data(), 0, nVertices * sizeof(vertex));
+                            // NEXT.
+                            // 1º. DONE -> HAY QUE PONER LO DE QUE BOUNDARY LOD2 COJA LOS 4 BLOQUES CORRESPONDIENTES AL BOUNDARY VECINO LOD 1 Y COJA EL PRIMERO NO NO NULO PARA HACERLE RENDER DE LA CARA.
+                            // 2º. EN SETBLOCK DE PLAYER HAY QUE PONER QUE SE ACTUALIZEN LOS DATOS DE NEIGHBORS MINUS DEL LOD2
 
-                            renderer::draw3D(nVertices);
+                            // LOD 1
+                            if (chunkManager::chunkInLODDistance(chunk.first, 1, inLODborder, dirX, dirY, dirZ)) {
 
-                        }
+                                // NEXT. PONER UN MIEMBRO SIZE POR CADA MIEMBRO MODEL DEL CHUNKRENDERINGDATA
+                                // NEXT. ARREGLAR LOS FACE X-,Y-,Z- DE LOS BOUNDARIES.
+
+                                if (inLODborder) {
+                                
+                                    if (nVertices = chunk.second.vertices.size() + chunk.second.verticesLOD2Boundary.size()) {
+
+                                        chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
+                                        chunksVbo_->setDynamicData(chunk.second.verticesLOD2Boundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesLOD2Boundary.size() * sizeof(vertex));
+                                    
+                                    }
+                                
+                                }
+                                else {
+                                
+                                    if (nVertices = chunk.second.vertices.size() + chunk.second.verticesBoundary.size()) {
+
+                                        chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
+                                        chunksVbo_->setDynamicData(chunk.second.verticesBoundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesBoundary.size() * sizeof(vertex));
+
+                                    }
+                                
+                                }
+
+                                renderer::draw3D(nVertices);
+
+                            }
+                            else if (chunkManager::chunkInLODDistance(chunk.first, 2, inLODborder, dirX, dirY, dirZ)) { // Probably will add LOD levels 3 and 4 in the future
+                            
+                                if(nVertices = chunk.second.verticesLOD2.size() + chunk.second.verticesLOD2Boundary.size()) {
+
+                                    chunksVbo_->setDynamicData(chunk.second.verticesLOD2.data(), 0, chunk.second.verticesLOD2.size() * sizeof(vertex));
+                                    chunksVbo_->setDynamicData(chunk.second.verticesLOD2Boundary.data(), chunk.second.verticesLOD2.size() * sizeof(vertex), chunk.second.verticesLOD2Boundary.size() * sizeof(vertex));
+
+                                    renderer::draw3D(nVertices);
+
+                                }
+                            
+                            }
+                        
+                        } 
 
                     }
 
                 }
 
+                // Times calculation.
+                actualTime = glfwGetTime();
+                timeStep_ = actualTime - lastFrameTime;
+                lastFrameTime = actualTime;
 
+                // ms/frame calculation and display.
+                nFramesDrawn++;
+                if (actualTime - lastSecondTime >= 1.0) {
+
+                    //std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame and total vertices is " << std::to_string(totalVertices);
+                    logger::debugLog(std::to_string(1000.0 / nFramesDrawn) + "ms/frame");
+                    nFramesDrawn = 0;
+                    lastSecondTime = glfwGetTime();
+
+                }
+
+                // Entity rendering. // TODO. HAY QUE METER AQUÍ TAMBIÉN LO DE VERTICES TRANSLÚCIDOS.
                 entitiesVao_->bind();
                 entitiesVbo_->bind();
-                
-                // Render batches. TODO. LOS GUMS SE RENDERIZAN AQUI
+
                 if (batchesToDraw_) {
 
                     for (auto const& batch : *batchesToDraw_) {
@@ -650,42 +735,90 @@ namespace VoxelEng {
                 }
 
                 /*
-                2D rendering.
+                Transparent pass.
                 */
-                defaultShader_->bind();
-                graphics::setDepthTest(false); // Depth test is not needed in 2D rendering and in screen rendering.
-                defaultShader_->setUniform1i("u_renderMode", 1);
 
-                GUImanager::drawGUI();
+                graphics::setDepthTest(true);
+                graphics::setTranslucidPassConfig();
+                translucidFB_->bind();
+                translucidFB_->clearTextures({ vec4Zeroes, vec4Ones });
+                translucidShader_->bind();
+                translucidShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
+                translucidShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
 
-                blockTextureAtlas_->unbind();
-                screenFB_->unbind(); // Necessary to bind the default framebuffer again.
+                vao_->bind();
+                chunksVbo_->bind();
+                if (chunksToDraw_) {
+
+                    // chunk.first refers to the chunk's center global postion.
+                    // chunk.second refers to the chunk's vertex data.
+                    for (auto const& chunk : *chunksToDraw_) {
+
+                        if (frustitum.isInside(chunk.second.globalChunkPos) && (nTranslucentVertices = chunk.second.translucentVertices.size())) {
+
+                            chunksVbo_->setDynamicData(chunk.second.translucentVertices.data(), 0, nTranslucentVertices * sizeof(vertex));
+
+                            renderer::draw3D(nTranslucentVertices);
+
+                        }
+
+                    }
+
+                }
+
+               
+
+                /*
+                Composite pass.
+                */
+                graphics::setCompositePassConfig();
+                opaqueFB_->bind();
+
+                compositeShader_->bind();
+
+                translucidFB_->getTexture(textureType::COLOR, 0).bind(0);
+                translucidFB_->getTexture(textureType::COLOR, 1).bind(1);
+
+                screenVao_->bind();
+                screenVbo_->bind();
+
+                screenVbo_->prepareStatic(screenShaderQuad, 6 * sizeof(float) * 4);
+                renderer::draw2D(6);
 
 
                 /*
-                Screen rendering.
+                GUI rendering
                 */
+                graphics::setDepthTest(false);
+                glDepthFunc(GL_LESS);
+                glDepthMask(GL_TRUE);
+                graphics::blending(true);
+
+                opaqueFB_->bind();
+
+                opaqueShader_->bind();
+                opaqueShader_->setUniform1i("u_renderMode", 1);
+                blockTextureAtlas_->bind();
+
+                GUImanager::drawGUI();
+
+                /*
+                Screen pass.
+                */
+                graphics::setScreenPassConfig();
+                opaqueFB_->unbind();
+
+                // Clear the window (default framebuffer) to draw the next frame.
+                renderer::clearWindow(); // TODO. IS THIS UNNCECESARRY?
+
                 screenShader_->bind();
-                screenShader_->setUniform1i("screenTexture", 0);
-                screenVao_->bind();
-                screenVbo_->bind();
-                // FIXME. Put me in a proper place pliz :'v
-                float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-                       // positions   // texCoords
-                       -1.0f,  1.0f,  0.0f, 1.0f,
-                       -1.0f, -1.0f,  0.0f, 0.0f,
-                        1.0f, -1.0f,  1.0f, 0.0f,
+                //screenShader_->setUniform1i("screenTexture", 0);
 
-                       -1.0f,  1.0f,  0.0f, 1.0f,
-                        1.0f, -1.0f,  1.0f, 0.0f,
-                        1.0f,  1.0f,  1.0f, 1.0f
-                };
-                screenVbo_->prepareStatic(quadVertices, 6*sizeof(float)*4);
-                screenFB_->colorBuffer()->bind();
+                opaqueFB_->getTexture(textureType::COLOR, 0).bind();
 
+                screenVbo_->prepareStatic(screenShaderQuad, 6*sizeof(float)*4);
                 renderer::draw2D(6);
-                
-                
+
 
                 // Swap front and back buffers.
                 glfwSwapBuffers(mainWindow_->windowAPIpointer());
@@ -1002,7 +1135,7 @@ namespace VoxelEng {
 
     void game::switchComplexLighting() {
 
-        defaultShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
+        opaqueShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
         useComplexLighting_ = !useComplexLighting_;
 
     }
@@ -1153,10 +1286,24 @@ namespace VoxelEng {
         
         }
 
-        if (defaultShader_) {
+        if (opaqueShader_) {
 
-            delete defaultShader_;
-            defaultShader_ = nullptr;
+            delete opaqueShader_;
+            opaqueShader_ = nullptr;
+
+        }
+
+        if (translucidShader_) {
+
+            delete translucidShader_;
+            translucidShader_ = nullptr;
+
+        }
+
+        if (compositeShader_) {
+
+            delete compositeShader_;
+            compositeShader_ = nullptr;
 
         }
 
@@ -1175,6 +1322,20 @@ namespace VoxelEng {
         vao_ = nullptr;
         screenVao_ = nullptr;
         playerCamera_ = nullptr;
+
+        if (opaqueFB_) {
+
+            delete opaqueFB_;
+            opaqueFB_ = nullptr;
+
+        }
+
+        if (translucidFB_) {
+
+            delete translucidFB_;
+            translucidFB_ = nullptr;
+
+        }
 
         if (screenFB_) {
         

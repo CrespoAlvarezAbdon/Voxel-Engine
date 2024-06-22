@@ -7,12 +7,12 @@
 #include "input.h"
 #include "game.h"
 #include "gameWindow.h"
-#include "Graphics/graphics.h"
-#include "texture.h"
 #include "logger.h"
 #include "renderer.h"
 #include "utilities.h"
 #include "vertexBufferLayout.h"
+#include "Graphics/graphics.h"
+#include "Graphics/Textures/texture.h"
 
 
 namespace VoxelEng {

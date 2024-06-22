@@ -5,19 +5,6 @@
 
 namespace VoxelEng {
 
-	int indMaxAbsVec(const glm::vec3 vec) {
-	
-		float x = abs(vec.x),
-			  y = abs(vec.y),
-			  z = abs(vec.z);
-
-		if (x >= y)
-			return x >= z ? 0 : 2;
-		else
-			return y >= z ? 1 : 2;
-	
-	}
-
 	unsigned int indMaxVec(const vec3& vector) {
 
 		if (vector.x >= vector.y)

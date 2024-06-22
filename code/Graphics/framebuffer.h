@@ -1,17 +1,19 @@
 #ifndef _VOXELENG_FRAMEBUFFER_
 #define _VOXELENG_FRAMEBUFFER_
 
-#include "../texture.h"
-
-// TODO. PONER INLINES.
+#include <initializer_list>
+#include <unordered_map>
+#include <memory>
+#include <vector>
+#include "../vec.h"
+#include "../Graphics/graphics.h"
+#include "../Graphics/Textures/texture.h"
 
 namespace VoxelEng {
 
 	/**
 	* @brief Class used to represent a buffer with size equal to the display screen
-	* that holds the color of each of its pixels.
-	* NOTE. Each framebuffer has a texture as a component, so be careful about the graphics API's
-	* limitations about number of active texture units.
+	* that can hold multiple buffers with different purposes as attachments.
 	*/
 	class framebuffer {
 	
@@ -21,12 +23,30 @@ namespace VoxelEng {
 
 		/**
 		* @brief Default class constructor.
-		* Initializes the framebuffer with all its internal buffers.
+		* Initializes the framebuffer with all its specified buffers.
 		*/
-		framebuffer(unsigned int width, unsigned int height);
+		framebuffer(unsigned int width, unsigned int height, std::initializer_list<textureType> buffers);
 
 
 		// Observers.
+
+		/**
+		* @brief Get the total number of attachments.
+		*/
+		unsigned int nTotalAttachments() const;
+
+		/**
+		* @brief Get the number of attachments of the specified type.
+		*/
+		unsigned int nAttachments(textureType type) const;
+
+		/**
+		* @brief Returns the framebuffer's texture.
+		* For example, getTexture(framebufferAttachment::COLOR, 3) will get the third
+		* color buffer that was attached to the framebuffer.
+		* Throws exception if the specified texture does not exist attached to the framebuffer at the given position.
+		*/
+		const texture& getTexture(textureType type, unsigned int i) const;
 
 
 		// Modifiers.
@@ -45,17 +65,28 @@ namespace VoxelEng {
 		void unbind();
 
 		/**
-		* @brief Returns the framebuffer's color buffer or texture.
+		* @brief Returns the framebuffer's texture.
+		* For example, getTexture(framebufferAttachment::COLOR, 3) will get the third
+		* color buffer that was attached to the framebuffer.
+		* Throws exception if the specified texture does not exist attached to the framebuffer at the given position.
 		*/
-		texture* colorBuffer();
+		texture& getTexture(textureType type, unsigned int i);
 
-
-		/*
-		PLAN.
-		1º. METER FUSTRUM CULLING POR CHUNK (O ALGO PARECIDO PORQUE MINECRAFT ES ESPECIAL Y ESO).
-		2º. METER TODOS LOS TIPOS DE LUCES.
-		3º. METER FORWARD+.
+		/**
+		* @brief Push at the end of the framebuffer the given texture.
 		*/
+		void pushBack(texture& texture);
+
+		/**
+		* @brief Clear the attached textures with the specified clear colors.
+		*/
+		void clearTextures(std::initializer_list<vec4> clearColors = {});
+
+		/**
+		* @brief Clear all the attached textures to the graphics API selected clear color.
+		*/
+		void clearAllTextures();
+
 
 		// Destructors.
 
@@ -66,10 +97,37 @@ namespace VoxelEng {
 
 	private:
 
+		static GLenum supportedColorBuffers_[16];
+
 		unsigned int ID_;
-		texture* texture_;
+		unsigned int nTotalAttachments_;
+		std::unordered_map<textureType, std::vector<std::shared_ptr<texture>>> attachedTextures_;
 	
 	};
+
+	inline unsigned int framebuffer::nTotalAttachments() const {
+	
+		return nTotalAttachments_;
+	
+	}
+
+	inline unsigned int framebuffer::nAttachments(textureType type) const {
+
+		return attachedTextures_.contains(type) ? attachedTextures_.at(type).size() : 0;
+	
+	}
+
+	inline void framebuffer::bind() {
+
+		glBindFramebuffer(GL_FRAMEBUFFER, ID_);
+
+	}
+
+	inline void framebuffer::unbind() {
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	}
 
 }
 

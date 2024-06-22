@@ -368,6 +368,15 @@ namespace VoxelEng {
 
 	}
 
+	/**
+	* @brief Return the given vector without sign in any of its components.
+	*/
+	inline vec3 abs(const vec3& v) {
+	
+		return vec3{ (float)std::abs(v.x), (float)std::abs(v.y), (float)std::abs(v.z) };
+	
+	}
+
 }
 
 #endif

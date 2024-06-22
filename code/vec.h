@@ -27,8 +27,9 @@ namespace VoxelEng {
 
 	#if GRAPHICS_API == OPENGL
 
-		typedef glm::vec3 vec3;
 		typedef glm::vec2 vec2;
+		typedef glm::vec3 vec3;
+		typedef glm::vec4 vec4;
 
 	#else
 
@@ -67,6 +68,14 @@ namespace VoxelEng {
 	* @brief vec3 constant poiting to the fixed west direction.
 	*/
 	const vec3 vec3FixedWest(0, 0, -1);
+	/**
+	* @brief vec4 filled only with zeroes.
+	*/
+	const vec4 vec4Zeroes(0, 0, 0, 0);
+	/**
+	* @brief vec4 filled only with ones.
+	*/
+	const vec4 vec4Ones(1, 1, 1, 1);
 
 
 	// Operators.

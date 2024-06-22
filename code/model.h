@@ -122,16 +122,10 @@ namespace VoxelEng {
 		static void addBlockFaceTexture(const block& block, model& m, const std::string& textureName);
 
 		/**
-		* @brief Apply the given transform to the provided model.
-		*/
-		static void applyTransform(model& aModel, const transform& transform, applyRotationMode rotMode,
-								   bool rotateX = false, bool rotateY = false, bool rotateZ = false);
-
-		/**
 		* @brief Apply the given transform to the provided model and add it to the given batch model.
 		*/
-		static void applyTransform(model& aModel, const transform& transform, model& batchModel, applyRotationMode rotMode,
-								   bool rotateX = false, bool rotateY = false, bool rotateZ = false);
+		static void applyTransform(model& aModel, const transform& transform, applyRotationMode rotMode,
+								   bool rotateX = false, bool rotateY = false, bool rotateZ = false, model* batchModel = nullptr);
 
 
 		// Clean up.
@@ -143,6 +137,10 @@ namespace VoxelEng {
 		static void reset();
 
 	private:
+
+		/**
+		* Attributes.
+		*/
 
 		static bool initialised_;
 		static std::unordered_map<unsigned int, model*> models_; // RENOMBRAR ESTO COMO modelsVertices_ Y METER UN models_ QUE YA TENGA LOS MODELOS "BAKEADOS" Y METER MÉTODO REGISTER MODELO PARA TODOS CON UNA OPCION DE GUARDAR SUS VERTICES Y TRIANGULOS POR SEPARADO O SOLO SU MODELO BAKEADO O AMBAS COSAS.

@@ -147,6 +147,11 @@ namespace VoxelEng {
 		void pos(float x, float y, float z);
 
 		/**
+		* @brief Set the entity's scale.
+		*/
+		void scale(float x, float y, float z);
+
+		/**
 		* @brief Set entity's postion in X axis.
 		*/
 		float& x();
@@ -261,7 +266,6 @@ namespace VoxelEng {
 		void setYAxis(float x, float y, float z);
 
 	protected:
-
 
 		/*
 		Attributes.
@@ -382,6 +386,14 @@ namespace VoxelEng {
 		transform_.position.x = x;
 		transform_.position.y = y;
 		transform_.position.z = z;
+
+	}
+
+	inline void entity::scale(float x, float y, float z) {
+
+		transform_.scale.x = x;
+		transform_.scale.y = y;
+		transform_.scale.z = z;
 
 	}
 
@@ -529,7 +541,7 @@ namespace VoxelEng {
 		* Returns the ID of the registered entity.
 		*/
 		static entityID spawnEntity(unsigned int modelID, float posX, float posY, float posZ, applyRotationMode applyRotMode = applyRotationMode::EULER_ANGLES, 
-			float rotX = 0, float rotY = 0, float rotZ = 0, tickFunc func = nullptr);
+			float rotX = 0, float rotY = 0, float rotZ = 0, tickFunc func = nullptr, float scaleX = 1, float scaleY = 1, float scaleZ = 1);
 
 		/**
 		* @brief Spawns a new entity of type T, with T being a type that derives from entity.
@@ -537,7 +549,8 @@ namespace VoxelEng {
 		*/
 		template<typename T = entity>
 		requires std::derived_from<T, entity>
-		static entityID spawnEntity(float posX, float posY, float posZ, float rotX = 0, float rotY = 0, float rotZ = 0);
+		static entityID spawnEntity(float posX, float posY, float posZ, float rotX = 0, float rotY = 0, float rotZ = 0,
+			float scaleX = 1, float scaleY = 1, float scaleZ = 1);
 
 		/**
 		* @brief Returns the entity with the specified entity ID (with bounds checking).
@@ -715,17 +728,19 @@ namespace VoxelEng {
 
 	template<typename T>
 	requires std::derived_from<T, entity>
-	entityID entityManager::spawnEntity(float posX, float posY, float posZ, float rotX, float rotY, float rotZ) {
+	entityID entityManager::spawnEntity(float posX, float posY, float posZ, float rotX, float rotY, float rotZ,
+		float scaleX, float scaleY, float scaleZ) {
 
 		entity* createdEntity = new T();
 		
-		createdEntity->pos(posX, posY, posZ);
+		createdEntity->scale(scaleX, scaleY, scaleZ);
 		applyRotationMode applyRotMode = createdEntity->getApplyRotationMode();
 		if (applyRotMode == applyRotationMode::EULER_ANGLES)
 			createdEntity->rotate(rotX, rotY, rotZ);
 		else if (applyRotMode == applyRotationMode::DIRECTION_VECTOR && (rotX != 0 || rotY != 0 || rotZ != 0))
 			createdEntity->setYAxis(rotX, rotY, rotZ);
-
+		createdEntity->pos(posX, posY, posZ);
+		
 		return insertEntity_(createdEntity);
 
 	}

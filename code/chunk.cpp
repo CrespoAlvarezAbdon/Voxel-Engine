@@ -68,9 +68,8 @@ namespace VoxelEng {
       nBlocksPlusZ_(0),
       nBlocksMinusZ_(0),
       nNeighbors_(0),
-      loadLevel_(chunkStatus::NOTLOADED) {
-    
-        renderingData_.chunkPos = vec3Zero;
+      loadLevel_(chunkStatus::NOTLOADED),
+      chunkPos_(vec3Zero) {
 
         std::memset(blocksLocalIDs, 0, nBlocksChunk * sizeof(unsigned short));
 
@@ -80,6 +79,10 @@ namespace VoxelEng {
         std::memset(neighborBlocksMinusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksPlusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
+
+        std::memset(neighborBlocksMinusXLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
+        std::memset(neighborBlocksMinusYLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
+        std::memset(neighborBlocksMinusZLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
     
     }
    
@@ -94,10 +97,8 @@ namespace VoxelEng {
       nBlocksPlusZ_(0),
       nBlocksMinusZ_(0),
       nNeighbors_(0),
-      loadLevel_(chunkStatus::NOTLOADED)
-    {
-
-        renderingData_.chunkPos = chunkPos;
+      loadLevel_(chunkStatus::NOTLOADED),
+      chunkPos_(vec3Zero) {
 
         std::memset(blocksLocalIDs, 0, nBlocksChunk * sizeof(unsigned short));
 
@@ -107,6 +108,10 @@ namespace VoxelEng {
         std::memset(neighborBlocksMinusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksPlusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
+
+        std::memset(neighborBlocksMinusXLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
+        std::memset(neighborBlocksMinusYLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
+        std::memset(neighborBlocksMinusZLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         
         if (!empty)
             worldGen::generate(*this); // This can only call to setBlock to modify the chunk and that method already takes care of 'blocksMutex_'.
@@ -124,9 +129,12 @@ namespace VoxelEng {
       nBlocksPlusZ_(c.nBlocksPlusZ_.load()),
       nBlocksMinusZ_(c.nBlocksMinusZ_.load()),
       nNeighbors_(c.nNeighbors_),
-      loadLevel_(c.loadLevel_.load()){
+      loadLevel_(c.loadLevel_.load()),
+      chunkPos_(c.chunkPos_) {
 
         std::unique_lock<std::shared_mutex> lock(blocksMutex_);
+
+        renderingData_.globalChunkPos = c.renderingData_.globalChunkPos;
 
         palette_ = c.palette_;
         paletteCount_ = c.paletteCount_;
@@ -141,7 +149,10 @@ namespace VoxelEng {
         std::memcpy(neighborBlocksPlusZ_, c.neighborBlocksPlusZ_, nBlocksChunkEdge * sizeof(unsigned short));
         std::memcpy(neighborBlocksMinusZ_, c.neighborBlocksMinusZ_, nBlocksChunkEdge * sizeof(unsigned short));
 
-        renderingData_.chunkPos = c.renderingData_.chunkPos;
+        std::memcpy(neighborBlocksMinusXLOD2_, c.neighborBlocksMinusXLOD2_, nBlocksChunkEdge * sizeof(unsigned short));
+        std::memcpy(neighborBlocksMinusYLOD2_, c.neighborBlocksMinusYLOD2_, nBlocksChunkEdge * sizeof(unsigned short));
+        std::memcpy(neighborBlocksMinusZLOD2_, c.neighborBlocksMinusZLOD2_, nBlocksChunkEdge * sizeof(unsigned short));
+
         renderingData_.vertices = c.renderingData_.vertices;
 
     }
@@ -233,10 +244,11 @@ namespace VoxelEng {
 
     }
 
-    void chunk::setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification) {
+    void chunk::setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification, unsigned int LOD) {
 
         unsigned short oldLocalID = 0;
         bool blockWasModified = false;
+        unsigned short(*neighborBlocks)[SCX][SCX] = nullptr; // TODO. REMOVE SCX, SCY AND SCZ AND PUT SCD (sizeChunkDimension) instead.
         
         if (neighbor == blockViewDir::NONE)
             logger::errorLog("No block view direction was specified");
@@ -255,7 +267,20 @@ namespace VoxelEng {
         }
         else if (neighbor == blockViewDir::NEGX) {
 
-            unsigned short& actualLocalID = neighborBlocksMinusX_[firstIndex][secondIndex];
+            if (LOD == 1) {
+
+                neighborBlocks = &neighborBlocksMinusX_;
+
+            }
+            else if (LOD == 2) {
+
+                neighborBlocks = &neighborBlocksMinusXLOD2_;
+
+            }
+            else
+                logger::errorLog("Unsupported LOD " + std::to_string(LOD));
+
+            unsigned short& actualLocalID = (*neighborBlocks)[firstIndex][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
@@ -264,7 +289,7 @@ namespace VoxelEng {
                 nBlocksMinusX_++;
             else if (oldLocalID && !actualLocalID)
                 nBlocksMinusX_--;
-
+            
         }
         else if (neighbor == blockViewDir::PLUSY) {
 
@@ -281,7 +306,20 @@ namespace VoxelEng {
         }
         else if (neighbor == blockViewDir::NEGY) {
 
-            unsigned short& actualLocalID = neighborBlocksMinusY_[firstIndex][secondIndex];
+            if (LOD == 1) {
+
+                neighborBlocks = &neighborBlocksMinusY_;
+
+            }
+            else if (LOD == 2) {
+
+                neighborBlocks = &neighborBlocksMinusYLOD2_;
+
+            }
+            else
+                logger::errorLog("Unsupported LOD " + std::to_string(LOD));
+
+            unsigned short& actualLocalID = (*neighborBlocks)[firstIndex][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
@@ -307,7 +345,20 @@ namespace VoxelEng {
         }
         else if (neighbor == blockViewDir::NEGZ) {
 
-            unsigned short& actualLocalID = neighborBlocksMinusZ_[firstIndex][secondIndex];
+            if (LOD == 1) {
+
+                neighborBlocks = &neighborBlocksMinusZ_;
+
+            }
+            else if (LOD == 2) {
+
+                neighborBlocks = &neighborBlocksMinusZLOD2_;
+
+            }
+            else
+                logger::errorLog("Unsupported LOD " + std::to_string(LOD));
+
+            unsigned short& actualLocalID = (*neighborBlocks)[firstIndex][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
@@ -325,15 +376,38 @@ namespace VoxelEng {
 
     }
 
+    void chunk::chunkPos(const vec3& newChunkPos) {
+
+        chunkPos_ = newChunkPos;
+        renderingData_.globalChunkPos.x = newChunkPos.x * SCX + SCX / 2;
+        renderingData_.globalChunkPos.y = newChunkPos.y * SCY + SCY / 2;
+        renderingData_.globalChunkPos.z = newChunkPos.z * SCZ + SCZ / 2;
+
+    }
+
     bool chunk::renewMesh() {
 
         std::unique_lock<std::shared_mutex> lock(renderingDataMutex_);
+
+        unsigned int LOD = 2;
+        unsigned int limit = (LOD == 1) ? 15 : (SCX / LOD - 1) * LOD;
+        
 
         if (needsRemesh_) {
 
             needsRemesh_ = false;
 
+            model* chunkModel = nullptr;
+            model* chunkModelLOD2 = nullptr;
             renderingData_.vertices = model();
+            renderingData_.verticesBoundary = model();
+            renderingData_.translucentVertices = model();
+            renderingData_.translucentVerticesBoundary = model();
+
+            renderingData_.verticesLOD2 = model();
+            renderingData_.verticesLOD2Boundary = model();
+            renderingData_.translucentVerticesLOD2 = model();
+            renderingData_.translucentVerticesLOD2Boundary = model();
 
             // Read chunk data section starts.
             blocksMutex_.lock_shared();
@@ -345,173 +419,350 @@ namespace VoxelEng {
                 z;
             const block* bNeighbor = nullptr;
             unsigned short localID = 0;
+            unsigned short localID1 = 0; // The following three are used for LOD2 an mesh calculations.
+            unsigned short localID2 = 0;
+            unsigned short localID3 = 0;
             unsigned short neighborLocalID = 0;
-            bool letsLightPass = false;
-            if (nBlocks_ && nBlocks_ < nBlocksChunk) 
+            bool pushToLOD2mesh = false;
+            if (nBlocks_ && nBlocks_ < nBlocksChunk) // TODO. CHANGE NBLOCKS POR NOPAQUEBLOCKS TANTO AQUI COMO ABAJO
                 for (x = 0; x < SCX; x++)
                     for (y = 0; y < SCY; y++)
                         for (z = 0; z < SCZ; z++) {
 
                             localID = blocksLocalIDs[x][y][z];
                             block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
-                            aux = vertex();
 
                             // Add block's model to the mesh if necessary.
                             if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
 
+                                pushToLOD2mesh = (x == 0 || x % LOD == 0) && (y == 0 || y % LOD == 0) && (z == 0 || z % LOD == 0);
+
                                 // Culling of non-visible faces.
-                                if (z < SCZLimit && (neighborLocalID = blocksLocalIDs[x][y][z + 1]) && neighborLocalID != localID) {
+                                if (z < SCZLimit && (neighborLocalID = blocksLocalIDs[x][y][z + 1])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                     // Create the face's vertices for face z-.
-                                    for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+                                    for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) { 
 
-                                        aux.positions[0] = renderingData_.chunkPos.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
-                                        aux.positions[1] = renderingData_.chunkPos.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
-                                        aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + 1 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + 1 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (0 << 20);
                                         aux.normals = aux.normals | (512 << 10);
                                         aux.normals = aux.normals | (512 << 0);
 
-                                        renderingData_.vertices.push_back(aux);
+                                        chunkModel->push_back(aux);
 
                                     }
 
                                     // Add texture to the face.
-                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceZ-");
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceZ-");
 
                                 }
 
-                                // Culling of non-visible faces.
-                                if (z > 0 && (neighborLocalID = blocksLocalIDs[x][y][z - 1]) && neighborLocalID != localID) {
+                                // Culling of non-visible faces (LOD2).
+                                if (pushToLOD2mesh && z < limit && (neighborLocalID = blocksLocalIDs[x][y][z + 2])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2 : &renderingData_.verticesLOD2;
 
+                                    // Create the face's vertices for face z-.
+                                    for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + 2 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
+
+                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = aux.normals | (0 << 20);
+                                        aux.normals = aux.normals | (512 << 10);
+                                        aux.normals = aux.normals | (512 << 0);
+
+                                        chunkModelLOD2->push_back(aux);
+
+                                    }
+
+                                    // Add texture to the face.
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceZ-");
+
+                                }
+
+
+                                // Culling of non-visible faces.
+                                if (z > 0 && (neighborLocalID = blocksLocalIDs[x][y][z - 1])) {
+
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+   
                                     // Create the face's vertices for z+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = renderingData_.chunkPos.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
-                                        aux.positions[1] = renderingData_.chunkPos.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
-                                        aux.positions[2] = renderingData_.chunkPos.z * SCZ + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * SCZ + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (1023 << 20);
                                         aux.normals = aux.normals | (512 << 10);
                                         aux.normals = aux.normals | (512 << 0);
 
-                                        renderingData_.vertices.push_back(aux);
+                                        chunkModel->push_back(aux);
 
                                     }
 
                                     // Add texture to the face.
-                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceZ+");
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceZ+");
 
                                 }
                                 
-                                // Culling of non-visible faces.
-                                if (y < SCYLimit && (neighborLocalID = blocksLocalIDs[x][y + 1][z]) && neighborLocalID != localID) {
+                                // Culling of non-visible faces (LOD2).
+                                if (pushToLOD2mesh && z > 0 && (neighborLocalID = blocksLocalIDs[x][y][z - 2])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2 : &renderingData_.verticesLOD2;
+
+                                    // Create the face's vertices for z+ (LOD2).
+                                    for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * SCZ + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
+
+                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = aux.normals | (1023 << 20);
+                                        aux.normals = aux.normals | (512 << 10);
+                                        aux.normals = aux.normals | (512 << 0);
+
+                                        chunkModelLOD2->push_back(aux);
+
+                                    }
+
+                                    // Add texture to the face.
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceZ+");
+
+                                }
+
+
+                                // Culling of non-visible faces.
+                                if (y < SCYLimit && (neighborLocalID = blocksLocalIDs[x][y + 1][z])) {
+
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                     // Create the face's vertices for face y-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = renderingData_.chunkPos.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
-                                        aux.positions[1] = renderingData_.chunkPos.y * SCY + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
-                                        aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * SCY + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (0 << 10);
                                         aux.normals = aux.normals | (512 << 0);
 
-                                        renderingData_.vertices.push_back(aux);
+                                        chunkModel->push_back(aux);
 
                                     }
 
                                     // Add texture to the face.
-                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceY-");
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY-");
 
                                 }
-                                
+
                                 // Culling of non-visible faces.
-                                if (y > 0 && (neighborLocalID = blocksLocalIDs[x][y - 1][z]) && neighborLocalID != localID) {
+                                if (pushToLOD2mesh && y < limit && (neighborLocalID = blocksLocalIDs[x][y + 2][z])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2 : &renderingData_.verticesLOD2;
+
+                                    // Create the face's vertices for face y-.
+                                    for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * SCY + y + 2 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
+
+                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = aux.normals | (512 << 20);
+                                        aux.normals = aux.normals | (0 << 10);
+                                        aux.normals = aux.normals | (512 << 0);
+
+                                        chunkModelLOD2->push_back(aux);
+
+                                    }
+
+                                    // Add texture to the face.
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceY-");
+
+                                }
+
+                                
+                                // Culling of non-visible faces.
+                                if (y > 0 && (neighborLocalID = blocksLocalIDs[x][y - 1][z])) {
+
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                     // Create the face's vertices for face y+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = renderingData_.chunkPos.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
-                                        aux.positions[1] = renderingData_.chunkPos.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
-                                        aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (1023 << 10);
                                         aux.normals = aux.normals | (512 << 0);
 
-                                        renderingData_.vertices.push_back(aux);
+                                        chunkModel->push_back(aux);
 
                                     }
 
                                     // Add texture to the face.
-                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceY+");
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY+");
 
                                 }
-                                
+
                                 // Culling of non-visible faces.
-                                if (x < SCXLimit && (neighborLocalID = blocksLocalIDs[x + 1][y][z]) && neighborLocalID != localID) {
+                                if (pushToLOD2mesh && y > 0 && (neighborLocalID = blocksLocalIDs[x][y - 2][z])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2 : &renderingData_.verticesLOD2;
+
+                                    // Create the face's vertices for face y+.
+                                    for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * SCY + y - 2 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
+
+                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = aux.normals | (512 << 20);
+                                        aux.normals = aux.normals | (1023 << 10);
+                                        aux.normals = aux.normals | (512 << 0);
+
+                                        chunkModelLOD2->push_back(aux);
+
+                                    }
+
+                                    // Add texture to the face.
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceY+");
+
+                                }
+
+
+                                // Culling of non-visible faces.
+                                if (x < SCXLimit && (neighborLocalID = blocksLocalIDs[x + 1][y][z])) {
+
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                     // Create the face's vertices for face x-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = renderingData_.chunkPos.x * SCX + x + 1 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
-                                        aux.positions[1] = renderingData_.chunkPos.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
-                                        aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * SCX + x + 1 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (512 << 10);
                                         aux.normals = aux.normals | (0 << 0);
 
-                                        renderingData_.vertices.push_back(aux);
+                                        chunkModel->push_back(aux);
 
                                     }
 
                                     // Add texture to the face.
-                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceX-");
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX-");
 
                                 }
-                                
+
                                 // Culling of non-visible faces.
-                                if (x > 0 && (neighborLocalID = blocksLocalIDs[x - 1][y][z]) && neighborLocalID != localID) {
+                                if (pushToLOD2mesh && x < limit && (neighborLocalID = blocksLocalIDs[x + 2][y][z])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2 : &renderingData_.verticesLOD2;
+
+                                    // Create the face's vertices for face x-.
+                                    for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                        aux.positions[0] = chunkPos_.x * SCX + x + 2 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
+
+                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = aux.normals | (512 << 20);
+                                        aux.normals = aux.normals | (512 << 10);
+                                        aux.normals = aux.normals | (0 << 0);
+
+                                        chunkModelLOD2->push_back(aux);
+
+                                    }
+
+                                    // Add texture to the face.
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceX-");
+
+                                }
+
+
+                                // Culling of non-visible faces.
+                                if (x > 0 && (neighborLocalID = blocksLocalIDs[x - 1][y][z])) {
+
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                     // Create the face's vertices for face x+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = renderingData_.chunkPos.x * SCX + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
-                                        aux.positions[1] = renderingData_.chunkPos.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
-                                        aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * SCX + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (512 << 10);
                                         aux.normals = aux.normals | (1023 << 0);
 
-                                        renderingData_.vertices.push_back(aux);
+                                        chunkModel->push_back(aux);
 
                                     }
 
                                     // Add texture to the face.
-                                    models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceX+");
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX+");
+
+                                }
+
+                                // Culling of non-visible faces.
+                                if (pushToLOD2mesh && x > 0 && (neighborLocalID = blocksLocalIDs[x - 2][y][z])) {
+
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2 : &renderingData_.verticesLOD2;
+
+                                    // Create the face's vertices for face x+.
+                                    for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                        aux.positions[0] = chunkPos_.x * SCX + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
+
+                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = aux.normals | (512 << 20);
+                                        aux.normals = aux.normals | (512 << 10);
+                                        aux.normals = aux.normals | (1023 << 0);
+
+                                        chunkModelLOD2->push_back(aux);
+
+                                    }
+
+                                    // Add texture to the face.
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceX+");
 
                                 }
                                 
@@ -519,45 +770,110 @@ namespace VoxelEng {
 
                         }
 
+            // NEXT. ARREGLAR LOS NEGATIVOS.
+            // HAY ALGO LEYÉNDOSE AL REVÉS PORQUE SI PONGO UN BLOQUE EN ESQUINA Z POSTIVA HACE QUE PUEDAN RENDERIZARSE LOS BLOQUES EN LA ESQUINA Z NEGATIVA
+
             if (nBlocksPlusZ_) {
             
                 for (x = 0; x < SCX; x++)
                     for (y = 0; y < SCY; y++) {
 
+                        // LOD 1.
                         localID = blocksLocalIDs[x][y][SCZLimit];
-                        block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+                        const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
                         // Add block's model to the mesh if necessary.
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksPlusZ_[x][y])) {
 
                             // Front face vertices with culling of non-visible faces. z+
-                            if ((neighborLocalID = neighborBlocksPlusZ_[x][y]) && neighborLocalID != localID) {
+                            bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                            chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
+                            
+                            // Create the face's vertices for face z-.
+                            for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
+                                aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
+                                aux.positions[2] = (chunkPos_.z + 1) * SCZ + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
-                                // Create the face's vertices for face z-.
-                                for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+                                aux.normals = 0 | (0 << 30);
+                                aux.normals = aux.normals | (0 << 20);
+                                aux.normals = aux.normals | (512 << 10);
+                                aux.normals = aux.normals | (512 << 0);
 
-                                    aux.positions[0] = renderingData_.chunkPos.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
-                                    aux.positions[1] = renderingData_.chunkPos.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
-                                    aux.positions[2] = (renderingData_.chunkPos.z + 1) * SCZ + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
+                                chunkModel->push_back(aux);
 
-                                    aux.normals = 0 | (0 << 30);
-                                    aux.normals = aux.normals | (0 << 20);
-                                    aux.normals = aux.normals | (512 << 10);
-                                    aux.normals = aux.normals | (512 << 0);
+                            }
 
-                                    renderingData_.vertices.push_back(aux);
+                            // Add texture to the face.
+                            models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceZ-");
 
+                        }
+                    
+                        // LOD 2.
+                        if ((x == 0 || x % LOD == 0) && (y == 0 || y % LOD == 0)) {
+
+                            localID = blocksLocalIDs[x][y][SCZLimit];
+                            localID1 = blocksLocalIDs[x][y+1][SCZLimit];
+                            localID2 = blocksLocalIDs[x+1][y][SCZLimit];
+                            localID3 = blocksLocalIDs[x+1][y+1][SCZLimit];
+                            const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+
+                            // Add block's model to the mesh if necessary. // TODO. PONER ARRAY DE OPACITIES PARA TENER ESTE CÓDIGO LEGIBLE ;_;
+                            if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK || 
+                                (localID1 ? block::getBlockC(palette_.getT2(localID1)) : block::emptyBlock()).opacity() <= blockOpacity::TRANSLUCENTBLOCK ||
+                                (localID2 ? block::getBlockC(palette_.getT2(localID2)) : block::emptyBlock()).opacity() <= blockOpacity::TRANSLUCENTBLOCK ||
+                                (localID3 ? block::getBlockC(palette_.getT2(localID3)) : block::emptyBlock()).opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+
+                                // Check, for block b, the first of the four corresponding blocks in the LOD1 terrain.
+                                neighborLocalID = neighborBlocksPlusZ_[x][y];
+                                if (!neighborLocalID) {
+                                
+                                    neighborLocalID = neighborBlocksPlusZ_[x][y+1];
+                                    if (!neighborLocalID) {
+
+                                        neighborLocalID = neighborBlocksPlusZ_[x+1][y];
+                                        if (!neighborLocalID) {
+
+                                            neighborLocalID = neighborBlocksPlusZ_[x+1][y+1];
+
+                                        }
+
+                                    }
+                                
                                 }
 
-                                // Add texture to the face.
-                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceZ-");
+                                if (neighborLocalID) {
+                                
+                                    // Front face vertices with culling of non-visible faces. z+
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2Boundary : &renderingData_.verticesLOD2Boundary;
+
+                                    // Create the face's vertices for face z-.
+                                    for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = (chunkPos_.z + 1) * SCZ + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
+
+                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = aux.normals | (0 << 20);
+                                        aux.normals = aux.normals | (512 << 10);
+                                        aux.normals = aux.normals | (512 << 0);
+
+                                        chunkModelLOD2->push_back(aux);
+
+                                    }
+
+                                    // Add texture to the face.
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceZ-");
+                                
+                                }
 
                             }
 
                         }
-                    
+
                     }
             
             }
@@ -573,28 +889,57 @@ namespace VoxelEng {
                         // Add block's model to the mesh if necessary.
                         if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
 
-                            if ((neighborLocalID = neighborBlocksMinusZ_[x][y]) && neighborLocalID != localID) {
+                            // LOD 1.
+                            if (neighborLocalID = neighborBlocksMinusZ_[x][y]) {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
 
                                 // Create the face's vertices for z+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                    aux.positions[0] = renderingData_.chunkPos.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
-                                    aux.positions[1] = renderingData_.chunkPos.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
-                                    aux.positions[2] = (renderingData_.chunkPos.z - 1) * SCZ + 15 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
+                                    aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
+                                    aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
+                                    aux.positions[2] = (chunkPos_.z - 1) * SCZ + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
                                     aux.normals = 0 | (0 << 30);
                                     aux.normals = aux.normals | (1023 << 20);
                                     aux.normals = aux.normals | (512 << 10);
                                     aux.normals = aux.normals | (512 << 0);
 
-                                    renderingData_.vertices.push_back(aux);
+                                    chunkModel->push_back(aux);
 
                                 }
 
                                 // Add texture to the face.
-                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceZ+");
+                                models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceZ+");
+
+                            }
+
+                            // LOD 2.
+                            if ((x == 0 || x % LOD == 0) && (y == 0 || y % LOD == 0) && (neighborLocalID = neighborBlocksMinusZLOD2_[x][y])) {
+
+                                bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2Boundary : &renderingData_.verticesLOD2Boundary;
+
+                                // Create the face's vertices for z+.
+                                for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                    aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0] * 2;
+                                    aux.positions[1] = chunkPos_.y * SCY + y-1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
+                                    aux.positions[2] = (chunkPos_.z - 1) * SCZ + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
+
+                                    aux.normals = 0 | (0 << 30);
+                                    aux.normals = aux.normals | (1023 << 20);
+                                    aux.normals = aux.normals | (512 << 10);
+                                    aux.normals = aux.normals | (512 << 0);
+
+                                    chunkModelLOD2->push_back(aux);
+
+                                }
+
+                                // Add texture to the face.
+                                models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceZ+");
 
                             }
 
@@ -609,34 +954,95 @@ namespace VoxelEng {
                 for (x = 0; x < SCX; x++)
                     for (z = 0; z < SCZ; z++) {
 
+                        // LOD 1.
                         localID = blocksLocalIDs[x][SCYLimit][z];
                         block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
                         // Add block's model to the mesh if necessary.
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksPlusY_[x][z])) {
 
-                            if ((neighborLocalID = neighborBlocksPlusY_[x][z]) && neighborLocalID != localID) {
+                            bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                            chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
 
-                                bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                            // Create the face's vertices for face y-.
+                            for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                // Create the face's vertices for face y-.
-                                for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+                                aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
+                                aux.positions[1] = (chunkPos_.y + 1) * SCY + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
+                                aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
 
-                                    aux.positions[0] = renderingData_.chunkPos.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
-                                    aux.positions[1] = (renderingData_.chunkPos.y + 1) * SCY + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
-                                    aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
+                                aux.normals = 0 | (0 << 30);
+                                aux.normals = aux.normals | (512 << 20);
+                                aux.normals = aux.normals | (0 << 10);
+                                aux.normals = aux.normals | (512 << 0);
 
-                                    aux.normals = 0 | (0 << 30);
-                                    aux.normals = aux.normals | (512 << 20);
-                                    aux.normals = aux.normals | (0 << 10);
-                                    aux.normals = aux.normals | (512 << 0);
+                                chunkModel->push_back(aux);
 
-                                    renderingData_.vertices.push_back(aux);
+                            }
+
+                            // Add texture to the face.
+                            models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY-");
+
+                        }
+
+                        // LOD 2.
+                        if ((x == 0 || x % LOD == 0) && (z == 0 || z % LOD == 0)) {
+                        
+                            localID = blocksLocalIDs[x][SCYLimit][z];
+                            localID1 = blocksLocalIDs[x][SCYLimit][z+1];
+                            localID2 = blocksLocalIDs[x+1][SCYLimit][z];
+                            localID3 = blocksLocalIDs[x+1][SCYLimit][z+1];
+                            block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+
+                            // Add block's model to the mesh if necessary.
+                            if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK ||
+                                (localID1 ? block::getBlockC(palette_.getT2(localID1)) : block::emptyBlock()).opacity() <= blockOpacity::TRANSLUCENTBLOCK ||
+                                (localID2 ? block::getBlockC(palette_.getT2(localID2)) : block::emptyBlock()).opacity() <= blockOpacity::TRANSLUCENTBLOCK ||
+                                (localID3 ? block::getBlockC(palette_.getT2(localID3)) : block::emptyBlock()).opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+
+                                // Check, for block b, the first of the four corresponding blocks in the LOD1 terrain.
+                                neighborLocalID = neighborBlocksPlusY_[x][z];
+                                if (!neighborLocalID) {
+
+                                    neighborLocalID = neighborBlocksPlusY_[x][z + 1];
+                                    if (!neighborLocalID) {
+
+                                        neighborLocalID = neighborBlocksPlusY_[x + 1][z];
+                                        if (!neighborLocalID) {
+
+                                            neighborLocalID = neighborBlocksPlusY_[x + 1][z + 1];
+
+                                        }
+
+                                    }
 
                                 }
 
-                                // Add texture to the face.
-                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceY-");
+                                if (neighborLocalID) {
+                                
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2Boundary : &renderingData_.verticesLOD2Boundary;
+
+                                    // Create the face's vertices for face y-.
+                                    for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = (chunkPos_.y + 1) * SCY + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
+
+                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = aux.normals | (512 << 20);
+                                        aux.normals = aux.normals | (0 << 10);
+                                        aux.normals = aux.normals | (512 << 0);
+
+                                        chunkModelLOD2->push_back(aux);
+
+                                    }
+
+                                    // Add texture to the face.
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceY-");
+                                
+                                }
 
                             }
 
@@ -657,28 +1063,57 @@ namespace VoxelEng {
                         // Add block's model to the mesh if necessary.
                         if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
 
-                            if ((neighborLocalID = neighborBlocksMinusY_[x][z]) && neighborLocalID != localID) {
+                            // LOD 1.
+                            if ((neighborLocalID = neighborBlocksMinusY_[x][z])) {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
 
                                 // Create the face's vertices for face y+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                    aux.positions[0] = renderingData_.chunkPos.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
-                                    aux.positions[1] = (renderingData_.chunkPos.y - 1) * SCY + 15 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
-                                    aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
+                                    aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
+                                    aux.positions[1] = (chunkPos_.y - 1) * SCY + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                    aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
 
                                     aux.normals = 0 | (0 << 30);
                                     aux.normals = aux.normals | (512 << 20);
                                     aux.normals = aux.normals | (1023 << 10);
                                     aux.normals = aux.normals | (512 << 0);
 
-                                    renderingData_.vertices.push_back(aux);
+                                    chunkModel->push_back(aux);
 
                                 }
 
                                 // Add texture to the face.
-                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceY+");
+                                models::addBlockFaceTexture(block::getBlockC("starminer::goldOre"), *chunkModel, "faceY+");
+
+                            }
+
+                            // LOD 2.
+                            if ((x == 0 || x % LOD == 0) && (z == 0 || z % LOD == 0) && (neighborLocalID = neighborBlocksMinusYLOD2_[x][z])) {
+
+                                bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2Boundary : &renderingData_.verticesLOD2Boundary;
+
+                                // Create the face's vertices for face y+.
+                                for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                    aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0] * 2;
+                                    aux.positions[1] = (chunkPos_.y - 1) * SCY + (16 - 2) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                    aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
+
+                                    aux.normals = 0 | (0 << 30);
+                                    aux.normals = aux.normals | (512 << 20);
+                                    aux.normals = aux.normals | (1023 << 10);
+                                    aux.normals = aux.normals | (512 << 0);
+
+                                    chunkModelLOD2->push_back(aux);
+
+                                }
+
+                                // Add texture to the face.
+                                models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceY+");
 
                             }
 
@@ -693,37 +1128,98 @@ namespace VoxelEng {
                 for (y = 0; y < SCY; y++)
                     for (z = 0; z < SCZ; z++) {
 
+                        // LOD 1.
                         localID = blocksLocalIDs[SCXLimit][y][z];
                         block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
                         // Add block's model to the mesh if necessary.
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksPlusX_[y][z])) {
 
-                            if ((neighborLocalID = neighborBlocksPlusX_[y][z]) && neighborLocalID != localID) {
+                            bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                            chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
 
-                                bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                            // Create the face's vertices for face x-.
+                            for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                // Create the face's vertices for face x-.
-                                for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+                                aux.positions[0] = (chunkPos_.x + 1) * SCX + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
+                                aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
+                                aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
 
-                                    aux.positions[0] = (renderingData_.chunkPos.x + 1) * SCX + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
-                                    aux.positions[1] = renderingData_.chunkPos.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
-                                    aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
+                                aux.normals = 0 | (0 << 30);
+                                aux.normals = aux.normals | (512 << 20);
+                                aux.normals = aux.normals | (512 << 10);
+                                aux.normals = aux.normals | (0 << 0);
 
-                                    aux.normals = 0 | (0 << 30);
-                                    aux.normals = aux.normals | (512 << 20);
-                                    aux.normals = aux.normals | (512 << 10);
-                                    aux.normals = aux.normals | (0 << 0);
-
-                                    renderingData_.vertices.push_back(aux);
-
-                                }
-
-                                // Add texture to the face.
-                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceX-");
+                                chunkModel->push_back(aux);
 
                             }
 
+                            // Add texture to the face.
+                            models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX-");
+
+                        }
+                        // NEXT. VA A HABER QUE AÑADIR UN VERTICES BOUNDARY QUE SEA INTERMEDIARY ENTRE LOD1 Y LOD2 PORQUE ESE INTERMEDIARIO POR EJEMPLO AQUI USA SXCLIMIT Y Z EN VEZ DE LIMIT Y Z
+                        // LOD 2.
+                        if ((y == 0 || y % LOD == 0) && (z == 0 || z % LOD == 0)) {
+                        
+                            localID = blocksLocalIDs[SCXLimit][y][z];
+                            localID1 = blocksLocalIDs[SCXLimit][y+1][z];
+                            localID2 = blocksLocalIDs[SCXLimit][y][z+1];
+                            localID3 = blocksLocalIDs[SCXLimit][y+1][z+1];
+                            block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+
+                            // Add block's model to the mesh if necessary.
+                            if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK ||
+                                (localID1 ? block::getBlockC(palette_.getT2(localID1)) : block::emptyBlock()).opacity() <= blockOpacity::TRANSLUCENTBLOCK ||
+                                (localID2 ? block::getBlockC(palette_.getT2(localID2)) : block::emptyBlock()).opacity() <= blockOpacity::TRANSLUCENTBLOCK ||
+                                (localID3 ? block::getBlockC(palette_.getT2(localID3)) : block::emptyBlock()).opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+
+                                // Check, for block b, the first of the four corresponding blocks in the LOD1 terrain.
+                                neighborLocalID = neighborBlocksPlusX_[y][z];
+                                if (!neighborLocalID) {
+
+                                    neighborLocalID = neighborBlocksPlusX_[y][z + 1];
+                                    if (!neighborLocalID) {
+
+                                        neighborLocalID = neighborBlocksPlusX_[y + 1][z];
+                                        if (!neighborLocalID) {
+
+                                            neighborLocalID = neighborBlocksPlusX_[y + 1][z + 1];
+
+                                        }
+
+                                    }
+
+                                }
+
+                                if (neighborLocalID) {
+                                    
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                    chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2Boundary : &renderingData_.verticesLOD2Boundary;
+
+                                    // Create the face's vertices for face x-.
+                                    for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                        aux.positions[0] = (chunkPos_.x + 1) * SCX + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
+
+                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = aux.normals | (512 << 20);
+                                        aux.normals = aux.normals | (512 << 10);
+                                        aux.normals = aux.normals | (0 << 0);
+
+                                        chunkModelLOD2->push_back(aux);
+
+                                    }
+
+                                    // Add texture to the face.
+                                    models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceX-");
+                                
+                                }
+
+                            }
+                        
                         }
 
                     }
@@ -741,29 +1237,58 @@ namespace VoxelEng {
                         // Add block's model to the mesh if necessary.
                         if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
 
-                            if ((neighborLocalID = neighborBlocksMinusX_[y][z]) && neighborLocalID != localID) {
+                            // LOD 1.
+                            if (neighborLocalID = neighborBlocksMinusX_[y][z]) {
 
                                 bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
 
                                 // Create the face's vertices for face x+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                    aux.positions[0] = (renderingData_.chunkPos.x - 1) * SCX + 15 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
-                                    aux.positions[1] = renderingData_.chunkPos.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
-                                    aux.positions[2] = renderingData_.chunkPos.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
+                                    aux.positions[0] = (chunkPos_.x - 1) * SCX + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
+                                    aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
+                                    aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
 
                                     aux.normals = 0 | (0 << 30);
                                     aux.normals = aux.normals | (512 << 20);
                                     aux.normals = aux.normals | (512 << 10);
                                     aux.normals = aux.normals | (1023 << 0);
 
-                                    renderingData_.vertices.push_back(aux);
+                                    chunkModel->push_back(aux);
 
                                 }
 
                                 // Add texture to the face.
-                                models::addBlockFaceTexture(*bNeighbor, renderingData_.vertices, "faceX+");
+                                models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX+");
 
+                            }
+
+                            // LOD 2.
+                            if ((y == 0 || y % LOD == 0) && (z == 0 || z % LOD == 0) && (neighborLocalID = neighborBlocksMinusXLOD2_[y][z])) {
+
+                                bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+                                chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2Boundary : &renderingData_.verticesLOD2Boundary;
+
+                                // Create the face's vertices for face x+.
+                                for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                    aux.positions[0] = (chunkPos_.x - 1) * SCX + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
+                                    aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
+                                    aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
+
+                                    aux.normals = 0 | (0 << 30);
+                                    aux.normals = aux.normals | (512 << 20);
+                                    aux.normals = aux.normals | (512 << 10);
+                                    aux.normals = aux.normals | (1023 << 0);
+
+                                    chunkModelLOD2->push_back(aux);
+
+                                }
+
+                                // Add texture to the face.
+                                models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceX+");
+                            
                             }
 
                         }
@@ -777,7 +1302,8 @@ namespace VoxelEng {
 
         }
 
-        return renderingData_.vertices.size();
+        return renderingData_.vertices.size() + renderingData_.verticesBoundary.size() + renderingData_.translucentVertices.size() + renderingData_.translucentVerticesBoundary.size() +
+               renderingData_.verticesLOD2.size() + renderingData_.verticesLOD2Boundary.size() + renderingData_.translucentVerticesLOD2.size() + renderingData_.translucentVerticesLOD2Boundary.size();
 
     }
 
@@ -803,6 +1329,10 @@ namespace VoxelEng {
         std::memset(neighborBlocksPlusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
 
+        std::memset(neighborBlocksMinusXLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
+        std::memset(neighborBlocksMinusYLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
+        std::memset(neighborBlocksMinusZLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
+
         palette_.clear();
         paletteCount_.clear();
 
@@ -811,13 +1341,12 @@ namespace VoxelEng {
     void chunk::onUnloadAsFrontier() {
 
         // Check for the neighbors of this recently unloaded frontier chunk
-        const vec3& chunkPos = renderingData_.chunkPos;
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos.x+1, chunkPos.y, chunkPos.z });
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos.x-1, chunkPos.y, chunkPos.z });
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos.x, chunkPos.y+1, chunkPos.z });
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos.x, chunkPos.y-1, chunkPos.z });
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos.x, chunkPos.y, chunkPos.z+1 });
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos.x, chunkPos.y, chunkPos.z-1 });
+        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x+1, chunkPos_.y, chunkPos_.z });
+        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x-1, chunkPos_.y, chunkPos_.z });
+        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x, chunkPos_.y+1, chunkPos_.z });
+        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x, chunkPos_.y-1, chunkPos_.z });
+        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x, chunkPos_.y, chunkPos_.z+1 });
+        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x, chunkPos_.y, chunkPos_.z-1 });
     
     }
 
@@ -1072,9 +1601,9 @@ namespace VoxelEng {
     std::atomic<bool> chunkManager::waitInitialTerrainLoaded_ = true;
 
     std::unordered_map<vec3, chunk*> chunkManager::clientChunks_;
-    std::unordered_map<vec3, model>* chunkManager::chunkMeshesUpdated_,
-                                   * chunkManager::chunkMeshesWrite_,
-                                   * chunkManager::chunkMeshesRead_;
+    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesUpdated_;
+    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesWrite_;
+    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesRead_;
     std::list<chunk*> chunkManager::newChunkMeshes_;
     std::list<chunk*> chunkManager::priorityNewChunkMeshes_;
 
@@ -1133,9 +1662,9 @@ namespace VoxelEng {
 
             selectedAIWorld_ = 0;
 
-            chunkMeshesUpdated_ = new std::unordered_map<vec3, model>;
-            chunkMeshesWrite_ = new std::unordered_map<vec3, model>;
-            chunkMeshesRead_ = new std::unordered_map<vec3, model>;
+            chunkMeshesUpdated_ = new std::unordered_map<vec3, chunkRenderingData>;
+            chunkMeshesWrite_ = new std::unordered_map<vec3, chunkRenderingData>;
+            chunkMeshesRead_ = new std::unordered_map<vec3, chunkRenderingData>;
 
             // NEW
             chunkTasks_ = new threadPool(MAX_N_CHUNK_SIMULT_TASKS);
@@ -1145,7 +1674,7 @@ namespace VoxelEng {
             chunksPool_.setAllFreeOnClear(false);
             vbo_ = &graphics::vbo("chunks");
             vbo_->bind();
-            vbo_->prepareDynamic(nMaxChunkVertsToCompute() * sizeof(vertex));
+            vbo_->prepareDynamic(4 * nMaxChunkVertsToCompute() * sizeof(vertex));
 
             clearChunksFlag_ = false;
             priorityUpdatesRemaining_ = false;
@@ -1166,8 +1695,8 @@ namespace VoxelEng {
 
             c = *it;     
             c->lockSharedRenderingDataMutex();
-            chunkRenderingData& data = c->renderingData();
-            chunkMeshesUpdated_->operator[](data.chunkPos) = data.vertices;
+
+            chunkMeshesUpdated_->operator[](c->chunkPos()) = c->renderingData();
             it = priorityNewChunkMeshes_.erase(it);
                 
             c->unlockSharedRenderingDataMutex();
@@ -1206,9 +1735,10 @@ namespace VoxelEng {
             if (c->status() == chunkStatus::MESHED) {
 
                 c->lockSharedRenderingDataMutex();
-                model& vertices = c->renderingData().vertices;
-                if (vertices.size())
-                    chunkMeshesUpdated_->operator[](c->chunkPos()) = vertices;
+                chunkRenderingData& data = c->renderingData();
+                if (c->nBlocksPlusZ() || data.vertices.size() || data.verticesBoundary.size() || data.translucentVertices.size() || data.translucentVerticesBoundary.size()
+                    || data.verticesLOD2.size() || data.verticesLOD2Boundary.size() || data.translucentVerticesLOD2.size() || data.translucentVerticesLOD2Boundary.size())
+                    chunkMeshesUpdated_->operator[](c->chunkPos()) = data;
                 c->unlockSharedRenderingDataMutex();
 
                 it = newChunkMeshes_.erase(it);
@@ -1226,7 +1756,7 @@ namespace VoxelEng {
 
     void chunkManager::swapChunkMeshesBuffers() {
     
-        std::unordered_map<vec3, model>* aux = chunkMeshesWrite_;
+        std::unordered_map<vec3, chunkRenderingData>* aux = chunkMeshesWrite_;
         chunkMeshesWrite_ = chunkMeshesRead_;
         chunkMeshesRead_ = aux;
     
@@ -1337,6 +1867,41 @@ namespace VoxelEng {
 
     }
 
+    bool chunkManager::chunkInLODDistance(const vec3& chunkPos, unsigned int LODlevel, bool& inBorder, blockViewDir& dirX, blockViewDir& dirY, blockViewDir& dirZ) {
+
+        vec3 signedDistancePlayer = chunkSignedDistance(chunkPos, playerChunkPosCopy_);
+        vec3 distancePlayer = abs(signedDistancePlayer);
+        bool inDistance = false;
+
+
+        switch (LODlevel) {
+        
+            case 1:
+                inDistance = distancePlayer.x <= 1 &&
+                             distancePlayer.z <= 1 &&
+                             distancePlayer.y <= 1;
+                inBorder = distancePlayer.x == 1 - 1 || distancePlayer.y == 1 - 1 || distancePlayer.z == 1 - 1;
+                break;
+
+            case 2:
+                inDistance = distancePlayer.x <= LODlevel2Range &&
+                             distancePlayer.z <= LODlevel2Range &&
+                             distancePlayer.y <= LODlevel2Range;
+                inBorder = distancePlayer.x == LODlevel2Range - 1 || distancePlayer.y == LODlevel2Range - 1 || distancePlayer.z == LODlevel2Range - 1;
+                break;
+
+            default:
+                logger::errorLog("Unsupported LOD level " + std::to_string(LODlevel));
+        
+        }
+
+        dirX = (signedDistancePlayer.x == 0) ? blockViewDir::NONE : ((signedDistancePlayer.x > 0) ? blockViewDir::PLUSX : blockViewDir::NEGX);
+        dirY = (signedDistancePlayer.y == 0) ? blockViewDir::NONE : ((signedDistancePlayer.y > 0) ? blockViewDir::PLUSY : blockViewDir::NEGY);
+        dirZ = (signedDistancePlayer.z == 0) ? blockViewDir::NONE : ((signedDistancePlayer.z > 0) ? blockViewDir::PLUSZ : blockViewDir::NEGZ);
+
+        return inDistance;
+    }
+
     vec3 chunkManager::chunkDistanceToPlayer(const vec3& chunkPos) {
 
         const vec3& playerPos = player::getCamera().chunkPos();
@@ -1348,10 +1913,17 @@ namespace VoxelEng {
 
     vec3 chunkManager::chunkDistance(const vec3& chunkPos1, const vec3& chunkPos2) {
     
-        return vec3{ (float)std::abs(chunkPos1.x - chunkPos2.x),
-                     (float)std::abs(chunkPos1.y - chunkPos2.y),
-                     (float)std::abs(chunkPos1.z - chunkPos2.z) };
+        vec3 signedDistance = chunkSignedDistance(chunkPos1, chunkPos2);
+        return abs(signedDistance);
     
+    }
+
+    vec3 chunkManager::chunkSignedDistance(const vec3& chunkPos1, const vec3& chunkPos2) {
+
+        return vec3{ chunkPos1.x - chunkPos2.x,
+                     chunkPos1.y - chunkPos2.y,
+                     chunkPos1.z - chunkPos2.z };
+
     }
 
     double chunkManager::distanceToPlayer(const vec3& chunkPos) {
@@ -1654,8 +2226,7 @@ namespace VoxelEng {
     void chunkManager::manageChunks() {
 
         {
-
-            // FIXME. LOS JOBS DE NEIGHBOR QUE SE TIENE QUE ACTUALIZAR CON PRIORITY DEBEN IR EN UN MISMO JOB SINO DA PROBLEMAS.
+            // NEXT. LOS JOBS DE NEIGHBOR QUE SE TIENE QUE ACTUALIZAR CON PRIORITY DEBEN IR EN UN MISMO JOB SINO DA PROBLEMAS.
 
             std::unique_lock<std::mutex> lock(managerThreadMutex_),
                                          priorityUpdatesLock(priorityUpdatesRemainingMutex_);
@@ -1674,9 +2245,8 @@ namespace VoxelEng {
             while (game::threadsExecute[2]) {
 
                 continueCreatingChunks = false;
-
                 
-                ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // ALSO NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
+                ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
 
                 do {
 
@@ -1709,7 +2279,7 @@ namespace VoxelEng {
                             ensureChunkIfVisible(chunkPos.x, chunkPos.y, chunkPos.z + 1) +
                             ensureChunkIfVisible(chunkPos.x, chunkPos.y, chunkPos.z - 1) == 6) {
 
-                            chunksMutex_.lock();
+                            /* chunksMutex_.lock(); This is actually not necessary??
                             chunk* c = clientChunks_[*frontierIt_];
                             chunksMutex_.unlock();
                             if (c->renderingData().vertices.size()) {
@@ -1720,7 +2290,7 @@ namespace VoxelEng {
 
                                 newChunkMeshesMutex_.unlock();
 
-                            }
+                            }*/
 
                             continueCreatingChunks = ++nIterations < maxIterations;
 
@@ -1965,7 +2535,7 @@ namespace VoxelEng {
 
         chunk* c = &chunksPool_.get();
 
-        c->chunkPos() = chunkPos;
+        c->chunkPos(chunkPos);
 
         chunksMutex_.lock();
         clientChunks_[chunkPos] = c;

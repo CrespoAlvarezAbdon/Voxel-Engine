@@ -12,6 +12,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include "../graphics.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -21,6 +22,13 @@
 
 
 namespace VoxelEng {
+
+	/////////////////////////
+	//Forward declarations.//
+	/////////////////////////
+
+	class framebuffer;
+
 
 	////////////
 	//Classes.//
@@ -41,8 +49,14 @@ namespace VoxelEng {
 		/**
 		* @brief Class constructor.
 		* Creates an empty texture with the specified size.
+		* NOTE. If 'bufferToAttachTo' is nullptr, this texture will not be attached to any framebuffer.
+		* NOTE. 'colorAttachmentIndex' is an optional parameter that is used only to specify the index this color texture will ocuppy in the
+		* framebuffer is going to be attached to. Does nothing if 'bufferToAttachTo' is nullptr. Must be positive and not greater than
+		* texture::maxColorAttachmentIndex_. If equal to -1, then the index used will be equal to 
+		* Number of present color attachments for that framebuffer and that texture type + 1.
+		* WARNING. Throws exception if bufferToAttachTo != nullptr, type != textureType::DEPTH_AND_STENCIL and colorAttachmentIndex does not have a valid value.
 		*/
-		texture(unsigned int width, unsigned int height);
+		texture(unsigned int width, unsigned int height, textureType type, framebuffer* bufferToAttachTo = nullptr, int colorAttachmentIndex = -1);
 
 
 		/**
@@ -83,6 +97,11 @@ namespace VoxelEng {
 		* @brief Returns the width and height of the specified texture with the 'textureID'.
 		*/
 		static const std::pair<int, int>& getTextureWH(unsigned int textureID);
+
+		/**
+		* @brief Get the texture's type.
+		*/
+		textureType type() const;
 
 
 		// Modifiers.
@@ -127,6 +146,7 @@ namespace VoxelEng {
 		static unsigned int blockAtlasResolution_;
 		static std::unordered_map<unsigned int, std::pair<int, int>> texturesWH_;
 		static std::pair<int, int> defaultTextureWH_;
+		static const int maxColorAttachmentIndex_;
 
 		GLuint rendererID_;
 		std::string textureFilepath_; 
@@ -135,6 +155,7 @@ namespace VoxelEng {
 		int width_,
 			height_,
 			bitsPerPixel_;
+		textureType type_;
 
 	};
 
@@ -171,6 +192,12 @@ namespace VoxelEng {
 	inline const std::pair<int, int>& texture::getTextureWH(unsigned int textureID) {
 
 		return texturesWH_.find(textureID) == texturesWH_.cend() ? defaultTextureWH_ : texturesWH_[textureID];
+
+	}
+
+	inline textureType texture::type() const {
+	
+		return type_;
 
 	}
 

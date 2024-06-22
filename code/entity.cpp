@@ -302,17 +302,20 @@ namespace VoxelEng {
     }
 
     entityID entityManager::spawnEntity(unsigned int modelID, float posX, float posY, float posZ, applyRotationMode applyRotMode, 
-        float rotX, float rotY, float rotZ, tickFunc func) {
+        float rotX, float rotY, float rotZ, tickFunc func, float scaleX, float scaleY, float scaleZ) {
 
         entity* createdEntity = new entity();
 
         createdEntity->entityModel(modelID);
-        createdEntity->pos(posX, posY, posZ);
+        
+        createdEntity->scale(scaleX, scaleY, scaleZ);
+        createdEntity->setApplyRotationMode(applyRotMode);
         if (applyRotMode == applyRotationMode::EULER_ANGLES)
             createdEntity->rotate(rotX, rotY, rotZ);
         else if (applyRotMode == applyRotationMode::DIRECTION_VECTOR && (rotX != 0 || rotY != 0 || rotZ != 0))
             createdEntity->setYAxis(rotX, rotY, rotZ);
-        createdEntity->setApplyRotationMode(applyRotMode);
+        createdEntity->pos(posX, posY, posZ);
+
         createdEntity->setTickFunc(func);
 
         return insertEntity_(createdEntity);
