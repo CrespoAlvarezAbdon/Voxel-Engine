@@ -470,8 +470,8 @@ namespace AIExample {
 				else if (blockPos.y == height)
 					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer0_, false);
 
-				// Generate data for the chunk's low resolution meshes.
-				if ((x == 0 || x % LOD == 0) && (y == 0 || y % LOD == 0)) {
+				// Generate data for the chunk's LOD 2 meshes.
+				if ((x == 0 || x % LOD == 0) || (y == 0 || y % LOD == 0)) {
 
 					blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z - 1, x, y, limit);
 					height = heightMapMinusZ[x][limit];
@@ -534,8 +534,8 @@ namespace AIExample {
 				#endif
 			
 				// Make height value between 0.0 and 200.0.
-				//heightsAux[pos.x][pos.y] = VoxelEng::translateRange(height, -1.0f, 1.0f, 0.0f, maxHeight_);
-				heightsAux[pos.x][pos.y] = 128.0f;
+				heightsAux[pos.x][pos.y] = VoxelEng::translateRange(height, -1.0f, 1.0f, 0.0f, maxHeight_);
+				//heightsAux[pos.x][pos.y] = 128.0f;
 
 			}
 

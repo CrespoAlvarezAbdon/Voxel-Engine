@@ -90,6 +90,10 @@ namespace VoxelEng {
 		model translucentVertices;
 		model translucentVerticesBoundary;
 
+		// Model that serves as a transition between a LOD 1 and a LOD 2 chunk.
+		model verticesLOD1_2Boundary;
+		model translucentVerticesLOD1_2Boundary;
+
 		// LOD 2.
 		model verticesLOD2;
 		model verticesLOD2Boundary;

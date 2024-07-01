@@ -1,4 +1,4 @@
-#version 330 core
+#version 420 core
 
 layout(location = 0) out vec4 color; // Final result.
 
@@ -6,11 +6,12 @@ layout(location = 0) out vec4 color; // Final result.
 in vec2 v_TexCoord; 
 in vec3 v_fragPos;
 in vec3 v_normal;
+in vec4 v_color;
 
 // Uniforms.
 uniform vec3 u_sunLightPos;
 uniform vec3 u_viewPos;
-uniform sampler2D u_Texture;
+uniform sampler2D blockTexture;
 uniform int u_renderMode;
 uniform int u_useComplexLighting;
 
@@ -47,14 +48,14 @@ void main() {
 		vec4 specularLighting = vec4(specularStrength * specular * lightColor, 1.0);
 
 		// Get texture color.
-		textureColor = texture(u_Texture, v_TexCoord);
+		textureColor = texture(blockTexture, v_TexCoord);
 		
 		// Discard transparent fragments.
 		if (textureColor.a < 0.1)
 			discard;
 
 		// Final color calculation.
-		color = (ambient + (diffuseLighting + specularLighting) * u_useComplexLighting) * textureColor;
+		color = (ambient + (diffuseLighting + specularLighting) * u_useComplexLighting) * textureColor * v_color;
 	
 	}
 	else {
@@ -62,7 +63,7 @@ void main() {
 		/*
 		2D rendering
 		*/
-		color = texture(u_Texture, v_TexCoord);
+		color = texture(blockTexture, v_TexCoord);
 	
 	}
 

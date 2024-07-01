@@ -653,14 +653,13 @@ namespace VoxelEng {
                             if (chunkManager::chunkInLODDistance(chunk.first, 1, inLODborder, dirX, dirY, dirZ)) {
 
                                 // NEXT. PONER UN MIEMBRO SIZE POR CADA MIEMBRO MODEL DEL CHUNKRENDERINGDATA
-                                // NEXT. ARREGLAR LOS FACE X-,Y-,Z- DE LOS BOUNDARIES.
 
                                 if (inLODborder) {
                                 
-                                    if (nVertices = chunk.second.vertices.size() + chunk.second.verticesLOD2Boundary.size()) {
+                                    if (nVertices = chunk.second.vertices.size() + chunk.second.verticesLOD1_2Boundary.size()) {
 
                                         chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
-                                        chunksVbo_->setDynamicData(chunk.second.verticesLOD2Boundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesLOD2Boundary.size() * sizeof(vertex));
+                                        chunksVbo_->setDynamicData(chunk.second.verticesLOD1_2Boundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesLOD1_2Boundary.size() * sizeof(vertex));
                                     
                                     }
                                 
