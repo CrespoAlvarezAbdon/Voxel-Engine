@@ -404,6 +404,9 @@ namespace VoxelEng {
             renderingData_.translucentVertices = model();
             renderingData_.translucentVerticesBoundary = model();
 
+            renderingData_.verticesLOD1_2Boundary = model();
+            renderingData_.translucentVerticesLOD1_2Boundary = model();
+
             renderingData_.verticesLOD2 = model();
             renderingData_.verticesLOD2Boundary = model();
             renderingData_.translucentVerticesLOD2 = model();
@@ -474,7 +477,7 @@ namespace VoxelEng {
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * SCZ + z + 2 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
@@ -529,7 +532,7 @@ namespace VoxelEng {
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * SCZ + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
@@ -584,7 +587,7 @@ namespace VoxelEng {
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y + 2 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
+                                        aux.positions[1] = chunkPos_.y * SCY + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
@@ -639,7 +642,7 @@ namespace VoxelEng {
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y - 2 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
@@ -694,7 +697,7 @@ namespace VoxelEng {
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = chunkPos_.x * SCX + x + 2 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
@@ -749,7 +752,7 @@ namespace VoxelEng {
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = chunkPos_.x * SCX + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
@@ -885,7 +888,7 @@ namespace VoxelEng {
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y-1 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
                                         aux.positions[2] = (chunkPos_.z + 1) * SCZ + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
@@ -1020,7 +1023,7 @@ namespace VoxelEng {
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                     aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0] * 2;
-                                    aux.positions[1] = chunkPos_.y * SCY + y-1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
+                                    aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
                                     aux.positions[2] = (chunkPos_.z - 1) * SCZ + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
                                     aux.normals = 0 | (0 << 30);
@@ -1209,7 +1212,7 @@ namespace VoxelEng {
                             }
 
                             // Add texture to the face.
-                            models::addBlockFaceTexture(block::getBlockC("starminer::goldOre"), *chunkModel, "faceY+");
+                            models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY+");
 
                         }
 
@@ -1287,7 +1290,7 @@ namespace VoxelEng {
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                     aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0] * 2;
-                                    aux.positions[1] = (chunkPos_.y - 1) * SCY + (16 - 2) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                    aux.positions[1] = (chunkPos_.y - 1) * SCY + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
 
                                     aux.normals = 0 | (0 << 30);
@@ -1421,7 +1424,7 @@ namespace VoxelEng {
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = (chunkPos_.x + 1) * SCX + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y-1 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
+                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
@@ -1505,7 +1508,7 @@ namespace VoxelEng {
                                         neighborLocalID = neighborBlocksMinusX_[y+1][z] || neighborBlocksMinusXLOD2_[y+1][z];
                                         if (!neighborLocalID) {
 
-                                            neighborLocalID = neighborBlocksMinusX_[y+1][z+1] || neighborBlocksMinusX_[y+1][z+1];
+                                            neighborLocalID = neighborBlocksMinusX_[y+1][z+1] || neighborBlocksMinusXLOD2_[y+1][z+1];
 
                                         }
 
@@ -1554,7 +1557,7 @@ namespace VoxelEng {
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                     aux.positions[0] = (chunkPos_.x - 1) * SCX + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
-                                    aux.positions[1] = chunkPos_.y * SCY + y-1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
+                                    aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
                                     aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
 
                                     aux.normals = 0 | (0 << 30);
@@ -2561,7 +2564,7 @@ namespace VoxelEng {
                             ensureChunkIfVisible(chunkPos.x, chunkPos.y, chunkPos.z + 1) +
                             ensureChunkIfVisible(chunkPos.x, chunkPos.y, chunkPos.z - 1) == 6) {
 
-                            /* chunksMutex_.lock(); This is actually not necessary??
+                            chunksMutex_.lock();
                             chunk* c = clientChunks_[*frontierIt_];
                             chunksMutex_.unlock();
                             if (c->renderingData().vertices.size()) {
@@ -2572,7 +2575,7 @@ namespace VoxelEng {
 
                                 newChunkMeshesMutex_.unlock();
 
-                            }*/
+                            }
 
                             continueCreatingChunks = ++nIterations < maxIterations;
 
