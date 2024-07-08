@@ -10,6 +10,8 @@
 
 #endif
 
+// DUMMY.
+#include <iostream>
 
 namespace VoxelEng {
 
@@ -321,8 +323,8 @@ namespace VoxelEng {
 			vbos_.clear();
 			vaos_.clear();
 			vboLayouts_.clear();
-
-            glfwTerminate();
+			glfwTerminate();
+            
 
         #else
 

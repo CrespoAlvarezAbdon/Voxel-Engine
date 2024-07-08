@@ -46,7 +46,7 @@ namespace VoxelEng {
 		* color buffer that was attached to the framebuffer.
 		* Throws exception if the specified texture does not exist attached to the framebuffer at the given position.
 		*/
-		const texture& getTexture(textureType type, unsigned int i) const;
+		const std::shared_ptr<texture>& getTexture(textureType type, unsigned int i) const;
 
 
 		// Modifiers.
@@ -70,12 +70,12 @@ namespace VoxelEng {
 		* color buffer that was attached to the framebuffer.
 		* Throws exception if the specified texture does not exist attached to the framebuffer at the given position.
 		*/
-		texture& getTexture(textureType type, unsigned int i);
+		std::shared_ptr<texture>& getTexture(textureType type, unsigned int i);
 
 		/**
 		* @brief Push at the end of the framebuffer the given texture.
 		*/
-		void pushBack(texture& texture);
+		void pushBack(std::shared_ptr<texture>& texture);
 
 		/**
 		* @brief Clear the attached textures with the specified clear colors.

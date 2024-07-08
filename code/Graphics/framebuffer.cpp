@@ -9,6 +9,9 @@
 
 #endif
 
+// DUMMY
+#include <iostream>
+
 namespace VoxelEng {
 
 	GLenum framebuffer::supportedColorBuffers_[16] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,
@@ -63,27 +66,27 @@ namespace VoxelEng {
 
 	}
 
-	const texture& framebuffer::getTexture(textureType type, unsigned int i) const {
+	const std::shared_ptr<texture>& framebuffer::getTexture(textureType type, unsigned int i) const {
 	
 		if (attachedTextures_.contains(type) && attachedTextures_.at(type).size() > i)
-			return *attachedTextures_.at(type)[i];
+			return attachedTextures_.at(type)[i];
 		else
 			logger::errorLog("The specified attached texture with type " + std::to_string((int)type) + " at index " + std::to_string(i) + " does not exist");
 	
 	}
 
-	texture& framebuffer::getTexture(textureType type, unsigned int i) {
+	std::shared_ptr<texture>& framebuffer::getTexture(textureType type, unsigned int i) {
 
 		if (attachedTextures_.contains(type) && attachedTextures_.at(type).size() > i)
-			return *attachedTextures_.at(type)[i];
+			return attachedTextures_.at(type)[i];
 		else
 			logger::errorLog("The specified attached texture with type " + std::to_string((int)type) + " at index " + std::to_string(i) + " does not exist");
 
 	}
 
-	void framebuffer::pushBack(texture& t) {
+	void framebuffer::pushBack(std::shared_ptr<texture>& t) {
 	
-		textureType type = t.type();
+		textureType type = t->type();
 
 		switch (type) {
 		
@@ -93,11 +96,11 @@ namespace VoxelEng {
 
 			case textureType::COLOR:
 			case textureType::REVEAL:
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachedTextures_[type].size(), GL_TEXTURE_2D, t.rendererID(), 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachedTextures_[type].size(), GL_TEXTURE_2D, t->rendererID(), 0);
 				break;
 
-			case textureType::DEPTH_AND_STENCIL: // NEXT. PONER EXCEPCION DE QUE SOLO PUEDE HABER UN DEPTH AND STENCIL ASI QUE ESTE SOBRESCRIBE AL ANTERIOR EN ESTE CASO LUEGO MIRA COMO MANEJAR ESTE Y LOS OTROS CASOS DE INSERCION Y DEMÁS.
-				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, t.rendererID());
+			case textureType::DEPTH_AND_STENCIL: // TODO. PONER EXCEPCION DE QUE SOLO PUEDE HABER UN DEPTH AND STENCIL ASI QUE ESTE SOBRESCRIBE AL ANTERIOR EN ESTE CASO LUEGO MIRA COMO MANEJAR ESTE Y LOS OTROS CASOS DE INSERCION Y DEMÁS.
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, t->rendererID());
 				break;
 
 			case textureType::IMAGE:
@@ -109,7 +112,7 @@ namespace VoxelEng {
 				break;
 		}
 
-		attachedTextures_[type].emplace_back(&t);
+		attachedTextures_[type].emplace_back(t);
 	
 	}
 

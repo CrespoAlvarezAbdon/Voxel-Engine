@@ -3,6 +3,9 @@
 #include "../framebuffer.h"
 #include "../../External code/stb_image.h"
 
+// DUMMY.
+#include <iostream>
+
 namespace VoxelEng {
 
 	// 'texture' class.

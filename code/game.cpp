@@ -212,6 +212,7 @@ namespace VoxelEng {
             translucidFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR, textureType::COLOR});
 
             translucidFB_->bind();
+            // SUBNORMAL QUE LE ESTÁS PASANDO LA TEXTURA NO EL SHARED_PTR DE LA TEXTURA >:U
             translucidFB_->pushBack(opaqueFB_->getTexture(textureType::DEPTH_AND_STENCIL, 0));
 
             screenFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR});
@@ -775,8 +776,8 @@ namespace VoxelEng {
 
                 compositeShader_->bind();
 
-                translucidFB_->getTexture(textureType::COLOR, 0).bind(0);
-                translucidFB_->getTexture(textureType::COLOR, 1).bind(1);
+                translucidFB_->getTexture(textureType::COLOR, 0)->bind(0);
+                translucidFB_->getTexture(textureType::COLOR, 1)->bind(1);
 
                 screenVao_->bind();
                 screenVbo_->bind();
@@ -813,7 +814,7 @@ namespace VoxelEng {
                 screenShader_->bind();
                 //screenShader_->setUniform1i("screenTexture", 0);
 
-                opaqueFB_->getTexture(textureType::COLOR, 0).bind();
+                opaqueFB_->getTexture(textureType::COLOR, 0)->bind();
 
                 screenVbo_->prepareStatic(screenShaderQuad, 6*sizeof(float)*4);
                 renderer::draw2D(6);
@@ -1322,13 +1323,6 @@ namespace VoxelEng {
         screenVao_ = nullptr;
         playerCamera_ = nullptr;
 
-        if (opaqueFB_) {
-
-            delete opaqueFB_;
-            opaqueFB_ = nullptr;
-
-        }
-
         if (translucidFB_) {
 
             delete translucidFB_;
@@ -1355,6 +1349,7 @@ namespace VoxelEng {
 
         graphicalModeInitialised_ = false;
 
+        
     }
 
 }
