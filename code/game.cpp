@@ -212,7 +212,6 @@ namespace VoxelEng {
             translucidFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR, textureType::COLOR});
 
             translucidFB_->bind();
-            // SUBNORMAL QUE LE ESTÁS PASANDO LA TEXTURA NO EL SHARED_PTR DE LA TEXTURA >:U
             translucidFB_->pushBack(opaqueFB_->getTexture(textureType::DEPTH_AND_STENCIL, 0));
 
             screenFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR});
@@ -408,6 +407,10 @@ namespace VoxelEng {
     void game::mainMenuLoop() {
 
         if (game::loopSelection_ == engineMode::GRAPHICALMENU) {
+
+            opaqueFB_->unbind(); // TODO. HACER MÉTODO UNBIND ALL ESTÁTICO PARA LOS FRAMEBUFFERS.
+            opaqueShader_->bind();
+            blockTextureAtlas_->bind();
 
             // Set 3D rendering mode uniforms.
             opaqueShader_->setUniform1i("u_renderMode", 1);
