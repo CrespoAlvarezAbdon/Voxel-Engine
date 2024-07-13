@@ -508,7 +508,7 @@ namespace AIExample {
 	void miningWorldGen::generateChunkHeightMap_(const VoxelEng::vec2& chunkXZPos) {
 
 		chunkHeightMap heightsAux = std::array<std::array<int, VoxelEng::SCZ>, VoxelEng::SCX>();
-		float softnessFactor = 128,
+		float softnessFactor = 64,
 			  height;
 		VoxelEng::vec2 pos,
 			           aux;

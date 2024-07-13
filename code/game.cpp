@@ -408,7 +408,7 @@ namespace VoxelEng {
 
         if (game::loopSelection_ == engineMode::GRAPHICALMENU) {
 
-            opaqueFB_->unbind(); // TODO. HACER MÉTODO UNBIND ALL ESTÁTICO PARA LOS FRAMEBUFFERS.
+            framebuffer::unbindAll();
             opaqueShader_->bind();
             blockTextureAtlas_->bind();
 

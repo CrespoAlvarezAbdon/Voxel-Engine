@@ -52,6 +52,11 @@ namespace VoxelEng {
 		// Modifiers.
 
 		/**
+		* @brief Unbind all framebuffers currently bound across all graphics API contexts.
+		*/
+		static void unbindAll();
+
+		/**
 		* @brief Bind the framebuffer so that all render commands affect its buffer instead.
 		* NOTE. For these render commands to properly affect this framebuffer, Framebuffer::readyToBeDrawn() must return
 		* true first.
@@ -115,6 +120,12 @@ namespace VoxelEng {
 
 		return attachedTextures_.contains(type) ? attachedTextures_.at(type).size() : 0;
 	
+	}
+
+	inline void framebuffer::unbindAll() {
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	}
 
 	inline void framebuffer::bind() {
