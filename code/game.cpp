@@ -590,7 +590,6 @@ namespace VoxelEng {
                 if (!mainWindow_->isMouseFree())
                     player::updateTransform(game::timeStep());
                 playerCamera_->updateView();
-                frustum frustitum(*playerCamera_); // TODO. PUT THIS PROPERLY
 
                 MVPmatrix_ = playerCamera_->projectionMatrix() * playerCamera_->viewMatrix();
                 opaqueShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
@@ -647,7 +646,7 @@ namespace VoxelEng {
                     // chunk.second refers to the chunk's vertex data.
                     for (auto const& chunk : *chunksToDraw_) {
 
-                        if (frustitum.isInside(chunk.second.globalChunkPos)) {
+                        if (playerCamera_->isInsideFrustum(chunk.second.globalChunkPos)) {
 
                             // NEXT.
                             // 1º. DONE -> HAY QUE PONER LO DE QUE BOUNDARY LOD2 COJA LOS 4 BLOQUES CORRESPONDIENTES AL BOUNDARY VECINO LOD 1 Y COJA EL PRIMERO NO NO NULO PARA HACERLE RENDER DE LA CARA.
@@ -757,7 +756,7 @@ namespace VoxelEng {
                     // chunk.second refers to the chunk's vertex data.
                     for (auto const& chunk : *chunksToDraw_) {
 
-                        if (frustitum.isInside(chunk.second.globalChunkPos) && (nTranslucentVertices = chunk.second.translucentVertices.size())) {
+                        if (playerCamera_->isInsideFrustum(chunk.second.globalChunkPos) && (nTranslucentVertices = chunk.second.translucentVertices.size())) {
 
                             chunksVbo_->setDynamicData(chunk.second.translucentVertices.data(), 0, nTranslucentVertices * sizeof(vertex));
 

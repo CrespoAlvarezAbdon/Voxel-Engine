@@ -20,7 +20,8 @@ namespace VoxelEng {
         zFar_(zFar),
         projectionMatrix_(glm::perspective(glm::radians(FOV_), static_cast<float>(window.width()) / window.height(), zNear_, zFar_)),
         viewMatrix_(1.0f),
-        modelMatrix_(1.0f) {
+        modelMatrix_(1.0f),
+        cameraFrustum_(*this) {
 
         transform_.position = position;
         transform_.rotation = rotation;

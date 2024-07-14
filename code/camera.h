@@ -15,6 +15,7 @@
 #include "quaternion.h"
 #include "vec.h"
 #include "Graphics/transform.h"
+#include "Graphics/Frustum/frustum.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -145,6 +146,12 @@ namespace VoxelEng {
 		*/
 		const vec3& Zaxis() const;
 
+		/**
+		* @brief Returns true if the given point is inside the camera's frustum
+		* or false otherwise.
+		*/
+		bool isInsideFrustum(const vec3& point) const;
+
 
 		// Modifiers.
 
@@ -257,6 +264,8 @@ namespace VoxelEng {
 				  modelMatrix_; // All models' vertices will be multiplied with this matrix (so you can, for example, rotate the entire world around the camera).
 
 		transform transform_;
+
+		frustum cameraFrustum_;
 		
 	};
 
@@ -332,6 +341,12 @@ namespace VoxelEng {
 	
 	}
 
+	inline bool camera::isInsideFrustum(const vec3& point) const {
+	
+		return cameraFrustum_.isInside(point);
+	
+	}
+
 	inline const vec3& camera::chunkPos() const {
 
 		return transform_.chunkPosition;
@@ -403,6 +418,7 @@ namespace VoxelEng {
 		#if GRAPHICS_API == OPENGL
 
 			viewMatrix_ = glm::lookAt(transform_.position, transform_.position + transform_.viewDirection, transform_.Yaxis);
+			cameraFrustum_.updatePlanes();
 
 		#else
 

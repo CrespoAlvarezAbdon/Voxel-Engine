@@ -1,5 +1,6 @@
 #include "frustum.h"
 
+#include "../../camera.h"
 #include "../../game.h"
 #include "../../gameWindow.h"
 #include "../../entity.h"
@@ -17,33 +18,8 @@
 
 namespace VoxelEng {
 
-	frustum::frustum(const camera& cam) {
-	
-		const float aspect = game::getWindow().aspectRatio();
-		const float halfVSide = cam.zFar() * 0.7f;
-		const float halfHSide = halfVSide * aspect;
-		const vec3 frontMultFar = cam.zFar() * cam.viewDirection();
-		const vec3 frustumPos = cam.globalPos() - 16.0f * cam.viewDirection();
-
-		near_.normal(cam.viewDirection());
-		near_.point(frustumPos);
-
-		far_.normal(-cam.viewDirection());
-		far_.point(cam.globalPos() + frontMultFar);
-
-		right_.normal(frontMultFar - cam.Zaxis() * halfHSide);
-		right_.point(frustumPos);
-
-		left_.normal(frontMultFar + cam.Zaxis() * halfHSide);
-		left_.point(frustumPos);
-
-		top_.normal(frontMultFar + cam.Yaxis() * halfVSide);
-		top_.point(frustumPos);
-
-		bottom_.normal(frontMultFar - cam.Yaxis() * halfVSide);
-		bottom_.point(frustumPos);
-	
-	}
+	frustum::frustum(const camera& cam)
+	: camera_(cam) {}
 
 	void frustum::spawnDebugPlanes() const {
 	
@@ -73,6 +49,40 @@ namespace VoxelEng {
 	
 		return far_.isPointForward(point) &&
 			right_.isPointForward(point) && left_.isPointForward(point);
+	
+	}
+
+	void frustum::updatePlanes() {
+	
+		const float aspect = game::getWindow().aspectRatio();
+		const float zFar = camera_.zFar();
+		const vec3& viewDirection = camera_.viewDirection();
+		const vec3& globalPos = camera_.globalPos();
+		const vec3& Yaxis = camera_.Yaxis();
+		const vec3& Zaxis = camera_.Zaxis();
+
+		const float halfVSide = zFar * 0.7f;
+		const float halfHSide = halfVSide * aspect;
+		const vec3 frontMultFar = zFar * viewDirection;
+		const vec3 frustumPos = globalPos - 16.0f * viewDirection;
+
+		near_.normal(viewDirection);
+		near_.point(frustumPos);
+
+		far_.normal(-viewDirection);
+		far_.point(globalPos + frontMultFar);
+
+		right_.normal(frontMultFar - Zaxis * halfHSide);
+		right_.point(frustumPos);
+
+		left_.normal(frontMultFar + Zaxis * halfHSide);
+		left_.point(frustumPos);
+
+		top_.normal(frontMultFar + Yaxis * halfVSide);
+		top_.point(frustumPos);
+
+		bottom_.normal(frontMultFar - Yaxis * halfVSide);
+		bottom_.point(frustumPos);
 	
 	}
 

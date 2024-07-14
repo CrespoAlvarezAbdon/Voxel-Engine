@@ -10,10 +10,11 @@
 #define _VOXELENG_FRUSTUM_
 
 #include "../../Math/mathPlane.h"
-#include "../../camera.h"
-
 
 namespace VoxelEng {
+
+	// Forward declarations.
+	class camera;
 
 	/**
 	* @brief Representation of a fustrum as a portion of a pyramid. Used in cameras to
@@ -44,7 +45,14 @@ namespace VoxelEng {
 		*/
 		bool isInside(const vec3& point) const;
 
+
+		// Modifiers.
+
+		void updatePlanes();
+
 	private:
+
+		const camera& camera_;
 
 		Math::plane near_;
 		Math::plane far_;
