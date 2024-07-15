@@ -144,9 +144,9 @@ namespace VoxelEng {
 		
 		if (chunkPos.y <= 8) {
 
-			for (GLbyte x = 0; x < SCX; x++)
-				for (GLbyte y = 0; y < SCY; y++)
-					for (GLbyte z = 0; z < SCZ; z++) {
+			for (GLbyte x = 0; x < CHUNK_SIZE; x++)
+				for (GLbyte y = 0; y < CHUNK_SIZE; y++)
+					for (GLbyte z = 0; z < CHUNK_SIZE; z++) {
 
 						switch (uDistribution_(generator_, flatWorldBlockDistribution_)) {
 

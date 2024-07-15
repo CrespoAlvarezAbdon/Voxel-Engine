@@ -248,7 +248,7 @@ namespace VoxelEng {
 
         unsigned short oldLocalID = 0;
         bool blockWasModified = false;
-        unsigned short(*neighborBlocks)[SCX][SCX] = nullptr; // TODO. REMOVE SCX, SCY AND SCZ AND PUT SCD (sizeChunkDimension) instead.
+        unsigned short(*neighborBlocks)[CHUNK_SIZE][CHUNK_SIZE] = nullptr;
         
         if (neighbor == blockViewDir::NONE)
             logger::errorLog("No block view direction was specified");
@@ -258,7 +258,7 @@ namespace VoxelEng {
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
-            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[VoxelEng::SCX - 1][firstIndex][secondIndex];
+            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[CHUNK_SIZE_LIMIT][firstIndex][secondIndex];
             if (!oldLocalID && actualLocalID)
                 nBlocksPlusX_++;
             else if (oldLocalID && !actualLocalID)
@@ -297,7 +297,7 @@ namespace VoxelEng {
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
-            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[firstIndex][VoxelEng::SCX - 1][secondIndex];
+            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[firstIndex][CHUNK_SIZE_LIMIT][secondIndex];
             if (!oldLocalID && actualLocalID)
                 nBlocksPlusY_++;
             else if (oldLocalID && !actualLocalID)
@@ -336,7 +336,7 @@ namespace VoxelEng {
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
-            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[firstIndex][secondIndex][VoxelEng::SCX - 1];
+            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs[firstIndex][secondIndex][CHUNK_SIZE_LIMIT];
             if (!oldLocalID && actualLocalID)
                 nBlocksPlusZ_++;
             else if (oldLocalID && !actualLocalID)
@@ -379,9 +379,9 @@ namespace VoxelEng {
     void chunk::chunkPos(const vec3& newChunkPos) {
 
         chunkPos_ = newChunkPos;
-        renderingData_.globalChunkPos.x = newChunkPos.x * SCX + SCX / 2;
-        renderingData_.globalChunkPos.y = newChunkPos.y * SCY + SCY / 2;
-        renderingData_.globalChunkPos.z = newChunkPos.z * SCZ + SCZ / 2;
+        renderingData_.globalChunkPos.x = newChunkPos.x * CHUNK_SIZE + CHUNK_SIZE / 2;
+        renderingData_.globalChunkPos.y = newChunkPos.y * CHUNK_SIZE + CHUNK_SIZE / 2;
+        renderingData_.globalChunkPos.z = newChunkPos.z * CHUNK_SIZE + CHUNK_SIZE / 2;
 
     }
 
@@ -389,8 +389,8 @@ namespace VoxelEng {
 
         std::unique_lock<std::shared_mutex> lock(renderingDataMutex_);
 
-        unsigned int LOD = 2;
-        unsigned int limit = (LOD == 1) ? 15 : (SCX / LOD - 1) * LOD;
+        unsigned int LOD = 2; // TODO. GENERALIZE THIS AS A FUNCTION PARAMETER.
+        unsigned int limit = (LOD == 1) ? 15 : (CHUNK_SIZE / LOD - 1) * LOD;
         
 
         if (needsRemesh_) {
@@ -428,9 +428,9 @@ namespace VoxelEng {
             unsigned short neighborLocalID = 0;
             bool pushToLOD2mesh = false;
             if (nBlocks_ && nBlocks_ < nBlocksChunk) // TODO. CHANGE NBLOCKS POR NOPAQUEBLOCKS TANTO AQUI COMO ABAJO
-                for (x = 0; x < SCX; x++)
-                    for (y = 0; y < SCY; y++)
-                        for (z = 0; z < SCZ; z++) {
+                for (x = 0; x < CHUNK_SIZE; x++)
+                    for (y = 0; y < CHUNK_SIZE; y++)
+                        for (z = 0; z < CHUNK_SIZE; z++) {
 
                             localID = blocksLocalIDs[x][y][z];
                             block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
@@ -441,7 +441,7 @@ namespace VoxelEng {
                                 pushToLOD2mesh = (x == 0 || x % LOD == 0) && (y == 0 || y % LOD == 0) && (z == 0 || z % LOD == 0);
 
                                 // Culling of non-visible faces.
-                                if (z < SCZLimit && (neighborLocalID = blocksLocalIDs[x][y][z + 1])) {
+                                if (z < CHUNK_SIZE_LIMIT && (neighborLocalID = blocksLocalIDs[x][y][z + 1])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
                                     chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
@@ -449,9 +449,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face z-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) { 
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + 1 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + 1 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (0 << 20);
@@ -476,9 +476,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face z-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + 2 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + 2 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (0 << 20);
@@ -504,9 +504,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for z+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
-                                        aux.positions[2] = chunkPos_.z * SCZ + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (1023 << 20);
@@ -531,9 +531,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for z+ (LOD2).
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
-                                        aux.positions[2] = chunkPos_.z * SCZ + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (1023 << 20);
@@ -551,7 +551,7 @@ namespace VoxelEng {
 
 
                                 // Culling of non-visible faces.
-                                if (y < SCYLimit && (neighborLocalID = blocksLocalIDs[x][y + 1][z])) {
+                                if (y < CHUNK_SIZE_LIMIT && (neighborLocalID = blocksLocalIDs[x][y + 1][z])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
                                     chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
@@ -559,9 +559,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face y-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -586,9 +586,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face y-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -614,9 +614,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face y+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -641,9 +641,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face y+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -661,7 +661,7 @@ namespace VoxelEng {
 
 
                                 // Culling of non-visible faces.
-                                if (x < SCXLimit && (neighborLocalID = blocksLocalIDs[x + 1][y][z])) {
+                                if (x < CHUNK_SIZE_LIMIT && (neighborLocalID = blocksLocalIDs[x + 1][y][z])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
                                     chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
@@ -669,9 +669,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face x-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + 1 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + 1 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -696,9 +696,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face x-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + 2 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + 2 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -724,9 +724,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face x+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -751,9 +751,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face x+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -775,11 +775,11 @@ namespace VoxelEng {
 
             if (nBlocksPlusZ_) {
             
-                for (x = 0; x < SCX; x++)
-                    for (y = 0; y < SCY; y++) {
+                for (x = 0; x < CHUNK_SIZE; x++)
+                    for (y = 0; y < CHUNK_SIZE; y++) {
 
                         // LOD 1.
-                        localID = blocksLocalIDs[x][y][SCZLimit];
+                        localID = blocksLocalIDs[x][y][CHUNK_SIZE_LIMIT];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
                         if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksPlusZ_[x][y])) {
@@ -791,9 +791,9 @@ namespace VoxelEng {
                             // Create the face's vertices for face z-.
                             for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
-                                aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
-                                aux.positions[2] = (chunkPos_.z + 1) * SCZ + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
+                                aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
+                                aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
+                                aux.positions[2] = (chunkPos_.z + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
                                 aux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (0 << 20);
@@ -812,10 +812,10 @@ namespace VoxelEng {
                         if ((x == 0 || x % LOD == 0) && (y == 0 || y % LOD == 0)) {
 
                             // LOD 1_2.
-                            localID = blocksLocalIDs[x][y][SCZLimit]; // NEXT. ESTO IGUAL NO MERECE LA PENA QUE ESTÉ???
-                            localID1 = blocksLocalIDs[x][y+1][SCZLimit];
-                            localID2 = blocksLocalIDs[x+1][y][SCZLimit];
-                            localID3 = blocksLocalIDs[x+1][y+1][SCZLimit];
+                            localID = blocksLocalIDs[x][y][CHUNK_SIZE]; // NEXT. ESTO IGUAL NO MERECE LA PENA QUE ESTÉ???
+                            localID1 = blocksLocalIDs[x][y+1][CHUNK_SIZE];
+                            localID2 = blocksLocalIDs[x+1][y][CHUNK_SIZE];
+                            localID3 = blocksLocalIDs[x+1][y+1][CHUNK_SIZE];
                             const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock(); // NEXT. ESTO IGUAL NO MERECE LA PENA QUE ESTÉ???
 
                             // Add block's model to the mesh if necessary. // TODO. PONER ARRAY DE OPACITIES PARA TENER ESTE CÓDIGO LEGIBLE ;_;
@@ -851,9 +851,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face z-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
-                                        aux.positions[2] = (chunkPos_.z + 1) * SCZ + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = (chunkPos_.z + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (0 << 20);
@@ -887,9 +887,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face z-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
-                                        aux.positions[2] = (chunkPos_.z + 1) * SCZ + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = (chunkPos_.z + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (0 << 20);
@@ -915,8 +915,8 @@ namespace VoxelEng {
 
             if (nBlocksMinusZ_) {
 
-                for (x = 0; x < SCX; x++)
-                    for (y = 0; y < SCY; y++) {
+                for (x = 0; x < CHUNK_SIZE; x++)
+                    for (y = 0; y < CHUNK_SIZE; y++) {
 
                         localID = blocksLocalIDs[x][y][0];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
@@ -930,9 +930,9 @@ namespace VoxelEng {
                             // Create the face's vertices for z+.
                             for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
-                                aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
-                                aux.positions[2] = (chunkPos_.z - 1) * SCZ + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
+                                aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
+                                aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
+                                aux.positions[2] = (chunkPos_.z - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
                                 aux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (1023 << 20);
@@ -989,9 +989,9 @@ namespace VoxelEng {
 
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
-                                        aux.positions[2] = (chunkPos_.z - 1) * SCZ + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = (chunkPos_.z - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (1023 << 20);
@@ -1022,9 +1022,9 @@ namespace VoxelEng {
 
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                    aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0] * 2;
-                                    aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
-                                    aux.positions[2] = (chunkPos_.z - 1) * SCZ + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
+                                    aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0] * 2;
+                                    aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
+                                    aux.positions[2] = (chunkPos_.z - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
                                     aux.normals = 0 | (0 << 30);
                                     aux.normals = aux.normals | (1023 << 20);
@@ -1048,11 +1048,11 @@ namespace VoxelEng {
 
             if (nBlocksPlusY_) {
 
-                for (x = 0; x < SCX; x++)
-                    for (z = 0; z < SCZ; z++) {
+                for (x = 0; x < CHUNK_SIZE; x++)
+                    for (z = 0; z < CHUNK_SIZE; z++) {
 
                         // LOD 1.
-                        localID = blocksLocalIDs[x][SCYLimit][z];
+                        localID = blocksLocalIDs[x][CHUNK_SIZE_LIMIT][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
                         if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksPlusY_[x][z])) {
@@ -1063,9 +1063,9 @@ namespace VoxelEng {
                             // Create the face's vertices for face y-.
                             for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
-                                aux.positions[1] = (chunkPos_.y + 1) * SCY + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
-                                aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
+                                aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
+                                aux.positions[1] = (chunkPos_.y + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
+                                aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
 
                                 aux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (512 << 20);
@@ -1084,10 +1084,10 @@ namespace VoxelEng {
                         if ((x == 0 || x % LOD == 0) && (z == 0 || z % LOD == 0)) {
                         
                             // LOD 1_2.
-                            localID = blocksLocalIDs[x][SCYLimit][z];
-                            localID1 = blocksLocalIDs[x][SCYLimit][z+1];
-                            localID2 = blocksLocalIDs[x+1][SCYLimit][z];
-                            localID3 = blocksLocalIDs[x+1][SCYLimit][z+1];
+                            localID = blocksLocalIDs[x][CHUNK_SIZE_LIMIT][z];
+                            localID1 = blocksLocalIDs[x][CHUNK_SIZE_LIMIT][z+1];
+                            localID2 = blocksLocalIDs[x+1][CHUNK_SIZE_LIMIT][z];
+                            localID3 = blocksLocalIDs[x+1][CHUNK_SIZE_LIMIT][z+1];
                             const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
                             // Add block's model to the mesh if necessary.
@@ -1122,9 +1122,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face y-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = (chunkPos_.y + 1) * SCY + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = (chunkPos_.y + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -1156,9 +1156,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face y-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = (chunkPos_.y + 1) * SCY-1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = (chunkPos_.y + 1) * CHUNK_SIZE -1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -1183,8 +1183,8 @@ namespace VoxelEng {
 
             if (nBlocksMinusY_) {
 
-                for (x = 0; x < SCX; x++)
-                    for (z = 0; z < SCZ; z++) {
+                for (x = 0; x < CHUNK_SIZE; x++)
+                    for (z = 0; z < CHUNK_SIZE; z++) {
 
                         localID = blocksLocalIDs[x][0][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
@@ -1198,9 +1198,9 @@ namespace VoxelEng {
                             // Create the face's vertices for face y+.
                             for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
-                                aux.positions[1] = (chunkPos_.y - 1) * SCY + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
-                                aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
+                                aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
+                                aux.positions[1] = (chunkPos_.y - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
 
                                 aux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (512 << 20);
@@ -1257,9 +1257,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face y+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0] * 2;
-                                        aux.positions[1] = (chunkPos_.y - 1) * SCY + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
+                                        aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0] * 2;
+                                        aux.positions[1] = (chunkPos_.y - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -1289,9 +1289,9 @@ namespace VoxelEng {
                                 // Create the face's vertices for face y+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                    aux.positions[0] = chunkPos_.x * SCX + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0] * 2;
-                                    aux.positions[1] = (chunkPos_.y - 1) * SCY + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
-                                    aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
+                                    aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0] * 2;
+                                    aux.positions[1] = (chunkPos_.y - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                    aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
 
                                     aux.normals = 0 | (0 << 30);
                                     aux.normals = aux.normals | (512 << 20);
@@ -1315,11 +1315,11 @@ namespace VoxelEng {
 
             if (nBlocksPlusX_) {
 
-                for (y = 0; y < SCY; y++)
-                    for (z = 0; z < SCZ; z++) {
+                for (y = 0; y < CHUNK_SIZE; y++)
+                    for (z = 0; z < CHUNK_SIZE; z++) {
 
                         // LOD 1.
-                        localID = blocksLocalIDs[SCXLimit][y][z];
+                        localID = blocksLocalIDs[CHUNK_SIZE_LIMIT][y][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
                         if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksPlusX_[y][z])) {
@@ -1330,9 +1330,9 @@ namespace VoxelEng {
                             // Create the face's vertices for face x-.
                             for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                aux.positions[0] = (chunkPos_.x + 1) * SCX + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
-                                aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
-                                aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
+                                aux.positions[0] = (chunkPos_.x + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
+                                aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
+                                aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
 
                                 aux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (512 << 20);
@@ -1351,10 +1351,10 @@ namespace VoxelEng {
                         if ((y == 0 || y % LOD == 0) && (z == 0 || z % LOD == 0)) {
                         
                             // LOD 1_2.
-                            localID = blocksLocalIDs[SCXLimit][y][z];
-                            localID1 = blocksLocalIDs[SCXLimit][y+1][z];
-                            localID2 = blocksLocalIDs[SCXLimit][y][z+1];
-                            localID3 = blocksLocalIDs[SCXLimit][y+1][z+1];
+                            localID = blocksLocalIDs[CHUNK_SIZE_LIMIT][y][z];
+                            localID1 = blocksLocalIDs[CHUNK_SIZE_LIMIT][y+1][z];
+                            localID2 = blocksLocalIDs[CHUNK_SIZE_LIMIT][y][z+1];
+                            localID3 = blocksLocalIDs[CHUNK_SIZE_LIMIT][y+1][z+1];
                             const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
                             // Add block's model to the mesh if necessary.
@@ -1389,9 +1389,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face x-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = (chunkPos_.x + 1) * SCX + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
+                                        aux.positions[0] = (chunkPos_.x + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -1423,9 +1423,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face x-.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = (chunkPos_.x + 1) * SCX + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
+                                        aux.positions[0] = (chunkPos_.x + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -1450,8 +1450,8 @@ namespace VoxelEng {
 
             if (nBlocksMinusX_) {
 
-                for (y = 0; y < SCY; y++)
-                    for (z = 0; z < SCZ; z++) {
+                for (y = 0; y < CHUNK_SIZE; y++)
+                    for (z = 0; z < CHUNK_SIZE; z++) {
 
                         localID = blocksLocalIDs[0][y][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
@@ -1465,9 +1465,9 @@ namespace VoxelEng {
                             // Create the face's vertices for face x+.
                             for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                aux.positions[0] = (chunkPos_.x - 1) * SCX + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
-                                aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
-                                aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
+                                aux.positions[0] = (chunkPos_.x - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
+                                aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
+                                aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
 
                                 aux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (512 << 20);
@@ -1524,9 +1524,9 @@ namespace VoxelEng {
                                     // Create the face's vertices for face x+.
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                        aux.positions[0] = (chunkPos_.x - 1) * SCX + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
-                                        aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
-                                        aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
+                                        aux.positions[0] = (chunkPos_.x - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
+                                        aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
+                                        aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
 
                                         aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
@@ -1556,9 +1556,9 @@ namespace VoxelEng {
                                 // Create the face's vertices for face x+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                    aux.positions[0] = (chunkPos_.x - 1) * SCX + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
-                                    aux.positions[1] = chunkPos_.y * SCY + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
-                                    aux.positions[2] = chunkPos_.z * SCZ + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
+                                    aux.positions[0] = (chunkPos_.x - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
+                                    aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
+                                    aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
 
                                     aux.normals = 0 | (0 << 30);
                                     aux.normals = aux.normals | (512 << 20);
@@ -2065,7 +2065,7 @@ namespace VoxelEng {
                 if (AgentChunk.find(chunkPos) == AgentChunk.cend() || !AIChunkAvailable_[selectedAIWorld_][chunkPos])
                     selectedBlock = &getBlockOGWorld_(posX, posY, posZ);
                 else
-                    selectedBlock = &AgentChunk[chunkPos]->getBlock(floorMod(posX, SCX), floorMod(posY, SCY), floorMod(posZ, SCZ));
+                    selectedBlock = &AgentChunk[chunkPos]->getBlock(floorMod(posX, CHUNK_SIZE), floorMod(posY, CHUNK_SIZE), floorMod(posZ, CHUNK_SIZE));
 
             }
 
@@ -2131,7 +2131,7 @@ namespace VoxelEng {
                 if (AgentChunk.find(chunkPos) == AgentChunk.cend() || !AIChunkAvailable_[selectedAIWorld_][chunkPos])
                     selectedBlock = &getBlockOGWorld_(posX, posY, posZ);
                 else
-                    selectedBlock = &AgentChunk[chunkPos]->getBlock(floorMod(posX, SCX), floorMod(posY, SCY), floorMod(posZ, SCZ));
+                    selectedBlock = &AgentChunk[chunkPos]->getBlock(floorMod(posX, CHUNK_SIZE), floorMod(posY, CHUNK_SIZE), floorMod(posZ, CHUNK_SIZE));
 
             }
 
@@ -2214,9 +2214,9 @@ namespace VoxelEng {
     double chunkManager::distanceToPlayer(const vec3& chunkPos) {
     
         const vec3& playerPos = player::getCamera().chunkPos();
-        double distanceX = playerPos.x - (chunkPos.x + 0.5) * SCX;
-        double distanceZ = playerPos.y - (chunkPos.y + 0.5) * SCY;
-        double distanceY = playerPos.z - (chunkPos.z + 0.5) * SCZ;
+        double distanceX = playerPos.x - (chunkPos.x + 0.5) * CHUNK_SIZE;
+        double distanceZ = playerPos.y - (chunkPos.y + 0.5) * CHUNK_SIZE;
+        double distanceY = playerPos.z - (chunkPos.z + 0.5) * CHUNK_SIZE;
         return distanceX * distanceX + distanceZ * distanceZ + distanceY * distanceY;
     
     }
@@ -2966,7 +2966,7 @@ namespace VoxelEng {
         if (clientChunks_.find(chunkPos) == clientChunks_.end())
             logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
         else
-            return clientChunks_[chunkPos]->getBlock(floorMod(posX, SCX), floorMod(posY, SCY), floorMod(posZ, SCZ));
+            return clientChunks_[chunkPos]->getBlock(floorMod(posX, CHUNK_SIZE), floorMod(posY, CHUNK_SIZE), floorMod(posZ, CHUNK_SIZE));
     
     }
 

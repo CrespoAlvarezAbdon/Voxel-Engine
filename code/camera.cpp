@@ -26,9 +26,9 @@ namespace VoxelEng {
         transform_.position = position;
         transform_.rotation = rotation;
 
-        transform_.chunkPosition.x = trunc(transform_.position.x / SCX);
-        transform_.chunkPosition.y = trunc(transform_.position.y / SCY);
-        transform_.chunkPosition.z = trunc(transform_.position.z / SCZ);
+        transform_.chunkPosition.x = trunc(transform_.position.x / CHUNK_SIZE);
+        transform_.chunkPosition.y = trunc(transform_.position.y / CHUNK_SIZE);
+        transform_.chunkPosition.z = trunc(transform_.position.z / CHUNK_SIZE);
 
         if (isPlayerCamera)
             playerCamera_ = this;

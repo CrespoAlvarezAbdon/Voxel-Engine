@@ -234,9 +234,9 @@ namespace VoxelEng {
                 chunk* neighbor = nullptr;
 
                 const vec3& chunkPos = selectedChunk->chunkPos();
-                vec3 chunkRelPos{ floorMod(xOld, SCX),
-                                  floorMod(yOld, SCY),
-                                  floorMod(zOld, SCZ) };
+                vec3 chunkRelPos{ floorMod(xOld, CHUNK_SIZE),
+                                  floorMod(yOld, CHUNK_SIZE),
+                                  floorMod(zOld, CHUNK_SIZE) };
 
                 selectedChunk->setBlock(chunkRelPos, *blockToPlace_);
 
@@ -398,9 +398,9 @@ namespace VoxelEng {
         }
 
         // Update chunk-relative coordinates.
-        playerTransform_.chunkPosition.x = trunc(playerTransform_.position.x / SCX);
-        playerTransform_.chunkPosition.y = trunc(playerTransform_.position.y / SCY);
-        playerTransform_.chunkPosition.z = trunc(playerTransform_.position.z / SCZ);
+        playerTransform_.chunkPosition.x = trunc(playerTransform_.position.x / CHUNK_SIZE);
+        playerTransform_.chunkPosition.y = trunc(playerTransform_.position.y / CHUNK_SIZE);
+        playerTransform_.chunkPosition.z = trunc(playerTransform_.position.z / CHUNK_SIZE);
 
         // Get and process mouse input.
         oldMouseX_ = mouseX_;

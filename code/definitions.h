@@ -59,44 +59,24 @@ namespace VoxelEng {
 	const unsigned int MIN_TEX_RES = 16;
 
 	/**
-	* @brief Chunk size (in blocks) in X axis.
+	* @brief Chunk size (in blocks) in X, Y AND Z axes.
 	*/
-	const int SCX = 16;
-
-	/**
-	* @brief Chunk size (in blocks) in Y axis.
-	*/
-	const int SCY = 16;
-
-	/**
-	* @brief Chunk size (in blocks) in Z axis.
-	*/
-	const int SCZ = 16;
+	const int CHUNK_SIZE = 16;
 
 	/**
 	* @brief Chunk size (in blocks) in X axis.
 	*/
-	const int SCXLimit = SCX-1;
-
-	/**
-	* @brief Chunk size (in blocks) in Y axis.
-	*/
-	const int SCYLimit = SCY-1;
-
-	/**
-	* @brief Chunk size (in blocks) in Z axis.
-	*/
-	const int SCZLimit = SCZ-1;
+	const int CHUNK_SIZE_LIMIT = CHUNK_SIZE-1;
 
 	/**
 	* @brief The total number of blocks per chunk.
 	*/
-	const int nBlocksChunk = SCX * SCY * SCZ;
+	const int nBlocksChunk = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
 
 	/**
 	* @brief The total number of blocks per chunk edge.
 	*/
-	const int nBlocksChunkEdge = SCX * SCY;
+	const int nBlocksChunkEdge = CHUNK_SIZE * CHUNK_SIZE;
 
 	/**
 	* @brief Number of chunks to compute in the Y axis (only in the +Y direction or the -Y direction).
@@ -136,7 +116,7 @@ namespace VoxelEng {
 	/**
 	* @brief Total number of blocks to compute taking into account the total amount of chunks to compute and the size of a chunk in blocks.
 	*/
-	const unsigned int totalNBlocksToCompute = DEF_N_CHUNKS_TO_COMPUTE*2 * DEF_N_CHUNKS_TO_COMPUTE*2 * totalYChunks * SCX*SCY*SCZ;
+	const unsigned int totalNBlocksToCompute = DEF_N_CHUNKS_TO_COMPUTE*2 * DEF_N_CHUNKS_TO_COMPUTE*2 * totalYChunks * nBlocksChunk;
 
 	/**
 	* @brief Number of GUIelement layers in which to organize the graphical user interface.

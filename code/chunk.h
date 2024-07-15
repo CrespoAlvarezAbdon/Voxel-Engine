@@ -497,18 +497,18 @@ namespace VoxelEng {
 		palette<unsigned short, unsigned int> palette_;
 		std::unordered_map<unsigned short, unsigned short> paletteCount_;
 		std::unordered_set<unsigned short> freeLocalIDs_;
-		unsigned short blocksLocalIDs[SCX][SCY][SCZ];
+		unsigned short blocksLocalIDs[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
-		unsigned short neighborBlocksPlusX_[SCY][SCZ];
-		unsigned short neighborBlocksMinusX_[SCY][SCZ];
-		unsigned short neighborBlocksPlusY_[SCX][SCZ];
-		unsigned short neighborBlocksMinusY_[SCX][SCZ];
-		unsigned short neighborBlocksPlusZ_[SCX][SCY];
-		unsigned short neighborBlocksMinusZ_[SCX][SCY];
+		unsigned short neighborBlocksPlusX_[CHUNK_SIZE][CHUNK_SIZE];
+		unsigned short neighborBlocksMinusX_[CHUNK_SIZE][CHUNK_SIZE];
+		unsigned short neighborBlocksPlusY_[CHUNK_SIZE][CHUNK_SIZE];
+		unsigned short neighborBlocksMinusY_[CHUNK_SIZE][CHUNK_SIZE];
+		unsigned short neighborBlocksPlusZ_[CHUNK_SIZE][CHUNK_SIZE];
+		unsigned short neighborBlocksMinusZ_[CHUNK_SIZE][CHUNK_SIZE];
 
-		unsigned short neighborBlocksMinusXLOD2_[SCY][SCZ];
-		unsigned short neighborBlocksMinusYLOD2_[SCX][SCZ];
-		unsigned short neighborBlocksMinusZLOD2_[SCX][SCY];
+		unsigned short neighborBlocksMinusXLOD2_[CHUNK_SIZE][CHUNK_SIZE];
+		unsigned short neighborBlocksMinusYLOD2_[CHUNK_SIZE][CHUNK_SIZE];
+		unsigned short neighborBlocksMinusZLOD2_[CHUNK_SIZE][CHUNK_SIZE];
 
 		bool modified_;
 		
@@ -590,7 +590,7 @@ namespace VoxelEng {
 
 	inline const vec3& chunk::pos() const {
 
-		return vec3{ (float)chunkPos_.x * SCX, (float)chunkPos_.y * SCY, (float)chunkPos_.z * SCZ };
+		return vec3{ (float)chunkPos_.x * CHUNK_SIZE, (float)chunkPos_.y * CHUNK_SIZE, (float)chunkPos_.z * CHUNK_SIZE };
 
 	}
 
@@ -747,7 +747,7 @@ namespace VoxelEng {
 
 	inline const block& chunk::setBlock(unsigned int linearIndex, const block& b, bool modification) {
 
-		return setBlock(linearToVec3(linearIndex, SCY, SCZ), b, modification);
+		return setBlock(linearToVec3(linearIndex, CHUNK_SIZE, CHUNK_SIZE), b, modification);
 
 	}
 
@@ -1659,9 +1659,9 @@ namespace VoxelEng {
 
 	inline bool chunkManager::isInWorld(int x, int y, int z) {
 
-		return x >= -nChunksToCompute_ * VoxelEng::SCX && x < (nChunksToCompute_ - 1) * VoxelEng::SCX &&
-			   y >= -yChunksRange * VoxelEng::SCY && y < (yChunksRange - 1) * VoxelEng::SCY &&
-			   z >= -nChunksToCompute_ * VoxelEng::SCZ && z < (nChunksToCompute_ - 1) * VoxelEng::SCZ;
+		return x >= -nChunksToCompute_ * CHUNK_SIZE && x < (nChunksToCompute_ - 1) * CHUNK_SIZE &&
+			   y >= -yChunksRange * CHUNK_SIZE && y < (yChunksRange - 1) * CHUNK_SIZE&&
+			   z >= -nChunksToCompute_ * CHUNK_SIZE && z < (nChunksToCompute_ - 1) * CHUNK_SIZE;
 	
 	}
 

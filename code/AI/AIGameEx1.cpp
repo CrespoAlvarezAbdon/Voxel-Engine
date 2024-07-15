@@ -328,11 +328,11 @@ namespace AIExample {
 
 		// DUMMY.
 		unsigned int LOD = 2;
-		unsigned int limit = (VoxelEng::SCX / LOD - 1) * LOD;
+		unsigned int limit = (VoxelEng::CHUNK_SIZE / LOD - 1) * LOD;
 
-		for (x = 0; x < VoxelEng::SCX; x++)
-			for (z = 0; z < VoxelEng::SCZ; z++)
-				for (y = 0; y < VoxelEng::SCY; y++) {
+		for (x = 0; x < VoxelEng::CHUNK_SIZE; x++)
+			for (z = 0; z < VoxelEng::CHUNK_SIZE; z++)
+				for (y = 0; y < VoxelEng::CHUNK_SIZE; y++) {
 
 					blockPos = VoxelEng::getGlobalPos(chunkPos, x, y, z);
 					height = heightMap[x][z];
@@ -348,8 +348,8 @@ namespace AIExample {
 
 		// Set neighbor blocks. TODO. OPTIMIZE THIS.
 		// X+
-		for (y = 0; y < VoxelEng::SCY; y++)
-			for (z = 0; z < VoxelEng::SCZ; z++) {
+		for (y = 0; y < VoxelEng::CHUNK_SIZE; y++)
+			for (z = 0; z < VoxelEng::CHUNK_SIZE; z++) {
 
 				blockPos = VoxelEng::getGlobalPos(chunkPos.x+1, chunkPos.y, chunkPos.z, 0, y, z);
 				height = heightMapPlusX[0][z];
@@ -364,11 +364,11 @@ namespace AIExample {
 			}
 
 		// X-
-		for (y = 0; y < VoxelEng::SCY; y++)
-			for (z = 0; z < VoxelEng::SCZ; z++) {
+		for (y = 0; y < VoxelEng::CHUNK_SIZE; y++)
+			for (z = 0; z < VoxelEng::CHUNK_SIZE; z++) {
 
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x-1, chunkPos.y, chunkPos.z, VoxelEng::SCXLimit, y, z);
-				height = heightMapMinusX[VoxelEng::SCXLimit][z];
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x-1, chunkPos.y, chunkPos.z, VoxelEng::CHUNK_SIZE_LIMIT, y, z);
+				height = heightMapMinusX[VoxelEng::CHUNK_SIZE_LIMIT][z];
 
 				if (blockPos.y < height - 3)
 					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer2_, false);
@@ -395,8 +395,8 @@ namespace AIExample {
 			}
 
 		// Y+
-		for (x = 0; x < VoxelEng::SCX; x++)
-			for (z = 0; z < VoxelEng::SCZ; z++) {
+		for (x = 0; x < VoxelEng::CHUNK_SIZE; x++)
+			for (z = 0; z < VoxelEng::CHUNK_SIZE; z++) {
 
 				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y+1, chunkPos.z, x, 0, z);
 				height = heightMap[x][z];
@@ -411,10 +411,10 @@ namespace AIExample {
 			}
 
 		// Y-
-		for (x = 0; x < VoxelEng::SCX; x++)
-			for (z = 0; z < VoxelEng::SCZ; z++) {
+		for (x = 0; x < VoxelEng::CHUNK_SIZE; x++)
+			for (z = 0; z < VoxelEng::CHUNK_SIZE; z++) {
 
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y-1, chunkPos.z, x, VoxelEng::SCYLimit, z);
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y-1, chunkPos.z, x, VoxelEng::CHUNK_SIZE_LIMIT, z);
 				height = heightMap[x][z];
 
 				if (blockPos.y < height - 3)
@@ -441,8 +441,8 @@ namespace AIExample {
 			}
 
 		// Z+
-		for (x = 0; x < VoxelEng::SCX; x++)
-			for (y = 0; y < VoxelEng::SCY; y++) {
+		for (x = 0; x < VoxelEng::CHUNK_SIZE; x++)
+			for (y = 0; y < VoxelEng::CHUNK_SIZE; y++) {
 
 				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z+1, x, y, 0);
 				height = heightMapPlusZ[x][0];
@@ -457,11 +457,11 @@ namespace AIExample {
 			}
 
 		// Z-
-		for (x = 0; x < VoxelEng::SCX; x++)
-			for (y = 0; y < VoxelEng::SCY; y++) {
+		for (x = 0; x < VoxelEng::CHUNK_SIZE; x++)
+			for (y = 0; y < VoxelEng::CHUNK_SIZE; y++) {
 
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z-1, x, y, VoxelEng::SCZLimit);
-				height = heightMapMinusZ[x][VoxelEng::SCZLimit];
+				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z-1, x, y, VoxelEng::CHUNK_SIZE_LIMIT);
+				height = heightMapMinusZ[x][VoxelEng::CHUNK_SIZE_LIMIT];
 
 				if (blockPos.y < height - 3)
 					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer2_, false);
@@ -507,14 +507,14 @@ namespace AIExample {
 
 	void miningWorldGen::generateChunkHeightMap_(const VoxelEng::vec2& chunkXZPos) {
 
-		chunkHeightMap heightsAux = std::array<std::array<int, VoxelEng::SCZ>, VoxelEng::SCX>();
+		chunkHeightMap heightsAux = std::array<std::array<int, VoxelEng::CHUNK_SIZE>, VoxelEng::CHUNK_SIZE>();
 		float softnessFactor = 64,
 			  height;
 		VoxelEng::vec2 pos,
 			           aux;
 		glm::vec3 perlinCoords;
-		for (pos.x = 0u; pos.x < VoxelEng::SCX; pos.x++) // x
-			for (pos.y = 0u; pos.y < VoxelEng::SCZ; pos.y++) { // z
+		for (pos.x = 0u; pos.x < VoxelEng::CHUNK_SIZE; pos.x++) // x
+			for (pos.y = 0u; pos.y < VoxelEng::CHUNK_SIZE; pos.y++) { // z
 
 				// Height here is between -1.0 and 1.0.
 				#if GRAPHICS_API == OPENGL
@@ -583,7 +583,7 @@ namespace AIExample {
 
 			case 1:
 
-				if (inChunkPos.x + 1 >= VoxelEng::SCX) {
+				if (inChunkPos.x + 1 >= VoxelEng::CHUNK_SIZE) {
 
 					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedNorth, i, nBlocks, 0, inChunkPos.y, inChunkPos.z, ore);
 						
@@ -599,7 +599,7 @@ namespace AIExample {
 
 				if (inChunkPos.x == 0) {
 
-					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedSouth, i, nBlocks, VoxelEng::SCX - 1, inChunkPos.y, inChunkPos.z, ore);
+					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedSouth, i, nBlocks, VoxelEng::CHUNK_SIZE_LIMIT, inChunkPos.y, inChunkPos.z, ore);
 						
 					i = nBlocks;
 
@@ -611,7 +611,7 @@ namespace AIExample {
 
 			case 3:
 
-				if (inChunkPos.y + 1 >= VoxelEng::SCY) {
+				if (inChunkPos.y + 1 >= VoxelEng::CHUNK_SIZE) {
 
 					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedUp, i, nBlocks, inChunkPos.x, 0, inChunkPos.z, ore);
 						
@@ -627,7 +627,7 @@ namespace AIExample {
 
 				if (inChunkPos.y == 0) {
 
-					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedDown, i, nBlocks, inChunkPos.x, VoxelEng::SCY - 1, inChunkPos.z, ore);
+					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedDown, i, nBlocks, inChunkPos.x, VoxelEng::CHUNK_SIZE_LIMIT, inChunkPos.z, ore);
 						
 					i = nBlocks;
 
@@ -639,7 +639,7 @@ namespace AIExample {
 
 			case 5:
 
-				if (inChunkPos.z + 1 >= VoxelEng::SCZ) {
+				if (inChunkPos.z + 1 >= VoxelEng::CHUNK_SIZE) {
 
 					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedEast, i, nBlocks, inChunkPos.x, inChunkPos.y, 0, ore);
 
@@ -655,7 +655,7 @@ namespace AIExample {
 
 				if (inChunkPos.z == 0) {
 
-					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedWest, i, nBlocks, inChunkPos.x, inChunkPos.y, VoxelEng::SCZ - 1, ore);
+					cascadeOreGen_(chunk.chunkPos() + VoxelEng::vec3FixedWest, i, nBlocks, inChunkPos.x, inChunkPos.y, VoxelEng::CHUNK_SIZE_LIMIT, ore);
 					
 					i = nBlocks;
 
@@ -700,7 +700,7 @@ namespace AIExample {
 
 					case 1:
 
-						if (inChunkX + 1 >= VoxelEng::SCX)
+						if (inChunkX + 1 >= VoxelEng::CHUNK_SIZE)
 							nBlocksCounter = nBlocks; // Stop generating because we do not want ore clusters					 
 						else						  // that expand to 3 chunks or that returns the generation between 2 chunks more than one time.
 							inChunkX++;
@@ -718,7 +718,7 @@ namespace AIExample {
 
 					case 3:
 
-						if (inChunkY + 1 >= VoxelEng::SCY)
+						if (inChunkY + 1 >= VoxelEng::CHUNK_SIZE)
 							nBlocksCounter = nBlocks;
 						else
 							inChunkY++;
@@ -736,7 +736,7 @@ namespace AIExample {
 
 					case 5:
 
-						if (inChunkZ + 1 >= VoxelEng::SCZ)
+						if (inChunkZ + 1 >= VoxelEng::CHUNK_SIZE)
 							nBlocksCounter = nBlocks;
 						else
 							inChunkZ++;

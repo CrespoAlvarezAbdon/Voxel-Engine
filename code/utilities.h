@@ -290,7 +290,7 @@ namespace VoxelEng {
 	*/
 	inline vec3 getChunkCoords(float globalX, float globalY, float globalZ) {
 
-		return vec3{ (int)floor(globalX / SCX), (int)floor(globalY / SCY), (int)floor(globalZ / SCZ) };
+		return vec3{ (int)floor(globalX / CHUNK_SIZE), (int)floor(globalY / CHUNK_SIZE), (int)floor(globalZ / CHUNK_SIZE) };
 
 	}
 
@@ -308,7 +308,7 @@ namespace VoxelEng {
 	*/
 	inline vec2 getChunkXZCoords(int x, int z) {
 
-		return vec2{ (int)floor((double)x / SCX), (int)floor((double)z / SCY) };
+		return vec2{ (int)floor((double)x / CHUNK_SIZE), (int)floor((double)z / CHUNK_SIZE) };
 
 	}
 
@@ -326,7 +326,7 @@ namespace VoxelEng {
 	*/
 	inline vec3 getGlobalPos(int chunkX, int chunkY, int chunkZ, int inChunkX, int inChunkY, int inChunkZ) {
 
-		return vec3{ (float)chunkX * SCX + inChunkX, (float)chunkY * SCY + inChunkY, (float)chunkZ * SCZ + inChunkZ };
+		return vec3{ (float)chunkX * CHUNK_SIZE + inChunkX, (float)chunkY * CHUNK_SIZE + inChunkY, (float)chunkZ * CHUNK_SIZE + inChunkZ };
 
 	}
 
@@ -354,7 +354,7 @@ namespace VoxelEng {
 	*/
 	inline vec2 getXZGlobalPos(int chunkX, int chunkZ, int inChunkX, int inChunkZ) {
 
-		return vec2{ (float)chunkX * SCX + inChunkX, (float)chunkZ * SCZ + inChunkZ };
+		return vec2{ (float)chunkX * CHUNK_SIZE + inChunkX, (float)chunkZ * CHUNK_SIZE + inChunkZ };
 
 	}
 

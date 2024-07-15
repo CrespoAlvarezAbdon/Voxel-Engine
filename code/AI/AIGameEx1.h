@@ -46,7 +46,7 @@ namespace AIExample {
 	* @brief A chunk's height map stores the highest non-null block in
 	* in all the X,Z block columns of the chunk.
 	*/
-	typedef std::array<std::array<int, VoxelEng::SCZ>, VoxelEng::SCX> chunkHeightMap;
+	typedef std::array<std::array<int, VoxelEng::CHUNK_SIZE>, VoxelEng::CHUNK_SIZE> chunkHeightMap;
 
 
 	////////////

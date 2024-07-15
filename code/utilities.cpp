@@ -400,9 +400,9 @@ namespace VoxelEng {
 			floorY = std::floor(globalY),
 			floorZ = std::floor(globalZ);
 
-		return vec3{ (int)floorMod((floorX >= 0) ? floorX : SCX + floorX, SCX),
-					 (int)floorMod((floorY >= 0) ? floorY : SCY + floorY, SCY),
-					 (int)floorMod((floorZ >= 0) ? floorZ : SCZ + floorZ, SCZ) };
+		return vec3{ (int)floorMod((floorX >= 0) ? floorX : CHUNK_SIZE + floorX, CHUNK_SIZE),
+					 (int)floorMod((floorY >= 0) ? floorY : CHUNK_SIZE + floorY, CHUNK_SIZE),
+					 (int)floorMod((floorZ >= 0) ? floorZ : CHUNK_SIZE + floorZ, CHUNK_SIZE) };
 
 	}
 
@@ -412,9 +412,9 @@ namespace VoxelEng {
 			floorY = std::floor(chunkY),
 			floorZ = std::floor(chunkZ);
 
-		return vec3{ (int)floorMod((floorX >= 0) ? floorX : SCX + floorX, SCX),
-					 (int)floorMod((floorY >= 0) ? floorY : SCY + floorY, SCY),
-					 (int)floorMod((floorZ >= 0) ? floorZ : SCZ + floorZ, SCZ) };
+		return vec3{ (int)floorMod((floorX >= 0) ? floorX : CHUNK_SIZE + floorX, CHUNK_SIZE),
+					 (int)floorMod((floorY >= 0) ? floorY : CHUNK_SIZE + floorY, CHUNK_SIZE),
+					 (int)floorMod((floorZ >= 0) ? floorZ : CHUNK_SIZE + floorZ, CHUNK_SIZE) };
 
 	}
 
