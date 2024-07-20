@@ -595,6 +595,9 @@ namespace VoxelEng {
                 opaqueShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
                 opaqueShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
 
+                lightpos = playerCamera_->globalPos();
+                opaqueShader_->setUniformVec3f("u_sunLightPos", lightpos);
+
 
                 /*
                 3D rendering.
@@ -649,13 +652,10 @@ namespace VoxelEng {
                         if (playerCamera_->isInsideFrustum(chunk.second.globalChunkPos)) {
 
                             // NEXT.
-                            // 1º. DONE -> HAY QUE PONER LO DE QUE BOUNDARY LOD2 COJA LOS 4 BLOQUES CORRESPONDIENTES AL BOUNDARY VECINO LOD 1 Y COJA EL PRIMERO NO NO NULO PARA HACERLE RENDER DE LA CARA.
-                            // 2º. EN SETBLOCK DE PLAYER HAY QUE PONER QUE SE ACTUALIZEN LOS DATOS DE NEIGHBORS MINUS DEL LOD2
+                            // 1º. EN SETBLOCK DE PLAYER HAY QUE PONER QUE SE ACTUALIZEN LOS DATOS DE NEIGHBORS MINUS DEL LOD2
 
                             // LOD 1
                             if (chunkManager::chunkInLODDistance(chunk.first, 1, inLODborder, dirX, dirY, dirZ)) {
-
-                                // NEXT. PONER UN MIEMBRO SIZE POR CADA MIEMBRO MODEL DEL CHUNKRENDERINGDATA
 
                                 if (inLODborder) {
                                 
@@ -716,7 +716,7 @@ namespace VoxelEng {
 
                 }
 
-                // Entity rendering. // TODO. HAY QUE METER AQUÍ TAMBIÉN LO DE VERTICES TRANSLÚCIDOS.
+                // Entity rendering. // TODO. HAY QUE METER AQUÍ TAMBIÉN LO DE VERTICES TRANSLÚCIDOS PARA LAS ENTIDADES.
                 entitiesVao_->bind();
                 entitiesVbo_->bind();
 
@@ -747,6 +747,7 @@ namespace VoxelEng {
                 translucidShader_->bind();
                 translucidShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
                 translucidShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
+                translucidShader_->setUniformVec3f("u_sunLightPos", lightpos);
 
                 vao_->bind();
                 chunksVbo_->bind();

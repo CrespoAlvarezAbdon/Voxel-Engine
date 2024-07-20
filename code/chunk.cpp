@@ -389,8 +389,8 @@ namespace VoxelEng {
 
         std::unique_lock<std::shared_mutex> lock(renderingDataMutex_);
 
-        unsigned int LOD = 2; // TODO. GENERALIZE THIS AS A FUNCTION PARAMETER.
-        unsigned int limit = (LOD == 1) ? 15 : (CHUNK_SIZE / LOD - 1) * LOD;
+        const unsigned int LOD = 2;
+        const unsigned int limit = (LOD == 1) ? 15 : (CHUNK_SIZE / LOD - 1) * LOD;
         
 
         if (needsRemesh_) {
@@ -1585,9 +1585,14 @@ namespace VoxelEng {
 
         }
 
-        return renderingData_.vertices.size() + renderingData_.verticesBoundary.size() + renderingData_.translucentVertices.size() + renderingData_.translucentVerticesBoundary.size() +
-               renderingData_.verticesLOD2.size() + renderingData_.verticesLOD2Boundary.size() + renderingData_.translucentVerticesLOD2.size() + renderingData_.translucentVerticesLOD2Boundary.size() +
-               renderingData_.verticesLOD1_2Boundary.size() + renderingData_.translucentVerticesLOD1_2Boundary.size();
+        renderingData_.totalSize = 
+            renderingData_.vertices.size() + renderingData_.verticesBoundary.size() + 
+            renderingData_.translucentVertices.size() + renderingData_.translucentVerticesBoundary.size() +
+            renderingData_.verticesLOD2.size() + renderingData_.verticesLOD2Boundary.size() + 
+            renderingData_.translucentVerticesLOD2.size() + renderingData_.translucentVerticesLOD2Boundary.size() +
+            renderingData_.verticesLOD1_2Boundary.size() + renderingData_.translucentVerticesLOD1_2Boundary.size();
+
+        return renderingData_.totalSize;
 
     }
 
@@ -2020,9 +2025,10 @@ namespace VoxelEng {
 
                 c->lockSharedRenderingDataMutex();
                 chunkRenderingData& data = c->renderingData();
-                if (c->nBlocksPlusZ() || data.vertices.size() || data.verticesBoundary.size() || data.translucentVertices.size() || data.translucentVerticesBoundary.size()
+                /*if (c->nBlocksPlusZ() || data.vertices.size() || data.verticesBoundary.size() || data.translucentVertices.size() || data.translucentVerticesBoundary.size()
                     || data.verticesLOD2.size() || data.verticesLOD2Boundary.size() || data.translucentVerticesLOD2.size() || data.translucentVerticesLOD2Boundary.size()
-                    || data.verticesLOD1_2Boundary.size() || data.translucentVerticesLOD1_2Boundary.size())
+                    || data.verticesLOD1_2Boundary.size() || data.translucentVerticesLOD1_2Boundary.size())*/
+                if (data.totalSize)
                     chunkMeshesUpdated_->operator[](c->chunkPos()) = data;
                 c->unlockSharedRenderingDataMutex();
 

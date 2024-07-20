@@ -100,6 +100,8 @@ namespace VoxelEng {
 		model translucentVerticesLOD2;
 		model translucentVerticesLOD2Boundary;
 
+		unsigned int totalSize = 0;
+
 	};
 
 
