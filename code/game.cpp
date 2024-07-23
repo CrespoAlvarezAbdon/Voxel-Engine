@@ -527,6 +527,7 @@ namespace VoxelEng {
                 playerInputThread_ = new std::thread(&player::processSelectionRaycast);
             tickManagementThread_ = new std::thread(&world::processWorldTicks);
 
+            // NEXT HAY UNO DE LOS EJES DEL LOD 1_2 O DEL 2 QUE TIENE UN FALLITO DE COPIADO SEGURAMENTE. ES EL EJE X O EL Z.
 
             /*
             Rendering loop.
@@ -595,7 +596,7 @@ namespace VoxelEng {
                 opaqueShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
                 opaqueShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
 
-                lightpos = playerCamera_->globalPos();
+                //lightpos = playerCamera_->globalPos();
                 opaqueShader_->setUniformVec3f("u_sunLightPos", lightpos);
 
 

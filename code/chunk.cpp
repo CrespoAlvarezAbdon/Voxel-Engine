@@ -453,10 +453,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + 1 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 0.0f, -1.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (0 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModel->push_back(aux);
 
@@ -480,10 +481,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + 2 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 0.0f, -1.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (0 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -508,10 +510,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 0.0f, 1.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (1023 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModel->push_back(aux);
 
@@ -535,10 +538,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 0.0f, 1.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (1023 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -563,10 +567,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, -1.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (0 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModel->push_back(aux);
 
@@ -583,17 +588,18 @@ namespace VoxelEng {
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
                                     chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2 : &renderingData_.verticesLOD2;
 
-                                    // Create the face's vertices for face y-.
+                                    // Create the face's vertices for face y- (LOD2).
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0] * 2;
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, -1.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (0 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -618,10 +624,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 1.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (1023 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModel->push_back(aux);
 
@@ -638,17 +645,18 @@ namespace VoxelEng {
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
                                     chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2 : &renderingData_.verticesLOD2;
 
-                                    // Create the face's vertices for face y+.
+                                    // Create the face's vertices for face y+ (LOD2).
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0] * 2;
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 1.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (1023 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -673,10 +681,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(-1.0f, 0.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (0 << 0);
+                                        aux.normals = aux.normals | (0 << 0);*/
 
                                         chunkModel->push_back(aux);
 
@@ -693,17 +702,18 @@ namespace VoxelEng {
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
                                     chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2 : &renderingData_.verticesLOD2;
 
-                                    // Create the face's vertices for face x-.
+                                    // Create the face's vertices for face x- (LOD2).
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + 2 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(-1.0f, 0.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (0 << 0);
+                                        aux.normals = aux.normals | (0 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -713,7 +723,6 @@ namespace VoxelEng {
                                     models::addBlockFaceTexture(*bNeighbor, *chunkModelLOD2, "faceX-");
 
                                 }
-
 
                                 // Culling of non-visible faces.
                                 if (x > 0 && (neighborLocalID = blocksLocalIDs[x - 1][y][z])) {
@@ -728,10 +737,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(1.0f, 0.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (1023 << 0);
+                                        aux.normals = aux.normals | (1023 << 0);*/
 
                                         chunkModel->push_back(aux);
 
@@ -748,17 +758,18 @@ namespace VoxelEng {
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
                                     chunkModelLOD2 = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesLOD2 : &renderingData_.verticesLOD2;
 
-                                    // Create the face's vertices for face x+.
+                                    // Create the face's vertices for face x+ (LOD2).
                                     for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
                                         aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(1.0f, 0.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (1023 << 0);
+                                        aux.normals = aux.normals | (1023 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -795,10 +806,11 @@ namespace VoxelEng {
                                 aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
                                 aux.positions[2] = (chunkPos_.z + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
-                                aux.normals = 0 | (0 << 30);
+                                aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 0.0f, -1.0f);
+                                /*aux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (0 << 20);
                                 aux.normals = aux.normals | (512 << 10);
-                                aux.normals = aux.normals | (512 << 0);
+                                aux.normals = aux.normals | (512 << 0);*/
 
                                 chunkModel->push_back(aux);
 
@@ -855,10 +867,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
                                         aux.positions[2] = (chunkPos_.z + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 0.0f, -1.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (0 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -870,7 +883,6 @@ namespace VoxelEng {
                                 }
 
                             }
-
 
                             // LOD 2.
                             {
@@ -891,10 +903,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1] * 2;
                                         aux.positions[2] = (chunkPos_.z + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 0.0f, -1.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (0 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -934,10 +947,11 @@ namespace VoxelEng {
                                 aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
                                 aux.positions[2] = (chunkPos_.z - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
-                                aux.normals = 0 | (0 << 30);
+                                aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 0.0f, 1.0f);
+                                /*aux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (1023 << 20);
                                 aux.normals = aux.normals | (512 << 10);
-                                aux.normals = aux.normals | (512 << 0);
+                                aux.normals = aux.normals | (512 << 0);*/
 
                                 chunkModel->push_back(aux);
 
@@ -993,10 +1007,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
                                         aux.positions[2] = (chunkPos_.z - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 0.0f, 1.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (1023 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -1010,8 +1025,6 @@ namespace VoxelEng {
                             }
 
                             // LOD 2.
-                            //localID = blocksLocalIDs[x][y][0];
-                            //const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
                             // Add block's model to the mesh if necessary.
                             if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksMinusZLOD2_[x][y])) {          
@@ -1026,10 +1039,11 @@ namespace VoxelEng {
                                     aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1] * 2;
                                     aux.positions[2] = (chunkPos_.z - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
 
-                                    aux.normals = 0 | (0 << 30);
+                                    aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 0.0f, 1.0f);
+                                    /*aux.normals = 0 | (0 << 30);
                                     aux.normals = aux.normals | (1023 << 20);
                                     aux.normals = aux.normals | (512 << 10);
-                                    aux.normals = aux.normals | (512 << 0);
+                                    aux.normals = aux.normals | (512 << 0);*/
 
                                     chunkModelLOD2->push_back(aux);
 
@@ -1067,10 +1081,11 @@ namespace VoxelEng {
                                 aux.positions[1] = (chunkPos_.y + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                 aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
 
-                                aux.normals = 0 | (0 << 30);
+                                aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, -1.0f, 0.0f);
+                                /*ux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (512 << 20);
                                 aux.normals = aux.normals | (0 << 10);
-                                aux.normals = aux.normals | (512 << 0);
+                                aux.normals = aux.normals | (512 << 0);*/
 
                                 chunkModel->push_back(aux);
 
@@ -1126,10 +1141,11 @@ namespace VoxelEng {
                                         aux.positions[1] = (chunkPos_.y + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, -1.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (0 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -1160,10 +1176,11 @@ namespace VoxelEng {
                                         aux.positions[1] = (chunkPos_.y + 1) * CHUNK_SIZE -1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2] * 2;
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, -1.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (0 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -1202,10 +1219,11 @@ namespace VoxelEng {
                                 aux.positions[1] = (chunkPos_.y - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                 aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
 
-                                aux.normals = 0 | (0 << 30);
+                                aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 1.0f, 0.0f);
+                                /*aux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (512 << 20);
                                 aux.normals = aux.normals | (1023 << 10);
-                                aux.normals = aux.normals | (512 << 0);
+                                aux.normals = aux.normals | (512 << 0);*/
 
                                 chunkModel->push_back(aux);
 
@@ -1261,10 +1279,11 @@ namespace VoxelEng {
                                         aux.positions[1] = (chunkPos_.y - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 1.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (1023 << 10);
-                                        aux.normals = aux.normals | (512 << 0);
+                                        aux.normals = aux.normals | (512 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -1277,8 +1296,6 @@ namespace VoxelEng {
                             }
 
                             // LOD 2.
-                            //localID = blocksLocalIDs[x][0][z];
-                            //const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
                             // Add block's model to the mesh if necessary.
                             if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksMinusYLOD2_[x][z])) {
@@ -1293,10 +1310,11 @@ namespace VoxelEng {
                                     aux.positions[1] = (chunkPos_.y - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2] * 2;
 
-                                    aux.normals = 0 | (0 << 30);
+                                    aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(0.0f, 1.0f, 0.0f);
+                                    /*aux.normals = 0 | (0 << 30);
                                     aux.normals = aux.normals | (512 << 20);
                                     aux.normals = aux.normals | (1023 << 10);
-                                    aux.normals = aux.normals | (512 << 0);
+                                    aux.normals = aux.normals | (512 << 0);*/
 
                                     chunkModelLOD2->push_back(aux);
 
@@ -1334,10 +1352,11 @@ namespace VoxelEng {
                                 aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
                                 aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
 
-                                aux.normals = 0 | (0 << 30);
+                                aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(-1.0f, 0.0f, 0.0f);
+                                /*aux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (512 << 20);
                                 aux.normals = aux.normals | (512 << 10);
-                                aux.normals = aux.normals | (0 << 0);
+                                aux.normals = aux.normals | (0 << 0);*/
 
                                 chunkModel->push_back(aux);
 
@@ -1393,10 +1412,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(-1.0f, 0.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (0 << 0);
+                                        aux.normals = aux.normals | (0 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -1427,10 +1447,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2] * 2;
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(-1.0f, 0.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (0 << 0);
+                                        aux.normals = aux.normals | (0 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -1469,10 +1490,11 @@ namespace VoxelEng {
                                 aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
                                 aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
 
-                                aux.normals = 0 | (0 << 30);
+                                aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(1.0f, 0.0f, 0.0f);
+                                /*aux.normals = 0 | (0 << 30);
                                 aux.normals = aux.normals | (512 << 20);
                                 aux.normals = aux.normals | (512 << 10);
-                                aux.normals = aux.normals | (1023 << 0);
+                                aux.normals = aux.normals | (1023 << 0);*/
 
                                 chunkModel->push_back(aux);
 
@@ -1528,10 +1550,11 @@ namespace VoxelEng {
                                         aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
                                         aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
 
-                                        aux.normals = 0 | (0 << 30);
+                                        aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(1.0f, 0.0f, 0.0f);
+                                        /*aux.normals = 0 | (0 << 30);
                                         aux.normals = aux.normals | (512 << 20);
                                         aux.normals = aux.normals | (512 << 10);
-                                        aux.normals = aux.normals | (1023 << 0);
+                                        aux.normals = aux.normals | (1023 << 0);*/
 
                                         chunkModelLOD2->push_back(aux);
 
@@ -1544,8 +1567,6 @@ namespace VoxelEng {
                             }
 
                             // LOD 2.
-                            //localID = blocksLocalIDs[0][y][z];
-                            //const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
                             // Add block's model to the mesh if necessary.
                             if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksMinusXLOD2_[y][z])) {
@@ -1560,10 +1581,11 @@ namespace VoxelEng {
                                     aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1] * 2;
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2] * 2;
 
-                                    aux.normals = 0 | (0 << 30);
+                                    aux.normals = encodeNormalIntoGL_INT_2_10_10_10_REV(1.0f, 0.0f, 0.0f);
+                                    /*aux.normals = 0 | (0 << 30);
                                     aux.normals = aux.normals | (512 << 20);
                                     aux.normals = aux.normals | (512 << 10);
-                                    aux.normals = aux.normals | (1023 << 0);
+                                    aux.normals = aux.normals | (1023 << 0);*/
 
                                     chunkModelLOD2->push_back(aux);
 

@@ -377,6 +377,11 @@ namespace VoxelEng {
 	
 	}
 
+	/**
+	* @brief Encode the given normal vector into a OpenGL's GL_INT_2_10_10_10_REV 32-bit unsigned integer.
+	*/
+	uint32_t encodeNormalIntoGL_INT_2_10_10_10_REV(float normalX, float normalY, float normalZ);
+
 }
 
 #endif

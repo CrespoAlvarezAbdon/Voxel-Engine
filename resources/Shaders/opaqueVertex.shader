@@ -27,7 +27,6 @@ uniform int u_renderMode;
 uniform mat4 u_MVP; // u_MVP stands for u_Model_view_projection_matrix although only the view and projection matrix are currently used.
 uniform mat4 u_MVPGUI;
 
-
 void main() {
 
 	if (u_renderMode == 0) { // 3D rendering.
@@ -35,7 +34,8 @@ void main() {
 		// Export variables to fragment shader.
 		v_TexCoord = texCoord;
 		v_fragPos = position.xyz;
-		v_normal = mat3(transpose(inverse(mat3(1)))) * normal;
+		v_normal = normal;
+		//v_normal = mat3(transpose(inverse(mat3(1)))) * decodeNormal(normal);
 		v_color = vertexColor;
 	
 		gl_Position = u_MVP * position;

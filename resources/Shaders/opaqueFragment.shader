@@ -16,12 +16,12 @@ uniform int u_renderMode;
 uniform int u_useComplexLighting;
 
 // Local variables.
-vec4 ambient = vec4(0.8, 0.8, 0.8, 1);
+vec4 ambient = vec4(0.1, 0.1, 0.1, 1);
 vec4 textureColor = vec4(0, 0, 0, 0);
 vec3 lightColor = vec3(1, 1, 1);
 vec3 lightColorTwo = vec3(1,0,0);
-float specularStrength = 0.5;
-float distance = length(u_sunLightPos - v_fragPos);
+float specularStrength =  1;
+float distance = length(u_sunLightPos - v_fragPos) / 100;
 
 // Main.
 void main() {
@@ -36,15 +36,13 @@ void main() {
 		vec3 norm = normalize(v_normal);
 		vec3 lightDir = normalize(u_sunLightPos - v_fragPos);
 		float diff = max(dot(norm, lightDir), 0.0);
-		vec4 diffuseLighting = vec4(diff * lightColor, 1.0);
+		vec4 diffuseLighting = vec4(diff * lightColor, 1.0) / distance;
 
 		// Specular lighting calculation.
 		vec3 viewDir = normalize(u_viewPos - v_fragPos);
 		vec3 reflectLightDir = reflect(-lightDir, norm);
-
 		float specular = pow(max(dot(viewDir, reflectLightDir), 0.0), 32);
-
-		vec4 specularLighting = vec4(specularStrength * specular * lightColorTwo, 1.0);
+		vec4 specularLighting = vec4(diff * specularStrength * specular * lightColorTwo, 1.0) / distance;
 
 		// Get texture color.
 		textureColor = texture(blockTexture, v_TexCoord);
