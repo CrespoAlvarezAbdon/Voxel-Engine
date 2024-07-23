@@ -184,7 +184,7 @@ namespace VoxelEng {
 
 
 		std::unique_lock<std::recursive_mutex> lock(mutex_);
-		model_ = model(); // TODO. HACER QUE SE "REUSEN" VERTICES Y SI HAY UN MENOR NUMERO SE ELIMINEN SOLO LOS SOBRANTES PARA AHORRAR TIEMPO DE EJECUCIÓN?
+		model_ = model();
 		for (auto it = activeEntityID_.cbegin(); it != activeEntityID_.cend(); it++) {
 
 			entity& selectedEntity = entityManager::getEntity(*it);

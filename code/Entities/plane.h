@@ -23,8 +23,6 @@
 
 #endif
 
-// TODO. PONER INLINES.
-
 namespace VoxelEng {
 
 	/**

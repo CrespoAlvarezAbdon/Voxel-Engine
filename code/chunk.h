@@ -267,11 +267,6 @@ namespace VoxelEng {
 		bool isEmptyBlock(const vec3& inChunkPos) const;
 
 		/**
-		* @brief Returns true if the chunk is visible by the player or false otherwise.
-		*/
-		bool isVisible() const;
-
-		/**
 		* @brief Returns the number of neighbors that this chunk has.
 		*/
 		unsigned int nNeighbors() const;
@@ -671,13 +666,6 @@ namespace VoxelEng {
 	inline bool chunk::isEmptyBlock(const vec3& inChunkPos) const {
 	
 		return isEmptyBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z);
-	
-	}
-
-	inline bool chunk::isVisible() const {
-	
-		// TODO. ADD CONDITIONS TO TAKE INTO ACCOUNT FUSTRUM CULLING OTHER ALGORITHMS TO AVOID RENDERING UNSEEABLE CHUNKS.
-		return (nBlocks_ > 0 || nBlocks_ <= nBlocksChunk);
 	
 	}
 
@@ -1711,7 +1699,7 @@ namespace VoxelEng {
 
 	inline unsigned int chunkManager::nMaxChunkVertsToCompute() {
 
-		return nBlocksChunk * 36; // TODO. PONER ESTO BONITO -> 6 caras * 6 vertPorCara = 36 vértices por bloque
+		return nBlocksChunk * 36; // 6 faces * 6 verticesPerFace = maximum 36 vertices per block.
 	
 	}
 

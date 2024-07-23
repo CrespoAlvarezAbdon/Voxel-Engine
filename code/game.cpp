@@ -746,10 +746,13 @@ namespace VoxelEng {
                 translucidFB_->bind();
                 translucidFB_->clearTextures({ vec4Zeroes, vec4Ones });
                 translucidShader_->bind();
+                translucidShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
                 translucidShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
                 translucidShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
                 translucidShader_->setUniformVec3f("u_sunLightPos", lightpos);
 
+
+                // Terrain rendering.
                 vao_->bind();
                 chunksVbo_->bind();
                 if (chunksToDraw_) {
@@ -758,11 +761,47 @@ namespace VoxelEng {
                     // chunk.second refers to the chunk's vertex data.
                     for (auto const& chunk : *chunksToDraw_) {
 
-                        if (playerCamera_->isInsideFrustum(chunk.second.globalChunkPos) && (nTranslucentVertices = chunk.second.translucentVertices.size())) {
+                        if (playerCamera_->isInsideFrustum(chunk.second.globalChunkPos)) {
 
-                            chunksVbo_->setDynamicData(chunk.second.translucentVertices.data(), 0, nTranslucentVertices * sizeof(vertex));
+                            // LOD 1.
+                            if (chunkManager::chunkInLODDistance(chunk.first, 1, inLODborder, dirX, dirY, dirZ)) {
 
-                            renderer::draw3D(nTranslucentVertices);
+                                if (inLODborder) {
+
+                                    if (nVertices = chunk.second.translucentVertices.size() + chunk.second.translucentVerticesLOD1_2Boundary.size()) {
+
+                                        chunksVbo_->setDynamicData(chunk.second.translucentVertices.data(), 0, chunk.second.translucentVertices.size() * sizeof(vertex));
+                                        chunksVbo_->setDynamicData(chunk.second.translucentVerticesLOD1_2Boundary.data(), chunk.second.translucentVertices.size() * sizeof(vertex), chunk.second.translucentVerticesLOD1_2Boundary.size() * sizeof(vertex));
+
+                                    }
+
+                                }
+                                else {
+
+                                    if (nVertices = chunk.second.translucentVertices.size() + chunk.second.translucentVerticesBoundary.size()) {
+
+                                        chunksVbo_->setDynamicData(chunk.second.translucentVertices.data(), 0, chunk.second.translucentVertices.size() * sizeof(vertex));
+                                        chunksVbo_->setDynamicData(chunk.second.translucentVerticesBoundary.data(), chunk.second.translucentVertices.size() * sizeof(vertex), chunk.second.translucentVerticesBoundary.size() * sizeof(vertex));
+
+                                    }
+
+                                }
+
+                                renderer::draw3D(nVertices);
+
+                            }
+                            else if (chunkManager::chunkInLODDistance(chunk.first, 2, inLODborder, dirX, dirY, dirZ)) { // Probably will add LOD levels 3 and 4 in the future
+
+                                if (nVertices = chunk.second.translucentVerticesLOD2.size() + chunk.second.translucentVerticesLOD2Boundary.size()) {
+
+                                    chunksVbo_->setDynamicData(chunk.second.translucentVerticesLOD2.data(), 0, chunk.second.translucentVerticesLOD2.size() * sizeof(vertex));
+                                    chunksVbo_->setDynamicData(chunk.second.translucentVerticesLOD2Boundary.data(), chunk.second.translucentVerticesLOD2.size() * sizeof(vertex), chunk.second.translucentVerticesLOD2Boundary.size() * sizeof(vertex));
+
+                                    renderer::draw3D(nVertices);
+
+                                }
+
+                            }
 
                         }
 
@@ -770,7 +809,6 @@ namespace VoxelEng {
 
                 }
 
-               
 
                 /*
                 Composite pass.
