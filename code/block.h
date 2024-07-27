@@ -57,15 +57,6 @@ namespace VoxelEng {
 		block();
 
 
-		// Operators.
-
-		/**
-		* @brief As each block must have an unique name. In consequence, the == operator
-		* only checks if the names of the two operands are equal or not.
-		*/
-		bool operator==(const block& b) const;
-
-
 		// Observers.
 
 		/**
@@ -156,6 +147,21 @@ namespace VoxelEng {
 		static void unregisterBlock(const std::string& name);
 
 
+		// Operators.
+
+		/**
+		* @brief Returns whether the two given blocks are equal (true) or not (false).
+		* @param b2 The left operand of the == operation.
+		*/
+		bool operator==(const block& b2) const;
+
+		/**
+		* @brief Returns whether the two given blocks are different (true) or not (false).
+		* @param b2 The left operand of the == operation.
+		*/
+		bool operator!=(const block& b2) const;
+
+
 		// Destructors.
 
 		/**
@@ -206,12 +212,6 @@ namespace VoxelEng {
 	  intID_(0),
 	  opacity_(blockOpacity::OPAQUEBLOCK)
 	{}
-
-	inline bool block::operator==(const block& b) const {
-	
-		return this == &b;
-	
-	}
 
 	inline bool block::isBlockRegistered(const std::string& name) {
 

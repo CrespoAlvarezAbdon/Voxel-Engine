@@ -102,6 +102,18 @@ namespace VoxelEng {
 
 	}
 
+	bool block::operator==(const block& b2) const {
+	
+		return name_ == b2.name_;
+	
+	}
+
+	bool block::operator!=(const block& b2) const {
+
+		return name_ != b2.name_;
+
+	}
+
 	void block::reset() {
 
 		if (initialised_) {

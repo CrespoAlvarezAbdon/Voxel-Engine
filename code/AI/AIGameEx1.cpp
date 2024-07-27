@@ -513,11 +513,15 @@ namespace AIExample {
 		VoxelEng::vec2 pos,
 			           aux;
 		glm::vec3 perlinCoords;
+
 		for (pos.x = 0u; pos.x < VoxelEng::CHUNK_SIZE; pos.x++) // x
 			for (pos.y = 0u; pos.y < VoxelEng::CHUNK_SIZE; pos.y++) { // z
 
 				// Height here is between -1.0 and 1.0.
 				#if GRAPHICS_API == OPENGL
+
+					// TODO. SEARCH A FASTER ALTERNATIVE FOR GENERATING PERLIN NOISE AND MIX VARIOS 2D NOISES (FOR "CONTINENTANESS", "ROUGHNESS" AND OTHER THINGIES LIKE THAT)
+				    // AND ONE 3D NOISE FOR BLOCK PLACEMENT. 
 
 					aux = VoxelEng::getXZGlobalPos(chunkXZPos, pos) / softnessFactor;
 
@@ -525,7 +529,25 @@ namespace AIExample {
 					perlinCoords.y = aux.y;
 					perlinCoords.z = seed_ + 0.1;
 
-					height = VoxelEng::noise::perlin3D(perlinCoords.x, perlinCoords.y, perlinCoords.z);
+					int octaves = 2;
+					double total = 0;
+					double frequency = 1;
+					double amplitude = 1;
+					double maxValue = 0; // Used for normalizing result to [0, 1]
+					double persistence = 0.5;
+
+					for (int i = 0; i < octaves; ++i) {
+						
+						total += VoxelEng::noise::perlin3D(perlinCoords.x * frequency, perlinCoords.y * frequency, perlinCoords.z * frequency) * amplitude;
+
+						maxValue += amplitude;
+
+						amplitude *= persistence;
+						frequency *= 2;
+
+					}
+
+					height = total / maxValue;
 
 				#else
 
