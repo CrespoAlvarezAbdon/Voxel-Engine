@@ -110,6 +110,7 @@ namespace VoxelEng {
 				layout3D.push<GLfloat>(2);
 				layout3D.push<unsigned char>(4);
 				layout3D.push<normalVec>(1);
+				layout3D.push<unsigned char>(4);
 				vaos_.at("3D").bind();
 				vbos_.at("chunks").bind();
 				vaos_.at("3D").addLayout(layout3D);

@@ -2,6 +2,8 @@
 
 layout(location = 0) out vec4 color; // Final result.
 
+#define MAX_MATERIALS 256 // TODO. PLACE THIS AS AN UNIFORM THAT GETS ITS VALUE FROM A CONST IN DEFINITIONS.H AND THAT IS ONLY UPDATED. USE UNIFORM BUFFER OBJECTS (UBOs) TO UPDATE THIS VALUE ONCE FOR ALL SHADERS.
+
 // This are input varyings.
 in vec2 v_TexCoord; 
 in vec3 v_fragPos;
@@ -15,11 +17,19 @@ uniform sampler2D blockTexture;
 uniform int u_renderMode;
 uniform int u_useComplexLighting;
 
+// Structs.
+struct Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    float shininess;
+}; 
+
 // Local variables.
 vec4 ambient = vec4(0.1, 0.1, 0.1, 1);
 vec4 textureColor = vec4(0, 0, 0, 0);
 vec3 lightColor = vec3(1, 1, 1);
-vec3 lightColorTwo = vec3(1,0,0);
+vec3 lightColorTwo = vec3(1, 0, 0);
 float specularStrength =  1;
 float distance = length(u_sunLightPos - v_fragPos) / 100;
 
