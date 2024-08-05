@@ -62,11 +62,6 @@ namespace VoxelEng {
 		*/
 		static void unregisterMaterial(const std::string& name);
 
-		// NEXT.
-		// 1º. DEFINE CONSTRUCTORS. DONE.
-		// 2º. MAKE A STATIC UNORDERED_MAP<STRING, MATERIAL> WHERE STRING IS NAMESPACED ID. DONE.
-		// 3º. ADD CRUD OPERATIONS TO SAID MAP.
-
 
 		/*
 		Attributes.
