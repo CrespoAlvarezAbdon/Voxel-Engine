@@ -1,10 +1,14 @@
 #ifndef _VOXELENG_REGISTRY_
 #define _VOXELENG_REGISTRY_
 
+#include <any>
 #include <concepts>
+#include <functional>
 #include <unordered_map>
 #include <string>
 #include "RegistryElement.h"
+#include "../logger.h"
+
 
 namespace VoxelEng {
 
@@ -13,7 +17,7 @@ namespace VoxelEng {
 	/////////////
 
 	template<typename T>
-	concept DerivedFromRegistryElement = std::derived_from<RegistryElement, T>;
+	concept derivedFromRegistryElement = std::derived_from<registryElement, T>;
 
 
 	////////////
@@ -28,14 +32,19 @@ namespace VoxelEng {
 	* to be deleted, a std::runtime_error will be thrown.
 	*/
 	template <typename KeyT, typename T>
-	requires DerivedFromRegistryElement<T>
+	requires derivedFromRegistryElement<T>
 	class registry {
 
 	public:
 
+		// Types.
+
+		using FactoryFunc = std::function<std::unique_ptr<T>(std::any)>;
+
+
 		// Constructors.
 
-		registry(const std::string& Tname);
+		registry(FactoryFunc factory);
 
 
 		// Destructors.
@@ -52,9 +61,8 @@ namespace VoxelEng {
 
 		// Modifiers.
 
-
-
-		void insert(const KeyT& key);
+		template<typename... Args>
+		void insert(const KeyT& key, Args&&... args);
 
 		void erase(const KeyT& key);
 
@@ -62,22 +70,23 @@ namespace VoxelEng {
 
 		std::unordered_map<KeyT, T> elements_;
 		std::string Tname_;
+		FactoryFunc factoryFunc_;
 
 	};
 
 	template <typename KeyT, typename T>
-	requires DerivedFromRegistryElement<T>
-	registry<KeyT, T>::registry(const std::string& Tname)
-	: Tname_(Tname)
+	requires derivedFromRegistryElement<T>
+	registry<KeyT, T>::registry(FactoryFunc factory)
+	: Tname_(T.typeName()), factoryFunc_(factory)
 	{}
 
 	template <typename KeyT, typename T>
-	requires DerivedFromRegistryElement<T>
+	requires derivedFromRegistryElement<T>
 	registry<KeyT, T>::~registry() 
 	{}
 
 	template <typename KeyT, typename T>
-	requires DerivedFromRegistryElement<T>
+	requires derivedFromRegistryElement<T>
 	const T& registry<KeyT, T>::get(const KeyT& key) {
 	
 	
@@ -85,7 +94,7 @@ namespace VoxelEng {
 	}
 
 	template <typename KeyT, typename T>
-	requires DerivedFromRegistryElement<T>
+	requires derivedFromRegistryElement<T>
 	T& registry<KeyT, T>::set(const KeyT& key) {
 	
 	
@@ -93,19 +102,24 @@ namespace VoxelEng {
 	}
 
 	template <typename KeyT, typename T>
-	requires DerivedFromRegistryElement<T>
-	void registry<KeyT, T>::insert(const KeyT& key) {
+	requires derivedFromRegistryElement<T>
+	template <typename... Args>
+	void registry<KeyT, T>::insert(const KeyT& key, Args&&... args) {
 	
 		if (elements_.contains(key))
-			logger::errorLog("The " + Tname + " " + name + " is already registered.");
+			logger::errorLog("The " + Tname_ + " " + key + " is already registered.");
 		else
-			elements_[name] = T(ambientR, ambientG, ambientB, diffuseR, diffuseG, diffuseB, specularR, specularG, specularB, shininess);
+			elements_[key] = factoryFunc_(std::make_any<std::tuple<Args...>>(std::forward<Args>(args)...));
 	
 	}
 
 	template <typename KeyT, typename T>
-	requires DerivedFromRegistryElement<T>
-	void registry<KeyT, T>::erase(const KeyT& key);
+	requires derivedFromRegistryElement<T>
+	void registry<KeyT, T>::erase(const KeyT& key) {
+	
+	
+	
+	}
 
 }
 

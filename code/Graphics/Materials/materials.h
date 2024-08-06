@@ -21,6 +21,21 @@ namespace VoxelEng {
 		Methods.
 		*/
 
+		// Constructors.
+
+		/**
+		* @brief Default class constructor.
+		*/
+		material();
+
+		/**
+		* @brief Class constructor.
+		*/
+		material(float ambientR, float ambientG, float ambientB,
+			float diffuseR, float diffuseG, float diffuseB,
+			float specularR, float specularG, float specularB, float shininess);
+
+
 		// Observers.
 
 		/**
@@ -73,22 +88,6 @@ namespace VoxelEng {
 		float shininess;
 
 	private:
-
-		/*
-		Methods.
-		*/
-
-		// Constructors.
-
-		material();
-
-		material(float ambientR, float ambientG, float ambientB,
-			float diffuseR, float diffuseG, float diffuseB,
-			float specularR, float specularG, float specularB, float shininess);
-
-		/*
-		Attributes.
-		*/
 
 		static std::unordered_map<std::string, material> materials_;
 
