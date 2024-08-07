@@ -1,5 +1,4 @@
-#include "Registry.h"
-
+#include "registry.h"
 
 namespace VoxelEng {
 

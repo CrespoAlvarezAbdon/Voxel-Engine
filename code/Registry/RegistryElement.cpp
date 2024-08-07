@@ -1,21 +1,27 @@
-#include "RegistryElement.h"
+#include "registryElement.h"
 
+#include "../logger.h"
 
 namespace VoxelEng {
 
-	const bool registryElement::initialized_ = false;
+	bool registryElement::initialised_ = false;
 	std::string registryElement::typeName_ = "";
 
-	void registryElement::initialize(const std::string& typeName) {
-	
-		typeName_ = typeName;
-	
-	}
+	void registryElement::init(const std::string& typeName) {
 
-	const std::string& registryElement::typeName() {
-	
-		return typeName_;
-	
+		if (initialised_) {
+		
+			logger::errorLog("Registry element system is already initialised");
+		
+		}
+		else {
+		
+			typeName_ = typeName;
+
+			initialised_ = true;
+		
+		}
+
 	}
 
 }

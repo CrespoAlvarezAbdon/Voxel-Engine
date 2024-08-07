@@ -6,9 +6,8 @@
 #include <functional>
 #include <unordered_map>
 #include <string>
-#include "RegistryElement.h"
+#include "registryElement.h"
 #include "../logger.h"
-
 
 namespace VoxelEng {
 
@@ -17,7 +16,7 @@ namespace VoxelEng {
 	/////////////
 
 	template<typename T>
-	concept derivedFromRegistryElement = std::derived_from<registryElement, T>;
+	concept derivedFromRegistryElement = std::derived_from<T, registryElement>;
 
 
 	////////////
@@ -44,6 +43,8 @@ namespace VoxelEng {
 
 		// Constructors.
 
+		registry() = delete;
+
 		registry(FactoryFunc factory);
 
 
@@ -54,9 +55,9 @@ namespace VoxelEng {
 
 		// Observers.
 
-		const T& get(const KeyT& key);
+		const T& get(const KeyT& key) const;
 
-		T& set(const KeyT& key);
+		T& get(const KeyT& key);
 
 
 		// Modifiers.
@@ -68,7 +69,7 @@ namespace VoxelEng {
 
 	private:
 
-		std::unordered_map<KeyT, T> elements_;
+		std::unordered_map<KeyT, T> elements_; //  std::unique_ptr<T> ??? en chatgpt hacía eso pero habrá que ver qué realmente me pide C++.
 		std::string Tname_;
 		FactoryFunc factoryFunc_;
 
@@ -87,17 +88,23 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires derivedFromRegistryElement<T>
-	const T& registry<KeyT, T>::get(const KeyT& key) {
+	const T& registry<KeyT, T>::get(const KeyT& key) const {
 	
-	
+		if (elements_.contains(key))
+			return elements_.at(key);
+		else
+			logger::errorLog("The " + Tname_ + " " + key + " is not registered.");
 	
 	}
 
 	template <typename KeyT, typename T>
 	requires derivedFromRegistryElement<T>
-	T& registry<KeyT, T>::set(const KeyT& key) {
+	T& registry<KeyT, T>::get(const KeyT& key)  {
 	
-	
+		if (elements_.contains(key))
+			return elements_.at(key);
+		else
+			logger::errorLog("The " + Tname_ + " " + key + " is not registered.");
 	
 	}
 
@@ -117,7 +124,10 @@ namespace VoxelEng {
 	requires derivedFromRegistryElement<T>
 	void registry<KeyT, T>::erase(const KeyT& key) {
 	
-	
+		if (elements_.contains(key))
+			elements_.erase(key);
+		else
+			logger::errorLog("The " + Tname_ + " " + key + " is not registered.");
 	
 	}
 

@@ -26,10 +26,12 @@
 #include "utilities.h"
 #include "vertex.h"
 #include "worldGen.h"
+#include "Entities/plane.h"
+#include "Registry/registries.h" // This header also includes the classes that derive from 'registeredElement'.
+#include "Registry/registry.h"
 #include "Graphics/graphics.h"
 #include "Graphics/Textures/texture.h"
 #include "Graphics/Frustum/frustum.h"
-#include "Entities/plane.h"
 
 #include "timer.h"
 
@@ -138,8 +140,15 @@ namespace VoxelEng {
             timeStep_ = 0.0f;
             AImodeON_ = false;
 
+            // Registrable elements initialization.
+            registryElement::init("registryElement");
+            material::init("material");
+
+            // Registries collection initialization.
+            registries::init();
+
             // Block registration.
-            block::registerBlock("starminer::grass", blockOpacity::OPAQUEBLOCK, { {"all", 1} }); // manual texture ID assignemt is temporary
+            block::registerBlock("starminer::grass", blockOpacity::OPAQUEBLOCK, { {"all", 1} }); // TODO. Manual texture ID assignment is temporary.
             block::registerBlock("starminer::stone", blockOpacity::OPAQUEBLOCK, { {"all", 2} });
             block::registerBlock("starminer::sand", blockOpacity::OPAQUEBLOCK, { {"all", 3} });
             block::registerBlock("starminer::marbleBlock", blockOpacity::OPAQUEBLOCK, { {"all", 4} });
@@ -153,6 +162,13 @@ namespace VoxelEng {
             block::registerBlock("starminer::glassRed", blockOpacity::TRANSLUCENTBLOCK, { {"all", 14} });
             block::registerBlock("starminer::glassBlue", blockOpacity::TRANSLUCENTBLOCK, { {"all", 15} });
             block::registerBlock("starminer::marbleBlock2", blockOpacity::OPAQUEBLOCK, { {"all", 16} });
+
+            // Material registration.
+            registries::materials().insert("starminer::testMaterial", 
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f,
+                32.0f);
 
             // Worldgen initialisation.
 
