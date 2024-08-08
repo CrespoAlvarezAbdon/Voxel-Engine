@@ -1,13 +1,21 @@
 #ifndef _VOXELENG_MATERIALS_
 #define _VOXELENG_MATERIALS_
 
-#include <unordered_map>
 #include <string>
 #include "../../Registry/registryElement.h"
 
 namespace VoxelEng {
 
+	//////////////
+	//Constants.//
+	//////////////
+
 	const unsigned int MAX_MATERIALS = 128; // TODO. MAKE THIS NUMBER DYNAMIC IN TERMS OF HOW MANY MATERIALS ARE REGISTERED AT ENGINE'S GRAPHICAL MODE STARTUP.
+
+
+	////////////
+	//Classes.//
+	////////////
 
 	/**
 	* @brief Represents the properties of a 3D vertex such as the reflected color
@@ -24,15 +32,27 @@ namespace VoxelEng {
 
 		// Initialisation.
 
+		/**
+		* @brief Initialise the vertex graphic materials system.
+		*/
 		static void init(const std::string& typeName);
 
 
 		// Constructors.
 
 		/**
-		* @brief Default class constructor.
+		* @brief Class constructor.
+		* @param ambientR Percentage of red color reflected when hit by ambient lighting.
+		* @param ambientG Percentage of green color reflected when hit by ambient lighting.
+		* @param ambientB Percentage of blue color reflected when hit by ambient lighting.
+		* @param diffuseR Percentage of red color reflected when hit by diffuse lighting.
+		* @param diffuseG Percentage of green color reflected when hit by diffuse lighting.
+		* @param diffuseB Percentage of blue color reflected when hit by diffuse lighting.
+		* @param shininess Specular shininess.
 		*/
-		material();
+		material(float ambientR, float ambientG, float ambientB,
+			float diffuseR, float diffuseG, float diffuseB,
+			float specularR, float specularG, float specularB, float shininess);
 
 
 		// Observers.
@@ -59,8 +79,11 @@ namespace VoxelEng {
 
 	};
 
-	inline material::material()
-		: ambient{ 1.0f, 1.0f, 1.0f }, diffuse{ 1.0f, 1.0f, 1.0f }, specular{ 1.0f, 1.0f, 1.0f }, shininess(32)
+	inline material::material(float ambientR, float ambientG, float ambientB,
+		float diffuseR, float diffuseG, float diffuseB,
+		float specularR, float specularG, float specularB,
+		float shininess)
+		: ambient{ ambientR, ambientG, ambientB }, diffuse{ diffuseR, diffuseG, diffuseB }, specular{ specularR, specularG, specularB }, shininess(shininess)
 	{}
 
 	inline const std::string& material::typeName() {

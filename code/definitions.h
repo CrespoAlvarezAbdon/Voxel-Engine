@@ -10,11 +10,14 @@
 #ifndef _VOXELENG_DEFINITIONS_
 #define _VOXELENG_DEFINITIONS_
 
+#include <concepts>
 #include <vector>
 #include <chrono>
 #include <string>
 
-// Definitions.
+////////////////
+//Definitions.//
+////////////////
 #define GRAPHICS_API OPENGL
 
 #if GRAPHICS_API == OPENGL
@@ -27,6 +30,18 @@
 
 
 namespace VoxelEng {
+
+	/////////////
+	//Concepts.//
+	/////////////
+
+	template <typename T>
+	concept dsefaultConstructible = requires {
+
+		T();
+
+	};
+
 
 	/////////////////
 	//Enum classes.//

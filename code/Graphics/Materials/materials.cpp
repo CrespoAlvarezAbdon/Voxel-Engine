@@ -4,7 +4,7 @@
 
 namespace VoxelEng {
 
-	bool registryElement::initialised_ = false;
+	bool material::initialised_ = false;
 	std::string material::typeName_ = "";
 
 	void material::init(const std::string& typeName) {

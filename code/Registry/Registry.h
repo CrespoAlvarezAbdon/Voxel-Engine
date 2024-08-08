@@ -6,18 +6,12 @@
 #include <functional>
 #include <unordered_map>
 #include <string>
+#include <memory>
 #include "registryElement.h"
+#include "../definitions.h"
 #include "../logger.h"
 
 namespace VoxelEng {
-
-	/////////////
-	//Concepts.//
-	/////////////
-
-	template<typename T>
-	concept derivedFromRegistryElement = std::derived_from<T, registryElement>;
-
 
 	////////////
 	//Classes.//
@@ -31,7 +25,7 @@ namespace VoxelEng {
 	* to be deleted, a std::runtime_error will be thrown.
 	*/
 	template <typename KeyT, typename T>
-	requires derivedFromRegistryElement<T>
+	requires std::derived_from<T, registryElement>
 	class registry {
 
 	public:
@@ -69,25 +63,25 @@ namespace VoxelEng {
 
 	private:
 
-		std::unordered_map<KeyT, T> elements_; //  std::unique_ptr<T> ??? en chatgpt hacía eso pero habrá que ver qué realmente me pide C++.
+		std::unordered_map<KeyT, std::unique_ptr<T>> elements_;
 		std::string Tname_;
 		FactoryFunc factoryFunc_;
 
 	};
 
 	template <typename KeyT, typename T>
-	requires derivedFromRegistryElement<T>
+	requires std::derived_from<T, registryElement>
 	registry<KeyT, T>::registry(FactoryFunc factory)
-	: Tname_(T.typeName()), factoryFunc_(factory)
+	: Tname_(T::typeName()), factoryFunc_(factory)
 	{}
 
 	template <typename KeyT, typename T>
-	requires derivedFromRegistryElement<T>
+	requires std::derived_from<T, registryElement>
 	registry<KeyT, T>::~registry() 
 	{}
 
 	template <typename KeyT, typename T>
-	requires derivedFromRegistryElement<T>
+	requires std::derived_from<T, registryElement>
 	const T& registry<KeyT, T>::get(const KeyT& key) const {
 	
 		if (elements_.contains(key))
@@ -98,7 +92,7 @@ namespace VoxelEng {
 	}
 
 	template <typename KeyT, typename T>
-	requires derivedFromRegistryElement<T>
+	requires std::derived_from<T, registryElement>
 	T& registry<KeyT, T>::get(const KeyT& key)  {
 	
 		if (elements_.contains(key))
@@ -109,7 +103,7 @@ namespace VoxelEng {
 	}
 
 	template <typename KeyT, typename T>
-	requires derivedFromRegistryElement<T>
+	requires std::derived_from<T, registryElement>
 	template <typename... Args>
 	void registry<KeyT, T>::insert(const KeyT& key, Args&&... args) {
 	
@@ -121,7 +115,7 @@ namespace VoxelEng {
 	}
 
 	template <typename KeyT, typename T>
-	requires derivedFromRegistryElement<T>
+	requires std::derived_from<T, registryElement>
 	void registry<KeyT, T>::erase(const KeyT& key) {
 	
 		if (elements_.contains(key))

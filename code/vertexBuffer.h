@@ -11,9 +11,6 @@
 
 #include <vector>
 
-
-
-
 namespace VoxelEng {
 
 	////////////
@@ -85,7 +82,7 @@ namespace VoxelEng {
 		
 	private:
 
-		unsigned int rendererID_; // POSIBLE ERROR AQUI POR CAMBIAR DE GLUINT?
+		unsigned int rendererID_; // TODO. POSIBLE ERROR AQUI POR CAMBIAR DE GLUINT?
 
 	};
 

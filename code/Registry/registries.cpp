@@ -33,4 +33,26 @@ namespace VoxelEng {
 	
 	}
 
+	void registries::deinit() {
+
+		if (initialised_) {
+
+			if (materials_)	{
+
+				delete materials_;
+				materials_ = nullptr;
+
+			}
+
+			initialised_ = false;
+			
+		}
+		else {
+
+			logger::errorLog("Registries collection is not initialised");
+
+		}
+
+	}
+
 }
