@@ -8,6 +8,7 @@
 #include "../../definitions.h"
 #include "../../logger.h"
 #include "../../Registry/registryElement.h"
+#include "../../Registry/registry.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -50,6 +51,11 @@ namespace VoxelEng {
 		*/
 		UBO(std::size_t maxSize);
 
+		/**
+		* @brief Class constructor.
+		* @param elements. The elements to make a copy of and store inside the UBO.
+		*/
+		UBO(const registry<std::string, T>& elements);
 
 	private:
 
@@ -84,9 +90,35 @@ namespace VoxelEng {
 
 	template <typename T>
 	requires std::default_initializable<T>
-	UBO<T>::UBO(std::size_t maxSize)
-	: elements_(maxSize) {
-	
+		UBO<T>::UBO(std::size_t maxSize)
+		: elements_(maxSize) {
+
+		bindingPoint_ = nUbos_++;
+
+		glGenBuffers(1, &graphicsAPIID_);
+		glBindBuffer(GL_UNIFORM_BUFFER, graphicsAPIID_);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(T) * elements_.size(), elements_.data(), GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_UNIFORM_BUFFER, 1, bindingPoint_);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	}
+
+	template <typename T>
+	requires std::default_initializable<T>
+	UBO<T>::UBO(const registry<std::string, T>& elements)
+	: elements_(elements.size()) {
+
+		typename registry<std::string, T>::const_iterator it = elements.cbegin();
+		int i = 0;
+		while(it != elements.cend()) {
+		
+			elements_[i] = it->second;
+
+			it++;
+			i++;
+		
+		}
+
 		bindingPoint_ = nUbos_++;
 
 		glGenBuffers(1, &graphicsAPIID_);
