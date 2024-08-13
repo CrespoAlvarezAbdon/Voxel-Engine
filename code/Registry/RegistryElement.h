@@ -1,3 +1,11 @@
+/**
+* @file registryElement.h
+* @version 1.0
+* @date 13/08/2024
+* @author Abdon Crespo Alvarez
+* @title registryElement.
+* @brief Contains the definition of the registryElement class.
+*/
 #ifndef _VOXELENG_REGISTRYELEMENT_
 #define _VOXELENG_REGISTRYELEMENT_
 

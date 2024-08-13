@@ -1,3 +1,11 @@
+/**
+* @file registries.h
+* @version 1.0
+* @date 13/08/2024
+* @author Abdon Crespo Alvarez
+* @title Registries.
+* @brief Contains the registries used in the engine.
+*/
 #ifndef _VOXELENG_REGISTRIES_
 #define _VOXELENG_REGISTRIES_
 

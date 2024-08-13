@@ -1,3 +1,11 @@
+/**
+* @file materials.h
+* @version 1.0
+* @date 13/08/2024
+* @author Abdon Crespo Alvarez
+* @title materials.
+* @brief Contains the definition of the material class.
+*/
 #ifndef _VOXELENG_MATERIALS_
 #define _VOXELENG_MATERIALS_
 

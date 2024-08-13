@@ -11,21 +11,12 @@
 
 #include <string>
 #include <unordered_map>
-#include "definitions.h"
-#include "vec.h"
-
-/*#if GRAPHICS_API == OPENGL
-
-#include <glm.hpp>
-
-#endif*/
-
+#include "../../definitions.h"
+#include "../../vec.h"
+#include "../UBOs/UBOs.h"
+#include "../Materials/materials.h"
 
 namespace VoxelEng {
-
-	////////////
-	//Classes.//
-	////////////
 
 	/**
 	* @brief Abstraction of a graphics API shader. It is usually described as a program
@@ -45,11 +36,8 @@ namespace VoxelEng {
 		*/
 		shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
 
-		// Observers.
-
 
 		// Modifiers.
-
 
 		/**
 		* @brief Binds the shader to the corresponding graphics API context inside the thread 
@@ -95,6 +83,15 @@ namespace VoxelEng {
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		void setUniformMatrix4f(const std::string& name, const glm::mat4& matrix);
+
+		/**
+		* @brief Bind the specified materials UFO for this shader. 
+		* WARNING. The name of this UFO must be defined as a valid Uniform Block in the shader's code
+		* or else an exception will be thrown.
+		* WARNING. An exception will be also thrown if the provided UFO is not properly initialised.
+		* @param ufo The specified materials UFO.
+		*/
+		void bindUFO(const UBO<material>& ufo); // NEXT. DO THIS AND THE FUNCTIONS THAT ARE PENDING TO BE IMPLEMENTED IN UBO.h
 
 
 		// Destructors.

@@ -1,8 +1,9 @@
 #include "shader.h"
+
 #include <iterator>
 #include <fstream>
 #include <ios>
-#include "logger.h"
+#include "../../logger.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -10,10 +11,7 @@
 
 #endif
 
-
 namespace VoxelEng {
-
-    // 'shader' class.
 
     unsigned int shader::compileShader(const std::string& shaderSource, unsigned int type) {
 

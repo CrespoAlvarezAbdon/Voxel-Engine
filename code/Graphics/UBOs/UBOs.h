@@ -1,3 +1,11 @@
+/**
+* @file UBOs.h
+* @version 1.0
+* @date 13/08/2024
+* @author Abdon Crespo Alvarez
+* @title Uniform Buffer Objects (UBOs).
+* @brief Contains the definition of the UBO class.
+*/
 #ifndef _VOXELENG_UBOS_
 #define _VOXELENG_UBOS_
 
@@ -49,22 +57,42 @@ namespace VoxelEng {
 		* @brief Class constructor.
 		* @param maxSize The maximum number of elements of type T that can be stored on the UBO.
 		*/
-		UBO(std::size_t maxSize);
+		UBO(const std::string& name, std::size_t maxSize);
 
 		/**
 		* @brief Class constructor.
 		* @param elements. The elements to make a copy of and store inside the UBO.
 		*/
-		UBO(const registry<std::string, T>& elements);
+		UBO(const std::string& name, const registry<std::string, T>& elements);
+
+
+		// Observers.
+
+		const T& get() const;
+
+
+		// Modifiers.
+
+		T& get();
+
+		void reupload();
+
+
+		// Destructors.
+
+		/**
+		* @brief Default class destructor.
+		*/
+		~UBO();
 
 	private:
 
 		static bool initialised_;
-		static std::string typeName_;
 		static unsigned int nUbos_; // Used to, for example, assign a non-occuppied binding point to the next UBO that gets created.
 
 		unsigned int graphicsAPIID_;
 		unsigned int bindingPoint_;
+		std::string name_;
 		std::vector<T> elements_;
 
 	};
@@ -80,7 +108,7 @@ namespace VoxelEng {
 		}
 		else {
 
-			typeName_ = typeName;
+			nUbos_ = 0;
 
 			initialised_ = true;
 
@@ -90,8 +118,8 @@ namespace VoxelEng {
 
 	template <typename T>
 	requires std::default_initializable<T>
-		UBO<T>::UBO(std::size_t maxSize)
-		: elements_(maxSize) {
+	UBO<T>::UBO(const std::string& name, std::size_t maxSize)
+	: name_(name), elements_(maxSize) {
 
 		bindingPoint_ = nUbos_++;
 
@@ -105,8 +133,8 @@ namespace VoxelEng {
 
 	template <typename T>
 	requires std::default_initializable<T>
-	UBO<T>::UBO(const registry<std::string, T>& elements)
-	: elements_(elements.size()) {
+	UBO<T>::UBO(const std::string& name, const registry<std::string, T>& elements)
+	: name_(name), elements_(elements.size()) {
 
 		typename registry<std::string, T>::const_iterator it = elements.cbegin();
 		int i = 0;

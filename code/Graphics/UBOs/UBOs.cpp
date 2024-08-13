@@ -7,6 +7,6 @@ namespace VoxelEng {
 
 	template <typename T>
 	requires std::default_initializable<T>
-	std::string UBO<T>::typeName_ = "";
+	unsigned int nUbos_ = 0;
 
 }
