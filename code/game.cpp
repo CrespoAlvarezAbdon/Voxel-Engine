@@ -163,13 +163,6 @@ namespace VoxelEng {
             block::registerBlock("starminer::glassBlue", blockOpacity::TRANSLUCENTBLOCK, { {"all", 15} });
             block::registerBlock("starminer::marbleBlock2", blockOpacity::OPAQUEBLOCK, { {"all", 16} });
 
-            // Material registration.
-            registries::materials().insert("starminer::testMaterial", 
-                1.0f, 1.0f, 1.0f,
-                1.0f, 1.0f, 1.0f,
-                1.0f, 1.0f, 1.0f,
-                32.0f);
-
             // Worldgen initialisation.
 
             worldGen::init();
@@ -272,10 +265,10 @@ namespace VoxelEng {
             input::setControlAction(controlCode::r, inputFunctions::switchComplexLighting, false);
 
             // Load shaders.
-            opaqueShader_ = new shader("resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader");
-            translucidShader_ = new shader("resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader");
-            compositeShader_ = new shader("resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
-            screenShader_ = new shader("resources/Shaders/screenVertex.shader", "resources/Shaders/screenFragment.shader");
+            opaqueShader_ = &graphics::opaqueShader();
+            translucidShader_ = &graphics::translucidShader();
+            compositeShader_ = &graphics::compositeShader();
+            screenShader_ = &graphics::screenShader();
 
 
             /*
@@ -1344,36 +1337,12 @@ namespace VoxelEng {
         
         }
 
-        if (opaqueShader_) {
-
-            delete opaqueShader_;
-            opaqueShader_ = nullptr;
-
-        }
-
-        if (translucidShader_) {
-
-            delete translucidShader_;
-            translucidShader_ = nullptr;
-
-        }
-
-        if (compositeShader_) {
-
-            delete compositeShader_;
-            compositeShader_ = nullptr;
-
-        }
-
-        if (screenShader_) {
-        
-            delete screenShader_;
-            screenShader_ = nullptr;
-        
-        }
-
         // These pointers where not the original owners of the object they point to.
         // They were allocated in the 'graphics' class and they have been properly deallocated before this.
+        opaqueShader_ = nullptr;
+        translucidShader_ = nullptr;
+        compositeShader_ = nullptr;
+        screenShader_ = nullptr;
         chunksVbo_ = nullptr;
         entitiesVbo_ = nullptr;
         screenVbo_ = nullptr;

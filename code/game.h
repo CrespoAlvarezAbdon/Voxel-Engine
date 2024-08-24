@@ -20,12 +20,11 @@
 #include "indexBuffer.h"
 #include "vertexBuffer.h"
 #include "vertexArray.h"
-#include "vertexBufferLayout.h"
 #include "logger.h"
-#include "shader.h"
 #include "world.h"
 #include "vec.h"
 #include "Graphics/framebuffer.h"
+#include "Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h"
 
 
 namespace VoxelEng {

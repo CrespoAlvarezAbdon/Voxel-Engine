@@ -11,7 +11,7 @@
 #define _VOXELENG_VERTEXBUFFERLAYOUT_
 
 #include <vector>
-#include "definitions.h"
+#include "../../../definitions.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -86,44 +86,56 @@ namespace VoxelEng {
 		* as saying that the layout now contains the same data as before
 		* this push and the new 'count' elements pushed.
 		* This is a template function with no implementation, use the specialized methods.
+		* @param count Number of elements to push.
+		* @param applyNormalization Whether to apply normalization to the pushed elements (true) or not (false).
 		*/
 		template <typename T>
-		void push(unsigned int count);
+		void push(unsigned int count, bool applyNormalization);
 
 		/**
 		* @brief Now the vertex data will have 'count' more floats at the end.
 		* Be aware that vertex data alignment must be of 4 bytes.
+		* @param count Number of elements to push.
+		* @param applyNormalization Whether to apply normalization to the pushed elements (true) or not (false).
 		*/
 		template <>
-		void push<GLfloat>(unsigned int count);
+		void push<GLfloat>(unsigned int count, bool applyNormalization);
 
 		/**
 		* @brief Now the vertex data will have 'count' more unsigned ints at the end.
-		* Be aware that vertex data alignment must be of 4 bytes
+		* Be aware that vertex data alignment must be of 4 bytes.
+		* @param count Number of elements to push.
+		* @param applyNormalization Whether to apply normalization to the pushed elements (true) or not (false).
 		*/
 		template <>
-		void push<unsigned int>(unsigned int count);
+		void push<unsigned int>(unsigned int count, bool applyNormalization);
 
 		/**
 		* @brief Now the vertex data will have 'count' more unsigned ints at the end.
-		* Be aware that vertex data alignment must be of 4 bytes
+		* Be aware that vertex data alignment must be of 4 bytes.
+		* @param count Number of elements to push.
+		* @param applyNormalization Whether to apply normalization to the pushed elements (true) or not (false).
 		*/
 		template <>
-		void push<unsigned char>(unsigned int count);
+		void push<unsigned char>(unsigned int count, bool applyNormalization);
 
 		/**
 		* @brief Now the vertex data will have 'count' more unsigned ints at the end.
-		* Be aware that vertex data alignment must be of 4 bytes
+		* Be aware that vertex data alignment must be of 4 bytes.
+		* @param count Number of elements to push.
+		* @param applyNormalization Whether to apply normalization to the pushed elements (true) or not (false).
 		*/
 		template <>
-		void push<GLbyte>(unsigned int count);
+		void push<GLbyte>(unsigned int count, bool applyNormalization);
 
 		/**
 		* @brief Now the vertex data will have 'count' more unsigned ints at the end.
-		* Be aware that vertex data alignment must be of 4 bytes
+		* Be aware that vertex data alignment must be of 4 bytes.
+		* @param count Number of elements to push.
+		* @param applyNormalization Whether to apply normalization to the pushed elements (true) or not (false).
 		*/
 		template <>
-		void push<normalVec>(unsigned int count);
+		void push<normalVec>(unsigned int count, bool applyNormalization);
 
 	private:
 

@@ -9,7 +9,7 @@
 #ifndef _VOXELENG_VERTEXARRAY_
 #define _VOXELENG_VERTEXARRAY_
 #include "vertexBuffer.h"
-#include "vertexBufferLayout.h"
+#include "Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h"
 
 
 namespace VoxelEng {

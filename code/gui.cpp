@@ -10,9 +10,9 @@
 #include "logger.h"
 #include "renderer.h"
 #include "utilities.h"
-#include "vertexBufferLayout.h"
 #include "Graphics/graphics.h"
 #include "Graphics/Textures/texture.h"
+#include "Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h"
 
 
 namespace VoxelEng {

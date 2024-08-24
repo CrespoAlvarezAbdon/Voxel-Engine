@@ -22,10 +22,9 @@
 #include "camera.h"
 #include "chunk.h"
 #include "definitions.h"
-#include "model.h"
 #include "vec.h"
 #include "Graphics/transform.h"
-
+#include "Graphics/Models/model.h"
 
 
 namespace VoxelEng {

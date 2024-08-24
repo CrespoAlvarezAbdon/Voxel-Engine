@@ -16,9 +16,8 @@
 #include <cstddef>
 #include <mutex>
 
-#include "model.h"
 #include "gameWindow.h"
-
+#include "Graphics/Models/model.h"
 
 namespace VoxelEng {
 

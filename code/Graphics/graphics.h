@@ -17,13 +17,15 @@
 #include <mutex>
 #include <unordered_map>
 #include <vector>
-#include "../batch.h" // CUIDADO POR SI ESTO METE ERRORES
+#include "Shaders/shader.h"
+#include "Materials/materials.h"
+#include "UBOs/UBOs.h"
+#include "../batch.h"
 #include "../indexBuffer.h"
 #include "../vertexArray.h"
 #include "../vertexBuffer.h"
-#include "../vertexBufferLayout.h"
 #include "../gameWindow.h"
-
+#include "Vertex/VertexBufferLayout/vertexBufferLayout.h"
 
 namespace VoxelEng {	
 
@@ -220,6 +222,26 @@ namespace VoxelEng {
 		*/
 		static void textureTypeToAPITextureType(const textureType& type, std::vector<unsigned int>& APIValues);
 
+		/**
+		* @brief Get the shader used for opaque geometry.
+		*/
+		static const shader& cOpaqueShader();
+
+		/**
+		* @brief Get the shader used for translucid geometry.
+		*/
+		static const shader& cTranslucidShader();
+
+		/**
+		* @brief Get the shader used for compositing the opaque and translucid rendering passes.
+		*/
+		static const shader& cCompositeShader();
+
+		/**
+		* @brief Get the shader used for rendering the game's screen quad.
+		*/
+		static const shader& cScreenShader();
+
 
 		// Modifiers.
 
@@ -278,6 +300,26 @@ namespace VoxelEng {
 		*/
 		static void setScreenPassConfig();
 
+		/**
+		* @brief Get the shader used for opaque geometry.
+		*/
+		static shader& opaqueShader();
+
+		/**
+		* @brief Get the shader used for translucid geometry.
+		*/
+		static shader& translucidShader();
+
+		/**
+		* @brief Get the shader used for compositing the opaque and translucid rendering passes.
+		*/
+		static shader& compositeShader();
+
+		/**
+		* @brief Get the shader used for rendering the game's screen quad.
+		*/
+		static shader& screenShader();
+
 
 		// Clean up.
 
@@ -293,6 +335,11 @@ namespace VoxelEng {
 		static std::unordered_map<std::string, vertexBuffer> vbos_;
 		static std::unordered_map<std::string, vertexArray> vaos_;
 		static std::unordered_map<std::string, vertexBufferLayout> vboLayouts_;
+		static shader* opaqueShader_;
+		static shader* translucidShader_;
+		static shader* compositeShader_;
+		static shader* screenShader_;
+		static UBO<material>* materialsUBO_;
 		
 	};
 
@@ -312,6 +359,30 @@ namespace VoxelEng {
 	
 		return initialised_;
 	
+	}
+
+	inline const shader& graphics::cOpaqueShader() {
+
+		return opaqueShader();
+
+	}
+
+	inline const shader& graphics::cTranslucidShader() {
+
+		return translucidShader();
+
+	}
+
+	inline const shader& graphics::cCompositeShader() {
+
+		return compositeShader();
+
+	}
+
+	inline const shader& graphics::cScreenShader() {
+
+		return screenShader();
+
 	}
 
 	inline void graphics::setVSync(bool isEnabled) {

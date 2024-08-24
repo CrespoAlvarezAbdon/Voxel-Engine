@@ -11,7 +11,7 @@
 
 #include "../entity.h"
 #include "../vec.h"
-#include "../model.h"
+#include "../Graphics/Models/model.h"
 #include "../Graphics/transform.h"
 #include "../Math/mathPlane.h"
 

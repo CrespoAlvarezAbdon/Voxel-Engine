@@ -32,16 +32,16 @@
 #include "event.h"
 #include "listener.h"
 #include "threadPool.h"
-#include "shader.h"
-#include "model.h"
 #include "palette.h"
 #include "vec.h"
 #include "vertex.h"
 #include "vertexBuffer.h"
-#include "vertexBufferLayout.h"
 #include "utilities.h"
 #include "time.h"
 #include "Graphics/Textures/texture.h"
+#include "Graphics/Shaders/shader.h"
+#include "Graphics/Models/model.h"
+#include "Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -478,7 +478,6 @@ namespace VoxelEng {
 		* @brief Clean up any resources allocated for this system.
 		*/ 
 		static void reset();
-		std::atomic<bool> needsRemesh_;
 		
 	private:
 
@@ -489,6 +488,8 @@ namespace VoxelEng {
 		static bool initialised_;
 		static const model* blockVertices_;
 		static const modelTriangles* blockTriangles_;
+		static const modelNormals* blockNormals_;
+		
 
 		// Serializable data.
 		palette<unsigned short, unsigned int> palette_;
@@ -516,6 +517,7 @@ namespace VoxelEng {
 						   nBlocksMinusY_,
 						   nBlocksPlusZ_,
 						   nBlocksMinusZ_;
+		std::atomic<bool> needsRemesh_;
 
 		unsigned int nNeighbors_;
 

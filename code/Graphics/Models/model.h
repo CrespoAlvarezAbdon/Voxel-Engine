@@ -14,10 +14,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "vertex.h"
-#include "block.h"
-#include "definitions.h"
-#include "Graphics/transform.h"
+#include "../../vertex.h"
+#include "../../block.h"
+#include "../../definitions.h"
+#include "../../Graphics/transform.h"
 
 
 namespace VoxelEng {
@@ -41,7 +41,6 @@ namespace VoxelEng {
 	*/
 	typedef std::vector<vertex> model;
 
-
 	/**
 	* @brief A triangle is a collection of three vertex indices that
 	* correspond to the ones that form it.
@@ -49,10 +48,21 @@ namespace VoxelEng {
 	typedef std::vector<unsigned short> triangle;
 
 	/**
+	* @brief A vertex normal is a vector used for lighting calculations in the shaders.
+	*/
+	typedef vec3 normal;
+
+	/**
 	* @brief Representation of the collection of triangles that forms up
 	* an entity's model.
 	*/
 	typedef std::vector<triangle> modelTriangles;
+
+	/**
+	* @brief Representation of the collection of normals that forms up
+	* an entity's model.
+	*/
+	typedef std::vector<normal> modelNormals;
 
 	
 	/////////////////
@@ -97,21 +107,21 @@ namespace VoxelEng {
 
 		/**
 		* @brief Get the corresponding model for a certain ID.
-		* If no model exists for such ID, it returns the basic empty model with ID 0.
+		* If no model exists for such ID, throws exception.
 		*/
 		static const model& getModelAt(unsigned int modelID);
 
 		/**
 		* @brief Get the corresponding model triangles indices for a certain ID.
-		* If no model exists for such ID, it returns the basic empty model triangles.
+		* If no such indices exist for the specified model, throws exception.
 		*/
 		static const modelTriangles& getModelTrianglesAt(unsigned int modelID);
 
 		/**
-		* @brief Get the corresponding model triangles indices for a certain ID.
-		* If no model exists for such ID, it returns the basic empty model triangles.
+		* @brief Get the corresponding model normals for a certain ID.
+		* If no such normals exist for the specified model, throws exception.
 		*/
-		static const modelTriangles& getModelTriangles(unsigned int modelID);
+		static const modelNormals& getModelNormalsAt(unsigned int modelID);
 
 		/**
 		* @brief Add a texture for a face of a terrain block. The added texture is specified
@@ -145,14 +155,9 @@ namespace VoxelEng {
 		static bool initialised_;
 		static std::unordered_map<unsigned int, model*> models_; // RENOMBRAR ESTO COMO modelsVertices_ Y METER UN models_ QUE YA TENGA LOS MODELOS "BAKEADOS" Y METER MÉTODO REGISTER MODELO PARA TODOS CON UNA OPCION DE GUARDAR SUS VERTICES Y TRIANGULOS POR SEPARADO O SOLO SU MODELO BAKEADO O AMBAS COSAS.
 		static std::unordered_map<unsigned int, modelTriangles*> triangles_; // NOTE. If a model has a nullptr here, it means that no triangle indexing is used.
+		static std::unordered_map<unsigned int, modelNormals*> normals_;
 
 	};
-
-	inline const modelTriangles& models::getModelTriangles(unsigned int modelID) {
-
-		return *triangles_[modelID];
-
-	}
 
 }
 

@@ -1,8 +1,9 @@
 #include "shader.h"
 
 #include <iterator>
-#include <fstream>
 #include <ios>
+#include <fstream>
+#include <stdexcept>
 #include "../../logger.h"
 
 #if GRAPHICS_API == OPENGL
@@ -70,8 +71,8 @@ namespace VoxelEng {
 
     }
 
-    shader::shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
-	    : rendererID_(0) {
+    shader::shader(const std::string& name, const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
+	    : name_(name), rendererID_(0) {
 
         // Load the two shaders from the files and compile them later in the Shader::createShader() private method.
         std::ifstream vertex_shader_file(vertexShaderPath);
@@ -154,6 +155,23 @@ namespace VoxelEng {
         creates matrices that OpenGL doesn't need to transpose in order to understand them.
         */
         glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &matrix[0][0]); 
+
+    }
+
+    void shader::bindUFO(const UBO<material>& ubo) {
+
+        const std::string& uboName = ubo.name();
+        unsigned int uniformBlockIndex = glGetUniformBlockIndex(rendererID_, uboName.c_str());
+        if (uniformBlockIndex == GL_INVALID_INDEX) {
+
+            throw std::runtime_error("There is no uniform block named " + uboName + " in shader " + name_);
+
+        }
+        else {
+
+            glUniformBlockBinding(rendererID_, uniformBlockIndex, ubo.bindingPoint());
+
+        }
 
     }
 

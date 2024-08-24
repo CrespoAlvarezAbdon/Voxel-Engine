@@ -14,6 +14,12 @@
 
 namespace VoxelEng {
 
+	// NEXT. HACER UNA CLASE REGISTRYINSORDERED QUE TIENE UN STD::MAP<INT, KEY> (ORDENADO) QUE GUARDA EL ORDEN DE INSERCIÓN DE LOS ELEMENTOS.
+	// -AL HACER INSERT, EN EL MAP SE PONE NELEMENTS Y LA KEY Y SE INCREMENTA NELEMENTS.
+	// -AL HACER * O -> DEL ITERATOR, SE HACE UNORDERED_MAP_DE_REGISTRY[MAP_ORDENADO[KEY]].
+	// -AL BORRAR, SE QUITA DEL MAP Y COMO EL MAP ESTÁ ORDENADO TODO BIEN.
+	// -EL ITERATOR DE REGISTRYINSORDERED ES UNA CLASE DENTRO DE REGISTRYINSORDERED QUE USA POR DENTRO EL ITERATOR DE REGISTRY.
+
 	////////////
 	//Classes.//
 	////////////
@@ -38,8 +44,16 @@ namespace VoxelEng {
 		*/
 		using factoryFunc = std::function<std::unique_ptr<T>(std::any)>;
 
+		/**
+		* @brief Registry's random access iterator. The iteration order for the elements can changed if the registry contents
+		* are changed.
+		*/
 		using iterator = std::unordered_map<KeyT, std::unique_ptr<T>>::iterator;
 
+		/**
+		* @brief Registry's random access const iterator. The iteration order for the elements can changed if the registry contents
+		* are changed.
+		*/
 		using const_iterator = std::unordered_map<KeyT, std::unique_ptr<T>>::const_iterator;
 
 
@@ -59,7 +73,7 @@ namespace VoxelEng {
 		/**
 		* @brief Class destructor.
 		*/
-		~registry();
+		virtual ~registry();
 
 
 		// Observers.
@@ -68,7 +82,6 @@ namespace VoxelEng {
 		* @brief Get the specified element. Throws exception if it is not registered.
 		* @param key The key that corresponds to the value that is the specified element.
 		*/
-
 		const T& get(const KeyT& key) const;
 
 		/**
@@ -143,10 +156,13 @@ namespace VoxelEng {
 		*/
 		iterator end();
 
-	private:
+	protected:
 
 		std::unordered_map<KeyT, std::unique_ptr<T>> elements_;
 		std::string Tname_;
+
+	private:
+
 		factoryFunc factoryFunc_;
 
 	};

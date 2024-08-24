@@ -1,7 +1,9 @@
 #include "graphics.h"
 
+#include "Materials/materials.h"
 #include "../logger.h"
 #include "../definitions.h"
+#include "../Registry/registries.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -9,9 +11,6 @@
 #include <GLFW/glfw3.h>
 
 #endif
-
-// DUMMY.
-#include <iostream>
 
 namespace VoxelEng {
 
@@ -39,6 +38,11 @@ namespace VoxelEng {
 	std::unordered_map<std::string, vertexBuffer> graphics::vbos_;
 	std::unordered_map<std::string, vertexArray> graphics::vaos_;
 	std::unordered_map<std::string, vertexBufferLayout> graphics::vboLayouts_;
+	shader* graphics::opaqueShader_ = nullptr;
+	shader* graphics::translucidShader_ = nullptr;
+	shader* graphics::compositeShader_ = nullptr;
+	shader* graphics::screenShader_ = nullptr;
+	UBO<material>* graphics::materialsUBO_ = nullptr;
 
 
 	void graphics::init(window& mainWindow) {
@@ -106,11 +110,11 @@ namespace VoxelEng {
 								  & layoutScreen = vboLayouts_.insert({ "screen", vertexBufferLayout() }).first->second;
 
 				// Configure the vertex layout for 3D rendering.
-				layout3D.push<GLfloat>(3);
-				layout3D.push<GLfloat>(2);
-				layout3D.push<unsigned char>(4);
-				layout3D.push<normalVec>(1);
-				layout3D.push<unsigned char>(4);
+				layout3D.push<GLfloat>(3, true);
+				layout3D.push<GLfloat>(2, true);
+				layout3D.push<unsigned char>(4, true);
+				layout3D.push<unsigned char>(4, false);
+				layout3D.push<normalVec>(1, false);
 				vaos_.at("3D").bind();
 				vbos_.at("chunks").bind();
 				vaos_.at("3D").addLayout(layout3D);
@@ -120,18 +124,55 @@ namespace VoxelEng {
 				vaos_.at("3Dentities").addLayout(layout3D);
 
 				// The same for 2D rendering.
-				layout2D.push<GLfloat>(2);
-				layout2D.push<GLfloat>(2);
+				layout2D.push<GLfloat>(2, true);
+				layout2D.push<GLfloat>(2, true);
 				vaos_.at("2D").bind();
 				vbos_.at("GUI").bind();
 				vaos_.at("2D").addLayout(layout2D);
 
 				// The same for screen rendering.
-				layoutScreen.push<GLfloat>(2);
-				layoutScreen.push<GLfloat>(2);
+				layoutScreen.push<GLfloat>(2, true);
+				layoutScreen.push<GLfloat>(2, true);
 				vaos_.at("screen").bind();
 				vbos_.at("screen").bind();
 				vaos_.at("screen").addLayout(layoutScreen);
+
+				// Initialize shaders.
+				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader");
+				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader");
+				compositeShader_ = new shader("composite", "resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
+				screenShader_ = new shader("screenQuad", "resources/Shaders/screenVertex.shader", "resources/Shaders/screenFragment.shader");
+
+				// Register materials.
+				registry<std::string, material>& materialsRegistry = registries::materials();
+				materialsRegistry.insert("OmegaRed",
+					10.0f, 0.0f, 0.0f,
+					10.0f, 0.0f, 0.0f,
+					10.0f, 0.0f, 0.0f,
+					32.0f);
+
+				materialsRegistry.insert("AlphaBlue",
+					0.0f, 0.0f, 10.0f,
+					0.0f, 0.0f, 10.0f,
+					0.0f, 0.0f, 10.0f,
+					32.0f);
+
+				materialsRegistry.insert("RedOnlyIfLit",
+					1.0f, 1.0f, 1.0f,
+					10.0f, 0.0f, 0.0f,
+					10.0f, 0.0f, 0.0f,
+					32.0f);
+
+				// Initialize and link shaders' UBOs.
+				materialsUBO_ = new UBO<material>("Materials", materialsRegistry, 1); // binding point 1 is used for materials' UBO.
+				opaqueShader_->bind();
+				opaqueShader_->bindUFO(*materialsUBO_);
+				opaqueShader_->unbind();
+
+				// NEXT. PONERLO TODO EN TRANSLUCID GEOMETRY TAMBIÉN
+				//translucidShader_->bind();
+				//translucidShader_->bindUFO(*materialsUBO_);
+				//translucidShader_->unbind();
 
 			#else
 
@@ -316,27 +357,122 @@ namespace VoxelEng {
 		glDisable(GL_BLEND);
 
 	}
+
+	shader& graphics::opaqueShader() {
+
+		if (initialised_) {
+
+			return *opaqueShader_;
+
+		}
+		else {
+
+			logger::errorLog("Graphics system is not initialised when accessing opaque shader");
+
+		}
+
+	}
+
+	shader& graphics::translucidShader() {
+
+		if (initialised_) {
+
+			return *translucidShader_;
+
+		}
+		else {
+
+			logger::errorLog("Graphics system is not initialised when accessing translucid shader");
+
+		}
+
+	}
+
+	shader& graphics::compositeShader() {
+
+		if (initialised_) {
+
+			return *compositeShader_;
+
+		}
+		else {
+
+			logger::errorLog("Graphics system is not initialised when accessing composite shader");
+
+		}
+
+	}
+
+	shader& graphics::screenShader() {
+
+		if (initialised_) {
+
+			return *screenShader_;
+
+		}
+		else {
+
+			logger::errorLog("Graphics system is not initialised when accessing screen shader");
+
+		}
+
+	}
 	
 	void graphics::reset() {
 	
-		#if GRAPHICS_API == OPENGL
+		if (initialised_) {
+		
+			#if GRAPHICS_API == OPENGL
 
-			vbos_.clear();
-			vaos_.clear();
-			vboLayouts_.clear();
-			glfwTerminate();
-            
+				vbos_.clear();
+				vaos_.clear();
+				vboLayouts_.clear();
+				glfwTerminate();
 
-        #else
-
+			#else
 
 
-        #endif
 
-		mainWindow_ = nullptr;
+			#endif
 
-		initialised_ = false;
-	
+			mainWindow_ = nullptr;
+
+			initialised_ = false;
+
+			if (opaqueShader_) {
+			
+				delete opaqueShader_;
+				opaqueShader_ = nullptr;
+			
+			}
+
+			if (translucidShader_) {
+
+				delete translucidShader_;
+				translucidShader_ = nullptr;
+
+			}
+
+			if (compositeShader_) {
+
+				delete compositeShader_;
+				compositeShader_ = nullptr;
+
+			}
+			if (screenShader_) {
+
+				delete screenShader_;
+				screenShader_ = nullptr;
+
+			}
+		
+		}
+		else {
+
+			logger::errorLog("Graphics system is not initialised");
+
+		}
+
 	}
 
 }

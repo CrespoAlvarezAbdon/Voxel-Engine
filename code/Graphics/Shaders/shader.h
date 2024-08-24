@@ -34,7 +34,7 @@ namespace VoxelEng {
 		* vertex shader and fragment shader in order to process the vertex data.
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
-		shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
+		shader(const std::string& name, const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
 
 
 		// Modifiers.
@@ -56,6 +56,7 @@ namespace VoxelEng {
 		/**
 		* @brief Sets the value of a previously existing integer variable named 'name' in the shader program.
 		* WARNING. Must be called in a thread with valid graphics API context.
+		* WARNING. Shader must be bound before calling this method.
 		*/
 		void setUniform1i(const std::string& name, int i1);
 
@@ -63,35 +64,39 @@ namespace VoxelEng {
 		* @brief Sets a previously existing vector of integers named 'name' in the shader program
 		* of size 'vSize'.
 		* WARNING. Must be called in a thread with valid graphics API context.
+		* WARNING. Shader must be bound before calling this method.
 		*/
 		void setUniform1iv(const std::string& name, const int * v, int vSize);
 
 		/**
 		* @brief Sets a previously existing vector of 4 floats named 'name' in the shader program.
 		* WARNING. Must be called in a thread with valid graphics API context.
+		* WARNING. Shader must be bound before calling this method.
 		*/
 		void setUniformVec4f(const std::string& name, float f1, float f2, float f3, float f4);
 
 		/**
 		* @brief Sets a previously existing vector of 3 floats named 'name' in the shader program.
 		* WARNING. Must be called in a thread with valid graphics API context.
+		* WARNING. Shader must be bound before calling this method.
 		*/
 		void setUniformVec3f(const std::string& name, const vec3& vec);
 
 		/**
 		* @brief Sets a previously existing uniform matrix named 'name' of 4x4 floats in the shader program.
 		* WARNING. Must be called in a thread with valid graphics API context.
+		* WARNING. Shader must be bound before calling this method.
 		*/
 		void setUniformMatrix4f(const std::string& name, const glm::mat4& matrix);
 
 		/**
-		* @brief Bind the specified materials UFO for this shader. 
-		* WARNING. The name of this UFO must be defined as a valid Uniform Block in the shader's code
+		* @brief Bind the specified materials UBO for this shader. 
+		* WARNING. The name of this UBO must be defined as a valid Uniform Block in the shader's code
 		* or else an exception will be thrown.
-		* WARNING. An exception will be also thrown if the provided UFO is not properly initialised.
-		* @param ufo The specified materials UFO.
+		* WARNING. An exception will be also thrown if the provided UBO is not properly initialised.
+		* WARNING. Shader must be bound before calling this method.
 		*/
-		void bindUFO(const UBO<material>& ufo); // NEXT. DO THIS AND THE FUNCTIONS THAT ARE PENDING TO BE IMPLEMENTED IN UBO.h
+		void bindUFO(const UBO<material>& ubo);
 
 
 		// Destructors.
@@ -104,6 +109,7 @@ namespace VoxelEng {
 
 	private:
 
+		std::string name_;
 		unsigned int rendererID_;
 		mutable std::unordered_map<std::string, GLint> uniformLocationCache_;
 

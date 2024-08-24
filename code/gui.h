@@ -19,10 +19,10 @@
 #include "definitions.h"
 #include "vertexBuffer.h"
 #include "vertexArray.h"
-#include "shader.h"
 #include "vertex.h"
 #include "gameWindow.h"
 #include "vec.h"
+#include "Graphics/Shaders/shader.h"
 
 #if GRAPHICS_API == OPENGL
 

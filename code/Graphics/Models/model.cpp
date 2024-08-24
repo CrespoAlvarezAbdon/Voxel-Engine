@@ -1,4 +1,5 @@
 #include "model.h"
+
 #include <cmath>
 #include <cstddef>
 #include <stdexcept>
@@ -8,9 +9,9 @@
 #include <sstream>
 #include <string>
 #include <filesystem>
-#include "chunk.h"
-#include "logger.h"
-#include "Graphics/Textures/texture.h"
+#include "../../chunk.h"
+#include "../../logger.h"
+#include "../../Graphics/Textures/texture.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -42,6 +43,7 @@ namespace VoxelEng {
     bool models::initialised_ = false;
     std::unordered_map<unsigned int, model*> models::models_;
     std::unordered_map<unsigned int, modelTriangles*> models::triangles_;
+    std::unordered_map<unsigned int, modelNormals*> models::normals_;
 
     void models::init() {
     
@@ -55,6 +57,7 @@ namespace VoxelEng {
 
             model* emptyVertices = new model{};
             modelTriangles* emptyTriangles = new modelTriangles{};
+            modelNormals* emptyNormals = new modelNormals{};
 
             // Block model.
             model* blockVertices = new model {
@@ -80,6 +83,7 @@ namespace VoxelEng {
                 {1, 2, 5, 5, 2, 6}  // Right Face.
 
             };
+
 
             // Plane model.
             model* planeVertices = new model { // This is read as a .OBJ model and therefore it has no vertex indexing.
@@ -126,6 +130,7 @@ namespace VoxelEng {
             
             };
 
+
             /////////////////////////////
             //Oficial model dictionary.//
             /////////////////////////////
@@ -142,6 +147,14 @@ namespace VoxelEng {
 
                 {0, emptyTriangles},
                 {1, blockTriangles},
+                {planeModelID, nullptr}
+
+            };
+
+            normals_ = {
+
+                {0, emptyNormals},
+                {1, nullptr},
                 {planeModelID, nullptr}
 
             };
@@ -277,7 +290,7 @@ namespace VoxelEng {
     const model& models::getModelAt(unsigned int modelID) {
 
         if (models_.find(modelID) == models_.cend())
-            return *models_[0];
+            logger::errorLog("No model with ID " + std::to_string(modelID) + " was found");
         else
             return *models_[modelID];
 
@@ -285,10 +298,19 @@ namespace VoxelEng {
 
     const modelTriangles& models::getModelTrianglesAt(unsigned int modelID) {
 
-        if (models_.find(modelID) == models_.cend())
-            logger::errorLog("No model with ID " + std::to_string(modelID) + " was found");
+        if (triangles_.find(modelID) == triangles_.cend())
+            logger::errorLog("No vertex triangle indices for model with ID " + std::to_string(modelID) + " were found");
         else
-            return getModelTriangles(modelID);
+            return *triangles_[modelID];
+
+    }
+
+    const modelNormals& models::getModelNormalsAt(unsigned int modelID) {
+
+        if (normals_.find(modelID) == normals_.cend())
+            logger::errorLog("No normals for model with ID " + std::to_string(modelID) + " were found");
+        else
+            return *normals_[modelID];
 
     }
 
@@ -454,6 +476,10 @@ namespace VoxelEng {
         for (auto it = triangles_.cbegin(); it != triangles_.cend(); it++)
             delete it->second;
         triangles_.clear();
+
+        for (auto it = normals_.cbegin(); it != normals_.cend(); it++)
+            delete it->second;
+        normals_.clear();
 
         initialised_ = false;
     

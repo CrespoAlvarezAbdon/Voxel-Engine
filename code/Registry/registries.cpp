@@ -17,6 +17,9 @@ namespace VoxelEng {
 		}
 		else {
 		
+			// Note. Always add a "Default" element into registries in case it is wanted to be used in case
+			// the specified registry element is not found.
+
 			materials_ = new registry<std::string, material>([](std::any args) {
 			
 				auto tuple = std::any_cast<std::tuple<float, float, float, float, float, float, float, float, float, float>>(args);
@@ -26,6 +29,12 @@ namespace VoxelEng {
 					std::get<9>(tuple));
 			
 			});
+
+			materials_->insert("Default",
+				1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				32.0f);
 
 			initialised_ = true;
 		

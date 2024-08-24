@@ -18,7 +18,7 @@ namespace VoxelEng {
 	//Constants.//
 	//////////////
 
-	const unsigned int MAX_MATERIALS = 128; // TODO. MAKE THIS NUMBER DYNAMIC IN TERMS OF HOW MANY MATERIALS ARE REGISTERED AT ENGINE'S GRAPHICAL MODE STARTUP.
+	const unsigned int MAX_MATERIALS = 256; // TODO. MAKE THIS NUMBER DYNAMIC IN TERMS OF HOW MANY MATERIALS ARE REGISTERED AT ENGINE'S GRAPHICAL MODE STARTUP.
 
 
 	////////////
@@ -49,6 +49,11 @@ namespace VoxelEng {
 		// Constructors.
 
 		/**
+		* @brief Default constructor.
+		*/
+		material();
+
+		/**
 		* @brief Class constructor.
 		* @param ambientR Percentage of red color reflected when hit by ambient lighting.
 		* @param ambientG Percentage of green color reflected when hit by ambient lighting.
@@ -56,6 +61,9 @@ namespace VoxelEng {
 		* @param diffuseR Percentage of red color reflected when hit by diffuse lighting.
 		* @param diffuseG Percentage of green color reflected when hit by diffuse lighting.
 		* @param diffuseB Percentage of blue color reflected when hit by diffuse lighting.
+		* @param specularR Percentage of red color reflected when hit by specular lighting.
+		* @param specularG Percentage of green color reflected when hit by specular lighting.
+		* @param specularB Percentage of blue color reflected when hit by specular lighting.
 		* @param shininess Specular shininess.
 		*/
 		material(float ambientR, float ambientG, float ambientB,
@@ -75,10 +83,10 @@ namespace VoxelEng {
 		Attributes.
 		*/
 
-		float ambient[3];
-		float diffuse[3];
-		float specular[3];
-		float shininess;
+		float ambient[4];
+		float diffuse[4];
+		float specular[4];
+		float shininess[4]; // Only the first value is valid. The rest are for padding.
 
 	private:
 
@@ -87,11 +95,15 @@ namespace VoxelEng {
 
 	};
 
+	inline material::material()
+		: ambient{ 1.0f, 1.0f, 1.0f }, diffuse{ 1.0f, 1.0f, 1.0f }, specular{ 1.0f, 1.0f, 1.0f }, shininess{ 32.0f, 1.0f, 1.0f }
+	{}
+
 	inline material::material(float ambientR, float ambientG, float ambientB,
 		float diffuseR, float diffuseG, float diffuseB,
 		float specularR, float specularG, float specularB,
 		float shininess)
-		: ambient{ ambientR, ambientG, ambientB }, diffuse{ diffuseR, diffuseG, diffuseB }, specular{ specularR, specularG, specularB }, shininess(shininess)
+	: ambient{ ambientR, ambientG, ambientB }, diffuse{ diffuseR, diffuseG, diffuseB }, specular{ specularR, specularG, specularB }, shininess{ shininess, 1.0f, 1.0f }
 	{}
 
 	inline const std::string& material::typeName() {
