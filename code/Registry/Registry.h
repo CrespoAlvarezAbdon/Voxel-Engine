@@ -15,7 +15,7 @@
 namespace VoxelEng {
 
 	// NEXT. HACER UNA CLASE REGISTRYINSORDERED QUE TIENE UN STD::MAP<INT, KEY> (ORDENADO) QUE GUARDA EL ORDEN DE INSERCIÓN DE LOS ELEMENTOS.
-	// -AL HACER INSERT, EN EL MAP SE PONE NELEMENTS Y LA KEY Y SE INCREMENTA NELEMENTS.
+	// -AL HACER INSERT, EN EL MAP SE PONE NELEMENTS Y LA KEY Y SE INCREMENTA NELEMENTS. DONE.
 	// -AL HACER * O -> DEL ITERATOR, SE HACE UNORDERED_MAP_DE_REGISTRY[MAP_ORDENADO[KEY]].
 	// -AL BORRAR, SE QUITA DEL MAP Y COMO EL MAP ESTÁ ORDENADO TODO BIEN.
 	// -EL ITERATOR DE REGISTRYINSORDERED ES UNA CLASE DENTRO DE REGISTRYINSORDERED QUE USA POR DENTRO EL ITERATOR DE REGISTRY.
@@ -81,11 +81,13 @@ namespace VoxelEng {
 		/**
 		* @brief Get the specified element. Throws exception if it is not registered.
 		* @param key The key that corresponds to the value that is the specified element.
+		* @returns The specified element.
 		*/
 		const T& get(const KeyT& key) const;
 
 		/**
 		* @brief Get the number of elements in the registry.
+		* @returns. The number of elements in the registry.
 		*/
 		std::size_t size() const;
 
@@ -133,7 +135,7 @@ namespace VoxelEng {
 		* @param args The element's constructor parameters.
 		*/
 		template<typename... Args>
-		void insert(const KeyT& key, Args&&... args);
+		virtual void insert(const KeyT& key, Args&&... args);
 
 		/**
 		* @brief Erase the specified element. Throws exception if the given key does not correspond
@@ -231,7 +233,7 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-		T& registry<KeyT, T>::get(const KeyT& key) {
+	T& registry<KeyT, T>::get(const KeyT& key) {
 
 		if (elements_.contains(key))
 			return elements_.at(key);

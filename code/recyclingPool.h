@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include "logger.h"
 
+// TODO. DOCUMENT THIS CLASS.
 
 namespace VoxelEng {
 
@@ -35,7 +36,11 @@ namespace VoxelEng {
 
 		const T& getConst();
 
+		const T& getConst(bool& isNewElement);
+
 		T& get();
+
+		T& get(bool& isNewElement);
 
 		void free(T& element);
 
@@ -111,22 +116,44 @@ namespace VoxelEng {
 	}
 
 	template<typename T>
+	inline const T& recyclingPool<T>::getConst(bool& isNewElement) {
+
+		return get(isNewElement);
+
+	}
+
+	template<typename T>
 	T& recyclingPool<T>::get() {
 	
+		bool b;
+		return get(b);
+	
+	}
+
+	template<typename T>
+	T& recyclingPool<T>::get(bool& isNewElement) {
+
+		isNewElement = false;
+
 		T* element = nullptr;
-		if (freeElements_.empty())
-			element = new T();
-		else {
+		if (freeElements_.empty()) 
+		{
 		
+			element = new T();
+			isNewElement = true;
+		
+		}
+		else {
+
 			element = freeElements_.front();
 			freeElements_.pop();
-			
+
 		}
 
 		occupiedElements_.insert(element);
 
 		return *element;
-	
+
 	}
 
 	template<typename T>
