@@ -16,7 +16,7 @@
 #include "../../definitions.h"
 #include "../../logger.h"
 #include "../../Registry/registryElement.h"
-#include "../../Registry/registry.h"
+#include "../../Registry/RegistryInsOrdered/registryInsOrdered.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -69,7 +69,7 @@ namespace VoxelEng {
 		* @param bindingPoint The UBO's binding point that is referenced in the shader where it
 		* is going to be used.
 		*/
-		UBO(const std::string& name, const registry<std::string, T>& elements, unsigned int bindingPoint);
+		UBO(const std::string& name, const registryInsOrdered<std::string, T>& elements, unsigned int bindingPoint);
 
 
 		// Observers.
@@ -163,12 +163,12 @@ namespace VoxelEng {
 
 	template <typename T>
 	requires std::default_initializable<T>
-	UBO<T>::UBO(const std::string& name, const registry<std::string, T>& elements, unsigned int bindingPoint)
+	UBO<T>::UBO(const std::string& name, const registryInsOrdered<std::string, T>& elements, unsigned int bindingPoint)
 	: bindingPoint_(bindingPoint), name_(name), elements_(elements.size()) {
 
-		typename registry<std::string, T>::const_iterator it = elements.cbegin();
+		typename registryInsOrdered<std::string, T>::const_iterator it = elements.orderedCbegin();
 		int i = 0;
-		while(it != elements.cend()) {
+		while(it != elements.orderedCend()) {
 		
 			elements_[i] = *(it->second);
 

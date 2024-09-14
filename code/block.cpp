@@ -1,5 +1,6 @@
 #include "block.h"
 
+#include "Registry/registries.h"
 
 namespace VoxelEng {
 	
@@ -17,7 +18,7 @@ namespace VoxelEng {
 			logger::errorLog("Block system is already initialised");
 		else {
 		
-			auto it = blocks_.emplace(std::pair<std::string, block>(emptyBlockName_, block(emptyBlockName_, 0, blockOpacity::EMPTYBLOCK, {} )));
+			auto it = blocks_.emplace(std::pair<std::string, block>(emptyBlockName_, block(emptyBlockName_, 0, blockOpacity::EMPTYBLOCK, {}, "Default")));
 			emptyBlock_ = &it.first->second;
 			blocksIntIDs_.insert(std::pair<unsigned int, block*>(0, emptyBlock_));
 
@@ -57,7 +58,9 @@ namespace VoxelEng {
 
 	}
 
-	void block::registerBlock(const std::string& name, blockOpacity opacity, const std::initializer_list<std::pair<std::string, unsigned int>>& textures) {
+	void block::registerBlock(const std::string& name, blockOpacity opacity,
+		const std::initializer_list<std::pair<std::string, unsigned int>>& textures,
+		const std::string& material) {
 	
 		if (blocks_.contains(name))
 			logger::errorLog("Block " + name + " already registered");
@@ -65,7 +68,7 @@ namespace VoxelEng {
 		
 			unsigned int intID = 0;
 			if (freeBlocksIntIDs_.empty())
-				intID = blocks_.size() + 1; // intID 0 is reserved for emtpy block.
+				intID = blocks_.size() + 1; // intID 0 is reserved for empty block.
 			else {
 
 				intID = *freeBlocksIntIDs_.begin();
@@ -73,7 +76,7 @@ namespace VoxelEng {
 
 			}
 
-			auto it = blocks_.emplace(std::pair<std::string, block>(name, block(name, intID, opacity, textures)));
+			auto it = blocks_.emplace(std::pair<std::string, block>(name, block(name, intID, opacity, textures, material)));
 			blocksIntIDs_.emplace(std::pair<unsigned int, block*>(intID, &it.first->second));
 			
 		}
@@ -132,10 +135,12 @@ namespace VoxelEng {
 	}
 
 	block::block(const std::string& name, unsigned int intID, blockOpacity opacity,
-		const std::initializer_list<std::pair<std::string, unsigned int>>& textures)
+		const std::initializer_list<std::pair<std::string, unsigned int>>& textures,
+		const std::string& materialID)
 		: name_(name),
 		intID_(intID),
-		opacity_(opacity)
+		opacity_(opacity),
+		materialIndex_(registries::materials().getInsIndex(materialID))
 	{
 
 		if (textures.size()) {

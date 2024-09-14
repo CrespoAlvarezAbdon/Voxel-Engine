@@ -10,7 +10,7 @@
 #define _VOXELENG_REGISTRIES_
 
 #include <string>
-#include "registry.h"
+#include "RegistryInsOrdered/registryInsOrdered.h"
 #include "../Graphics/Materials/materials.h"
 
 namespace VoxelEng {
@@ -40,16 +40,16 @@ namespace VoxelEng {
 		/**
 		* @brief Get the vertex graphical materials registry.
 		*/
-		static registry<std::string, material>& materials();
+		static registryInsOrdered<std::string, material>& materials();
 
 	private:
 
 		static bool initialised_;
-		static registry<std::string, material>* materials_;
+		static registryInsOrdered<std::string, material>* materials_;
 
 	};
 
-	inline registry<std::string, material>& registries::materials() {
+	inline registryInsOrdered<std::string, material>& registries::materials() {
 	
 		return *materials_;
 	

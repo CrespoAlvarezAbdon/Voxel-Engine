@@ -6,7 +6,7 @@
 namespace VoxelEng {
 
 	bool registries::initialised_ = false;
-	registry<std::string, material>* registries::materials_ = nullptr;
+	registryInsOrdered<std::string, material>* registries::materials_ = nullptr;
 
 	void registries::init() {
 	
@@ -20,7 +20,7 @@ namespace VoxelEng {
 			// Note. Always add a "Default" element into registries in case it is wanted to be used in case
 			// the specified registry element is not found.
 
-			materials_ = new registry<std::string, material>([](std::any args) {
+			materials_ = new registryInsOrdered<std::string, material>([](std::any args) {
 			
 				auto tuple = std::any_cast<std::tuple<float, float, float, float, float, float, float, float, float, float>>(args);
 				return std::make_unique<material>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple), 
@@ -28,7 +28,7 @@ namespace VoxelEng {
 					std::get<6>(tuple), std::get<7>(tuple), std::get<8>(tuple),
 					std::get<9>(tuple));
 			
-			});
+			}, nullptr);
 
 			materials_->insert("Default",
 				1.0f, 1.0f, 1.0f,

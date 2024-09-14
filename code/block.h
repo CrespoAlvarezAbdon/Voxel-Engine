@@ -14,7 +14,6 @@
 #include <utility>
 #include <unordered_map>
 #include <unordered_set>
-
 #include "logger.h"
 
 
@@ -132,6 +131,11 @@ namespace VoxelEng {
 		*/
 		blockOpacity opacity() const;
 
+		/**
+		* @brief Get the block's material ID.
+		*/
+		unsigned int getMaterialIndex() const;
+
 
 		// Modifiers.
 
@@ -139,7 +143,9 @@ namespace VoxelEng {
 		* @brief Registers a block into the system.
 		* Its numerical ID is assigned automatically.
 		*/
-		static void registerBlock(const std::string& name, blockOpacity opacity, const std::initializer_list<std::pair<std::string, unsigned int>>& textures);
+		static void registerBlock(const std::string& name, blockOpacity opacity, 
+			const std::initializer_list<std::pair<std::string, unsigned int>>& textures,
+			const std::string& material = "Default");
 
 		/**
 		* @brief Unregisters a block.
@@ -186,7 +192,8 @@ namespace VoxelEng {
 		// Constructors.
 
 		block(const std::string& name, unsigned int intID, blockOpacity opacity,
-			const std::initializer_list<std::pair<std::string, unsigned int>>& texture);
+			  const std::initializer_list<std::pair<std::string, unsigned int>>& texture,
+			  const std::string& material);
 
 
 		/*
@@ -204,13 +211,15 @@ namespace VoxelEng {
 		const unsigned int intID_;
 		blockOpacity opacity_;
 		std::unordered_map<std::string, unsigned int> textures_;
+		unsigned int materialIndex_;
 
 	};
 
 	inline block::block()
 	: name_(""),
 	  intID_(0),
-	  opacity_(blockOpacity::OPAQUEBLOCK)
+	  opacity_(blockOpacity::OPAQUEBLOCK),
+	  materialIndex_(0)
 	{}
 
 	inline bool block::isBlockRegistered(const std::string& name) {
@@ -270,6 +279,12 @@ namespace VoxelEng {
 	inline blockOpacity block::opacity() const {
 	
 		return opacity_;
+	
+	}
+
+	inline unsigned int block::getMaterialIndex() const {
+	
+		return materialIndex_;
 	
 	}
 

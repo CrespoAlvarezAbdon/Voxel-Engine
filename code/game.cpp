@@ -140,18 +140,50 @@ namespace VoxelEng {
             timeStep_ = 0.0f;
             AImodeON_ = false;
 
-            // Registrable elements initialization.
+            // Registrable elements initialisation.
             registryElement::init("registryElement");
             material::init("material");
 
-            // Registries collection initialization.
+            // Registries collection initialisation.
             registries::init();
 
+            // Register materials.
+            registryInsOrdered<std::string, material>& materialsRegistry = registries::materials();
+            materialsRegistry.insert("OmegaRed",
+                10.0f, 0.0f, 0.0f,
+                10.0f, 0.0f, 0.0f,
+                10.0f, 0.0f, 0.0f,
+                32.0f);
+
+            materialsRegistry.insert("AlphaBlue",
+                0.0f, 0.0f, 10.0f,
+                0.0f, 0.0f, 10.0f,
+                0.0f, 0.0f, 10.0f,
+                32.0f);
+
+            materialsRegistry.insert("DeltaGreen",
+                0.0f, 10.0f, 0.0f,
+                0.0f, 10.0f, 0.0f,
+                0.0f, 10.0f, 0.0f,
+                32.0f);
+
+            materialsRegistry.insert("RedOnlyIfLit",
+                1.0f, 1.0f, 1.0f,
+                10.0f, 0.0f, 0.0f,
+                10.0f, 0.0f, 0.0f,
+                32.0f);
+
+            materialsRegistry.insert("UltraShiny",
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f,
+                256.0f);
+
             // Block registration.
-            block::registerBlock("starminer::grass", blockOpacity::OPAQUEBLOCK, { {"all", 1} }); // TODO. Manual texture ID assignment is temporary.
+            block::registerBlock("starminer::grass", blockOpacity::OPAQUEBLOCK, { {"all", 1} }, "UltraShiny"); // TODO. Manual texture ID assignment is temporary.
             block::registerBlock("starminer::stone", blockOpacity::OPAQUEBLOCK, { {"all", 2} });
             block::registerBlock("starminer::sand", blockOpacity::OPAQUEBLOCK, { {"all", 3} });
-            block::registerBlock("starminer::marbleBlock", blockOpacity::OPAQUEBLOCK, { {"all", 4} });
+            block::registerBlock("starminer::marbleBlock", blockOpacity::OPAQUEBLOCK, { {"all", 4}}, "AlphaBlue");
             block::registerBlock("starminer::dirt", blockOpacity::OPAQUEBLOCK, { {"all", 6} });
             block::registerBlock("starminer::coalOre", blockOpacity::OPAQUEBLOCK, { {"all", 7} });
             block::registerBlock("starminer::ironOre", blockOpacity::OPAQUEBLOCK, { {"all", 8} });
@@ -159,12 +191,11 @@ namespace VoxelEng {
             block::registerBlock("starminer::diamondOre", blockOpacity::OPAQUEBLOCK, { {"all", 10}});
             block::registerBlock("starminer::log", blockOpacity::OPAQUEBLOCK, { {"all", 11}, {"faceY+", 12}, {"faceY-", 12}});
             block::registerBlock("starminer::glass", blockOpacity::FULLTRANSPARENT, { {"all", 13} });
-            block::registerBlock("starminer::glassRed", blockOpacity::TRANSLUCENTBLOCK, { {"all", 14} });
+            block::registerBlock("starminer::glassRed", blockOpacity::TRANSLUCENTBLOCK, { {"all", 14} }, "DeltaGreen");
             block::registerBlock("starminer::glassBlue", blockOpacity::TRANSLUCENTBLOCK, { {"all", 15} });
-            block::registerBlock("starminer::marbleBlock2", blockOpacity::OPAQUEBLOCK, { {"all", 16} });
+            block::registerBlock("starminer::marbleBlock2", blockOpacity::OPAQUEBLOCK, { {"all", 16} }, "OmegaRed");
 
             // Worldgen initialisation.
-
             worldGen::init();
 
             initialised_ = true;

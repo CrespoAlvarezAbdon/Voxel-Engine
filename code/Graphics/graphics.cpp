@@ -4,6 +4,7 @@
 #include "../logger.h"
 #include "../definitions.h"
 #include "../Registry/registries.h"
+#include "../Registry/RegistryInsOrdered/registryInsOrdered.h"
 
 #if GRAPHICS_API == OPENGL
 
@@ -143,36 +144,15 @@ namespace VoxelEng {
 				compositeShader_ = new shader("composite", "resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
 				screenShader_ = new shader("screenQuad", "resources/Shaders/screenVertex.shader", "resources/Shaders/screenFragment.shader");
 
-				// Register materials.
-				registry<std::string, material>& materialsRegistry = registries::materials();
-				materialsRegistry.insert("OmegaRed",
-					10.0f, 0.0f, 0.0f,
-					10.0f, 0.0f, 0.0f,
-					10.0f, 0.0f, 0.0f,
-					32.0f);
-
-				materialsRegistry.insert("AlphaBlue",
-					0.0f, 0.0f, 10.0f,
-					0.0f, 0.0f, 10.0f,
-					0.0f, 0.0f, 10.0f,
-					32.0f);
-
-				materialsRegistry.insert("RedOnlyIfLit",
-					1.0f, 1.0f, 1.0f,
-					10.0f, 0.0f, 0.0f,
-					10.0f, 0.0f, 0.0f,
-					32.0f);
-
 				// Initialize and link shaders' UBOs.
-				materialsUBO_ = new UBO<material>("Materials", materialsRegistry, 1); // binding point 1 is used for materials' UBO.
+				materialsUBO_ = new UBO<material>("Materials", registries::materials(), 1); // binding point 1 is used for materials' UBO.
 				opaqueShader_->bind();
 				opaqueShader_->bindUFO(*materialsUBO_);
 				opaqueShader_->unbind();
 
-				// NEXT. PONERLO TODO EN TRANSLUCID GEOMETRY TAMBIÉN
-				//translucidShader_->bind();
-				//translucidShader_->bindUFO(*materialsUBO_);
-				//translucidShader_->unbind();
+				translucidShader_->bind();
+				translucidShader_->bindUFO(*materialsUBO_);
+				translucidShader_->unbind();
 
 			#else
 

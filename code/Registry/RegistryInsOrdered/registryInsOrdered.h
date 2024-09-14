@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <map>
 #include <type_traits>
+#include <utility>
 #include "../registry.h"
 #include "../../logger.h"
 
@@ -17,10 +18,14 @@ namespace VoxelEng {
 
 	public:
 
+		// Unhid overloaded methods with same name in base class.
+
+
+
+
 		// Nested classes.
 
-		template <typename T, bool isConst>
-		requires std::derived_from<T, registryElement>
+		template <bool isConst>
 		class registryIterator {
 
 		public:
@@ -28,10 +33,11 @@ namespace VoxelEng {
 			// Types.
 
 			using iterator_category = std::random_access_iterator_tag;
-			using value_type = T;
+			using value_type = std::pair<const KeyT, std::unique_ptr<T>>;
 			using difference_type = std::ptrdiff_t;
-			using pointer = typename std::conditional<IsConst, const T*, T*>::type;
-			using reference = typename std::conditional<IsConst, const T&, T&>::type;
+			using pointer = typename std::conditional<isConst, const value_type*, value_type*>::type;
+			using reference = typename std::conditional<isConst, const value_type&, value_type&>::type;
+			using nativeIterator = std::map<unsigned int, KeyT>::iterator;
 
 
 			// Constructors.
@@ -40,7 +46,9 @@ namespace VoxelEng {
 			* @brief Class constructor.
 			* @param ptr The pointer from to the element the iterator refers to.
 			*/
-			iterator(pointer ptr);
+			registryIterator(nativeIterator it, registryInsOrdered<KeyT, T>* registryPointer)
+			: thisRegistry_(registryPointer), it_(it)
+			{}
 
 
 			// Operators.
@@ -49,146 +57,117 @@ namespace VoxelEng {
 			* @brief Dereference operator.
 			* @returns A reference to the element associated with the iterator.
 			*/
-			reference operator*() const;
+			reference operator*() const {
+			
+				return *(thisRegistry_->elements_.find(it_->second));
+			
+			}
 
 			/**
 			* @brief Pointer operator.
 			* @returns A pointer to the element associated with the iterator.
 			*/
-			pointer operator->() const;
+			pointer operator->() const {
+			
+				return &(*(thisRegistry_->elements_.find(it_->second)));
+			
+			}
 
 			/**
 			* @brief Pre-increment operator. If the iterator was already end(), the code will enter undefined behaviour.
 			* @returns The same iterator this method was called on but associated with the next element
 			* in the container. If there is no next element, the iterator will point to end().
 			*/
-			iterator& operator++();
+			registryIterator<isConst>& operator++() {
+			
+				it_ = thisRegistry_->orderedKeys_.find(it_->first + 1);
+				return *this;
+			
+			}
 
 			/**
 			* @brief Post-increment operator. If the iterator was already end(), the code will enter undefined behaviour.
 			* @returns The same iterator this method was called on with the element it was associated with
 			* before this call. If there is no next element, the iterator will point to end().
 			*/
-			iterator operator++(int);
+			registryIterator<isConst> operator++(int) {
+			
+				registryIterator<isConst> temp = *this;
+				++(*this);
+				return temp;
+			
+			}
 
 			/**
 			* @brief Pre-decrement operator. If the iterator was already begin(), the code will enter undefined behaviour.
 			* @returns The same iterator this method was called on but associated with the previous element
 			* in the container.
 			*/
-			iterator& operator--();
+			registryIterator<isConst>& operator--() {
+
+				it_ = orderedKeys_.find(it_->first - 1);
+				return *this;
+
+			}
 
 			/**
 			* @brief Post-decrement operator. If the iterator was already begin(), the code will enter undefined behaviour.
 			* @returns The same iterator this method was called on with the element it was associated with
 			* before this call.
 			*/
-			iterator operator--(int);
+			registryIterator<isConst> operator--(int) {
 
-			/**
-			* @brief Addition operator.
-			* @param offset The amount of positions in the container to advance.
-			* @returns An iterator that points at the position specified by the iterator this method was called on
-			* advanced the same number of times as the value in 'offset'. If this operation returns an iterator past end(),
-			* the code will enter undefined behaviour.
-			*/
-			iterator operator+(difference_type offset) const;
+				registryIterator<isConst> temp = *this;
+				--(*this);
+				return temp;
 
-			/**
-			* @brief Subtraction operator.
-			* @param offset The amount of positions in the container to move backwards.
-			* @returns An iterator that points at the position specified by the iterator this method was called on
-			* moved backwards the same number of times as the value in 'offset'. If this operation returns an iterator past begin(),
-			* the code will enter undefined behaviour.
-			*/
-			iterator operator-(difference_type offset) const;
-
-			/**
-			* @brief Substraction operator.
-			* @param it2 The left operand iterator.
-			* @returns The difference of positions between the two iterators. Also called distance between the two iterators. Can be negative if the left operand
-			* corresponds to an element that comes before the right operand's element when traversing the container from begin() to end() or if the iterators
-			* are random-access iterators and the first element in the container can be reach from the last element in it.
-			*/
-			difference_type operator-(const iterator& it2) const;
-
-			/**
-			* @brief Compound assignment for addition. The code will enter undefined behaviour if a position previous to begin() or past end() is the
-			* new position the iterator will be associated with when this call is computed.
-			* @param offset Number of positions to advance the iterator.
-			* @returns The iterator advanced the given number of positions.
-			*/
-			iterator& operator+=(difference_type offset);
-
-			/**
-			* @brief Compound assignment for subtraction. The code will enter undefined behaviour if a position previous to begin() or past end() is the
-			* new position the iterator will be associated with when this call is computed.
-			* @param offset Number of positions to move backwards the iterator.
-			* @returns The iterator movec backwards the given number of positions.
-			*/
-			iterator& operator-=(difference_type offset);
-
-			/**
-			* @brief Subscript operator. The code will enter undefined behaviour if the provided index is not valid or is out of the container's bounds.
-			* @param index The position of the element to access.
-			* @returns The element specified through the given index.
-			*/
-			reference operator[](difference_type index) const;
+			}
 
 			/**
 			* @brief Equal to operator.
 			* @param it2 Left operand iterator.
 			* @returns Whether the iterator this method was called on (the right operand) and it2 are equal (true) or not (false).
 			*/
-			bool operator==(const iterator& it2) const;
+			bool operator==(const registryIterator<isConst>& it2) const {
+			
+				return it_ == it2.it_;
+
+			}
 
 			/**
 			* @brief Not equal to operator.
 			* @param it2 Left operand iterator.
 			* @returns Whether the iterator this method was called on (the right operand) and it2 are NOT equal (true) or not (false).
 			*/
-			bool operator!=(const iterator& it2) const;
+			bool operator!=(const registryIterator<isConst>& it2) const {
+
+				return it_ != it2.it_;
+
+			}
 
 			/**
-			* @brief Less than operator.
-			* @param it2 Left operand iterator.
-			* @returns Whether the iterator this method was called on (the right operand) comes before it2 (true) or not (false).
+			* @brief Conversion operator from non-const iterator to const iterator.
+			* @returns A const iterator.
 			*/
-			bool operator<(const iterator& it2) const;
-
-			/**
-			* @brief Greater than operator.
-			* @param it2 Left operand iterator.
-			* @returns Whether the iterator this method was called on (the right operand) comes after it2 (true) or not (false).
-			*/
-			bool operator>(const iterator& it2) const;
-
-			/**
-			* @brief Less than or equal to operator.
-			* @param it2 Left operand iterator.
-			* @returns Whether the iterator this method was called on (the right operand) comes before or is equal to it2 (true) or not (false).
-			*/
-			bool operator<=(const iterator& it2) const;
-
-			/**
-			* @brief Greater than or equal to operator.
-			* @param it2 Left operand iterator.
-			* @returns Whether the iterator this method was called on (the right operand) comes after or is equal to it2 (true) or not (false).
-			*/
-			bool operator>=(const iterator& it2) const;
+			template <bool c = isConst, typename std::enable_if<!c, int>::type = 0>
+			operator registryIterator<true>() const {
+			
+				return registryIterator<true>(it_, thisRegistry_);
+			
+			}
 
 		private:
 
-			registry<KeyT, T>::iterator it_;
-			pointer ptr_;
+			registryInsOrdered<KeyT, T>* thisRegistry_;
+			nativeIterator it_;
 
 		};
 
 
 		// Types.
 
-		using iterator = registryIterator<T, false>;
-		using const_iterator = registryIterator<T, true>;
+		using iterator = registryIterator<false>;
+		using const_iterator = registryIterator<true>;
 
 
 		// Constructors.
@@ -196,18 +175,26 @@ namespace VoxelEng {
 		/**
 		* @brief Default class constructor.
 		*/
-		registryInsOrdered();
+		registryInsOrdered(registry<KeyT, T>::factoryFunc factory, registry<KeyT, T>::onInsertFunc);
 
 
 		// Observers.
 
 		/**
-		* @brief Get the specified element. Throws exception if it is not registered or if the provided index is out of bounds or invalid.
+		* @brief Get the specified element with its insertion order index. 
+		* Throws exception if it is not registered or if the provided index is out of bounds or invalid.
 		* @param index The index that corresponds to the specified element.
 		* @param elementKey Optional output parameter to hold the retrieve element's key.
 		* @returns The specified element.
 		*/
-		const T& get(unsigned int index, KeyT* elementKey = nullptr) const;
+		const T& getWithInsIndex(unsigned int index, KeyT* elementKey = nullptr) const;
+
+		/**
+		* @brief Get the insertion order index for the specified element key.
+		* @param elementKey The element's key.
+		* @returns The element's index in the insertion order.
+		*/
+		unsigned int getInsIndex(const KeyT& elementKey) const;
 
 		/**
 		* @brief Get an iterator to the beginning of the registry.
@@ -247,7 +234,7 @@ namespace VoxelEng {
 		* @param args The element's constructor parameters.
 		*/
 		template<typename... Args>
-		void insert(const KeyT& key, Args&&... args) override;
+		void insert(const KeyT& key, Args&&... args);
 
 		/**
 		* @brief Get the specified element. Throws exception if it is not registered or if the provided index is out of bounds or invalid.
@@ -255,7 +242,21 @@ namespace VoxelEng {
 		* @param elementKey Optional output parameter to hold the retrieve element's key.
 		* @returns The specified element.
 		*/
-		T& get(unsigned int index, KeyT* elementKey = nullptr);
+		T& getWithInsIndex(unsigned int index, KeyT* elementKey = nullptr);
+
+		/**
+		* @brief Erase the specified element. Throws exception if the given key does not correspond
+		* to any of the registered elements.
+		* @param key The key associated with the element to erase.
+		*/
+		void erase(const KeyT& key);
+
+		/**
+		* @brief Erase the specified element. Throws exception if the given key does not correspond
+		* to any of the registered elements.
+		* @param key The key associated with the element to erase.
+		*/
+		void erase(unsigned int index);
 
 		/**
 		* @brief Reduces the memory allocated that is unused by this registry.
@@ -280,38 +281,66 @@ namespace VoxelEng {
 
 	private:
 
-		std::map<int, KeyT> orderedKeys_;
+		std::map<unsigned int, KeyT> orderedKeys_;
+		std::map<KeyT, unsigned int> orderedKeysReverse_;
 		unsigned int nInserts_;
 
 	};
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	registryInsOrdered<KeyT, T>::registryInsOrdered()
-	: nInserts_(0) {}
+	registryInsOrdered<KeyT, T>::registryInsOrdered(registry<KeyT, T>::factoryFunc factory, registry<KeyT, T>::onInsertFunc onInsert)
+	: registry<KeyT, T>(factory, onInsert), nInserts_(0) {}
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	const T& registryInsOrdered<KeyT, T>::get(unsigned int index, KeyT* elementKey) const {
+	const T& registryInsOrdered<KeyT, T>::getWithInsIndex(unsigned int index, KeyT* elementKey) const {
 	
-		if (orderedKeys_.contains(index)) {
+		return const_cast<registryInsOrdered<KeyT, T>*>(this)->get(index, elementKey);
 		
-			const KeyT key = orderedKeys_[index];
-			if (elementKey != nullptr) {
+	}
 
-				*elementKey = key;
+	template <typename KeyT, typename T>
+	requires std::derived_from<T, registryElement>
+	unsigned int registryInsOrdered<KeyT, T>::getInsIndex(const KeyT& elementKey) const {
+	
+		if (orderedKeysReverse_.contains(elementKey))
+			return orderedKeysReverse_.at(elementKey);
+		else
+			logger::errorLog("There is no insertion order index for element key " + elementKey);
+	
+	}
 
-			}
+	template <typename KeyT, typename T>
+	requires std::derived_from<T, registryElement>
+	registryInsOrdered<KeyT, T>::const_iterator registryInsOrdered<KeyT, T>::orderedBegin() const {
+	
+		return const_cast<registryInsOrdered<KeyT, T>*>(this)->orderedBegin();
+	
+	}
 
-			return elements_[key];
-		
-		}
-		else {
-		
-			logger::errorLog("Element with index " + std::to_string(index) + " is not registered");
-		
-		}
-		
+	template <typename KeyT, typename T>
+	requires std::derived_from<T, registryElement>
+	registryInsOrdered<KeyT, T>::const_iterator registryInsOrdered<KeyT, T>::orderedCbegin() const {
+
+		return const_cast<registryInsOrdered<KeyT, T>*>(this)->orderedBegin();
+
+	}
+
+	template <typename KeyT, typename T>
+	requires std::derived_from<T, registryElement>
+	registryInsOrdered<KeyT, T>::const_iterator registryInsOrdered<KeyT, T>::orderedEnd() const {
+
+		return const_cast<registryInsOrdered<KeyT, T>*>(this)->orderedEnd();
+
+	}
+
+	template <typename KeyT, typename T>
+	requires std::derived_from<T, registryElement>
+	registryInsOrdered<KeyT, T>::const_iterator registryInsOrdered<KeyT, T>::orderedCend() const {
+
+		return const_cast<registryInsOrdered<KeyT, T>*>(this)->orderedEnd();
+
 	}
 
 	template <typename KeyT, typename T>
@@ -319,37 +348,68 @@ namespace VoxelEng {
 	template <typename... Args>
 	void registryInsOrdered<KeyT, T>::insert(const KeyT& key, Args&&... args) {
 
-		registry<KeyT, T>::insert(key, args);
+		registry<KeyT, T>::insert_(key, std::forward<Args>(args)...);
 		orderedKeys_[nInserts_++] = key;
+		orderedKeysReverse_[key] = nInserts_ - 1;
 
-		// NEXT. TERMINAR DE IMPLEMENTAR LOS CRUD Y LOS MÉTODOS DE LOS ITERATORS.
-
-		// TODO. CUANDO SE TERMINE TODO HACER PRUEBA DE REGISTRYINSORDERED::SHRINKTOFIT.
+		if(registry<KeyT, T>::onInsertFunc_)
+			registry<KeyT, T>::onInsertFunc_();
 
 	}
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	T& registryInsOrdered<KeyT, T>::get(unsigned int index, KeyT* elementKey) {
+	T& registryInsOrdered<KeyT, T>::getWithInsIndex(unsigned int index, KeyT* elementKey) {
 
 		if (orderedKeys_.contains(index)) {
 
-			const KeyT key = orderedKeys_[index];
+			const KeyT& key = orderedKeys_[index];
 			if (elementKey != nullptr) {
 
 				*elementKey = key;
 
 			}
 
-			return elements_[key];
+			return registry<KeyT, T>::elements_[key];
 
 		}
 		else {
 
-			logger::errorLog("Element with index " + std::to_string(index) + " is not registered");
+			logger::errorLog("Element with insertion order index " + std::to_string(index) + " is not registered");
 
 		}
 
+	}
+
+	template <typename KeyT, typename T>
+	requires std::derived_from<T, registryElement>
+	void registryInsOrdered<KeyT, T>::erase(const KeyT& key) {
+
+		registry<KeyT, T>::erase(key);
+		unsigned int keyIndex = orderedKeysReverse_.at[key];
+		orderedKeysReverse_.erase(key);
+		orderedKeys_.erase(keyIndex);
+
+	}
+
+	template <typename KeyT, typename T>
+	requires std::derived_from<T, registryElement>
+	void registryInsOrdered<KeyT, T>::erase(unsigned int index) {
+	
+		if (orderedKeys_.contains(index)) {
+		
+			const KeyT& key = orderedKeys_[index];
+			registry<KeyT, T>::erase(key);
+			orderedKeysReverse_.erase(key);
+			orderedKeys_.erase(index);
+		
+		}
+		else {
+		
+			logger::errorLog("There is no element registered with index " + std::to_string(index));
+		
+		}
+		
 	}
 
 	template <typename KeyT, typename T>
@@ -364,7 +424,8 @@ namespace VoxelEng {
 		// For example: if orderedKeys_ contains the following keys: {0, 1, 3, 5}.
 		// This method should rearrange the elements so that they have the following keys while preserving the elements in the their order of insertion:
 		// {0, 1, 2, 3}. Where 2 and 3 are keys that refer respectively to the elements that were previously referred by keys 3 and 5.
-		for (std::map<int, KeyT>::iterator it = orderedKeys_.begin(); it != orderedKeys_.end(); it++) {
+		
+		for (auto it = orderedKeys_.begin(); it != orderedKeys_.end(); it++) {
 		
 			iteratorIndex = it->first;
 
@@ -372,6 +433,7 @@ namespace VoxelEng {
 			
 				orderedKeys_[index] = orderedKeys_[iteratorIndex];
 				orderedKeys_.erase(iteratorIndex);
+				orderedKeysReverse_[it->second] = index;
 			
 			}
 
@@ -379,6 +441,22 @@ namespace VoxelEng {
 		
 		}
 	
+	}
+
+	template <typename KeyT, typename T>
+	requires std::derived_from<T, registryElement>
+	registryInsOrdered<KeyT, T>::iterator registryInsOrdered<KeyT, T>::orderedBegin() {
+	
+		return iterator(orderedKeys_.begin(), this);
+	
+	}
+
+	template <typename KeyT, typename T>
+	requires std::derived_from<T, registryElement>
+	registryInsOrdered<KeyT, T>::iterator registryInsOrdered<KeyT, T>::orderedEnd() {
+
+		return iterator(orderedKeys_.end(), this);
+
 	}
 
 }
