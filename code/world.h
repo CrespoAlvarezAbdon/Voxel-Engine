@@ -41,7 +41,7 @@ namespace VoxelEng {
 	/**
 	* @brief The plain colour that the sky that boxes the entire level.
 	*/
-	typedef color skybox;
+	typedef vec4 skybox;
 
 
 	////////////
@@ -197,7 +197,7 @@ namespace VoxelEng {
 
 		#if GRAPHICS_API == OPENGL
 
-			glClearColor(background.red() / 255.0f, background.green() / 255.0f, background.blue() / 255.0f, background.alpha());
+			glClearColor(background.x / 255.0f, background.y / 255.0f, background.z / 255.0f, background.w);
 
 		#else
 

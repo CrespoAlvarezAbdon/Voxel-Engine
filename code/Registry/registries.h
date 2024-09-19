@@ -10,8 +10,10 @@
 #define _VOXELENG_REGISTRIES_
 
 #include <string>
+#include <memory>
 #include "RegistryInsOrdered/registryInsOrdered.h"
-#include "../Graphics/Materials/materials.h"
+#include <Graphics/Materials/materials.h>
+#include <Graphics/Lighting/Lights/light.h>
 
 namespace VoxelEng {
 
@@ -38,14 +40,20 @@ namespace VoxelEng {
 		// Modifiers.
 
 		/**
-		* @brief Get the vertex graphical materials registry.
+		* @brief Get the vertex graphical material types registry.
 		*/
 		static registryInsOrdered<std::string, material>& materials();
+
+		/**
+		* @brief Get the graphical light types registry.
+		*/
+		static registryInsOrdered<std::string, std::unique_ptr<light>> lights();
 
 	private:
 
 		static bool initialised_;
 		static registryInsOrdered<std::string, material>* materials_;
+		static registry<std::string, light>* lights_;
 
 	};
 

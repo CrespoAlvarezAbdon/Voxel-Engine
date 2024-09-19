@@ -10,7 +10,7 @@
 #define _VOXELENG_MATERIALS_
 
 #include <string>
-#include "../../Registry/registryElement.h"
+#include <Registry/registryElement.h>
 
 namespace VoxelEng {
 

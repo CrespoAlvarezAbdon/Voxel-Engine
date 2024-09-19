@@ -71,7 +71,7 @@ namespace VoxelEng {
     std::atomic<engineMode> game::loopSelection_ = engineMode::AIMENULOOP;
     std::atomic<double> game::timeStep_ = 0.0f;
 
-    skybox game::defaultSkybox_(140, 170, 255, 1.0f);
+    skybox game::defaultSkybox_{ 140, 170, 255, 1.0f };
 
     unsigned int game::saveSlot_ = 0,
         game::blockReachRange_ = 5,

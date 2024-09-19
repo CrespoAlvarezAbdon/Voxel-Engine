@@ -15,23 +15,6 @@
 
 namespace VoxelEng {
 
-	// 'color' struct.
-
-	color::color(float r, float g, float b, float a) {
-	
-		if (r < 0.0f || g < 0.0f || b < 0.0f || a < 0.0f)
-			logger::errorLog("Atleast one of the channels defined in a 'VoxelEng::color' object is negative");
-		else {
-
-			red_ = r;
-			green_ = g;
-			blue_ = b;
-			alpha_ = a;
-
-		}
-	
-	}
-
 	// 'graphics' class.
 
 	bool graphics::initialised_ = false;
@@ -138,14 +121,21 @@ namespace VoxelEng {
 				vbos_.at("screen").bind();
 				vaos_.at("screen").addLayout(layoutScreen);
 
+				// Initialize and register UBOs.
+				materialsUBO_ = new UBO<material>("Materials", registries::materials(), 1); // binding point 1 is used for materials' UBO.
+
+
 				// Initialize shaders.
-				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader");
-				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader");
+				// ADD NAMES OF REQUIRED UBOS.
+				// opaqueShader_->bindRequiredUFOs(); WILL BE CALLED ON THE REQUIRED UBOS SO THEY NEED TO BE CREATED FIRST.
+				// registries::UBOs()::insert(EL MATERIALS UBO DE ARRIBA);
+				// registries::UBOs()::insert(UN UBO CON VARIABLES DE USO GENERAL POR LAS SHADERS);
+				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "General", "Materials"});
+				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "General", "Materials" });
 				compositeShader_ = new shader("composite", "resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
 				screenShader_ = new shader("screenQuad", "resources/Shaders/screenVertex.shader", "resources/Shaders/screenFragment.shader");
 
 				// Initialize and link shaders' UBOs.
-				materialsUBO_ = new UBO<material>("Materials", registries::materials(), 1); // binding point 1 is used for materials' UBO.
 				opaqueShader_->bind();
 				opaqueShader_->bindUFO(*materialsUBO_);
 				opaqueShader_->unbind();

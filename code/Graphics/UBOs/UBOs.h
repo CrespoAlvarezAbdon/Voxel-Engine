@@ -32,6 +32,8 @@ namespace VoxelEng {
 	//Classes.//
 	////////////
 
+	// TODO. HACER UN UBO DE VARIABLES GENERALES USADAS POR TODAS LAS SHADERS (Y QUE LAS REQUIERAN).
+
 	/**
 	* @brief UBOs or Uniform Buffer Object is a set of global uniform shader variables
 	* that are shared across all loaded shaders. In consequence, there is no need to resend them if
