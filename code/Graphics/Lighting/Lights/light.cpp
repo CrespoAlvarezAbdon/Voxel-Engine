@@ -3,6 +3,6 @@
 
 namespace VoxelEng {
 
-	const unsigned int light::nArgs_ = 2;
+	const unsigned int light::nArgs_ = 6;
 
 }

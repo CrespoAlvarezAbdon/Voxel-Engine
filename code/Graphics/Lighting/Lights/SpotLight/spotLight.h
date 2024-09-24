@@ -1,13 +1,13 @@
-#ifndef _VOXELENG_DIRECTIONAL_LIGHTING_
-#define _VOXELENG_DIRECTIONAL_LIGHTING_
+#ifndef _VOXELENG_SPOT_LIGHT_
+#define _VOXELENG_SPOT_LIGHT_
 
 #include <vec.h>
 #include <Registry/registryElement.h>
-#include <Graphics/Lighting/lights/light.h>
+#include <Graphics/Lighting/lights/DirectionalLight/directionalLight.h>
 
 namespace VoxelEng {
 
-	class directionalLight : public light {
+	class spotLight : public directionalLight {
 
 	public:
 
@@ -16,7 +16,7 @@ namespace VoxelEng {
 		/**
 		* @brief Default class constructor.
 		*/
-		directionalLight();
+		spotLight();
 
 		/**
 		* @brief Class constructor.
@@ -26,9 +26,14 @@ namespace VoxelEng {
 		* @param specularR Percentage of red color emitted in specular lighting calculations by this light type.
 		* @param specularG Percentage of green color emitted in specular lighting calculations by this light type.
 		* @param specularB Percentage of blue color emitted in specular lighting calculations by this light type.
+		* @param cutOffAngle Everything outside this angle is not lit by the spotlight.
+		* @param outerCutOffAngle 
 		*/
-		directionalLight(float diffuseR, float diffuseG, float diffuseB,
-			float specularR, float specularG, float specularB);
+		spotLight(float diffuseR, float diffuseG, float diffuseB,
+			float specularR, float specularG, float specularB,
+			float cutOffAngle, float outerCutOffAngle);
+
+		// NEXT. METER CONSTRUCTORES DE POINT Y SPOT LIGHT Y VER QUÉ MÁS HAY QUE PONER EN GRAPHICS.CPP PARA TENER ESTO READY.
 
 
 		// Observers.
@@ -42,21 +47,26 @@ namespace VoxelEng {
 	protected:
 
 		static const unsigned int nArgs_;
+
+		float cutOffAngle_;
+		float outerCutOffAngle_;
 		
 	};
 
-	inline directionalLight::directionalLight()
-	: light()
+	inline spotLight::spotLight()
+	: directionalLight(), cutOffAngle_(90.0f), outerCutOffAngle_(45.0f)
 	{}
 
-	inline directionalLight::directionalLight(float diffuseR, float diffuseG, float diffuseB,
-		float specularR, float specularG, float specularB)
-	: light(diffuseR, diffuseG, diffuseB, specularR, specularG, specularB)
+	inline spotLight::spotLight(float diffuseR, float diffuseG, float diffuseB,
+		float specularR, float specularG, float specularB,
+		float cutOffAngle, float outerCutOffAngle)
+	: directionalLight(diffuseR, diffuseG, diffuseB, specularR, specularG, specularB),
+		cutOffAngle_(cutOffAngle), outerCutOffAngle_(outerCutOffAngle)
 	{}
 
-	inline unsigned int directionalLight::nArgs() {
+	inline unsigned int spotLight::nArgs() {
 
-		return light::nArgs() + nArgs_;
+		return directionalLight::nArgs() + nArgs_;
 
 	}
 

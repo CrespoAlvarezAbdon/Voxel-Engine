@@ -17,6 +17,8 @@
 
 namespace VoxelEng {
 
+	// TODO. MAKE THIS A SINGLETON.
+
 	/**
 	* @brief Static class that holds all the engine's registries.
 	*/
@@ -47,7 +49,7 @@ namespace VoxelEng {
 		/**
 		* @brief Get the graphical light types registry.
 		*/
-		static registryInsOrdered<std::string, std::unique_ptr<light>> lights();
+		static registry<std::string, light>& lights();
 
 	private:
 
@@ -61,6 +63,12 @@ namespace VoxelEng {
 	
 		return *materials_;
 	
+	}
+
+	inline registry<std::string, light>& registries::lights() {
+
+		return *lights_;
+
 	}
 
 }

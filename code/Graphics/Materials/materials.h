@@ -78,32 +78,27 @@ namespace VoxelEng {
 		*/
 		static const std::string& typeName();
 
-
-		/*
-		Attributes.
-		*/
-
-		float ambient[4];
-		float diffuse[4];
-		float specular[4];
-		float shininess[4]; // Only the first value is valid. The rest are for padding.
-
 	private:
 
 		static bool initialised_;
 		static std::string typeName_;
 
+		float ambient_[4];
+		float diffuse_[4];
+		float specular_[4];
+		float shininess_[4]; // Only the first value is valid. The rest are for padding.
+
 	};
 
 	inline material::material()
-		: ambient{ 1.0f, 1.0f, 1.0f }, diffuse{ 1.0f, 1.0f, 1.0f }, specular{ 1.0f, 1.0f, 1.0f }, shininess{ 32.0f, 1.0f, 1.0f }
+	: ambient_{ 1.0f, 1.0f, 1.0f, 1.0f }, diffuse_{ 1.0f, 1.0f, 1.0f, 1.0f }, specular_{ 1.0f, 1.0f, 1.0f, 1.0f }, shininess_{ 32.0f, 1.0f, 1.0f, 1.0f }
 	{}
 
 	inline material::material(float ambientR, float ambientG, float ambientB,
 		float diffuseR, float diffuseG, float diffuseB,
 		float specularR, float specularG, float specularB,
 		float shininess)
-	: ambient{ ambientR, ambientG, ambientB }, diffuse{ diffuseR, diffuseG, diffuseB }, specular{ specularR, specularG, specularB }, shininess{ shininess, 1.0f, 1.0f }
+	: ambient_{ ambientR, ambientG, ambientB, 1.0f }, diffuse_{ diffuseR, diffuseG, diffuseB, 1.0f }, specular_{ specularR, specularG, specularB, 1.0f }, shininess_{ shininess, 0.0f, 0.0f, 0.0f }
 	{}
 
 	inline const std::string& material::typeName() {

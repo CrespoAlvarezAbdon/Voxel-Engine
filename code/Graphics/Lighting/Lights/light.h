@@ -1,5 +1,5 @@
-#ifndef _VOXELENG_LIGHTING_
-#define _VOXELENG_LIGHTING_
+#ifndef _VOXELENG_LIGHT_
+#define _VOXELENG_LIGHT_
 
 #include <vec.h>
 #include <Registry/registryElement.h>
@@ -16,6 +16,26 @@ namespace VoxelEng {
 
 	public:
 
+		// Constructors.
+
+		/**
+		* @brief Default class constructor.
+		*/
+		light();
+
+		/**
+		* @brief Class constructor.
+		* @param diffuseR Percentage of red color emitted in diffuse lighting calculations by this light type.
+		* @param diffuseG Percentage of green color emitted in diffuse lighting calculations by this light type.
+		* @param diffuseB Percentage of blue color emitted in diffuse lighting calculations by this light type.
+		* @param specularR Percentage of red color emitted in specular lighting calculations by this light type.
+		* @param specularG Percentage of green color emitted in specular lighting calculations by this light type.
+		* @param specularB Percentage of blue color emitted in specular lighting calculations by this light type.
+		*/
+		light(float diffuseR, float diffuseG, float diffuseB,
+			  float specularR, float specularG, float specularB);
+
+
 		// Observers.
 
 		/**
@@ -28,10 +48,19 @@ namespace VoxelEng {
 
 		static const unsigned int nArgs_;
 
-		vec3 diffuse_;
-		vec3 specular_;
+		float diffuse_[4];
+		float specular_[4];
 
 	};
+
+	inline light::light()
+	: diffuse_{ 1.0f,  1.0f, 1.0f, 1.0f }, specular_{ 1.0f, 1.0f, 1.0f, 1.0f }
+	{}
+
+	inline light::light(float diffuseR, float diffuseG, float diffuseB,
+		float specularR, float specularG, float specularB) 
+	: diffuse_{ diffuseR, diffuseG, diffuseB, 1.0f }, specular_{ specularR, specularG, specularB, 1.0f }
+	{}
 
 	inline unsigned int light::nArgs() {
 

@@ -27,6 +27,7 @@ namespace VoxelEng {
 	shader* graphics::compositeShader_ = nullptr;
 	shader* graphics::screenShader_ = nullptr;
 	UBO<material>* graphics::materialsUBO_ = nullptr;
+	UBO<light>* graphics::lightsUBO_ = nullptr;
 
 
 	void graphics::init(window& mainWindow) {
@@ -123,7 +124,12 @@ namespace VoxelEng {
 
 				// Initialize and register UBOs.
 				materialsUBO_ = new UBO<material>("Materials", registries::materials(), 1); // binding point 1 is used for materials' UBO.
+				lightsUBO_ = new UBO<light>("Lights", registries::lights(), 2);
 
+				// NEXT. PONER EL REGISTRO DE LIGHTS COMO UN REGISTRYINSORDERED Y TERMINAR DE CREAR EL UBO DE LUCES Y SEGUIR CON EL RESTO.
+
+				// MORE TODOS.
+				// CUANDO SUBAS SPOTLIGHTS, CONVERTIR LOS ANGULOS A RADIANES.
 
 				// Initialize shaders.
 				// ADD NAMES OF REQUIRED UBOS.
@@ -433,6 +439,20 @@ namespace VoxelEng {
 
 				delete screenShader_;
 				screenShader_ = nullptr;
+
+			}
+
+			if (materialsUBO_) {
+			
+				delete materialsUBO_;
+				materialsUBO_ = nullptr;
+			
+			}
+
+			if (lightsUBO_) {
+
+				delete lightsUBO_;
+				lightsUBO_ = nullptr;
 
 			}
 		

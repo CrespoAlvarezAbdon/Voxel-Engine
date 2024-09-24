@@ -17,15 +17,16 @@
 #include <mutex>
 #include <unordered_map>
 #include <vector>
-#include "Shaders/shader.h"
-#include "Materials/materials.h"
-#include "UBOs/UBOs.h"
-#include "../batch.h"
-#include "../indexBuffer.h"
-#include "../vertexArray.h"
-#include "../vertexBuffer.h"
-#include "../gameWindow.h"
-#include "Vertex/VertexBufferLayout/vertexBufferLayout.h"
+#include <batch.h>
+#include <indexBuffer.h>
+#include <vertexArray.h>
+#include <vertexBuffer.h>
+#include <gameWindow.h>
+#include <Graphics/Shaders/shader.h>
+#include <Graphics/UBOs/UBOs.h>
+#include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
+#include <Graphics/Lighting/Lights/light.h>
+#include <Graphics/Materials/materials.h>
 
 namespace VoxelEng {	
 
@@ -221,7 +222,8 @@ namespace VoxelEng {
 		static shader* compositeShader_;
 		static shader* screenShader_;
 		static UBO<material>* materialsUBO_;
-		
+		static UBO<light>* lightsUBO_;
+
 	};
 
 	inline void graphics::eraseErrors() {

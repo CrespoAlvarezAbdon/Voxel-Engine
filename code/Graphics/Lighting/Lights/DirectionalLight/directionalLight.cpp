@@ -3,6 +3,6 @@
 
 namespace VoxelEng {
 
-	const unsigned int directionalLight::nArgs_ = 1; // Always the number of arguments added by THIS CLASS ONLY.
+	const unsigned int directionalLight::nArgs_ = 0; // Always the number of arguments added by THIS CLASS ONLY.
 
 }

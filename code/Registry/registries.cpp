@@ -1,9 +1,13 @@
 #include "registries.h"
 
+#include <cstddef>
 #include <memory>
 #include <initializer_list>
 #include <stdexcept>
-#include "../logger.h"
+#include <logger.h>
+#include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
+#include <Graphics/Lighting/Lights/PointLight/pointLight.h>
+#include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
 
 namespace VoxelEng {
 
@@ -46,35 +50,62 @@ namespace VoxelEng {
 			// NOTE. First argument must be the name of a class that is light class itself or one of its derived classes.
 			lights_ = new registry<std::string, light>([](std::any args) {
 
-				auto tuple = std::any_cast<std::tuple<std::string, std::initializer_list<float>>>(args);
+				auto tuple = std::any_cast<std::tuple<std::string, std::vector<float>>>(args);
 				const std::string& type = std::get<0>(tuple);
-				const std::initializer_list<float>& arguments = std::get<1>(tuple);
-				
+				const std::vector<float>& arguments = std::get<1>(tuple);
+				std::size_t nArgs = arguments.size();
+
 				if (type == "light")
 					throw std::runtime_error("It is not supported to register lights of the light base class.");
 				else if (type == "directionalLight") {
-				
-					if (arguments.size() == 0) {
 
+					if (nArgs == directionalLight::nArgs()) {
 
+						directionalLight* l = new directionalLight(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+						return std::unique_ptr<light>(l);
 
 					}
 					else
-						throw std::runtime_error("For directional lights, the number of arguments must be " + );
-				
+						throw std::runtime_error("For directional lights, the number of arguments must be " + std::to_string(directionalLight::nArgs()) +
+							"but " + std::to_string(nArgs) + " were provided");
+
 				}
 				else if (type == "pointLight") {
-				
-				
-				
+
+					if (nArgs == pointLight::nArgs()) {
+
+						pointLight* l = new pointLight(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5],
+							arguments[6], arguments[7], arguments[8]);
+						return std::unique_ptr<light>(l);
+
+					}
+					else
+						throw std::runtime_error("For point lights, the number of arguments must be " + std::to_string(pointLight::nArgs()) +
+							"but " + std::to_string(nArgs) + " were provided");
+
 				}
 				else if (type == "spotLight") {
-				
-				
-				
+
+					if (nArgs == spotLight::nArgs()) {
+
+						spotLight* l = new spotLight(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5],
+							arguments[6], arguments[7]);
+						return std::unique_ptr<light>(l);
+
+					}
+					else
+						throw std::runtime_error("For spot lights, the number of arguments must be " + std::to_string(spotLight::nArgs()) +
+							"but " + std::to_string(nArgs) + " were provided");
+
 				}
+				else
+					throw std::runtime_error("The type of light " + type + "is not supported");
 
 			}, nullptr);
+
+			lights_->insert("DefaultDirectionalLight", "directionalLight", 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+			lights_->insert("DefaultPointLight", "pointLight", 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.7f, 1.8f);
+			lights_->insert("DefaultSpotLight", "spotLight", 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 25.0f, 35.0f);
 
 			initialised_ = true;
 		
@@ -90,6 +121,13 @@ namespace VoxelEng {
 
 				delete materials_;
 				materials_ = nullptr;
+
+			}
+
+			if (lights_) {
+
+				delete lights_;
+				lights_ = nullptr;
 
 			}
 
