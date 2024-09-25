@@ -9,12 +9,13 @@
 #ifndef _VOXELENG_SHADER_
 #define _VOXELENG_SHADER_
 
+#include <concepts>
 #include <string>
 #include <unordered_map>
-#include "../../definitions.h"
-#include "../../vec.h"
-#include "../UBOs/UBOs.h"
-#include "../Materials/materials.h"
+#include <definitions.h>
+#include <vec.h>
+#include <Graphics/UBOs/UBOs.h>
+#include <Registry/registryElement.h>
 
 namespace VoxelEng {
 
@@ -96,7 +97,9 @@ namespace VoxelEng {
 		* WARNING. An exception will be also thrown if the provided UBO is not properly initialised.
 		* WARNING. Shader must be bound before calling this method.
 		*/
-		void bindUFO(const UBO<material>& ubo);
+		template <typename T>
+		requires std::derived_from<T, registryElement>
+		void bindUFO(const UBO<T>& ubo);
 
 
 		// Destructors.
@@ -133,6 +136,25 @@ namespace VoxelEng {
 		GLint getUniformLocation(const std::string& name) const;
 
 	};
+
+	template <typename T>
+	requires std::derived_from<T, registryElement>
+	void shader::bindUFO(const UBO<T>& ubo) {
+
+		const std::string& uboName = ubo.name();
+		unsigned int uniformBlockIndex = glGetUniformBlockIndex(rendererID_, uboName.c_str());
+		if (uniformBlockIndex == GL_INVALID_INDEX) {
+
+			throw std::runtime_error("There is no uniform block named " + uboName + " in shader " + name_);
+
+		}
+		else {
+
+			glUniformBlockBinding(rendererID_, uniformBlockIndex, ubo.bindingPoint());
+
+		}
+
+	}
 
 }
 

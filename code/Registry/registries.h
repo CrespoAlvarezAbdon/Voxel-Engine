@@ -13,7 +13,9 @@
 #include <memory>
 #include "RegistryInsOrdered/registryInsOrdered.h"
 #include <Graphics/Materials/materials.h>
-#include <Graphics/Lighting/Lights/light.h>
+#include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
+#include <Graphics/Lighting/Lights/PointLight/pointLight.h>
+#include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
 
 namespace VoxelEng {
 
@@ -49,13 +51,25 @@ namespace VoxelEng {
 		/**
 		* @brief Get the graphical light types registry.
 		*/
-		static registry<std::string, light>& lights();
+		static registryInsOrdered<std::string, directionalLight>& directionalLights();
+
+		/**
+		* @brief Get the graphical light types registry.
+		*/
+		static registryInsOrdered<std::string, pointLight>& pointLights();
+
+		/**
+		* @brief Get the graphical light types registry.
+		*/
+		static registryInsOrdered<std::string, spotLight>& spotLights();
 
 	private:
 
 		static bool initialised_;
 		static registryInsOrdered<std::string, material>* materials_;
-		static registry<std::string, light>* lights_;
+		static registryInsOrdered<std::string, directionalLight>* directionalLights_;
+		static registryInsOrdered<std::string, pointLight>* pointLights_;
+		static registryInsOrdered<std::string, spotLight>* spotLights_;
 
 	};
 
@@ -65,9 +79,21 @@ namespace VoxelEng {
 	
 	}
 
-	inline registry<std::string, light>& registries::lights() {
+	inline registryInsOrdered<std::string, directionalLight>& registries::directionalLights() {
 
-		return *lights_;
+		return *directionalLights_;
+
+	}
+
+	inline registryInsOrdered<std::string, pointLight>& registries::pointLights() {
+
+		return *pointLights_;
+
+	}
+
+	inline registryInsOrdered<std::string, spotLight>& registries::spotLights() {
+
+		return *spotLights_;
 
 	}
 

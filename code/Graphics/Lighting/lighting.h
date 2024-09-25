@@ -53,7 +53,6 @@ namespace VoxelEng {
 
 	private:
 
-		static const unsigned int maxNLightsPerChunk_; // TODO. IS THIS REALLY USEFUL???
 		static vec3 ambientLighting_; // For now, there is only one global ambient lighting.
 
 	};

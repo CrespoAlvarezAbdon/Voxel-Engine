@@ -27,7 +27,9 @@ namespace VoxelEng {
 	shader* graphics::compositeShader_ = nullptr;
 	shader* graphics::screenShader_ = nullptr;
 	UBO<material>* graphics::materialsUBO_ = nullptr;
-	UBO<light>* graphics::lightsUBO_ = nullptr;
+	UBO<directionalLight>* directionalLightsUBO_ = nullptr;
+	UBO<pointLight>* pointLightsUBO_ = nullptr;
+	UBO<spotLight>* spotLightsUBO_ = nullptr;
 
 
 	void graphics::init(window& mainWindow) {
@@ -124,12 +126,13 @@ namespace VoxelEng {
 
 				// Initialize and register UBOs.
 				materialsUBO_ = new UBO<material>("Materials", registries::materials(), 1); // binding point 1 is used for materials' UBO.
-				lightsUBO_ = new UBO<light>("Lights", registries::lights(), 2);
-
-				// NEXT. PONER EL REGISTRO DE LIGHTS COMO UN REGISTRYINSORDERED Y TERMINAR DE CREAR EL UBO DE LUCES Y SEGUIR CON EL RESTO.
+				directionalLightsUBO_ = new UBO<directionalLight>("directionalLights", registries::directionalLights(), 2);
+				pointLightsUBO_ = new UBO<pointLight>("pointLights", registries::pointLights(), 3);
+				spotLightsUBO_ = new UBO<spotLight>("spotLights", registries::spotLights(), 4);
 
 				// MORE TODOS.
-				// CUANDO SUBAS SPOTLIGHTS, CONVERTIR LOS ANGULOS A RADIANES.
+				// -CUANDO SUBAS SPOTLIGHTS, CONVERTIR LOS ANGULOS A RADIANES.
+				// -METER TODA LA PARTE CORRESPONDIENTE DE MANEJAR LAS LUCES EN LOS SHADERS, INCLUYENDO EL HECHO DE SOPORTAR VARIAS LUCES. DE MOMENTO NO OPTIMICES NADA PARA QUE VAYAMOS VIENDO EL IMPACTO QUE REALMENTE TIENEN.
 
 				// Initialize shaders.
 				// ADD NAMES OF REQUIRED UBOS.
@@ -144,10 +147,16 @@ namespace VoxelEng {
 				// Initialize and link shaders' UBOs.
 				opaqueShader_->bind();
 				opaqueShader_->bindUFO(*materialsUBO_);
+				opaqueShader_->bindUFO(*directionalLightsUBO_);
+				opaqueShader_->bindUFO(*pointLightsUBO_);
+				opaqueShader_->bindUFO(*spotLightsUBO_);
 				opaqueShader_->unbind();
 
 				translucidShader_->bind();
 				translucidShader_->bindUFO(*materialsUBO_);
+				translucidShader_->bindUFO(*directionalLightsUBO_);
+				translucidShader_->bindUFO(*pointLightsUBO_);
+				translucidShader_->bindUFO(*spotLightsUBO_);
 				translucidShader_->unbind();
 
 			#else
@@ -449,10 +458,24 @@ namespace VoxelEng {
 			
 			}
 
-			if (lightsUBO_) {
+			if (directionalLightsUBO_) {
 
-				delete lightsUBO_;
-				lightsUBO_ = nullptr;
+				delete directionalLightsUBO_;
+				directionalLightsUBO_ = nullptr;
+
+			}
+
+			if (pointLightsUBO_) {
+
+				delete pointLightsUBO_;
+				pointLightsUBO_ = nullptr;
+
+			}
+
+			if (spotLightsUBO_) {
+
+				delete spotLightsUBO_;
+				spotLightsUBO_ = nullptr;
 
 			}
 		

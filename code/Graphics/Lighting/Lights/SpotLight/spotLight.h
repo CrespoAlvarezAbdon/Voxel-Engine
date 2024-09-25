@@ -50,18 +50,19 @@ namespace VoxelEng {
 
 		float cutOffAngle_;
 		float outerCutOffAngle_;
+		float padding_[2]; // Only used for padding.
 		
 	};
 
 	inline spotLight::spotLight()
-	: directionalLight(), cutOffAngle_(90.0f), outerCutOffAngle_(45.0f)
+		: directionalLight(), cutOffAngle_(90.0f), outerCutOffAngle_(45.0f), padding_{0.0f, 0.0f}
 	{}
 
 	inline spotLight::spotLight(float diffuseR, float diffuseG, float diffuseB,
 		float specularR, float specularG, float specularB,
 		float cutOffAngle, float outerCutOffAngle)
 	: directionalLight(diffuseR, diffuseG, diffuseB, specularR, specularG, specularB),
-		cutOffAngle_(cutOffAngle), outerCutOffAngle_(outerCutOffAngle)
+		cutOffAngle_(cutOffAngle), outerCutOffAngle_(outerCutOffAngle), padding_{ 0.0f, 0.0f }
 	{}
 
 	inline unsigned int spotLight::nArgs() {

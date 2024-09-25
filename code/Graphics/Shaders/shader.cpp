@@ -158,23 +158,6 @@ namespace VoxelEng {
 
     }
 
-    void shader::bindUFO(const UBO<material>& ubo) {
-
-        const std::string& uboName = ubo.name();
-        unsigned int uniformBlockIndex = glGetUniformBlockIndex(rendererID_, uboName.c_str());
-        if (uniformBlockIndex == GL_INVALID_INDEX) {
-
-            throw std::runtime_error("There is no uniform block named " + uboName + " in shader " + name_);
-
-        }
-        else {
-
-            glUniformBlockBinding(rendererID_, uniformBlockIndex, ubo.bindingPoint());
-
-        }
-
-    }
-
     shader::~shader() {
 
         glDeleteProgram(rendererID_);

@@ -25,7 +25,9 @@
 #include <Graphics/Shaders/shader.h>
 #include <Graphics/UBOs/UBOs.h>
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
-#include <Graphics/Lighting/Lights/light.h>
+#include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
+#include <Graphics/Lighting/Lights/PointLight/pointLight.h>
+#include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
 #include <Graphics/Materials/materials.h>
 
 namespace VoxelEng {	
@@ -222,7 +224,9 @@ namespace VoxelEng {
 		static shader* compositeShader_;
 		static shader* screenShader_;
 		static UBO<material>* materialsUBO_;
-		static UBO<light>* lightsUBO_;
+		static UBO<directionalLight>* directionalLightsUBO_;
+		static UBO<pointLight>* pointLightsUBO_;
+		static UBO<spotLight>* spotLightsUBO_;
 
 	};
 

@@ -26,13 +26,14 @@
 #include "utilities.h"
 #include "vertex.h"
 #include "worldGen.h"
-#include "Entities/plane.h"
-#include "Registry/registries.h" // This header also includes the classes that derive from 'registeredElement'.
-#include "Registry/registry.h"
-#include "Graphics/graphics.h"
-#include "Graphics/Textures/texture.h"
-#include "Graphics/Frustum/frustum.h"
-
+#include <Entities/plane.h>
+#include <Registry/registries.h> // This header also includes the classes that derive from 'registeredElement'.
+#include <Registry/registry.h>
+#include <Graphics/graphics.h>
+#include <Graphics/Textures/texture.h>
+#include <Graphics/Frustum/frustum.h>
+#include <Graphics/Materials/materials.h>
+#include <Graphics/Lighting/Lights/light.h>
 #include "timer.h"
 
 
@@ -178,6 +179,24 @@ namespace VoxelEng {
                 1.0f, 1.0f, 1.0f,
                 1.0f, 1.0f, 1.0f,
                 256.0f);
+
+            // Light types registration.
+            registryInsOrdered<std::string, directionalLight>& directionalLightsRegistry = registries::directionalLights();
+            directionalLightsRegistry.insert("RedDirectionalLight", "directionalLight",
+                1.0f, 0.0f, 0.0f, 
+                1.0f, 0.0f, 0.0f);
+
+            registryInsOrdered<std::string, pointLight>& pointLightsRegistry = registries::pointLights();
+            pointLightsRegistry.insert("BluePointLight", "pointLight",
+                0.0f, 1.0f, 0.0f,
+                0.0f, 1.0f, 0.0f,
+                1.0f, 0.7f, 1.8f);
+
+            registryInsOrdered<std::string, spotLight>& spotLightsRegistry = registries::spotLights();
+            spotLightsRegistry.insert("GreenSpotLight", "spotLight",
+                0.0f, 0.0f, 1.0f, 
+                0.0f, 0.0f, 1.0f,
+                25.0f, 35.0f);
 
             // Block registration.
             block::registerBlock("starminer::grass", blockOpacity::OPAQUEBLOCK, { {"all", 1} }, "UltraShiny"); // TODO. Manual texture ID assignment is temporary.
