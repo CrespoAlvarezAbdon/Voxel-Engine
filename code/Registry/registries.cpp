@@ -1,20 +1,20 @@
 #include "registries.h"
-
 #include <cstddef>
 #include <memory>
 #include <initializer_list>
-#include <stdexcept>
-#include <logger.h>
+#include <Graphics/Materials/materials.h>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
 #include <Graphics/Lighting/Lights/PointLight/pointLight.h>
 #include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
+#include <Graphics/UBOs/UBOs.h>
+#include <Utilities/Logger/logger.h>
+#include <Utilities/Var/var.h>
 
 namespace VoxelEng {
 
 	bool registries::initialised_ = false;
-	registryInsOrdered<std::string, directionalLight>* registries::directionalLights_ = nullptr;
-	registryInsOrdered<std::string, pointLight>* registries::pointLights_ = nullptr;
-	registryInsOrdered<std::string, spotLight>* registries::spotLights_ = nullptr;
+	registry<std::string, registry<std::string, registryElement>>* registries::registries_ = nullptr;
+	registry<std::string, registryInsOrdered<std::string, registryElement>>* registries::registriesInsOrdered_ = nullptr;
 
 	void registries::init() {
 	
@@ -30,26 +30,42 @@ namespace VoxelEng {
 			// Note. Always add a "Default" element into registries in case it is wanted to be used in case
 			// the specified registry element is not found.
 
+			//Registries of registries initialization.
+			registries_ = new registry<std::string, registry<std::string, registryElement>>([](std::any args) {
+
+				auto tuple = std::any_cast<std::tuple<registry<std::string, registryElement>::factoryFunc,
+													  registry<std::string, registryElement>::onInsertFunc>>(args);
+				return std::make_unique<registry<std::string, registryElement>>(std::get<0>(tuple), std::get<1>(tuple));
+
+			}, nullptr);
+
+			registriesInsOrdered_ = new registryInsOrdered<std::string, registryInsOrdered<std::string, registryElement>>([](std::any args) {
+
+				auto tuple = std::any_cast<std::tuple<registryInsOrdered<std::string, registryElement>::factoryFunc,
+													  registryInsOrdered<std::string, registryElement>::onInsertFunc>>(args);
+				return std::make_unique<registryInsOrdered<std::string, registryElement>>(std::get<0>(tuple), std::get<1>(tuple));
+
+			}, nullptr);
+
 			// Material types registry initialisation.
-			materials_ = new registryInsOrdered<std::string, material>([](std::any args) {
-			
+			registriesInsOrdered_->insert("Materials", [](std::any args) {
+
 				auto tuple = std::any_cast<std::tuple<float, float, float, float, float, float, float, float, float, float>>(args);
-				return std::make_unique<material>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple), 
+				return std::make_unique<material>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple),
 					std::get<3>(tuple), std::get<4>(tuple), std::get<5>(tuple),
 					std::get<6>(tuple), std::get<7>(tuple), std::get<8>(tuple),
 					std::get<9>(tuple));
-			
+
 			}, nullptr);
 
-			materials_->insert("Default",
+			registriesInsOrdered_->get("Materials").insert("Default",
 				1.0f, 1.0f, 1.0f,
 				1.0f, 1.0f, 1.0f,
 				1.0f, 1.0f, 1.0f,
 				32.0f);
 
 			// Light types registry initialisation.
-			// NOTE. First argument must be the name of a class that is light class itself or one of its derived classes.
-			directionalLights_ = new registryInsOrdered<std::string, directionalLight>([](std::any args) {
+			registriesInsOrdered_->insert("DirectionalLights", [](std::any args) {
 
 				auto tuple = std::any_cast<std::tuple<float, float, float, float, float, float>>(args);
 				return std::make_unique<directionalLight>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple),
@@ -57,9 +73,11 @@ namespace VoxelEng {
 
 			}, nullptr);
 
-			directionalLights_->insert("Default", 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+			registriesInsOrdered_->get("DirectionalLights").insert("Default",
+				1.0f, 1.0f, 1.0f, 
+				1.0f, 1.0f, 1.0f);
 
-			pointLights_ = new registryInsOrdered<std::string, pointLight>([](std::any args) {
+			registriesInsOrdered_->insert("PointLights", [](std::any args) {
 
 				auto tuple = std::any_cast<std::tuple<float, float, float, float, float, float, float, float, float>>(args);
 				return std::make_unique<pointLight>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple),
@@ -68,9 +86,12 @@ namespace VoxelEng {
 
 			}, nullptr);
 
-			pointLights_->insert("Default", 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.7f, 1.8f);
+			registriesInsOrdered_->get("PointLights").insert("Default",
+				1.0f, 1.0f, 1.0f, 
+				1.0f, 1.0f, 1.0f, 
+				1.0f, 0.7f, 1.8f);
 
-			spotLights_ = new registryInsOrdered<std::string, spotLight>([](std::any args) {
+			registriesInsOrdered_->insert("SpotLights", [](std::any args) {
 
 				auto tuple = std::any_cast<std::tuple<float, float, float, float, float, float, float, float>>(args);
 				return std::make_unique<spotLight>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple),
@@ -79,7 +100,19 @@ namespace VoxelEng {
 
 			}, nullptr);
 
-			spotLights_->insert("Default", 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 25.0f, 35.0f);
+			registriesInsOrdered_->get("SpotLights").insert("Default",
+				1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				25.0f, 35.0f);
+
+			registries_->insert("UBOs", [](std::any args) {
+
+				auto tuple = std::any_cast<std::tuple<void*, var::varType>>(args);
+				return std::make_unique<var>(std::get<0>(tuple), std::get<1>(tuple));
+
+			}, nullptr);
+
+			registries_->get("UBOs").insert("Materials", new UBO<material>("Materials", registries::getInsOrdered<material>("Materials"), 1), var::varType::UBO_OF_MATERIALS);
 
 			initialised_ = true;
 		
@@ -90,20 +123,6 @@ namespace VoxelEng {
 	void registries::deinit() {
 
 		if (initialised_) {
-
-			if (materials_)	{
-
-				delete materials_;
-				materials_ = nullptr;
-
-			}
-
-			if (lights_) {
-
-				delete lights_;
-				lights_ = nullptr;
-
-			}
 
 			initialised_ = false;
 			

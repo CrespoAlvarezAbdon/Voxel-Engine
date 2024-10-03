@@ -10,11 +10,13 @@
 #define _VOXELENG_SHADER_
 
 #include <concepts>
+#include <initializer_list>
 #include <string>
 #include <unordered_map>
 #include <definitions.h>
 #include <vec.h>
 #include <Graphics/UBOs/UBOs.h>
+#include <Registry/registry.h>
 #include <Registry/registryElement.h>
 
 namespace VoxelEng {
@@ -22,7 +24,7 @@ namespace VoxelEng {
 	/**
 	* @brief Abstraction of a graphics API shader. It is usually described as a program
 	* executed by the graphics API in order to properly process the vertex data
-	* that is sent to the GPU.
+	* that is sent to the GPU. In this engine, a shader uses a vertex and a fragment shaders to work.
 	*/
 	class shader {
 
@@ -33,9 +35,15 @@ namespace VoxelEng {
 		/**
 		* @brief Class constructor. The engine only accepts, for now, a combination of
 		* vertex shader and fragment shader in order to process the vertex data.
+		* @param name Shader's unique name.
+		* @param vertexShaderPath Path to the vertex shader file.
+		* @param fragmentShaderPath Path to the fragment shader file.
+		* @param requiredUBOsNames List of the names of the UBOs required by this shader. The shader will be linked with
+		* the specified UBOs.
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
-		shader(const std::string& name, const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
+		shader(const std::string& name, const std::string& vertexShaderPath, const std::string& fragmentShaderPath,
+			std::initializer_list<std::string> requiredUBOsNames = {});
 
 
 		// Modifiers.
@@ -111,6 +119,8 @@ namespace VoxelEng {
 		~shader();
 
 	private:
+
+		static registry<std::string, UBO<T>> UBOs_;
 
 		std::string name_;
 		unsigned int rendererID_;

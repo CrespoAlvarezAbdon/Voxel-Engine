@@ -8,9 +8,9 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
-#include "registryElement.h"
-#include "../definitions.h"
-#include "../logger.h"
+#include <definitions.h>
+#include <logger.h>
+#include <Registry/registryElement.h>
 
 namespace VoxelEng {
 
@@ -27,7 +27,7 @@ namespace VoxelEng {
 	*/
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	class registry {
+	class registry : public registryElement {
 
 	public:
 
@@ -55,6 +55,13 @@ namespace VoxelEng {
 		*/
 		using const_iterator = std::unordered_map<KeyT, std::unique_ptr<T>>::const_iterator;
 
+		// Initialisation.
+
+		/**
+		* @brief Initialise the registry system.
+		*/
+		static void init(const std::string& typeName);
+
 
 		// Constructors.
 
@@ -79,11 +86,23 @@ namespace VoxelEng {
 		// Observers.
 
 		/**
+		* @brief Get the registry's typename.
+		*/
+		static const std::string& typeName();
+
+		/**
 		* @brief Get the specified element. Throws exception if it is not registered.
 		* @param key The key that corresponds to the value that is the specified element.
 		* @returns The specified element.
 		*/
 		const T& get(const KeyT& key) const;
+
+		/**
+		* @brief Get whether the given key corresponds to a registered element in the registry or not.
+		* @param key The given key.
+		* @returns Whether the given key corresponds to a registered element in the registry (true) or not (false).
+		*/
+		bool contains(const KeyT& key) const;
 
 		/**
 		* @brief Get the number of elements in the registry.
@@ -176,6 +195,9 @@ namespace VoxelEng {
 		Attributes.
 		*/
 
+		static bool initialised_ = false;
+		static std::string typeName_ = "";
+
 		std::unordered_map<KeyT, std::unique_ptr<T>> elements_;
 		std::string Tname_;
 		onInsertFunc onInsertFunc_;
@@ -186,6 +208,14 @@ namespace VoxelEng {
 		T* lastInsertedElement_;
 
 	};
+
+	template <typename KeyT, typename T>
+	requires std::derived_from<T, registryElement>
+	inline const std::string& registry<KeyT, T>::typeName() {
+
+		return typeName_;
+
+	}
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
@@ -205,10 +235,18 @@ namespace VoxelEng {
 	requires std::derived_from<T, registryElement>
 	const T& registry<KeyT, T>::get(const KeyT& key) const {
 	
-		if (elements_.contains(key))
+		if (contains(key))
 			return elements_.at(key);
 		else
 			logger::errorLog("The " + Tname_ + " " + key + " is not registered.");
+	
+	}
+
+	template <typename KeyT, typename T>
+	requires std::derived_from<T, registryElement>
+	inline bool registry<KeyT, T>::contains(const KeyT& key) const {
+	
+		return elements_.contains(key);
 	
 	}
 
@@ -256,7 +294,7 @@ namespace VoxelEng {
 	requires std::derived_from<T, registryElement>
 	T& registry<KeyT, T>::get(const KeyT& key) {
 
-		if (elements_.contains(key))
+		if (contains(key))
 			return *elements_.at(key);
 		else
 			logger::errorLog("The " + Tname_ + " " + key + " is not registered.");
@@ -287,7 +325,7 @@ namespace VoxelEng {
 	requires std::derived_from<T, registryElement>
 	void registry<KeyT, T>::erase(const KeyT& key) {
 	
-		if (elements_.contains(key))
+		if (contains(key))
 			elements_.erase(key);
 		else
 			logger::errorLog("The " + Tname_ + " " + key + " is not registered.");
@@ -315,7 +353,7 @@ namespace VoxelEng {
 	template <typename... Args>
 	void registry<KeyT, T>::insert_(const KeyT& key, Args&&... args) {
 
-		if (elements_.contains(key))
+		if (contains(key))
 			logger::errorLog("The " + Tname_ + " " + key + " is already registered.");
 		else {
 		

@@ -35,37 +35,50 @@
     <ClCompile Include="code\External code\stb_image.cpp" />
     <ClCompile Include="code\game.cpp" />
     <ClCompile Include="code\gameWindow.cpp" />
-    <ClCompile Include="code\graphics.cpp" />
+    <ClCompile Include="code\Graphics\graphics.cpp" />
     <ClCompile Include="code\Graphics\framebuffer.cpp" />
-    <ClCompile Include="code\Graphics\Fustrum\fustrum.cpp" />
-    <ClCompile Include="code\Graphics\Fustrum\plane.cpp" />
+    <ClCompile Include="code\Graphics\Frustum\frustum.cpp" />
+    <ClCompile Include="code\Entities\plane.cpp" />
+    <ClCompile Include="code\Graphics\Lighting\lighting.cpp" />
+    <ClCompile Include="code\Graphics\Lighting\Lights\DirectionalLight\directionalLight.cpp" />
+    <ClCompile Include="code\Graphics\Lighting\Lights\light.cpp" />
+    <ClCompile Include="code\Graphics\Lighting\Lights\PointLight\pointLight.cpp" />
+    <ClCompile Include="code\Graphics\Lighting\Lights\SpotLight\spotLight.cpp" />
+    <ClCompile Include="code\Graphics\Materials\materials.cpp" />
     <ClCompile Include="code\Graphics\transform.cpp" />
+    <ClCompile Include="code\Graphics\UBOs\UBOs.cpp" />
     <ClCompile Include="code\gui.cpp" />
     <ClCompile Include="code\GUIfunctions.cpp" />
     <ClCompile Include="code\indexBuffer.cpp" />
     <ClCompile Include="code\input.cpp" />
     <ClCompile Include="code\inputFunctions.cpp" />
     <ClCompile Include="code\listener.cpp" />
-    <ClCompile Include="code\logger.cpp" />
-    <ClCompile Include="code\model.cpp" />
+    <ClCompile Include="code\Utilities\Logger\logger.cpp" />
+    <ClCompile Include="code\Math\mathPlane.cpp" />
+    <ClCompile Include="code\Graphics\Models\model.cpp" />
     <ClCompile Include="code\noise.cpp" />
     <ClCompile Include="code\palette.cpp" />
     <ClCompile Include="code\player.cpp" />
     <ClCompile Include="code\quaternion.cpp" />
     <ClCompile Include="code\recyclingPool.cpp" />
+    <ClCompile Include="code\Registry\registries.cpp" />
+    <ClCompile Include="code\Registry\registry.cpp" />
+    <ClCompile Include="code\Registry\registryElement.cpp" />
+    <ClCompile Include="code\Registry\RegistryInsOrdered\registryInsOrdered.cpp" />
     <ClCompile Include="code\renderer.cpp" />
-    <ClCompile Include="code\shader.cpp" />
-    <ClCompile Include="code\texture.cpp" />
+    <ClCompile Include="code\Graphics\Shaders\shader.cpp" />
+    <ClCompile Include="code\Graphics\Textures\texture.cpp" />
     <ClCompile Include="code\threadPool.cpp" />
     <ClCompile Include="code\tickFunctions.cpp" />
     <ClCompile Include="code\time.cpp" />
     <ClCompile Include="code\timer.cpp" />
     <ClCompile Include="code\Trees\TreeNode.cpp" />
     <ClCompile Include="code\utilities.cpp" />
+    <ClCompile Include="code\Utilities\Var\var.cpp" />
     <ClCompile Include="code\vec.cpp" />
     <ClCompile Include="code\vertexArray.cpp" />
     <ClCompile Include="code\vertexBuffer.cpp" />
-    <ClCompile Include="code\vertexBufferLayout.cpp" />
+    <ClCompile Include="code\Graphics\Vertex\VertexBufferLayout\vertexBufferLayout.cpp" />
     <ClCompile Include="code\entity.cpp" />
     <ClCompile Include="code\world.cpp" />
     <ClCompile Include="code\worldGen.cpp" />
@@ -86,27 +99,39 @@
     <ClInclude Include="code\External code\stb_image.h" />
     <ClInclude Include="code\game.h" />
     <ClInclude Include="code\gameWindow.h" />
-    <ClInclude Include="code\graphics.h" />
+    <ClInclude Include="code\Graphics\graphics.h" />
     <ClInclude Include="code\Graphics\framebuffer.h" />
-    <ClInclude Include="code\Graphics\Fustrum\fustrum.h" />
-    <ClInclude Include="code\Graphics\Fustrum\plane.h" />
+    <ClInclude Include="code\Graphics\Frustum\frustum.h" />
+    <ClInclude Include="code\Entities\plane.h" />
+    <ClInclude Include="code\Graphics\Lighting\lighting.h" />
+    <ClInclude Include="code\Graphics\Lighting\Lights\DirectionalLight\directionalLight.h" />
+    <ClInclude Include="code\Graphics\Lighting\Lights\light.h" />
+    <ClInclude Include="code\Graphics\Lighting\Lights\PointLight\pointLight.h" />
+    <ClInclude Include="code\Graphics\Lighting\Lights\SpotLight\spotLight.h" />
+    <ClInclude Include="code\Graphics\Materials\materials.h" />
     <ClInclude Include="code\Graphics\transform.h" />
+    <ClInclude Include="code\Graphics\UBOs\UBOs.h" />
     <ClInclude Include="code\gui.h" />
     <ClInclude Include="code\GUIfunctions.h" />
     <ClInclude Include="code\indexBuffer.h" />
     <ClInclude Include="code\input.h" />
     <ClInclude Include="code\inputFunctions.h" />
     <ClInclude Include="code\listener.h" />
-    <ClInclude Include="code\logger.h" />
-    <ClInclude Include="code\model.h" />
+    <ClInclude Include="code\Utilities\Logger\logger.h" />
+    <ClInclude Include="code\Math\mathPlane.h" />
+    <ClInclude Include="code\Graphics\Models\model.h" />
     <ClInclude Include="code\noise.h" />
     <ClInclude Include="code\palette.h" />
     <ClInclude Include="code\player.h" />
     <ClInclude Include="code\quaternion.h" />
     <ClInclude Include="code\recyclingPool.h" />
+    <ClInclude Include="code\Registry\registries.h" />
+    <ClInclude Include="code\Registry\registry.h" />
+    <ClInclude Include="code\Registry\registryElement.h" />
+    <ClInclude Include="code\Registry\RegistryInsOrdered\registryInsOrdered.h" />
     <ClInclude Include="code\renderer.h" />
-    <ClInclude Include="code\shader.h" />
-    <ClInclude Include="code\texture.h" />
+    <ClInclude Include="code\Graphics\Shaders\shader.h" />
+    <ClInclude Include="code\Graphics\Textures\texture.h" />
     <ClInclude Include="code\definitions.h" />
     <ClInclude Include="code\threadPool.h" />
     <ClInclude Include="code\tickFunctions.h" />
@@ -114,11 +139,12 @@
     <ClInclude Include="code\timer.h" />
     <ClInclude Include="code\Trees\TreeNode.h" />
     <ClInclude Include="code\utilities.h" />
+    <ClInclude Include="code\Utilities\Var\var.h" />
     <ClInclude Include="code\vec.h" />
     <ClInclude Include="code\vertex.h" />
     <ClInclude Include="code\vertexArray.h" />
     <ClInclude Include="code\vertexBuffer.h" />
-    <ClInclude Include="code\vertexBufferLayout.h" />
+    <ClInclude Include="code\Graphics\Vertex\VertexBufferLayout\vertexBufferLayout.h" />
     <ClInclude Include="code\entity.h" />
     <ClInclude Include="code\world.h" />
     <ClInclude Include="code\worldGen.h" />
@@ -179,12 +205,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(IncludePath);$(ProjectDir)\code;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(IncludePath);$(ProjectDir)\code;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

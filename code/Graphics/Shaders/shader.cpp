@@ -4,7 +4,8 @@
 #include <ios>
 #include <fstream>
 #include <stdexcept>
-#include "../../logger.h"
+#include <Registry/registries.h>
+#include <Utilities/Logger/logger.h>
 
 #if GRAPHICS_API == OPENGL
 
@@ -71,7 +72,8 @@ namespace VoxelEng {
 
     }
 
-    shader::shader(const std::string& name, const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
+    shader::shader(const std::string& name, const std::string& vertexShaderPath, const std::string& fragmentShaderPath,
+        std::initializer_list<std::string> requiredUBOsNames)
 	    : name_(name), rendererID_(0) {
 
         // Load the two shaders from the files and compile them later in the Shader::createShader() private method.
@@ -91,6 +93,11 @@ namespace VoxelEng {
         fragment_shader_file.close();
 
         rendererID_ = createShader(vertex_shader, fragment_shader);
+
+        bind();
+        for(auto it = requiredUBOsNames.begin(); it != requiredUBOsNames.end(); it++)
+            bindUFO(registries::getInsOrdered(*it));
+        unbind();
 
     }
 

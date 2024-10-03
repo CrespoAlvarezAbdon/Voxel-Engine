@@ -13,10 +13,9 @@
 #include <cstddef>
 #include <string>
 #include <vector>
-#include "../../definitions.h"
-#include "../../logger.h"
-#include "../../Registry/registryElement.h"
-#include "../../Registry/RegistryInsOrdered/registryInsOrdered.h"
+#include <definitions.h>
+#include <Registry/RegistryInsOrdered/registryInsOrdered.h>
+#include <Utilities/Logger/logger.h>
 
 #if GRAPHICS_API == OPENGL
 
@@ -45,14 +44,6 @@ namespace VoxelEng {
 
 	public:
 
-		// Initialisation.
-
-		/**
-		* @brief Initialise the Uniform Buffer Object system.
-		*/
-		static void init(const std::string& typeName);
-
-		
 		// Constructors.
 
 		/**
@@ -132,23 +123,6 @@ namespace VoxelEng {
 		std::vector<T> elements_;
 
 	};
-
-	template <typename T>
-	requires std::default_initializable<T>
-	void UBO<T>::init(const std::string& typeName) {
-
-		if (initialised_) {
-
-			logger::errorLog("Material system is already initialised");
-
-		}
-		else {
-
-			initialised_ = true;
-
-		}
-
-	}
 
 	template <typename T>
 	requires std::default_initializable<T>

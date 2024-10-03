@@ -1,7 +1,7 @@
 #include "logger.h"
 #include <iostream>
 #include <ostream>
-#include "game.h"
+#include <game.h>
 
 
 namespace VoxelEng {

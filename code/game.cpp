@@ -149,7 +149,7 @@ namespace VoxelEng {
             registries::init();
 
             // Register materials.
-            registryInsOrdered<std::string, material>& materialsRegistry = registries::materials();
+            registryInsOrdered<std::string, material>& materialsRegistry = registries::getInsOrdered<material>("Materials");
             materialsRegistry.insert("OmegaRed",
                 10.0f, 0.0f, 0.0f,
                 10.0f, 0.0f, 0.0f,
@@ -181,24 +181,25 @@ namespace VoxelEng {
                 256.0f);
 
             // Light types registration.
-            registryInsOrdered<std::string, directionalLight>& directionalLightsRegistry = registries::directionalLights();
-            directionalLightsRegistry.insert("RedDirectionalLight", "directionalLight",
+            registryInsOrdered<std::string, directionalLight>& directionalLightsRegistry = registries::getInsOrdered<directionalLight>("DirectionalLights");
+            directionalLightsRegistry.insert("RedDirectionalLight",
                 1.0f, 0.0f, 0.0f, 
                 1.0f, 0.0f, 0.0f);
 
-            registryInsOrdered<std::string, pointLight>& pointLightsRegistry = registries::pointLights();
-            pointLightsRegistry.insert("BluePointLight", "pointLight",
+            registryInsOrdered<std::string, pointLight>& pointLightsRegistry = registries::getInsOrdered<pointLight>("PointLights");
+            pointLightsRegistry.insert("BluePointLight",
                 0.0f, 1.0f, 0.0f,
                 0.0f, 1.0f, 0.0f,
                 1.0f, 0.7f, 1.8f);
 
-            registryInsOrdered<std::string, spotLight>& spotLightsRegistry = registries::spotLights();
-            spotLightsRegistry.insert("GreenSpotLight", "spotLight",
+            registryInsOrdered<std::string, spotLight>& spotLightsRegistry = registries::getInsOrdered<spotLight>("SpotLights");
+            spotLightsRegistry.insert("GreenSpotLight",
                 0.0f, 0.0f, 1.0f, 
                 0.0f, 0.0f, 1.0f,
                 25.0f, 35.0f);
 
             // Block registration.
+            // TODO. CONVERT THIS INTO A REGISTRY OF BLOCKS.
             block::registerBlock("starminer::grass", blockOpacity::OPAQUEBLOCK, { {"all", 1} }, "UltraShiny"); // TODO. Manual texture ID assignment is temporary.
             block::registerBlock("starminer::stone", blockOpacity::OPAQUEBLOCK, { {"all", 2} });
             block::registerBlock("starminer::sand", blockOpacity::OPAQUEBLOCK, { {"all", 3} });

@@ -125,39 +125,27 @@ namespace VoxelEng {
 				vaos_.at("screen").addLayout(layoutScreen);
 
 				// Initialize and register UBOs.
-				materialsUBO_ = new UBO<material>("Materials", registries::materials(), 1); // binding point 1 is used for materials' UBO.
-				directionalLightsUBO_ = new UBO<directionalLight>("directionalLights", registries::directionalLights(), 2);
-				pointLightsUBO_ = new UBO<pointLight>("pointLights", registries::pointLights(), 3);
-				spotLightsUBO_ = new UBO<spotLight>("spotLights", registries::spotLights(), 4);
+				materialsUBO_ =  // binding point 1 is used for materials' UBO.
+				directionalLightsUBO_ = new UBO<directionalLight>("directionalLights", registries::getInsOrdered<directionalLight>("DirectionalLights"), 2);
+				pointLightsUBO_ = new UBO<pointLight>("pointLights", registries::getInsOrdered<pointLight>("PointLights"), 3);
+				spotLightsUBO_ = new UBO<spotLight>("spotLights", registries::getInsOrdered<spotLight>("SpotLights"), 4);
+
+				// NEXT. CLASE VAR QUE TIENE PUNTERO A VOID* Y TYPENAME DEL TIPO ENTERO (TEMPLATE TYPENAME INCLUÍDOS)
+				// NEXT. REGISTRY DE UBOs. QUE SEA UN REGISTRY<STD::STRING, VAR> Y POR EL NOMBRE SE SABE A QUÉ CASTEARLO.
 
 				// MORE TODOS.
 				// -CUANDO SUBAS SPOTLIGHTS, CONVERTIR LOS ANGULOS A RADIANES.
 				// -METER TODA LA PARTE CORRESPONDIENTE DE MANEJAR LAS LUCES EN LOS SHADERS, INCLUYENDO EL HECHO DE SOPORTAR VARIAS LUCES. DE MOMENTO NO OPTIMICES NADA PARA QUE VAYAMOS VIENDO EL IMPACTO QUE REALMENTE TIENEN.
+				// -METE TODOS LOS INIT DE REGISTRYELEMENTS EN UN LUGAR APROPIADO.
 
 				// Initialize shaders.
-				// ADD NAMES OF REQUIRED UBOS.
 				// opaqueShader_->bindRequiredUFOs(); WILL BE CALLED ON THE REQUIRED UBOS SO THEY NEED TO BE CREATED FIRST.
 				// registries::UBOs()::insert(EL MATERIALS UBO DE ARRIBA);
 				// registries::UBOs()::insert(UN UBO CON VARIABLES DE USO GENERAL POR LAS SHADERS);
-				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "General", "Materials"});
-				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "General", "Materials" });
+				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials" });
+				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "Materials" });
 				compositeShader_ = new shader("composite", "resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
 				screenShader_ = new shader("screenQuad", "resources/Shaders/screenVertex.shader", "resources/Shaders/screenFragment.shader");
-
-				// Initialize and link shaders' UBOs.
-				opaqueShader_->bind();
-				opaqueShader_->bindUFO(*materialsUBO_);
-				opaqueShader_->bindUFO(*directionalLightsUBO_);
-				opaqueShader_->bindUFO(*pointLightsUBO_);
-				opaqueShader_->bindUFO(*spotLightsUBO_);
-				opaqueShader_->unbind();
-
-				translucidShader_->bind();
-				translucidShader_->bindUFO(*materialsUBO_);
-				translucidShader_->bindUFO(*directionalLightsUBO_);
-				translucidShader_->bindUFO(*pointLightsUBO_);
-				translucidShader_->bindUFO(*spotLightsUBO_);
-				translucidShader_->unbind();
 
 			#else
 

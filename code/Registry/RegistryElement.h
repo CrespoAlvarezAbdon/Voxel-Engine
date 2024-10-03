@@ -25,6 +25,9 @@ namespace VoxelEng {
 
 		// Initialisation.
 
+		/**
+		* @brief Initialise the registryElement system.
+		*/
 		static void init(const std::string& typeName);
 
 
