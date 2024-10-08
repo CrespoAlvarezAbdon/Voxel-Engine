@@ -21,8 +21,8 @@
 #include <ios>
 #include <stdexcept>
 #include "definitions.h"
-#include "logger.h"
 #include "vec.h"
+#include <Utilities/Logger/logger.h>
 
 #if GRAPHICS_API == OPENGL
 

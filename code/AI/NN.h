@@ -17,7 +17,7 @@
 #include <random>
 #include <limits>
 #include <arrayfire.h>
-#include "../logger.h"
+#include <Utilities/Logger/logger.h>
 
 
 namespace AIExample {

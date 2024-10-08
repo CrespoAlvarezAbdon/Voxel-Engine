@@ -1,16 +1,14 @@
 #include "AIGameEx1.h"
-
 #include <cmath>
 #include <cstddef>
 #include <filesystem>
 #include <typeinfo>
 #include <type_traits>
-
-#include "../definitions.h"
-#include "../logger.h"
-#include "../utilities.h"
-#include "../game.h"
-#include "../noise.h"
+#include <definitions.h>
+#include <game.h>
+#include <noise.h>
+#include <utilities.h>
+#include <Utilities/Logger/logger.h>
 
 namespace AIExample {
 

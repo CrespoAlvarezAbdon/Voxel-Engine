@@ -24,9 +24,9 @@
 #include "definitions.h"
 #include "entity.h"
 #include "game.h"
-#include "logger.h"
 #include "time.h"
 #include "worldGen.h"
+#include <Utilities/Logger/logger.h>
 
 
 namespace VoxelEng {

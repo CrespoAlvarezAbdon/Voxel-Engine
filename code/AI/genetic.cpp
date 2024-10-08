@@ -6,14 +6,14 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-#include "af/algorithm.h"
-#include "af/defines.h"
-#include "../logger.h"
-#include "../timer.h"
-#include "../AIAPI.h"
-#include "../worldGen.h"
-#include "../chunk.h"
-#include "../utilities.h"
+#include <af/algorithm.h>
+#include <af/defines.h>
+#include <timer.h>
+#include <AIAPI.h>
+#include <worldGen.h>
+#include <chunk.h>
+#include <utilities.h>
+#include <Utilities/Logger/logger.h>
 #include "AIGameEx1.h"
 
 

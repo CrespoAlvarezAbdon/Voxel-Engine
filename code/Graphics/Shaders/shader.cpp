@@ -5,7 +5,14 @@
 #include <fstream>
 #include <stdexcept>
 #include <Registry/registries.h>
+#include <Registry/registry.h>
+#include <Graphics/Materials/materials.h>
+#include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
+#include <Graphics/Lighting/Lights/PointLight/pointLight.h>
+#include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
+#include <Graphics/UBOs/UBOs.h>
 #include <Utilities/Logger/logger.h>
+#include <Utilities/Var/var.h>
 
 #if GRAPHICS_API == OPENGL
 
@@ -94,11 +101,38 @@ namespace VoxelEng {
 
         rendererID_ = createShader(vertex_shader, fragment_shader);
 
+        registry<std::string, var>* UBOs = registries::get("UBOs")->pointer<registry<std::string, var>>();
         bind();
-        for(auto it = requiredUBOsNames.begin(); it != requiredUBOsNames.end(); it++)
-            bindUFO(registries::getInsOrdered(*it));
-        unbind();
+        for (auto it = requiredUBOsNames.begin(); it != requiredUBOsNames.end(); it++) {
+        
+            var* ubo = UBOs->get(*it);
+            switch (ubo->getVarType()) {
+           
+            case var::varType::UBO_OF_MATERIALS:
+                bindUFO(*ubo->pointer<UBO<material>>());
+                break;
 
+            case var::varType::UBO_OF_DIRECTIONALLIGHTS:
+                bindUFO(*ubo->pointer<UBO<directionalLight>>());
+                break;
+
+            case var::varType::UBO_OF_POINTLIGHTS:
+                bindUFO(*ubo->pointer<UBO<pointLight>>());
+                break;
+
+            case var::varType::UBO_OF_SPOTLIGHTS:
+                bindUFO(*ubo->pointer<UBO<spotLight>>());
+                break;
+
+            default:
+            case var::varType::UNKNOWN:
+                logger::errorLog("Unsupported var type specified");
+                break;
+            
+            }
+        
+        }
+        unbind();
     }
 
     void shader::bind() const {

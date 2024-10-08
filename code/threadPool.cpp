@@ -1,8 +1,6 @@
 #include "threadPool.h"
-#include "logger.h"
-
-
 #include <string>
+#include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {
 

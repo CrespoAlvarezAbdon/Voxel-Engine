@@ -2,7 +2,7 @@
 #include "AIAPI.h"
 #include "block.h"
 #include "game.h"
-#include "logger.h"
+#include <Utilities/Logger/logger.h>
 
 // Users' includes.
 #include "AI/AIGameEx1.h"

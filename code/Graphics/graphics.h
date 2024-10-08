@@ -223,10 +223,6 @@ namespace VoxelEng {
 		static shader* translucidShader_;
 		static shader* compositeShader_;
 		static shader* screenShader_;
-		static UBO<material>* materialsUBO_;
-		static UBO<directionalLight>* directionalLightsUBO_;
-		static UBO<pointLight>* pointLightsUBO_;
-		static UBO<spotLight>* spotLightsUBO_;
 
 	};
 

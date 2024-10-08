@@ -1,16 +1,13 @@
 #include "world.h"
-
 #include <cstring>
-
 #include "block.h"
 #include "entity.h"
 #include "palette.h"
 #include "player.h"
 #include "game.h"
-#include "logger.h"
 #include "utilities.h"
 #include "worldGen.h"
-
+#include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {
 

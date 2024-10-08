@@ -1,6 +1,5 @@
 #include "timer.h"
-#include "logger.h"
-
+#include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {
 

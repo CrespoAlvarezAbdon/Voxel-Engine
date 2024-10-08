@@ -25,7 +25,11 @@ namespace VoxelEng {
 
 		// Enumerations.
 
-		enum class varType { UNKNOWN = -1, UBO_OF_MATERIALS };
+		enum class varType { UNKNOWN = -1, 
+			UBO_OF_MATERIALS, UBO_OF_DIRECTIONALLIGHTS, UBO_OF_POINTLIGHTS, UBO_OF_SPOTLIGHTS,
+			REGISTRYINSORDERED_OF_STRINGS_MATERIALS,
+			REGISTRYINSORDERED_OF_STRINGS_DIRECTIONALLIGHTS, REGISTRYINSORDERED_OF_STRINGS_POINTLIGHTS, REGISTRYINSORDERED_OF_STRINGS_SPOTLIGHTS,
+			REGISTRY_OF_STRINGS_VARS};
 
 
 		// Initialisation.
@@ -57,7 +61,8 @@ namespace VoxelEng {
 		* @brief Get the pointer to the wrapped object or basic data type variable.
 		* @returns The pointer to the wrapped object or basic data type variable.
 		*/
-		const void* pointer() const;
+		template <typename T>
+		const T* pointer() const;
 
 		/**
 		* @brief Get the type of the pointer to the wrapped object
@@ -70,20 +75,20 @@ namespace VoxelEng {
 
 		// Modifiers.
 
+		
 		/**
 		* @brief Get the pointer to the wrapped object or basic data type variable.
 		* @returns The pointer to the wrapped object or basic data type variable.
 		*/
-		void* pointer();
+		template <typename T>
+		T* pointer();
+
+
+		// Destructors.
+
+		~var();
 
 	private:
-
-		/*
-		Methods.
-		*/
-
-		void destroy();
-
 
 		/*
 		Attributes.
@@ -108,9 +113,10 @@ namespace VoxelEng {
 	
 	}
 
-	inline const void* var::pointer() const {
+	template <typename T>
+	inline const T* var::pointer() const {
 	
-		return pointer_;
+		return static_cast<const T*>(pointer_);
 	
 	}
 
@@ -120,9 +126,10 @@ namespace VoxelEng {
 
 	}
 
-	inline void* var::pointer() {
+	template <typename T>
+	inline T* var::pointer() {
 
-		return pointer_;
+		return static_cast<T*>(pointer_);
 
 	}
 

@@ -34,6 +34,7 @@
 #include <Graphics/Frustum/frustum.h>
 #include <Graphics/Materials/materials.h>
 #include <Graphics/Lighting/Lights/light.h>
+#include <Utilities/Var/var.h>
 #include "timer.h"
 
 
@@ -144,56 +145,58 @@ namespace VoxelEng {
             // Registrable elements initialisation.
             registryElement::init("registryElement");
             material::init("material");
+            light::init("light");
+            var::init("var");
 
             // Registries collection initialisation.
             registries::init();
 
             // Register materials.
-            registryInsOrdered<std::string, material>& materialsRegistry = registries::getInsOrdered<material>("Materials");
-            materialsRegistry.insert("OmegaRed",
+            registryInsOrdered<std::string, material>* materialsRegistry = registries::getInsOrdered("Materials")->pointer<registryInsOrdered<std::string, material>>();
+            materialsRegistry->insert("OmegaRed",
                 10.0f, 0.0f, 0.0f,
                 10.0f, 0.0f, 0.0f,
                 10.0f, 0.0f, 0.0f,
                 32.0f);
 
-            materialsRegistry.insert("AlphaBlue",
+            materialsRegistry->insert("AlphaBlue",
                 0.0f, 0.0f, 10.0f,
                 0.0f, 0.0f, 10.0f,
                 0.0f, 0.0f, 10.0f,
                 32.0f);
 
-            materialsRegistry.insert("DeltaGreen",
+            materialsRegistry->insert("DeltaGreen",
                 0.0f, 10.0f, 0.0f,
                 0.0f, 10.0f, 0.0f,
                 0.0f, 10.0f, 0.0f,
                 32.0f);
 
-            materialsRegistry.insert("RedOnlyIfLit",
+            materialsRegistry->insert("RedOnlyIfLit",
                 1.0f, 1.0f, 1.0f,
                 10.0f, 0.0f, 0.0f,
                 10.0f, 0.0f, 0.0f,
                 32.0f);
 
-            materialsRegistry.insert("UltraShiny",
+            materialsRegistry->insert("UltraShiny",
                 1.0f, 1.0f, 1.0f,
                 1.0f, 1.0f, 1.0f,
                 1.0f, 1.0f, 1.0f,
                 256.0f);
 
             // Light types registration.
-            registryInsOrdered<std::string, directionalLight>& directionalLightsRegistry = registries::getInsOrdered<directionalLight>("DirectionalLights");
-            directionalLightsRegistry.insert("RedDirectionalLight",
+            registryInsOrdered<std::string, directionalLight>* directionalLightsRegistry = registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>();
+            directionalLightsRegistry->insert("RedDirectionalLight",
                 1.0f, 0.0f, 0.0f, 
                 1.0f, 0.0f, 0.0f);
 
-            registryInsOrdered<std::string, pointLight>& pointLightsRegistry = registries::getInsOrdered<pointLight>("PointLights");
-            pointLightsRegistry.insert("BluePointLight",
+            registryInsOrdered<std::string, pointLight>* pointLightsRegistry = registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>();
+            pointLightsRegistry->insert("BluePointLight",
                 0.0f, 1.0f, 0.0f,
                 0.0f, 1.0f, 0.0f,
                 1.0f, 0.7f, 1.8f);
 
-            registryInsOrdered<std::string, spotLight>& spotLightsRegistry = registries::getInsOrdered<spotLight>("SpotLights");
-            spotLightsRegistry.insert("GreenSpotLight",
+            registryInsOrdered<std::string, spotLight>* spotLightsRegistry = registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>();
+            spotLightsRegistry->insert("GreenSpotLight",
                 0.0f, 0.0f, 1.0f, 
                 0.0f, 0.0f, 1.0f,
                 25.0f, 35.0f);
@@ -1350,6 +1353,9 @@ namespace VoxelEng {
 
         if (block::initialised())
             block::reset();
+
+        if (registries::initialised())
+            registries::reset();
 
     }
 

@@ -17,9 +17,9 @@
 #include "input.h"
 #include "gui.h"
 #include "game.h"
-#include "Graphics/graphics.h"
-#include "logger.h"
 #include "timer.h"
+#include <Graphics/graphics.h>
+#include <Utilities/Logger/logger.h>
 #include "AI/AIGameEx1.h"
 
 

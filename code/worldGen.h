@@ -16,9 +16,8 @@
 #include <random>
 #include <limits>
 #include "chunk.h"
-#include "logger.h"
 #include "definitions.h"
-
+#include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {
 

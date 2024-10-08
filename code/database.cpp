@@ -1,7 +1,5 @@
 #include "database.h"
-
-#include "logger.h"
-
+#include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {
 

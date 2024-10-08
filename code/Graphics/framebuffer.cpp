@@ -1,16 +1,12 @@
 #include "Framebuffer.h"
-
-#include "../logger.h"
-#include "../Graphics/graphics.h"
+#include <Graphics/graphics.h>
+#include <Utilities/Logger/logger.h>
 
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
 
 #endif
-
-// DUMMY
-#include <iostream>
 
 namespace VoxelEng {
 

@@ -9,9 +9,9 @@
 #include <sstream>
 #include <string>
 #include <filesystem>
-#include "../../chunk.h"
-#include "../../logger.h"
-#include "../../Graphics/Textures/texture.h"
+#include <chunk.h>
+#include <Graphics/Textures/texture.h>
+#include <Utilities/Logger/logger.h>
 
 #if GRAPHICS_API == OPENGL
 

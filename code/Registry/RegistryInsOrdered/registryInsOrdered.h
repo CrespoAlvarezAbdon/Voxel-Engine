@@ -6,8 +6,8 @@
 #include <map>
 #include <type_traits>
 #include <utility>
-#include "../registry.h"
-#include "../../logger.h"
+#include <Registry/registry.h>
+#include <Utilities/Logger/logger.h>
 
 
 namespace VoxelEng {
@@ -17,11 +17,6 @@ namespace VoxelEng {
 	class registryInsOrdered : public registry<KeyT, T> {
 
 	public:
-
-		// Unhid overloaded methods with same name in base class.
-
-
-
 
 		// Nested classes.
 

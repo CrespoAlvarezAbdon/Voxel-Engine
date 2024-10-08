@@ -14,7 +14,7 @@
 #include "block.h"
 #include "game.h"
 #include "player.h"
-#include "logger.h"
+#include <Utilities/Logger/logger.h>
 
 
 namespace VoxelEng {

@@ -1,10 +1,7 @@
 #include "texture.h"
-#include "../../logger.h"
 #include "../framebuffer.h"
 #include "../../External code/stb_image.h"
-
-// DUMMY.
-#include <iostream>
+#include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {
 

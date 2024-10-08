@@ -16,6 +16,14 @@ namespace VoxelEng {
 
 	public:
 
+		// Initialisation.
+
+		/**
+		* @brief Initialise the registryElement system.
+		*/
+		static void init(const std::string& typeName);
+
+
 		// Constructors.
 
 		/**
@@ -39,6 +47,11 @@ namespace VoxelEng {
 		// Observers.
 
 		/**
+		* @brief Get the registry element's typename.
+		*/
+		static const std::string& typeName();
+
+		/**
 		* @brief Get the number of arguments needed to construct an object of this class.
 		* @returns The number of arguments needed to construct an object of this class.
 		*/
@@ -46,6 +59,8 @@ namespace VoxelEng {
 
 	protected:
 
+		static bool initialised_;
+		static std::string typeName_;
 		static const unsigned int nArgs_;
 
 		float diffuse_[4];
@@ -61,6 +76,12 @@ namespace VoxelEng {
 		float specularR, float specularG, float specularB) 
 	: diffuse_{ diffuseR, diffuseG, diffuseB, 1.0f }, specular_{ specularR, specularG, specularB, 1.0f }
 	{}
+
+	inline const std::string& light::typeName() {
+
+		return typeName_;
+
+	}
 
 	inline unsigned int light::nArgs() {
 

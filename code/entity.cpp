@@ -4,10 +4,10 @@
 #include <string>
 #include "camera.h"
 #include "game.h"
-#include "graphics/graphics.h"
-#include "logger.h"
 #include "utilities.h"
 #include "worldGen.h"
+#include <Graphics/graphics.h>
+#include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {
 

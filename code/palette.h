@@ -4,8 +4,7 @@
 #include <cstddef>
 #include <concepts>
 #include <unordered_map>
-
-#include "logger.h"
+#include <Utilities/Logger/logger.h>
 
 
 namespace VoxelEng {

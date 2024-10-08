@@ -14,7 +14,7 @@
 #include <utility>
 #include <unordered_map>
 #include <unordered_set>
-#include "logger.h"
+#include <Utilities/Logger/logger.h>
 
 
 namespace VoxelEng {

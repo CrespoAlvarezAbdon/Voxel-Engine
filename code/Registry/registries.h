@@ -12,7 +12,8 @@
 #include <stdexcept>
 #include <string>
 #include <memory>
-#include "RegistryInsOrdered/registryInsOrdered.h"
+#include <Registry/RegistryInsOrdered/registryInsOrdered.h>
+#include <Utilities/Var/var.h>
 
 namespace VoxelEng {
 
@@ -33,7 +34,30 @@ namespace VoxelEng {
 		/**
 		* @brief Deinitialise the registries collection.
 		*/
-		static void deinit();
+		static void reset();
+
+
+		// Observers.
+
+		/**
+		* @brief Get whether the registries collection has been initialised or not.
+		* @returns Whether the registries collection has been initialised or not.
+		*/
+		static bool initialised();
+
+		/**
+		* @brief Get the specified registry.
+		* @param name The name of the specified registry.
+		* @returns The specified registry. Throws exception if said registry is not registered.
+		*/
+		static const var* getC(const std::string& name);
+
+		/**
+		* @brief Get the specified insertion-ordered registry.
+		* @param name The name of the specified registry.
+		* @returns The specified registry. Throws exception if said registry is not registered.
+		*/
+		static const var* getCInsOrdered(const std::string& name);
 
 
 		// Modifiers.
@@ -43,50 +67,38 @@ namespace VoxelEng {
 		* @param name The name of the specified registry.
 		* @returns The specified registry. Throws exception if said registry is not registered.
 		*/
-		template <typename T>
-		requires std::derived_from<T, registryElement>
-		static registry<std::string, T>& get(const std::string& name);
+		static var* get(const std::string& name);
 
 		/**
 		* @brief Get the specified insertion-ordered registry.
 		* @param name The name of the specified registry.
 		* @returns The specified registry. Throws exception if said registry is not registered.
 		*/
-		template <typename T>
-		requires std::derived_from<T, registryElement>
-		static registryInsOrdered<std::string, T>& getInsOrdered(const std::string& name);
+		static var* getInsOrdered(const std::string& name);
 
 	private:
 
 		static bool initialised_;
-		static registry<std::string, registry<std::string, registryElement>>* registries_;
-		static registry<std::string, registryInsOrdered<std::string, registryElement>>* registriesInsOrdered_;
+		static registry<std::string, var>* registries_;
+		static registry<std::string, var>* registriesInsOrdered_;
 
 	};
 
-	template <typename T>
-	requires std::derived_from<T, registryElement>
-	registry<std::string, T>& registries::get(const std::string& name) {
+	inline bool registries::initialised() {
 	
-		if (registries_->contains(name))
-		{
-			return *registries_->get(name);
-		}
-		else
-			throw std::runtime_error("The registry " + name + " is not registered");
+		return initialised_;
 	
 	}
 
-	template <typename T>
-	requires std::derived_from<T, registryElement>
-	registryInsOrdered<std::string, T>& registries::getInsOrdered(const std::string& name) {
+	inline const var* registries::getC(const std::string& name) {
 
-		if (registriesInsOrdered_->contains(name))
-		{
-			return *registriesInsOrdered_->get(name);
-		}
-		else
-			throw std::runtime_error("The insertion-ordered registry " + name + " is not registered");
+		return get(name);
+
+	}
+
+	inline const var* registries::getCInsOrdered(const std::string& name) {
+
+		return getInsOrdered(name);
 
 	}
 

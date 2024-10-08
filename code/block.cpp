@@ -1,6 +1,6 @@
 #include "block.h"
-
-#include "Registry/registries.h"
+#include <Registry/registries.h>
+#include <Graphics/Materials/materials.h>
 
 namespace VoxelEng {
 	
@@ -140,9 +140,8 @@ namespace VoxelEng {
 		: name_(name),
 		intID_(intID),
 		opacity_(opacity),
-		materialIndex_(registries::materials().getInsIndex(materialID))
+		materialIndex_(registries::getCInsOrdered("Materials")->pointer<const registryInsOrdered<std::string, var>>()->getInsIndex(materialID))
 	{
-
 		if (textures.size()) {
 
 			for (auto it = textures.begin(); it != textures.end(); it++)

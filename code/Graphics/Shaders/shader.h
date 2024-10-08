@@ -16,7 +16,6 @@
 #include <definitions.h>
 #include <vec.h>
 #include <Graphics/UBOs/UBOs.h>
-#include <Registry/registry.h>
 #include <Registry/registryElement.h>
 
 namespace VoxelEng {
@@ -119,8 +118,6 @@ namespace VoxelEng {
 		~shader();
 
 	private:
-
-		static registry<std::string, UBO<T>> UBOs_;
 
 		std::string name_;
 		unsigned int rendererID_;

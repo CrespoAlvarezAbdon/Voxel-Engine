@@ -1,10 +1,10 @@
 #include "graphics.h"
 
 #include "Materials/materials.h"
-#include "../logger.h"
-#include "../definitions.h"
-#include "../Registry/registries.h"
-#include "../Registry/RegistryInsOrdered/registryInsOrdered.h"
+#include <definitions.h>
+#include <Registry/registries.h>
+#include <Registry/RegistryInsOrdered/registryInsOrdered.h>
+#include <Utilities/Logger/logger.h>
 
 #if GRAPHICS_API == OPENGL
 
@@ -26,10 +26,6 @@ namespace VoxelEng {
 	shader* graphics::translucidShader_ = nullptr;
 	shader* graphics::compositeShader_ = nullptr;
 	shader* graphics::screenShader_ = nullptr;
-	UBO<material>* graphics::materialsUBO_ = nullptr;
-	UBO<directionalLight>* directionalLightsUBO_ = nullptr;
-	UBO<pointLight>* pointLightsUBO_ = nullptr;
-	UBO<spotLight>* spotLightsUBO_ = nullptr;
 
 
 	void graphics::init(window& mainWindow) {
@@ -92,9 +88,9 @@ namespace VoxelEng {
 				vbos_.at("GUI").generate();
 				vbos_.at("screen").generate();
 
-				vertexBufferLayout& layout3D = vboLayouts_.insert({ "3D", vertexBufferLayout() }).first->second,
-								  & layout2D = vboLayouts_.insert({ "2D", vertexBufferLayout() }).first->second,
-								  & layoutScreen = vboLayouts_.insert({ "screen", vertexBufferLayout() }).first->second;
+				vertexBufferLayout& layout3D = vboLayouts_.insert({ "3D", vertexBufferLayout() }).first->second;
+				vertexBufferLayout& layout2D = vboLayouts_.insert({ "2D", vertexBufferLayout() }).first->second;
+				vertexBufferLayout& layoutScreen = vboLayouts_.insert({ "screen", vertexBufferLayout() }).first->second;
 
 				// Configure the vertex layout for 3D rendering.
 				layout3D.push<GLfloat>(3, true);
@@ -124,24 +120,33 @@ namespace VoxelEng {
 				vbos_.at("screen").bind();
 				vaos_.at("screen").addLayout(layoutScreen);
 
-				// Initialize and register UBOs.
-				materialsUBO_ =  // binding point 1 is used for materials' UBO.
-				directionalLightsUBO_ = new UBO<directionalLight>("directionalLights", registries::getInsOrdered<directionalLight>("DirectionalLights"), 2);
-				pointLightsUBO_ = new UBO<pointLight>("pointLights", registries::getInsOrdered<pointLight>("PointLights"), 3);
-				spotLightsUBO_ = new UBO<spotLight>("spotLights", registries::getInsOrdered<spotLight>("SpotLights"), 4);
-
-				// NEXT. CLASE VAR QUE TIENE PUNTERO A VOID* Y TYPENAME DEL TIPO ENTERO (TEMPLATE TYPENAME INCLUÍDOS)
-				// NEXT. REGISTRY DE UBOs. QUE SEA UN REGISTRY<STD::STRING, VAR> Y POR EL NOMBRE SE SABE A QUÉ CASTEARLO.
-
 				// MORE TODOS.
 				// -CUANDO SUBAS SPOTLIGHTS, CONVERTIR LOS ANGULOS A RADIANES.
 				// -METER TODA LA PARTE CORRESPONDIENTE DE MANEJAR LAS LUCES EN LOS SHADERS, INCLUYENDO EL HECHO DE SOPORTAR VARIAS LUCES. DE MOMENTO NO OPTIMICES NADA PARA QUE VAYAMOS VIENDO EL IMPACTO QUE REALMENTE TIENEN.
-				// -METE TODOS LOS INIT DE REGISTRYELEMENTS EN UN LUGAR APROPIADO.
+				// -AÑADIR UN REGISTRIES::REMOVE PARA QUITAR EL UBOREGISTRY CUANDO SE DESCARGUE EL MODO GRÁFICO.
+
+				registry<std::string, var>* UBORegistry = registries::get("UBOs")->pointer<registry<std::string, var>>();
+				UBORegistry->insert("Materials",
+					static_cast<void*>(new UBO<material>("Materials",
+						*registries::getInsOrdered("Materials")->pointer<registryInsOrdered<std::string, material>>(), 1)),
+					var::varType::UBO_OF_MATERIALS);
+
+				UBORegistry->insert("DirectionalLights",
+					static_cast<void*>(new UBO<directionalLight>("DirectionalLights",
+						*registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>(), 2)),
+					var::varType::UBO_OF_DIRECTIONALLIGHTS);
+
+				UBORegistry->insert("PointLights",
+					static_cast<void*>(new UBO<pointLight>("PointLights",
+						*registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>(), 3)),
+					var::varType::UBO_OF_POINTLIGHTS);
+
+				UBORegistry->insert("SpotLights",
+					static_cast<void*>(new UBO<spotLight>("SpotLights",
+						*registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>(), 4)),
+					var::varType::UBO_OF_SPOTLIGHTS);
 
 				// Initialize shaders.
-				// opaqueShader_->bindRequiredUFOs(); WILL BE CALLED ON THE REQUIRED UBOS SO THEY NEED TO BE CREATED FIRST.
-				// registries::UBOs()::insert(EL MATERIALS UBO DE ARRIBA);
-				// registries::UBOs()::insert(UN UBO CON VARIABLES DE USO GENERAL POR LAS SHADERS);
 				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials" });
 				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "Materials" });
 				compositeShader_ = new shader("composite", "resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
@@ -436,34 +441,6 @@ namespace VoxelEng {
 
 				delete screenShader_;
 				screenShader_ = nullptr;
-
-			}
-
-			if (materialsUBO_) {
-			
-				delete materialsUBO_;
-				materialsUBO_ = nullptr;
-			
-			}
-
-			if (directionalLightsUBO_) {
-
-				delete directionalLightsUBO_;
-				directionalLightsUBO_ = nullptr;
-
-			}
-
-			if (pointLightsUBO_) {
-
-				delete pointLightsUBO_;
-				pointLightsUBO_ = nullptr;
-
-			}
-
-			if (spotLightsUBO_) {
-
-				delete spotLightsUBO_;
-				spotLightsUBO_ = nullptr;
 
 			}
 		
