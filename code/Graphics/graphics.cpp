@@ -34,6 +34,8 @@ namespace VoxelEng {
 			logger::errorLog("Graphics API is already initialised");
 		else {
 
+			registries::initGraphicalMode();
+
 			#if GRAPHICS_API == OPENGL
 
 				// GLFW initialization.
@@ -123,7 +125,6 @@ namespace VoxelEng {
 				// MORE TODOS.
 				// -CUANDO SUBAS SPOTLIGHTS, CONVERTIR LOS ANGULOS A RADIANES.
 				// -METER TODA LA PARTE CORRESPONDIENTE DE MANEJAR LAS LUCES EN LOS SHADERS, INCLUYENDO EL HECHO DE SOPORTAR VARIAS LUCES. DE MOMENTO NO OPTIMICES NADA PARA QUE VAYAMOS VIENDO EL IMPACTO QUE REALMENTE TIENEN.
-				// -AÑADIR UN REGISTRIES::REMOVE PARA QUITAR EL UBOREGISTRY CUANDO SE DESCARGUE EL MODO GRÁFICO.
 
 				registry<std::string, var>* UBORegistry = registries::get("UBOs")->pointer<registry<std::string, var>>();
 				UBORegistry->insert("Materials",
@@ -147,8 +148,8 @@ namespace VoxelEng {
 					var::varType::UBO_OF_SPOTLIGHTS);
 
 				// Initialize shaders.
-				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials" });
-				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "Materials" });
+				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights"});
+				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" });
 				compositeShader_ = new shader("composite", "resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
 				screenShader_ = new shader("screenQuad", "resources/Shaders/screenVertex.shader", "resources/Shaders/screenFragment.shader");
 
@@ -160,6 +161,66 @@ namespace VoxelEng {
 
 			initialised_ = true;
 		
+		}
+
+	}
+
+	void graphics::reset() {
+
+		if (initialised_) {
+
+			#if GRAPHICS_API == OPENGL
+
+				vbos_.clear();
+				vaos_.clear();
+				vboLayouts_.clear();
+				glfwTerminate();
+
+			#else
+
+
+
+			#endif
+
+			mainWindow_ = nullptr;
+
+			if (opaqueShader_) {
+
+				delete opaqueShader_;
+				opaqueShader_ = nullptr;
+
+			}
+
+			if (translucidShader_) {
+
+				delete translucidShader_;
+				translucidShader_ = nullptr;
+
+			}
+
+			if (compositeShader_) {
+
+				delete compositeShader_;
+				compositeShader_ = nullptr;
+
+			}
+
+			if (screenShader_) {
+
+				delete screenShader_;
+				screenShader_ = nullptr;
+
+			}
+
+			registries::resetGraphicalMode();
+
+			initialised_ = false;
+
+		}
+		else {
+
+			logger::errorLog("Graphics system is not initialised");
+
 		}
 
 	}
@@ -391,63 +452,6 @@ namespace VoxelEng {
 		else {
 
 			logger::errorLog("Graphics system is not initialised when accessing screen shader");
-
-		}
-
-	}
-	
-	void graphics::reset() {
-	
-		if (initialised_) {
-		
-			#if GRAPHICS_API == OPENGL
-
-				vbos_.clear();
-				vaos_.clear();
-				vboLayouts_.clear();
-				glfwTerminate();
-
-			#else
-
-
-
-			#endif
-
-			mainWindow_ = nullptr;
-
-			initialised_ = false;
-
-			if (opaqueShader_) {
-			
-				delete opaqueShader_;
-				opaqueShader_ = nullptr;
-			
-			}
-
-			if (translucidShader_) {
-
-				delete translucidShader_;
-				translucidShader_ = nullptr;
-
-			}
-
-			if (compositeShader_) {
-
-				delete compositeShader_;
-				compositeShader_ = nullptr;
-
-			}
-			if (screenShader_) {
-
-				delete screenShader_;
-				screenShader_ = nullptr;
-
-			}
-		
-		}
-		else {
-
-			logger::errorLog("Graphics system is not initialised");
 
 		}
 

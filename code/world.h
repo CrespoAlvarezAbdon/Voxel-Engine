@@ -68,6 +68,12 @@ namespace VoxelEng {
 		// Observers.
 
 		/**
+		* @brief Returns whether the world system is initialised or not.
+		* @returns Whether the world system is initialised(true) or not (false).
+		*/
+		static bool initialised();
+
+		/**
 		* @brief Returns true if the specified chunkPos corresponds to a chunk that has been
 		* previously saved to the currently selected world or false otherwise.
 		*/
@@ -153,6 +159,11 @@ namespace VoxelEng {
 		*/
 		static void clearSlot();
 
+		/**
+		* @brief Unloads the currently loaded world. Throws exception if no world is loaded.
+		*/
+		static void unloadWorld();
+
 
 		// Clean up.
 
@@ -183,6 +194,12 @@ namespace VoxelEng {
 		static void saveAllChunks_();
 	
 	};
+
+	inline bool world::initialised() {
+	
+		return initialised_;
+	
+	}
 
 	inline bool world::isSaved(const vec3& chunkPos) {
 	

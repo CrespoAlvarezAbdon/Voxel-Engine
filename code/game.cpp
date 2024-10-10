@@ -185,9 +185,9 @@ namespace VoxelEng {
 
             // Light types registration.
             registryInsOrdered<std::string, directionalLight>* directionalLightsRegistry = registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>();
-            directionalLightsRegistry->insert("RedDirectionalLight",
-                1.0f, 0.0f, 0.0f, 
-                1.0f, 0.0f, 0.0f);
+            directionalLightsRegistry->insert("BlueDirectionalLight",
+                0.0f, 0.0f, 1.0f, 
+                0.0f, 0.0f, 1.0f);
 
             registryInsOrdered<std::string, pointLight>* pointLightsRegistry = registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>();
             pointLightsRegistry->insert("BluePointLight",
@@ -590,7 +590,7 @@ namespace VoxelEng {
                 playerInputThread_ = new std::thread(&player::processSelectionRaycast);
             tickManagementThread_ = new std::thread(&world::processWorldTicks);
 
-            // NEXT HAY UNO DE LOS EJES DEL LOD 1_2 O DEL 2 QUE TIENE UN FALLITO DE COPIADO SEGURAMENTE. ES EL EJE X O EL Z.
+            // NEXT. HAY UNO DE LOS EJES DEL LOD 1_2 O DEL 2 QUE TIENE UN FALLITO DE COPIADO SEGURAMENTE. ES EL EJE X O EL Z.
 
             /*
             Rendering loop.
@@ -1093,6 +1093,7 @@ namespace VoxelEng {
                         stopAuxiliaryThreads();
                         chunkManager::clear();
                         resetLevel();
+                        world::unloadWorld();
                         loopSelection_ = engineMode::EXITLEVEL;
 
                         break;
@@ -1383,7 +1384,8 @@ namespace VoxelEng {
 
         entityManager::reset();
 
-        world::reset();
+        if(world::initialised())
+            world::reset();
 
         graphics::reset();
 

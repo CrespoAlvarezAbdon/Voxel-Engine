@@ -51,6 +51,7 @@ namespace VoxelEng {
 		float constant_;
 		float linear_;
 		float quadratic_;
+		float padding_;
 		
 	};
 

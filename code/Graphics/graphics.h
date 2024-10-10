@@ -61,6 +61,11 @@ namespace VoxelEng {
 		*/
 		static void init(window& renderingWindow);
 
+		/**
+		* @brief Deallocate any heap memory used by the engine graphics API and shut it down.
+		*/
+		static void reset();
+
 
 		// Observers.
 
@@ -203,14 +208,6 @@ namespace VoxelEng {
 		* @brief Get the shader used for rendering the game's screen quad.
 		*/
 		static shader& screenShader();
-
-
-		// Clean up.
-
-		/**
-		* @brief Deallocate any heap memory used by the engine graphics API and shut it down.
-		*/
-		static void reset();
 
 	private:
 

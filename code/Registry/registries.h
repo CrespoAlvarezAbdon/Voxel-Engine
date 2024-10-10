@@ -32,9 +32,19 @@ namespace VoxelEng {
 		static void init();
 
 		/**
+		* @brief Initialise registries related to the engine's graphical mode.
+		*/
+		static void initGraphicalMode();
+
+		/**
 		* @brief Deinitialise the registries collection.
 		*/
 		static void reset();
+
+		/**
+		* @brief Deinitialise the registries collection.
+		*/
+		static void resetGraphicalMode();
 
 
 		// Observers.
@@ -79,6 +89,7 @@ namespace VoxelEng {
 	private:
 
 		static bool initialised_;
+		static bool graphicalModeInitialised_;
 		static registry<std::string, var>* registries_;
 		static registry<std::string, var>* registriesInsOrdered_;
 

@@ -12,6 +12,7 @@
 namespace VoxelEng {
 
 	bool registries::initialised_ = false;
+	bool registries::graphicalModeInitialised_ = false;
 	registry<std::string, var>* registries::registries_ = nullptr;
 	registry<std::string, var>* registries::registriesInsOrdered_ = nullptr;
 
@@ -105,16 +106,34 @@ namespace VoxelEng {
 				1.0f, 1.0f, 1.0f,
 				25.0f, 35.0f);
 
-			// UBO registry initialisation.
-			registries_->insert("UBOs", static_cast<void*>(new registry<std::string, var>([](std::any args) {
-
-				auto tuple = std::any_cast<std::tuple<void*, var::varType>>(args);
-				return std::make_unique<var>(std::get<0>(tuple), std::get<1>(tuple));
-
-			}, nullptr)), var::varType::REGISTRY_OF_STRINGS_VARS);
-
 			initialised_ = true;
 		
+		}
+	
+	}
+
+	void registries::initGraphicalMode() {
+	
+		if (graphicalModeInitialised_)
+			throw std::runtime_error("Registries graphical mode already initialised");
+		else{
+
+			if (initialised_) {
+
+				// UBO registry initialisation.
+				registries_->insert("UBOs", static_cast<void*>(new registry<std::string, var>([](std::any args) {
+
+					auto tuple = std::any_cast<std::tuple<void*, var::varType>>(args);
+					return std::make_unique<var>(std::get<0>(tuple), std::get<1>(tuple));
+
+				}, nullptr)), var::varType::REGISTRY_OF_STRINGS_VARS);
+
+				graphicalModeInitialised_ = true;
+
+			}
+			else
+				throw std::runtime_error("Registries system must be initialised first before initialising registries graphical mode.");
+
 		}
 	
 	}
@@ -138,14 +157,31 @@ namespace VoxelEng {
 			}
 
 			initialised_ = false;
-			
-		}
-		else {
 
+		}
+		else
 			logger::errorLog("Registries collection is not initialised");
 
-		}
+	}
 
+	void registries::resetGraphicalMode() {
+	
+		if (graphicalModeInitialised_) {
+
+			if (initialised_) {
+
+				registries_->erase("UBOs");
+
+				graphicalModeInitialised_ = false;
+
+			}
+			else
+				throw std::runtime_error("Registries system must be initialised before resetting registries graphical mode.");
+
+		}
+		else
+			throw std::runtime_error("Registries graphical mode is not initialised");
+	
 	}
 
 	var* registries::get(const std::string& name) {

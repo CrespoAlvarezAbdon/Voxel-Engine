@@ -287,9 +287,29 @@ namespace VoxelEng {
 
 	void world::clearSlot() {
 
-		std::string path = "saves/slot" + std::to_string(game::selectedSaveSlot());
-		if (std::filesystem::exists(path))
-			std::filesystem::remove_all(path);
+		std::string path = "saves/slot" + std::to_string(game::selectedSaveSlot()) + '/';
+
+		if (path == currentWorldPath_)
+			throw std::runtime_error("Cannot delete currently loaded world");
+		else {
+		
+			if (std::filesystem::exists(path))
+				std::filesystem::remove_all(path);
+		
+		}
+
+	}
+
+	void world::unloadWorld() {
+	
+		if (regions_) {
+
+			delete regions_;
+			regions_ = nullptr;
+
+		}
+
+		currentWorldPath_.clear();
 	
 	}
 
