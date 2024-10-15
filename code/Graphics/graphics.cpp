@@ -4,6 +4,11 @@
 #include <definitions.h>
 #include <Registry/registries.h>
 #include <Registry/RegistryInsOrdered/registryInsOrdered.h>
+#include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
+#include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
+#include <Graphics/Lighting/Lights/PointLight/pointLight.h>
+#include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
+#include <Graphics/Materials/materials.h>
 #include <Utilities/Logger/logger.h>
 
 #if GRAPHICS_API == OPENGL
@@ -126,6 +131,9 @@ namespace VoxelEng {
 				// -CUANDO SUBAS SPOTLIGHTS, CONVERTIR LOS ANGULOS A RADIANES.
 				// -METER TODA LA PARTE CORRESPONDIENTE DE MANEJAR LAS LUCES EN LOS SHADERS, INCLUYENDO EL HECHO DE SOPORTAR VARIAS LUCES. DE MOMENTO NO OPTIMICES NADA PARA QUE VAYAMOS VIENDO EL IMPACTO QUE REALMENTE TIENEN.
 
+				// NOTE. UBOs and SSBOs have do not share binding points between them. So you can have both an UBO and A SSBO with binding point 1.
+
+				// Initialise UBOs.
 				registry<std::string, var>* UBORegistry = registries::get("UBOs")->pointer<registry<std::string, var>>();
 				UBORegistry->insert("Materials",
 					static_cast<void*>(new UBO<material>("Materials",
@@ -147,9 +155,38 @@ namespace VoxelEng {
 						*registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>(), 4)),
 					var::varType::UBO_OF_SPOTLIGHTS);
 
+				// Initialise SSBOs.
+				registry<std::string, var>* SSBORegistry = registries::get("SSBOs")->pointer<registry<std::string, var>>();
+				SSBORegistry->insert("DirectionalLightsInstances",
+					static_cast<void*>(new SSBO<lightInstance>("DirectionalLightsInstances", 1000, 1)), var::varType::SSBO_OF_LIGHTINSTANCES);
+
+				SSBORegistry->insert("PointLightsInstances",
+					static_cast<void*>(new SSBO<lightInstance>("PointLightsInstances", 1000, 2)), var::varType::SSBO_OF_LIGHTINSTANCES);
+
+				SSBORegistry->insert("SpotLightsInstances",
+					static_cast<void*>(new SSBO<lightInstance>("SpotLightsInstances", 1000, 3)), var::varType::SSBO_OF_LIGHTINSTANCES);
+
+				SSBO<lightInstance>* chunkLights = SSBORegistry->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
+				chunkLights->get(0).pos = vec4(0.0f, 200.0f, 0.0f, 0.0f);
+				chunkLights->get(0).dir = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+				chunkLights->get(0).lightTypeIndex = 1;
+				chunkLights->reuploadElement(0);
+
+				chunkLights = SSBORegistry->get("PointLightsInstances")->pointer<SSBO<lightInstance>>();
+				chunkLights->get(0).pos = vec4(0.0f, 200.0f, 0.0f, 0.0f);
+				chunkLights->get(0).dir = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+				chunkLights->get(0).lightTypeIndex = 1;
+				chunkLights->reuploadElement(0);
+
+				chunkLights = SSBORegistry->get("SpotLightsInstances")->pointer<SSBO<lightInstance>>();
+				chunkLights->get(0).pos = vec4(0.0f, 150.0f, 0.0f, 0.0f);
+				chunkLights->get(0).dir = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+				chunkLights->get(0).lightTypeIndex = 0;
+				chunkLights->reuploadElement(0);
+
 				// Initialize shaders.
-				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights"});
-				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" });
+				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances" });
+				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances" });
 				compositeShader_ = new shader("composite", "resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
 				screenShader_ = new shader("screenQuad", "resources/Shaders/screenVertex.shader", "resources/Shaders/screenFragment.shader");
 

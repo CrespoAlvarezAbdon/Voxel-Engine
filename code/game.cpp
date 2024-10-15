@@ -32,6 +32,10 @@
 #include <Graphics/graphics.h>
 #include <Graphics/Textures/texture.h>
 #include <Graphics/Frustum/frustum.h>
+#include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
+#include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
+#include <Graphics/Lighting/Lights/PointLight/pointLight.h>
+#include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
 #include <Graphics/Materials/materials.h>
 #include <Graphics/Lighting/Lights/light.h>
 #include <Utilities/Var/var.h>
@@ -190,15 +194,15 @@ namespace VoxelEng {
                 0.0f, 0.0f, 1.0f);
 
             registryInsOrdered<std::string, pointLight>* pointLightsRegistry = registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>();
-            pointLightsRegistry->insert("BluePointLight",
-                0.0f, 1.0f, 0.0f,
-                0.0f, 1.0f, 0.0f,
+            pointLightsRegistry->insert("RedPointLight",
+                1.0f, 0.0f, 0.0f,
+                1.0f, 0.0f, 0.0f,
                 1.0f, 0.7f, 1.8f);
 
             registryInsOrdered<std::string, spotLight>* spotLightsRegistry = registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>();
             spotLightsRegistry->insert("GreenSpotLight",
-                0.0f, 0.0f, 1.0f, 
-                0.0f, 0.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 
+                0.0f, 1.0f, 0.0f,
                 25.0f, 35.0f);
 
             // Block registration.
@@ -600,8 +604,6 @@ namespace VoxelEng {
             mainWindow_->changeStateMouseLock(false);
 
             // Set shader options.
-            vec3 lightpos{ 10.0f, 150.0f, -10.0f };
-            opaqueShader_->setUniformVec3f("u_sunLightPos", lightpos);
             opaqueShader_->setUniform1i("u_useComplexLighting", 0);
 
             // Frame buffer things go here.
@@ -658,10 +660,6 @@ namespace VoxelEng {
                 MVPmatrix_ = playerCamera_->projectionMatrix() * playerCamera_->viewMatrix();
                 opaqueShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
                 opaqueShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
-
-                //lightpos = playerCamera_->globalPos();
-                opaqueShader_->setUniformVec3f("u_sunLightPos", lightpos);
-
 
                 /*
                 3D rendering.
@@ -812,7 +810,6 @@ namespace VoxelEng {
                 translucidShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
                 translucidShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
                 translucidShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
-                translucidShader_->setUniformVec3f("u_sunLightPos", lightpos);
 
 
                 // Terrain rendering.

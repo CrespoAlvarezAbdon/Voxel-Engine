@@ -1,4 +1,4 @@
-#include "UBOs.h"
+#include "SSBO.h"
 
 namespace VoxelEng {
 

@@ -10,6 +10,7 @@
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
 #include <Graphics/Lighting/Lights/PointLight/pointLight.h>
 #include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
+#include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 #include <Graphics/UBOs/UBOs.h>
 #include <Utilities/Logger/logger.h>
 #include <Utilities/Var/var.h>
@@ -80,7 +81,7 @@ namespace VoxelEng {
     }
 
     shader::shader(const std::string& name, const std::string& vertexShaderPath, const std::string& fragmentShaderPath,
-        std::initializer_list<std::string> requiredUBOsNames)
+        std::initializer_list<std::string> requiredUBOsNames, std::initializer_list<std::string> requiredSSBOsNames)
 	    : name_(name), rendererID_(0) {
 
         // Load the two shaders from the files and compile them later in the Shader::createShader() private method.
@@ -102,35 +103,56 @@ namespace VoxelEng {
         rendererID_ = createShader(vertex_shader, fragment_shader);
 
         registry<std::string, var>* UBOs = registries::get("UBOs")->pointer<registry<std::string, var>>();
+        registry<std::string, var>* SSBOs = registries::get("SSBOs")->pointer<registry<std::string, var>>();
         bind();
+        // Bind UBOs.
         for (auto it = requiredUBOsNames.begin(); it != requiredUBOsNames.end(); it++) {
         
             var* ubo = UBOs->get(*it);
             switch (ubo->getVarType()) {
            
             case var::varType::UBO_OF_MATERIALS:
-                bindUFO(*ubo->pointer<UBO<material>>());
+                bindUBO(*ubo->pointer<UBO<material>>());
                 break;
 
             case var::varType::UBO_OF_DIRECTIONALLIGHTS:
-                bindUFO(*ubo->pointer<UBO<directionalLight>>());
+                bindUBO(*ubo->pointer<UBO<directionalLight>>());
                 break;
 
             case var::varType::UBO_OF_POINTLIGHTS:
-                bindUFO(*ubo->pointer<UBO<pointLight>>());
+                bindUBO(*ubo->pointer<UBO<pointLight>>());
                 break;
 
             case var::varType::UBO_OF_SPOTLIGHTS:
-                bindUFO(*ubo->pointer<UBO<spotLight>>());
+                bindUBO(*ubo->pointer<UBO<spotLight>>());
                 break;
 
             default:
             case var::varType::UNKNOWN:
-                logger::errorLog("Unsupported var type specified");
+                logger::errorLog("Unsupported UBO var type specified");
                 break;
             
             }
         
+        }
+
+        // Bind SSBOs.
+        for (auto it = requiredSSBOsNames.begin(); it != requiredSSBOsNames.end(); it++) {
+
+            var* ssbo = SSBOs->get(*it);
+            switch (ssbo->getVarType()) {
+
+            case var::varType::SSBO_OF_LIGHTINSTANCES:
+                bindSSBO(*ssbo->pointer<SSBO<lightInstance>>());
+                break;
+
+            default:
+            case var::varType::UNKNOWN:
+                logger::errorLog("Unsupported SSBO var type specified");
+                break;
+
+            }
+
         }
         unbind();
     }

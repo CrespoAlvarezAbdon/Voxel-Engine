@@ -25,10 +25,7 @@
 #include <Graphics/Shaders/shader.h>
 #include <Graphics/UBOs/UBOs.h>
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
-#include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
-#include <Graphics/Lighting/Lights/PointLight/pointLight.h>
-#include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
-#include <Graphics/Materials/materials.h>
+
 
 namespace VoxelEng {	
 

@@ -128,6 +128,13 @@ namespace VoxelEng {
 
 				}, nullptr)), var::varType::REGISTRY_OF_STRINGS_VARS);
 
+				registries_->insert("SSBOs", static_cast<void*>(new registry<std::string, var>([](std::any args) {
+
+					auto tuple = std::any_cast<std::tuple<void*, var::varType>>(args);
+					return std::make_unique<var>(std::get<0>(tuple), std::get<1>(tuple));
+
+				}, nullptr)), var::varType::REGISTRY_OF_STRINGS_VARS);
+
 				graphicalModeInitialised_ = true;
 
 			}

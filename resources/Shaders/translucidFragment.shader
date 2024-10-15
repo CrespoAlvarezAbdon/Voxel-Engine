@@ -1,4 +1,4 @@
-#version 420 core
+#version 450 core
 
 layout(location = 0) out vec4 accum;
 layout(location = 1) out float reveal;
@@ -15,7 +15,6 @@ in vec4 v_color;
 flat in int v_materialIndex;
 
 // Uniforms.
-uniform vec3 u_sunLightPos;
 uniform vec3 u_viewPos;
 uniform sampler2D blockTexture;
 uniform int u_useComplexLighting;
@@ -50,6 +49,14 @@ struct SpotLight {
     vec2 padding;
 };
 
+struct LightInstance {
+    vec3 pos;
+	float padding1;
+    vec3 dir;
+	float padding2;
+    uint lightTypeIndex;
+};
+
 // UBOs.
 layout(std140, binding = 1) uniform Materials {
     Material materials[MAX_MATERIALS];
@@ -67,19 +74,33 @@ layout(std140, binding = 4) uniform SpotLights {
     SpotLight spotLights[MAX_SPOT_LIGHTS];
 };
 
+layout(std430, binding = 1) buffer DirectionalLightsInstances {
+    LightInstance directionalLightsInstances[];
+};
+
+layout(std430, binding = 2) buffer PointLightsInstances {
+    LightInstance pointLightsInstances[];
+};
+
+layout(std430, binding = 3) buffer SpotLightsInstances {
+    LightInstance spotLightsInstances[];
+};
+
 // Local variables.
 vec4 color;
 vec4 ambientColor = vec4(0.1, 0.1, 0.1, 1);
 vec4 textureColor = vec4(0, 0, 0, 0);
-vec4 lightColor = vec4(1, 1, 1, 1);
 float specularStrength = 1;
-float distance = length(u_sunLightPos - v_pos) / 100;
 
 // Main.
 void main() {
 
 	// Get material.
 	Material material = materials[v_materialIndex];
+	LightInstance lightInstance = spotLightsInstances[0];
+	SpotLight light = spotLights[lightInstance.lightTypeIndex];
+
+	float distance = length(lightInstance.pos - v_pos) / 100;
 
 	// Get texture color.
 	textureColor = texture(blockTexture, v_TexCoord);
@@ -88,24 +109,22 @@ void main() {
 	if (textureColor.a < 0.1)
 		discard;
 
-	lightColor *= (1.0 - textureColor.a); // Higher transparency, less light attenuation
-
 	// Ambient lighting calculation.
 	vec4 ambientLighting = ambientColor * material.ambient;
 
 	// Diffuse lighting calculation + normal calculation.
 	vec3 norm = normalize(cross(dFdx(v_pos), dFdy(v_pos)));
-	vec3 lightDir = normalize(u_sunLightPos - v_pos);
+	vec3 lightDir = normalize(lightInstance.pos - v_pos);
 	float diff = max(dot(norm, lightDir), 0.0);
-	vec4 diffuseLighting = lightColor * diff * material.diffuse / max(distance, 1.0);
+	vec4 diffuseLighting = light.diffuse * (1.0 - textureColor.a) * diff * material.diffuse / max(distance, 1.0);
 
 	// Specular lighting calculation.
 	vec3 viewDir = normalize(u_viewPos - v_pos);
 	vec3 reflectLightDir = reflect(-lightDir, norm);
 	float specular = pow(max(dot(viewDir, reflectLightDir), 0.0), material.shininess.x);
-	vec4 specularLighting = lightColor * diff * specularStrength * specular * material.specular / distance;
+	vec4 specularLighting = light.specular * (1.0 - textureColor.a) * diff * specularStrength * specular * material.specular / distance;
 
-	
+
 	// Final color calculation.
 	color = (ambientLighting + (diffuseLighting + specularLighting) * u_useComplexLighting) * textureColor * v_color;
 	color.a = textureColor.a;

@@ -31,8 +31,6 @@ namespace VoxelEng {
 	//Classes.//
 	////////////
 
-	// TODO. HACER UN UBO DE VARIABLES GENERALES USADAS POR TODAS LAS SHADERS (Y QUE LAS REQUIERAN).
-
 	/**
 	* @brief UBOs or Uniform Buffer Object is a set of global uniform shader variables
 	* that are shared across all loaded shaders. In consequence, there is no need to resend them if
@@ -49,7 +47,7 @@ namespace VoxelEng {
 		/**
 		* @brief Class constructor. Automatically assigns the given space in GPU.
 		* @param name UBO's name in the shaders it is going to be bound to.
-		* @param maxSize The maximum number of elements of type T that can be stored on the UBO.
+		* @param maxSize The maximum number of elements of type T that can be stored in the UBO.
 		* @param bindingPoint The UBO's binding point that is referenced in the shader where it
 		* is going to be used.
 		*/
@@ -93,7 +91,7 @@ namespace VoxelEng {
 		T& get(unsigned int index);
 
 		/**
-		* @brief Reupload the UBO's entire current data  into the GPU.
+		* @brief Reupload the UBO's entire current data into the GPU.
 		* WARNING. Not thread-safe.
 		*/
 		void reupload();
@@ -115,8 +113,6 @@ namespace VoxelEng {
 
 	private:
 
-		static bool initialised_;
-
 		unsigned int graphicsAPIID_;
 		unsigned int bindingPoint_;
 		std::string name_;
@@ -131,8 +127,8 @@ namespace VoxelEng {
 
 		glGenBuffers(1, &graphicsAPIID_);
 		glBindBuffer(GL_UNIFORM_BUFFER, graphicsAPIID_);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(T) * elements_.size(), elements_.data(), GL_DYNAMIC_DRAW);
-		glBindBufferBase(GL_UNIFORM_BUFFER, 1, bindingPoint_);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(T) * elements_.size(), nullptr, GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint_, graphicsAPIID_);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	}
