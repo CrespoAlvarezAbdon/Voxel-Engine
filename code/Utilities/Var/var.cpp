@@ -3,9 +3,11 @@
 
 // Includes of the headers that define the types supported by the var class.
 #include <Graphics/UBOs/UBOs.h>
+#include <Graphics/SSBO/SSBO.h>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
 #include <Graphics/Lighting/Lights/PointLight/pointLight.h>
 #include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
+#include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 #include <Graphics/Materials/materials.h>
 
 namespace VoxelEng {
@@ -31,6 +33,9 @@ namespace VoxelEng {
 	
 		switch (varType_) {
 		
+		case varType::NOTYPE:
+			break;
+
 		case varType::UBO_OF_MATERIALS:
 			delete static_cast<UBO<material>*>(pointer_);
 			break;
@@ -45,6 +50,10 @@ namespace VoxelEng {
 
 		case varType::UBO_OF_SPOTLIGHTS:
 			delete static_cast<UBO<spotLight>*>(pointer_);
+			break;
+
+		case varType::SSBO_OF_LIGHTINSTANCES:
+			delete static_cast<SSBO<lightInstance>*>(pointer_);
 			break;
 
 		case varType::REGISTRYINSORDERED_OF_STRINGS_MATERIALS:
@@ -67,6 +76,18 @@ namespace VoxelEng {
 			delete static_cast<registry<std::string, var>*>(pointer_);
 			break;
 
+		case varType::DIRECTIONALLIGHT:
+			delete static_cast<directionalLight*>(pointer_);
+			break;
+
+		case varType::POINTLIGHT:
+			delete static_cast<pointLight*>(pointer_);
+			break;
+
+		case varType::SPOTLIGHT:
+			delete static_cast<spotLight*>(pointer_);
+			break;
+
 		default:
 		case varType::UNKNOWN:
 			logger::errorLog("Unsupported var type specified");
@@ -74,7 +95,7 @@ namespace VoxelEng {
 		
 		}
 		pointer_ = nullptr;
-	
+
 	}
 
 }

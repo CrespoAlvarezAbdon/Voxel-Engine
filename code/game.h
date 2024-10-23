@@ -25,7 +25,8 @@
 #include "vec.h"
 #include <Graphics/framebuffer.h>
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
-
+#include <Graphics/SSBO/SSBO.h>
+#include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 
 namespace VoxelEng {
 
@@ -244,6 +245,10 @@ namespace VoxelEng {
         static framebuffer* opaqueFB_;
         static framebuffer* translucidFB_;
         static framebuffer* screenFB_;
+
+        static SSBO<lightInstance>* directionalLightsInstances_;
+        static SSBO<lightInstance>* pointLightsInstances_;
+        static SSBO<lightInstance>* spotLightsInstances_;
 
         #if GRAPHICS_API == OPENGL
 

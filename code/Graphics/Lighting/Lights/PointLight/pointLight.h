@@ -56,15 +56,14 @@ namespace VoxelEng {
 	};
 
 	inline pointLight::pointLight()
-	: light(),
-		constant_(1.0f), linear_(1.0f), quadratic_(1.0f)
+	: light(), constant_(1.0f), linear_(1.0f), quadratic_(1.0f), padding_(0.0f)
 	{}
 
 	inline pointLight::pointLight(float diffuseR, float diffuseG, float diffuseB,
 		float specularR, float specularG, float specularB,
 		float constant, float linear, float quadratic)
 	: light(diffuseR, diffuseG, diffuseB, specularR, specularG, specularB), 
-		constant_(constant), linear_(linear), quadratic_(quadratic)
+	  constant_(constant), linear_(linear), quadratic_(quadratic), padding_(0.0f)
 	{}
 
 	inline unsigned int pointLight::nArgs() {

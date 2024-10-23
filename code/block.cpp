@@ -1,4 +1,5 @@
 #include "block.h"
+#include <stdexcept>
 #include <Registry/registries.h>
 #include <Graphics/Materials/materials.h>
 
@@ -8,6 +9,9 @@ namespace VoxelEng {
 	std::unordered_map<std::string, block> block::blocks_;
 	std::unordered_map<unsigned int, block*> block::blocksIntIDs_;
 	std::unordered_set<unsigned int> block::freeBlocksIntIDs_;
+	registryInsOrdered<std::string, directionalLight>* block::directionalLightsRegistry_ = nullptr;
+	registryInsOrdered<std::string, pointLight>* block::pointLightsRegistry_ = nullptr;
+	registryInsOrdered<std::string, spotLight>* block::spotLightsRegistry_ = nullptr;
 	block* block::emptyBlock_ = nullptr;
     const std::string block::emptyBlockName_ = "";
 
@@ -18,9 +22,18 @@ namespace VoxelEng {
 			logger::errorLog("Block system is already initialised");
 		else {
 		
-			auto it = blocks_.emplace(std::pair<std::string, block>(emptyBlockName_, block(emptyBlockName_, 0, blockOpacity::EMPTYBLOCK, {}, "Default")));
+			auto it = blocks_.emplace(std::pair<std::string, block>(emptyBlockName_, block(emptyBlockName_, 0, blockOpacity::EMPTYBLOCK, {}, "Default", "")));
 			emptyBlock_ = &it.first->second;
 			blocksIntIDs_.insert(std::pair<unsigned int, block*>(0, emptyBlock_));
+
+			if (registries::initialised())
+			{
+				directionalLightsRegistry_ = registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>();
+				pointLightsRegistry_ = registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>();
+				spotLightsRegistry_ = registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>();
+			}
+			else
+				throw std::runtime_error("Chunk manager system needs registries system to be initialised first");
 
 			initialised_ = true;
 
@@ -60,7 +73,7 @@ namespace VoxelEng {
 
 	void block::registerBlock(const std::string& name, blockOpacity opacity,
 		const std::initializer_list<std::pair<std::string, unsigned int>>& textures,
-		const std::string& material) {
+		const std::string& material, const std::string& light) {
 	
 		if (blocks_.contains(name))
 			logger::errorLog("Block " + name + " already registered");
@@ -76,7 +89,7 @@ namespace VoxelEng {
 
 			}
 
-			auto it = blocks_.emplace(std::pair<std::string, block>(name, block(name, intID, opacity, textures, material)));
+			auto it = blocks_.emplace(std::pair<std::string, block>(name, block(name, intID, opacity, textures, material, light)));
 			blocksIntIDs_.emplace(std::pair<unsigned int, block*>(intID, &it.first->second));
 			
 		}
@@ -136,12 +149,14 @@ namespace VoxelEng {
 
 	block::block(const std::string& name, unsigned int intID, blockOpacity opacity,
 		const std::initializer_list<std::pair<std::string, unsigned int>>& textures,
-		const std::string& materialID)
+		const std::string& materialID, const std::string& light)
 		: name_(name),
 		intID_(intID),
 		opacity_(opacity),
-		materialIndex_(registries::getCInsOrdered("Materials")->pointer<const registryInsOrdered<std::string, var>>()->getInsIndex(materialID))
+		materialIndex_(registries::getCInsOrdered("Materials")->pointer<const registryInsOrdered<std::string, var>>()->getInsIndex(materialID)),
+		emittedLightIndex_(0)
 	{
+
 		if (textures.size()) {
 
 			for (auto it = textures.begin(); it != textures.end(); it++)
@@ -153,6 +168,39 @@ namespace VoxelEng {
 		}
 		else
 			textures_["all"] = 0;
+
+		// Light is expected to be of format "LIGHTTYPE:LIGHTNAME"
+		if (!light.empty()) {
+
+			std::string::size_type delimiterPos = light.find(':');
+
+			if (delimiterPos == std::string::npos)
+				throw std::runtime_error("Ill-formated light used by block " + name + ": " + light);
+			else {
+			
+				std::string lightType = light.substr(0, delimiterPos);
+				std::string lightName = light.substr(delimiterPos + 1);
+				if (lightType == "DirectionalLight")
+					throw std::runtime_error("A directional light cannot be assigned to a block");
+				else if (lightType == "PointLight") {
+				
+					// NEXT. EL VAR NO PUEDE BORRAR EL PUNTERO AL LIGHT. 
+					emittedLight_.setPointerAndType(pointLightsRegistry_->get(lightName), var::varType::POINTLIGHT);
+					emittedLightIndex_ = pointLightsRegistry_->getInsIndex(lightName);
+				
+				}
+				else if (lightType == "SpotLight") {
+				
+					emittedLight_.setPointerAndType(spotLightsRegistry_->get(lightName), var::varType::SPOTLIGHT);
+					emittedLightIndex_ = spotLightsRegistry_->getInsIndex(lightName);
+				
+				}
+				else
+					throw std::runtime_error("Unknown light type used by block " + name + ": " + lightType);
+
+			}
+
+		}
 
 	}
 

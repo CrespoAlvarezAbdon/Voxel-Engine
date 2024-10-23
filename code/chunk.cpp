@@ -11,16 +11,23 @@
 #include <format>
 #include <filesystem>
 #include <iostream>
-#include "AIAPI.h"
-#include "camera.h"
-#include "player.h"
-#include "input.h"
-#include "gui.h"
-#include "game.h"
-#include "timer.h"
+#include <stdexcept>
+#include <AIAPI.h>
+#include <camera.h>
+#include <player.h>
+#include <input.h>
+#include <gui.h>
+#include <game.h>
+#include <timer.h>
 #include <Graphics/graphics.h>
+#include <Graphics/Lighting/Lights/light.h>
+#include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
+#include <Graphics/Lighting/Lights/PointLight/pointLight.h>
+#include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
+#include <Registry/registries.h>
 #include <Utilities/Logger/logger.h>
-#include "AI/AIGameEx1.h"
+#include <Utilities/Var/var.h>
+#include <AI/AIGameEx1.h>
 
 
 namespace VoxelEng {
@@ -392,7 +399,7 @@ namespace VoxelEng {
 
         std::unique_lock<std::shared_mutex> lock(renderingDataMutex_);
 
-        const unsigned int LOD = 2;
+        const unsigned int LOD = 2; // TODO. GENERALIZE THIS.
         const unsigned int limit = (LOD == 1) ? 15 : (CHUNK_SIZE / LOD - 1) * LOD;
         
 
@@ -414,6 +421,9 @@ namespace VoxelEng {
             renderingData_.verticesLOD2Boundary = model();
             renderingData_.translucentVerticesLOD2 = model();
             renderingData_.translucentVerticesLOD2Boundary = model();
+
+            renderingData_.pointLights_ = std::vector<lightInstance>();
+            renderingData_.spotLights_ = std::vector<lightInstance>();
 
             // Read chunk data section starts.
             blocksMutex_.lock_shared();
@@ -437,7 +447,31 @@ namespace VoxelEng {
 
                             localID = blocksLocalIDs[x][y][z];
                             block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+                            const varRef& emittedLight = b.emittedLight();
 
+                            // Add block's light if required.
+                            if (!emittedLight.isNull()) {
+
+                                if (emittedLight.getVarType() == var::varType::POINTLIGHT) {
+
+                                    lightInstance& instance = renderingData_.pointLights_.emplace_back();
+                                    instance.pos = getGlobalPos(chunkPos_.x, chunkPos_.y, chunkPos_.z, x, y, z);
+                                    instance.lightTypeIndex = b.emittedLightIndex();
+
+                                }
+                                else if (emittedLight.getVarType() == var::varType::SPOTLIGHT) {
+
+                                    lightInstance& instance = renderingData_.spotLights_.emplace_back();
+                                    instance.pos = getGlobalPos(chunkPos_.x, chunkPos_.y, chunkPos_.z, x, y, z);
+                                    instance.lightTypeIndex = b.emittedLightIndex();
+
+                                }
+                                else if (emittedLight.getVarType() == var::varType::DIRECTIONALLIGHT)
+                                    throw std::runtime_error("Directional lights cannot be applied by blocks");
+                                else
+                                    throw std::runtime_error("Unknown light type for block specified (varType number is " + std::to_string((int)emittedLight.getVarType()) + ")");
+
+                            }
 
                             // Add block's model to the mesh if necessary.
                             if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
@@ -1779,7 +1813,6 @@ namespace VoxelEng {
                     while (c != '|') {
 
                         word += c;
-
                         c = data[++index];
 
                     }
@@ -1838,7 +1871,7 @@ namespace VoxelEng {
                 
                 }
 
-                chunk_->needsRemesh(true); // EL BUG ES QUE SI MODIFICO UN BLOCK EN UN BORDE, TAMBIEN HAY QUE GUARDAR EL CHUNK VECINO QUE LE HACE FRONTERA.
+                chunk_->needsRemesh(true); // TODO. EL BUG ES QUE SI MODIFICO UN BLOCK EN UN BORDE, TAMBIEN HAY QUE GUARDAR EL CHUNK VECINO QUE LE HACE FRONTERA.
 
             }
             else // Generate new chunk.
@@ -1847,8 +1880,6 @@ namespace VoxelEng {
             chunk_->status(chunkStatus::DECORATED);
 
             chunkManager::renewMesh(chunk_, false);
-
-
 
         }
         else if (type_ == chunkJobType::ONLYREMESH) {
@@ -1940,7 +1971,6 @@ namespace VoxelEng {
     vertexBuffer* chunkManager::vbo_ = nullptr;
 
     std::string chunkManager::openedTerrainFileName_;
-    
 
     void chunkManager::init() {
 
@@ -1962,7 +1992,6 @@ namespace VoxelEng {
             chunkMeshesWrite_ = new std::unordered_map<vec3, chunkRenderingData>;
             chunkMeshesRead_ = new std::unordered_map<vec3, chunkRenderingData>;
 
-            // NEW
             chunkTasks_ = new threadPool(MAX_N_CHUNK_SIMULT_TASKS);
             priorityChunkTasks_ = new threadPool(MAX_N_CHUNK_SIMULT_TASKS);
             loadChunkJobs_ = new atomicRecyclingPool<chunkJob>(MAX_N_CHUNK_SIMULT_TASKS);
@@ -2032,9 +2061,6 @@ namespace VoxelEng {
 
                 c->lockSharedRenderingDataMutex();
                 chunkRenderingData& data = c->renderingData();
-                /*if (c->nBlocksPlusZ() || data.vertices.size() || data.verticesBoundary.size() || data.translucentVertices.size() || data.translucentVerticesBoundary.size()
-                    || data.verticesLOD2.size() || data.verticesLOD2Boundary.size() || data.translucentVerticesLOD2.size() || data.translucentVerticesLOD2Boundary.size()
-                    || data.verticesLOD1_2Boundary.size() || data.translucentVerticesLOD1_2Boundary.size())*/
                 if (data.totalSize)
                     chunkMeshesUpdated_->operator[](c->chunkPos()) = data;
                 c->unlockSharedRenderingDataMutex();
@@ -2480,18 +2506,14 @@ namespace VoxelEng {
         if (isPriorityUpdate) {
 
             priorityNewChunkMeshesMutex_.lock();
-
             priorityNewChunkMeshes_.push_back(chunk);
-
             priorityNewChunkMeshesMutex_.unlock();
 
         }
         else if (vertexSize) {
 
             newChunkMeshesMutex_.lock();
-
             newChunkMeshes_.push_back(chunk);
-
             newChunkMeshesMutex_.unlock();
 
         }

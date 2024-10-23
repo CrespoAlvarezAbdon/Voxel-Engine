@@ -88,8 +88,48 @@ layout(std430, binding = 3) buffer SpotLightsInstances {
 
 // Local variables.
 vec4 ambientColor = vec4(0.1, 0.1, 0.1, 1);
-vec4 textureColor = vec4(0, 0, 0, 0);
-float specularStrength = 1;
+
+// Functions
+
+vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material) {
+
+    vec3 lightDir = normalize(-lightInstance.dir);
+
+    // diffuse shading
+    float diff = max(dot(n, lightDir), 0.0);
+
+    // specular shading
+    vec3 reflectDir = reflect(-lightDir, n);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x); // Remember that shininess is a vec4 for padding but 'x' is the real shininess value.
+
+    // combine results
+    vec4 diffuse  = light.diffuse  * diff * material.diffuse;
+    vec4 specular = light.specular * spec * material.specular;
+    return (diffuse + specular);
+}
+
+vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material)
+{
+    vec3 lightDir = normalize(lightInstance.pos - v_pos);
+
+    // diffuse shading
+    float diff = max(dot(n, lightDir), 0.0);
+
+    // specular shading
+    vec3 reflectDir = reflect(-lightDir, n);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x);
+
+    // attenuation
+    float distance = length(lightInstance.pos - v_pos);
+    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+
+    // combine results
+    vec4 diffuse  = light.diffuse  * diff * material.diffuse;
+    vec4 specular = light.specular * spec * material.specular;
+    diffuse *= attenuation;
+    specular *= attenuation;
+    return (diffuse + specular);
+} 
 
 // Main.
 void main() {
@@ -101,36 +141,30 @@ void main() {
 		*/
 
 		Material material = materials[v_materialIndex];
-		LightInstance lightInstance = spotLightsInstances[0];
-        SpotLight light = spotLights[lightInstance.lightTypeIndex];
 
-		float distance = length(lightInstance.pos - v_pos) / 100;
+		LightInstance lightInstance = directionalLightsInstances[0];
+        DirectionalLight light = directionalLights[lightInstance.lightTypeIndex];
 
-		// Ambient lighting color.
-		vec4 ambientLighting = ambientColor * material.ambient;
+		LightInstance lightInstance2 = pointLightsInstances[0];
+        PointLight light2 = pointLights[lightInstance2.lightTypeIndex];
 
-		// Diffuse lighting calculation.
 		vec3 norm = normalize(cross(dFdx(v_pos), dFdy(v_pos)));
-		vec3 lightDir = normalize(lightInstance.pos - v_pos);
-		float diff = max(dot(norm, lightDir), 0.0);
-		vec4 diffuseLighting = light.diffuse * diff * material.diffuse / max(distance, 1.0);
-
-		// Specular lighting calculation + normal calculation.
 		vec3 viewDir = normalize(u_viewPos - v_pos);
-		vec3 reflectLightDir = reflect(-lightDir, norm);
-		float specular = pow(max(dot(viewDir, reflectLightDir), 0.0), material.shininess.x);
-		vec4 specularLighting = light.specular * diff * specularStrength * specular * material.specular / distance;
-
-		// Get texture color.
-		textureColor = texture(blockTexture, v_TexCoord);
-		
-		// Discard transparent fragments.
-		if (textureColor.a < 0.1)
+		vec4 textureColor = texture(blockTexture, v_TexCoord);
+		if (textureColor.a < 0.1) // Discard transparent fragments.
 			discard;
 
-		// Final color calculation.
-		color = (ambientLighting + (diffuseLighting + specularLighting) * u_useComplexLighting) * textureColor * v_color;
+		// Apply directional lights.
+		color = CalcDirLight(light, lightInstance, norm, viewDir, material) * u_useComplexLighting;
 
+		// Apply point lights.
+		color += CalcPointLight(light2, lightInstance, norm, viewDir, material);
+
+		// Apply spot lights.
+
+		// Finally apply texture and v_color
+		color = ((ambientColor * material.ambient) + (color * u_useComplexLighting)) * textureColor * v_color;
+		
 	}
 	else {
 	

@@ -14,8 +14,12 @@
 #include <utility>
 #include <unordered_map>
 #include <unordered_set>
+#include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
+#include <Graphics/Lighting/Lights/PointLight/pointLight.h>
+#include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
+#include <Registry/RegistryInsOrdered/registryInsOrdered.h>
 #include <Utilities/Logger/logger.h>
-
+#include <Utilities/VarRef/varRef.h>
 
 namespace VoxelEng {
 
@@ -136,6 +140,18 @@ namespace VoxelEng {
 		*/
 		unsigned int getMaterialIndex() const;
 
+		/**
+		* @brief Get the light emitted by this block.
+		* @return The light emitted by this block. If no light is emitted, a nullptr is returned.
+		*/
+		const varRef& emittedLight() const;
+
+		/**
+		* @brief Get the UBO index of the light emitted by this block.
+		* @return The UBO index of the light emitted by this block.
+		*/
+		unsigned int emittedLightIndex() const;
+
 
 		// Modifiers.
 
@@ -145,7 +161,7 @@ namespace VoxelEng {
 		*/
 		static void registerBlock(const std::string& name, blockOpacity opacity, 
 			const std::initializer_list<std::pair<std::string, unsigned int>>& textures,
-			const std::string& material = "Default");
+			const std::string& material = "Default", const std::string& light = "");
 
 		/**
 		* @brief Unregisters a block.
@@ -193,7 +209,7 @@ namespace VoxelEng {
 
 		block(const std::string& name, unsigned int intID, blockOpacity opacity,
 			  const std::initializer_list<std::pair<std::string, unsigned int>>& texture,
-			  const std::string& material);
+			  const std::string& material, const std::string& light);
 
 
 		/*
@@ -204,6 +220,9 @@ namespace VoxelEng {
 		static std::unordered_map<std::string, block> blocks_;
 		static std::unordered_map<unsigned int, block*> blocksIntIDs_;
 		static std::unordered_set<unsigned int> freeBlocksIntIDs_;
+		static registryInsOrdered<std::string, directionalLight>* directionalLightsRegistry_;
+		static registryInsOrdered<std::string, pointLight>* pointLightsRegistry_;
+		static registryInsOrdered<std::string, spotLight>* spotLightsRegistry_;
 		static block* emptyBlock_;
 		static const std::string emptyBlockName_;
 
@@ -212,6 +231,8 @@ namespace VoxelEng {
 		blockOpacity opacity_;
 		std::unordered_map<std::string, unsigned int> textures_;
 		unsigned int materialIndex_;
+		varRef emittedLight_;
+		unsigned int emittedLightIndex_;
 
 	};
 
@@ -219,7 +240,8 @@ namespace VoxelEng {
 	: name_(""),
 	  intID_(0),
 	  opacity_(blockOpacity::OPAQUEBLOCK),
-	  materialIndex_(0)
+	  materialIndex_(0),
+	  emittedLightIndex_(0)
 	{}
 
 	inline bool block::isBlockRegistered(const std::string& name) {
@@ -285,6 +307,18 @@ namespace VoxelEng {
 	inline unsigned int block::getMaterialIndex() const {
 	
 		return materialIndex_;
+	
+	}
+
+	inline const varRef& block::emittedLight() const {
+	
+		return emittedLight_;
+	
+	}
+
+	inline unsigned int block::emittedLightIndex() const {
+	
+		return emittedLightIndex_;
 	
 	}
 

@@ -30,8 +30,6 @@ namespace VoxelEng {
 			// Note. Always add a "Default" element into registries in case it is wanted to be used in case
 			// the specified registry element is not found.
 
-			// NEXT. ERA HACER UN REGISTRO DE VARS NO LO QUE HICIMOS EL DOMINGO. VUELVE A PASARLO TODO BIEN.
-
 			// Registries of registries initialization.
 			registries_ = new registry<std::string, var>([](std::any args) {
 

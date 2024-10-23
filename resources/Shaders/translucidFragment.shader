@@ -97,8 +97,8 @@ void main() {
 
 	// Get material.
 	Material material = materials[v_materialIndex];
-	LightInstance lightInstance = spotLightsInstances[0];
-	SpotLight light = spotLights[lightInstance.lightTypeIndex];
+	LightInstance lightInstance = directionalLightsInstances[0];
+	DirectionalLight light = directionalLights[0];
 
 	float distance = length(lightInstance.pos - v_pos) / 100;
 

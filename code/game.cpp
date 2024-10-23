@@ -33,7 +33,6 @@
 #include <Graphics/Textures/texture.h>
 #include <Graphics/Frustum/frustum.h>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
-#include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 #include <Graphics/Lighting/Lights/PointLight/pointLight.h>
 #include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
 #include <Graphics/Materials/materials.h>
@@ -106,6 +105,10 @@ namespace VoxelEng {
     framebuffer* game::opaqueFB_ = nullptr;
     framebuffer* game::translucidFB_ = nullptr;
     framebuffer* game::screenFB_ = nullptr;
+
+    SSBO<lightInstance>* game::directionalLightsInstances_ = nullptr;
+    SSBO<lightInstance>* game::pointLightsInstances_ = nullptr;
+    SSBO<lightInstance>* game::spotLightsInstances_ = nullptr;
 
     #if GRAPHICS_API == OPENGL
 
@@ -195,17 +198,18 @@ namespace VoxelEng {
 
             registryInsOrdered<std::string, pointLight>* pointLightsRegistry = registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>();
             pointLightsRegistry->insert("RedPointLight",
-                1.0f, 0.0f, 0.0f,
-                1.0f, 0.0f, 0.0f,
-                1.0f, 0.7f, 1.8f);
+                10.0f, 0.0f, 0.0f,
+                10.0f, 0.0f, 0.0f,
+                1.0f, 0.007f, 0.0002f);
 
             registryInsOrdered<std::string, spotLight>* spotLightsRegistry = registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>();
             spotLightsRegistry->insert("GreenSpotLight",
-                0.0f, 1.0f, 0.0f, 
-                0.0f, 1.0f, 0.0f,
+                0.0f, 10.0f, 0.0f, 
+                0.0f, 10.0f, 0.0f,
                 25.0f, 35.0f);
 
             // Block registration.
+            block::init();
             // TODO. CONVERT THIS INTO A REGISTRY OF BLOCKS.
             block::registerBlock("starminer::grass", blockOpacity::OPAQUEBLOCK, { {"all", 1} }, "UltraShiny"); // TODO. Manual texture ID assignment is temporary.
             block::registerBlock("starminer::stone", blockOpacity::OPAQUEBLOCK, { {"all", 2} });
@@ -220,7 +224,7 @@ namespace VoxelEng {
             block::registerBlock("starminer::glass", blockOpacity::FULLTRANSPARENT, { {"all", 13} });
             block::registerBlock("starminer::glassRed", blockOpacity::TRANSLUCENTBLOCK, { {"all", 14} }, "DeltaGreen");
             block::registerBlock("starminer::glassBlue", blockOpacity::TRANSLUCENTBLOCK, { {"all", 15} });
-            block::registerBlock("starminer::marbleBlock2", blockOpacity::OPAQUEBLOCK, { {"all", 16} }, "OmegaRed");
+            block::registerBlock("starminer::marbleBlock2", blockOpacity::OPAQUEBLOCK, { {"all", 16} }, "OmegaRed", "PointLight:RedPointLight");
 
             // Worldgen initialisation.
             worldGen::init();
@@ -260,6 +264,11 @@ namespace VoxelEng {
             // Initialise the graphics API/libraries if not done yet.
             if (!graphics::initialised())
                 graphics::init(*mainWindow_);
+
+            registry<std::string, var>* SSBORegistry = registries::get("SSBOs")->pointer<registry<std::string, var>>();
+            directionalLightsInstances_ = SSBORegistry->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
+            pointLightsInstances_ = SSBORegistry->get("PointLightsInstances")->pointer<SSBO<lightInstance>>();
+            spotLightsInstances_ = SSBORegistry->get("SpotLightsInstances")->pointer<SSBO<lightInstance>>();
 
             chunksVbo_ = &graphics::vbo("chunks"),
             entitiesVbo_ = &graphics::vbo("entities");
@@ -594,8 +603,6 @@ namespace VoxelEng {
                 playerInputThread_ = new std::thread(&player::processSelectionRaycast);
             tickManagementThread_ = new std::thread(&world::processWorldTicks);
 
-            // NEXT. HAY UNO DE LOS EJES DEL LOD 1_2 O DEL 2 QUE TIENE UN FALLITO DE COPIADO SEGURAMENTE. ES EL EJE X O EL Z.
-
             /*
             Rendering loop.
             */
@@ -713,10 +720,18 @@ namespace VoxelEng {
 
                         if (playerCamera_->isInsideFrustum(chunk.second.globalChunkPos)) {
 
-                            // NEXT.
+                            // TODO.
                             // 1º. EN SETBLOCK DE PLAYER HAY QUE PONER QUE SE ACTUALIZEN LOS DATOS DE NEIGHBORS MINUS DEL LOD2
 
-                            // LOD 1
+                            // Draw lights.
+                            if (!chunk.second.pointLights_.empty())
+                                pointLightsInstances_->setContentsAndReupload(chunk.second.pointLights_);
+                            if (!chunk.second.spotLights_.empty())
+                                spotLightsInstances_->setContentsAndReupload(chunk.second.spotLights_);
+
+                            // Draw terrain
+
+                            // LOD 1 terrain
                             if (chunkManager::chunkInLODDistance(chunk.first, 1, inLODborder, dirX, dirY, dirZ)) {
 
                                 if (inLODborder) {
@@ -743,7 +758,7 @@ namespace VoxelEng {
                                 renderer::draw3D(nVertices);
 
                             }
-                            else if (chunkManager::chunkInLODDistance(chunk.first, 2, inLODborder, dirX, dirY, dirZ)) { // Probably will add LOD levels 3 and 4 in the future
+                            else if (chunkManager::chunkInLODDistance(chunk.first, 2, inLODborder, dirX, dirY, dirZ)) { // LOD 2 terrain
                             
                                 if(nVertices = chunk.second.verticesLOD2.size() + chunk.second.verticesLOD2Boundary.size()) {
 
@@ -755,7 +770,7 @@ namespace VoxelEng {
                                 }
                             
                             }
-                        
+                            
                         } 
 
                     }

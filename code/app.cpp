@@ -7,6 +7,9 @@
 // Users' includes.
 #include "AI/AIGameEx1.h"
 
+// TODO.
+// - REALMENTE CON ESTE SETUP NO HACE FALTA EL LIGHTINDEXTYPE EN LIGHTINSTANCE VERDAD???
+// - LAS LUCES REALMENTE ESTÁN EN RENDERINGDATA PERO TAMBIÉN SE DEBERÍAN GUARDAR AL GUARDAR EL CHUNK EN DISCO.
 
 int main() {
 
@@ -15,8 +18,7 @@ int main() {
         // Start engine.
         VoxelEng::game::init();
         
-        // Load the engine's basic resources like registered blocks, items...
-        VoxelEng::block::init();
+        
 
         // Initialize AI API and register AI games.
         VoxelEng::AIAPI::aiGame::init();

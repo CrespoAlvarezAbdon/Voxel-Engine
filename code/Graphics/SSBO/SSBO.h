@@ -4,6 +4,7 @@
 #include <concepts>
 #include <cstddef>
 #include <string>
+#include <vector>
 #include <Registry/RegistryInsOrdered/registryInsOrdered.h>
 #include <Utilities/Logger/logger.h>
 
@@ -89,11 +90,18 @@ namespace VoxelEng {
 		void reuploadElement(unsigned int index);
 
 		/**
-		* @brief Set the SSBO's contents. Will reallocate buffer if the current size is lower
+		* @brief Set the SSBO's contents and reupload them. Will reallocate buffer if the current size is lower
 		* than the number of the new elements.
 		* @param elements The new contents of the SSBO.
 		*/
-		void setContents(const registryInsOrdered<std::string, T>& elements);
+		void setContentsAndReupload(const registryInsOrdered<std::string, T>& elements);
+
+		/**
+		* @brief Set the SSBO's contents and reupload them. Will reallocate buffer if the current size is lower
+		* than the number of the new elements.
+		* @param elements The new contents of the SSBO.
+		*/
+		void setContentsAndReupload(const std::vector<T>& elements);
 
 
 		// Destructors.
@@ -220,7 +228,7 @@ namespace VoxelEng {
 
 	template <typename T>
 	requires std::default_initializable<T>
-	void SSBO<T>::setContents(const registryInsOrdered<std::string, T>& elements) {
+	void SSBO<T>::setContentsAndReupload(const registryInsOrdered<std::string, T>& elements) {
 	
 		if (elements.size() > elements_.size()) {
 		
@@ -236,11 +244,35 @@ namespace VoxelEng {
 		
 			setElements_(elements);
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
-			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(T) * elements.size(), &elements_);
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(T) * elements.size(), elements_.data());
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 		
 		}
 	
+	}
+
+	template <typename T>
+	requires std::default_initializable<T>
+	void SSBO<T>::setContentsAndReupload(const std::vector<T>& elements) {
+
+		if (elements.size() > elements_.size()) {
+
+			elements_ = elements;
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
+			glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(T) * elements_.size(), elements_.data(), GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+		}
+		else {
+
+			for (int i = 0; i < elements.size(); i++)
+				elements_[i] = elements[i];
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(T) * elements.size(), elements_.data());
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+		}
+
 	}
 	
 	template <typename T>

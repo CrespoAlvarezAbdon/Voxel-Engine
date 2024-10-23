@@ -26,28 +26,30 @@
 #include <utility>
 #include <vector>
 
-#include "atomicRecyclingPool.h"
-#include "block.h"
-#include "definitions.h"
-#include "event.h"
-#include "listener.h"
-#include "threadPool.h"
-#include "palette.h"
-#include "vec.h"
-#include "vertex.h"
-#include "vertexBuffer.h"
-#include "utilities.h"
-#include "time.h"
-#include "Graphics/Textures/texture.h"
-#include "Graphics/Shaders/shader.h"
-#include "Graphics/Models/model.h"
-#include "Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h"
+#include <atomicRecyclingPool.h>
+#include <block.h>
+#include <definitions.h>
+#include <event.h>
+#include <listener.h>
+#include <threadPool.h>
+#include <palette.h>
+#include <vec.h>
+#include <vertex.h>
+#include <vertexBuffer.h>
+#include <utilities.h>
+#include <time.h>
+#include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
+#include <Graphics/Textures/texture.h>
+#include <Graphics/Shaders/shader.h>
+#include <Graphics/Models/model.h>
+#include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
+#include <Registry/RegistryInsOrdered/registryInsOrdered.h>
 
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
 #include <glm.hpp>
-#include <hash.hpp> // POSIBLE ERROR POR MOVER ESTO?
+#include <hash.hpp>
 
 #endif
 
@@ -99,6 +101,9 @@ namespace VoxelEng {
 		model verticesLOD2Boundary;
 		model translucentVerticesLOD2;
 		model translucentVerticesLOD2Boundary;
+
+		std::vector<lightInstance> pointLights_;
+		std::vector<lightInstance> spotLights_;
 
 		unsigned int totalSize = 0;
 
@@ -490,12 +495,12 @@ namespace VoxelEng {
 		static const modelTriangles* blockTriangles_;
 		static const modelNormals* blockNormals_;
 		
-
 		// Serializable data.
 		palette<unsigned short, unsigned int> palette_;
 		std::unordered_map<unsigned short, unsigned short> paletteCount_;
 		std::unordered_set<unsigned short> freeLocalIDs_;
 		unsigned short blocksLocalIDs[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+
 
 		unsigned short neighborBlocksPlusX_[CHUNK_SIZE][CHUNK_SIZE];
 		unsigned short neighborBlocksMinusX_[CHUNK_SIZE][CHUNK_SIZE];
