@@ -33,6 +33,9 @@ namespace VoxelEng {
 
 		/**
 		* @brief Class constructor.
+		* @param ambientR Percentage of red color emitted in ambient lighting calculations by this light type.
+		* @param ambientG Percentage of green color emitted in ambient lighting calculations by this light type.
+		* @param ambientB Percentage of blue color emitted in ambient lighting calculations by this light type.
 		* @param diffuseR Percentage of red color emitted in diffuse lighting calculations by this light type.
 		* @param diffuseG Percentage of green color emitted in diffuse lighting calculations by this light type.
 		* @param diffuseB Percentage of blue color emitted in diffuse lighting calculations by this light type.
@@ -40,7 +43,8 @@ namespace VoxelEng {
 		* @param specularG Percentage of green color emitted in specular lighting calculations by this light type.
 		* @param specularB Percentage of blue color emitted in specular lighting calculations by this light type.
 		*/
-		light(float diffuseR, float diffuseG, float diffuseB,
+		light(float ambientR, float ambientG, float ambientB,
+			  float diffuseR, float diffuseG, float diffuseB,
 			  float specularR, float specularG, float specularB);
 
 
@@ -63,18 +67,20 @@ namespace VoxelEng {
 		static std::string typeName_;
 		static const unsigned int nArgs_;
 
+		float ambient_[4];
 		float diffuse_[4];
 		float specular_[4];
 
 	};
 
 	inline light::light()
-	: diffuse_{ 1.0f,  1.0f, 1.0f, 1.0f }, specular_{ 1.0f, 1.0f, 1.0f, 1.0f }
+	: ambient_{1.0f, 1.0f, 1.0f, 1.0f,}, diffuse_{ 1.0f,  1.0f, 1.0f, 1.0f }, specular_{ 1.0f, 1.0f, 1.0f, 1.0f }
 	{}
 
-	inline light::light(float diffuseR, float diffuseG, float diffuseB,
+	inline light::light(float ambientR, float ambientG, float ambientB, 
+		float diffuseR, float diffuseG, float diffuseB,
 		float specularR, float specularG, float specularB) 
-	: diffuse_{ diffuseR, diffuseG, diffuseB, 1.0f }, specular_{ specularR, specularG, specularB, 1.0f }
+	: ambient_{ ambientR, ambientG, ambientB, 1.0f, }, diffuse_{ diffuseR, diffuseG, diffuseB, 1.0f }, specular_{ specularR, specularG, specularB, 1.0f }
 	{}
 
 	inline const std::string& light::typeName() {

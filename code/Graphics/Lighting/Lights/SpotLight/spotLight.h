@@ -1,6 +1,7 @@
 #ifndef _VOXELENG_SPOT_LIGHT_
 #define _VOXELENG_SPOT_LIGHT_
 
+#include <definitions.h>
 #include <vec.h>
 #include <Registry/registryElement.h>
 #include <Graphics/Lighting/lights/DirectionalLight/directionalLight.h>
@@ -20,6 +21,9 @@ namespace VoxelEng {
 
 		/**
 		* @brief Class constructor.
+		* @param ambientR Percentage of red color emitted in ambient lighting calculations by this light type.
+		* @param ambientG Percentage of green color emitted in ambient lighting calculations by this light type.
+		* @param ambientB Percentage of blue color emitted in ambient lighting calculations by this light type.
 		* @param diffuseR Percentage of red color emitted in diffuse lighting calculations by this light type.
 		* @param diffuseG Percentage of green color emitted in diffuse lighting calculations by this light type.
 		* @param diffuseB Percentage of blue color emitted in diffuse lighting calculations by this light type.
@@ -27,13 +31,13 @@ namespace VoxelEng {
 		* @param specularG Percentage of green color emitted in specular lighting calculations by this light type.
 		* @param specularB Percentage of blue color emitted in specular lighting calculations by this light type.
 		* @param cutOffAngle Everything outside this angle is not lit by the spotlight.
-		* @param outerCutOffAngle 
+		* @param outerCutOffAngle TODO.
+		* @param maxDistance Maximum distance this light can cover.
 		*/
-		spotLight(float diffuseR, float diffuseG, float diffuseB,
+		spotLight(float ambientR, float ambientG, float ambientB, 
+			float diffuseR, float diffuseG, float diffuseB,
 			float specularR, float specularG, float specularB,
-			float cutOffAngle, float outerCutOffAngle);
-
-		// NEXT. METER CONSTRUCTORES DE POINT Y SPOT LIGHT Y VER QUÉ MÁS HAY QUE PONER EN GRAPHICS.CPP PARA TENER ESTO READY.
+			float cutOffAngle, float outerCutOffAngle, float maxDistance);
 
 
 		// Observers.
@@ -50,19 +54,21 @@ namespace VoxelEng {
 
 		float cutOffAngle_;
 		float outerCutOffAngle_;
-		float padding_[2]; // Only used for padding.
+		float maxDistance_;
+		float padding_; // Only used for padding.
 		
 	};
 
 	inline spotLight::spotLight()
-		: directionalLight(), cutOffAngle_(90.0f), outerCutOffAngle_(45.0f), padding_{0.0f, 0.0f}
+		: directionalLight(), cutOffAngle_(90.0f), outerCutOffAngle_(45.0f), maxDistance_(defaultLightMaxDistance), padding_{0.0f}
 	{}
 
-	inline spotLight::spotLight(float diffuseR, float diffuseG, float diffuseB,
+	inline spotLight::spotLight(float ambientR, float ambientG, float ambientB,
+		float diffuseR, float diffuseG, float diffuseB,
 		float specularR, float specularG, float specularB,
-		float cutOffAngle, float outerCutOffAngle)
-	: directionalLight(diffuseR, diffuseG, diffuseB, specularR, specularG, specularB),
-		cutOffAngle_(cutOffAngle), outerCutOffAngle_(outerCutOffAngle), padding_{ 0.0f, 0.0f }
+		float cutOffAngle, float outerCutOffAngle, float maxDistance)
+	: directionalLight(ambientR, ambientG, ambientB, diffuseR, diffuseG, diffuseB, specularR, specularG, specularB),
+		cutOffAngle_(cutOffAngle), outerCutOffAngle_(outerCutOffAngle), maxDistance_(maxDistance), padding_{ 0.0f }
 	{}
 
 	inline unsigned int spotLight::nArgs() {

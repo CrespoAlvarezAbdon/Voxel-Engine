@@ -325,7 +325,7 @@ namespace VoxelEng {
 	* @brief Returns global coordinates of a local chunk coordinate from a certain chunk position.
 	*/
 	inline vec3 getGlobalPos(int chunkX, int chunkY, int chunkZ, int inChunkX, int inChunkY, int inChunkZ) {
-
+		// TONTO LOS VÉRTICES DE LOS MODELOS NO ESTÁN ESCALADOS A GLOBAL POS TIENES QUE HACER UN VEC3 GLOBAL POS QUE TENGA LOS VALORES DE V_POS ESCALADOS
 		return vec3{ (float)chunkX * CHUNK_SIZE + inChunkX, (float)chunkY * CHUNK_SIZE + inChunkY, (float)chunkZ * CHUNK_SIZE + inChunkZ };
 
 	}

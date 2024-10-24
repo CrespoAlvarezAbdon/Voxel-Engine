@@ -143,7 +143,15 @@ namespace VoxelEng {
 	*/
 	const unsigned int MAX_N_CHUNK_SIMULT_TASKS = 2;
 
+	/**
+	* @brief Approximation of pi divided by 180.
+	*/
 	const float piDiv = 3.1415926f / 180.0f;
+
+	/**
+	* @brief Default maximum distance that a light source can emit to.
+	*/
+	const float defaultLightMaxDistance = 16.0f;
 
 
 	/////////////////////

@@ -5,7 +5,7 @@ namespace VoxelEng {
 
 	bool light::initialised_ = false;
 	std::string light::typeName_ = "";
-	const unsigned int light::nArgs_ = 6;
+	const unsigned int light::nArgs_ = 9;
 
 	void light::init(const std::string& typeName) {
 

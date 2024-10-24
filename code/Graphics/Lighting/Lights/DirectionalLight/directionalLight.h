@@ -20,6 +20,9 @@ namespace VoxelEng {
 
 		/**
 		* @brief Class constructor.
+		* @param ambientR Percentage of red color emitted in ambient lighting calculations by this light type.
+		* @param ambientG Percentage of green color emitted in ambient lighting calculations by this light type.
+		* @param ambientB Percentage of blue color emitted in ambient lighting calculations by this light type.
 		* @param diffuseR Percentage of red color emitted in diffuse lighting calculations by this light type.
 		* @param diffuseG Percentage of green color emitted in diffuse lighting calculations by this light type.
 		* @param diffuseB Percentage of blue color emitted in diffuse lighting calculations by this light type.
@@ -27,7 +30,8 @@ namespace VoxelEng {
 		* @param specularG Percentage of green color emitted in specular lighting calculations by this light type.
 		* @param specularB Percentage of blue color emitted in specular lighting calculations by this light type.
 		*/
-		directionalLight(float diffuseR, float diffuseG, float diffuseB,
+		directionalLight(float ambientR, float ambientG, float ambientB,
+			float diffuseR, float diffuseG, float diffuseB,
 			float specularR, float specularG, float specularB);
 
 
@@ -49,9 +53,10 @@ namespace VoxelEng {
 	: light()
 	{}
 
-	inline directionalLight::directionalLight(float diffuseR, float diffuseG, float diffuseB,
+	inline directionalLight::directionalLight(float ambientR, float ambientG, float ambientB, 
+		float diffuseR, float diffuseG, float diffuseB,
 		float specularR, float specularG, float specularB)
-	: light(diffuseR, diffuseG, diffuseB, specularR, specularG, specularB)
+	: light(ambientR, ambientG, ambientB, diffuseR, diffuseG, diffuseB, specularR, specularG, specularB)
 	{}
 
 	inline unsigned int directionalLight::nArgs() {

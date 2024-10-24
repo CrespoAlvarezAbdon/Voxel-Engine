@@ -166,23 +166,12 @@ namespace VoxelEng {
 				SSBORegistry->insert("SpotLightsInstances",
 					static_cast<void*>(new SSBO<lightInstance>("SpotLightsInstances", 1000, 3)), var::varType::SSBO_OF_LIGHTINSTANCES);
 
+				// TODO. MOVE DIRECTIONAL LIGHT INSTANCE CREATION TO WORLD.H SO THAT EACH WORLD/DIMENSION HAS ITS PROPER DIRECTIONAL LIGHTS.
 				SSBO<lightInstance>* chunkLights = SSBORegistry->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
-				chunkLights->get(0).pos = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+				chunkLights->get(0).pos = vec4(0.0f, 200.0f, 0.0f, 0.0f);
 				chunkLights->get(0).dir = vec4(0.0f, -1.0f, 0.0f, 0.0f);
 				chunkLights->get(0).lightTypeIndex = 0;
 				chunkLights->reuploadElement(0);
-
-				/*chunkLights = SSBORegistry->get("PointLightsInstances")->pointer<SSBO<lightInstance>>();
-				chunkLights->get(0).pos = vec4(0.0f, 114.0f, 0.0f, 0.0f);
-				chunkLights->get(0).dir = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-				chunkLights->get(0).lightTypeIndex = 1;
-				chunkLights->reuploadElement(0);*/
-
-				/*chunkLights = SSBORegistry->get("SpotLightsInstances")->pointer<SSBO<lightInstance>>();
-				chunkLights->get(0).pos = vec4(0.0f, 150.0f, 0.0f, 0.0f);
-				chunkLights->get(0).dir = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-				chunkLights->get(0).lightTypeIndex = 1;
-				chunkLights->reuploadElement(0);*/
 
 				// Initialize shaders.
 				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances" });

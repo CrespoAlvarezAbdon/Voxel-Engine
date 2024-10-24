@@ -28,25 +28,29 @@ struct Material {
 };
 
 struct DirectionalLight {
+    vec4 ambient;
     vec4 diffuse;
     vec4 specular;
 };
 
 struct PointLight {
+    vec4 ambient;
     vec4 diffuse;
     vec4 specular;
-    float constant;
-    float linear;
-    float quadratic;
-    float padding;
+    float maxDistance;
+    float padding1;
+    float padding2;
+    float padding3;
 };
 
 struct SpotLight {
+    vec4 ambient;
     vec4 diffuse;
     vec4 specular;
     float cutOffAngle;
     float outerCutOffAngle;
-    vec2 padding;
+    float maxDistance;
+    float padding;
 };
 
 struct LightInstance {
@@ -86,9 +90,6 @@ layout(std430, binding = 3) buffer SpotLightsInstances {
     LightInstance spotLightsInstances[];
 };
 
-// Local variables.
-vec4 ambientColor = vec4(0.1, 0.1, 0.1, 1);
-
 // Functions
 
 vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material) {
@@ -103,9 +104,11 @@ vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, v
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x); // Remember that shininess is a vec4 for padding but 'x' is the real shininess value.
 
     // combine results
+    vec4 ambient = light.ambient * material.ambient;
     vec4 diffuse  = light.diffuse  * diff * material.diffuse;
     vec4 specular = light.specular * spec * material.specular;
-    return (diffuse + specular);
+
+    return (ambient + diffuse + specular);
 }
 
 vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material)
@@ -121,15 +124,17 @@ vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 
 
     // attenuation
     float distance = length(lightInstance.pos - v_pos);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+    float attenuation = max(1.0 - distance / (light.maxDistance), 0.0);
 
     // combine results
+    vec4 ambient = light.ambient * material.ambient;
     vec4 diffuse  = light.diffuse  * diff * material.diffuse;
     vec4 specular = light.specular * spec * material.specular;
+    ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
-    return (diffuse + specular);
-} 
+    return (ambient + diffuse + specular);
+}
 
 // Main.
 void main() {
@@ -154,16 +159,18 @@ void main() {
 		if (textureColor.a < 0.1) // Discard transparent fragments.
 			discard;
 
+        color = vec4(0.0f);
+
 		// Apply directional lights.
-		color = CalcDirLight(light, lightInstance, norm, viewDir, material) * u_useComplexLighting;
+	    color += CalcDirLight(light, lightInstance, norm, viewDir, material) * u_useComplexLighting;
 
 		// Apply point lights.
-		color += CalcPointLight(light2, lightInstance, norm, viewDir, material);
+		color += CalcPointLight(light2, lightInstance2, norm, viewDir, material);
 
 		// Apply spot lights.
 
 		// Finally apply texture and v_color
-		color = ((ambientColor * material.ambient) + (color * u_useComplexLighting)) * textureColor * v_color;
+		color = (color * u_useComplexLighting) * textureColor * v_color;
 		
 	}
 	else {

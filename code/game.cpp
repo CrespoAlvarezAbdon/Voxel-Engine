@@ -193,20 +193,38 @@ namespace VoxelEng {
             // Light types registration.
             registryInsOrdered<std::string, directionalLight>* directionalLightsRegistry = registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>();
             directionalLightsRegistry->insert("BlueDirectionalLight",
+                0.0f, 0.0f, 0.5f,
                 0.0f, 0.0f, 1.0f, 
                 0.0f, 0.0f, 1.0f);
 
             registryInsOrdered<std::string, pointLight>* pointLightsRegistry = registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>();
             pointLightsRegistry->insert("RedPointLight",
-                10.0f, 0.0f, 0.0f,
-                10.0f, 0.0f, 0.0f,
-                1.0f, 0.007f, 0.0002f);
+                1.0f, 0.0f, 0.0f,
+                1.0f, 0.0f, 0.0f,
+                1.0f, 0.0f, 0.0f,
+                32.0f);
+            pointLightsRegistry->insert("BluePointLight",
+                0.0f, 0.0f, 1.0f,
+                0.0f, 0.0f, 1.0f,
+                0.0f, 0.0f, 1.0f,
+                16.0f);
+            pointLightsRegistry->insert("NegativeRedPointLight",
+                -1.0f, 0.0f, 0.0f,
+                -1.0f, 0.0f, 0.0f,
+                -1.0f, 0.0f, 0.0f,
+                16.0f);
+            pointLightsRegistry->insert("NegativePointLight",
+                -100.0f, -100.0f, -100.0f,
+                -100.0f, -100.0f, -100.0f,
+                -100.0f, -100.0f, -100.0f,
+                16.0f);
 
             registryInsOrdered<std::string, spotLight>* spotLightsRegistry = registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>();
             spotLightsRegistry->insert("GreenSpotLight",
+                0.0f, 5.0f, 0.0f,
                 0.0f, 10.0f, 0.0f, 
                 0.0f, 10.0f, 0.0f,
-                25.0f, 35.0f);
+                25.0f, 35.0f, 16.0f);
 
             // Block registration.
             block::init();
@@ -214,7 +232,7 @@ namespace VoxelEng {
             block::registerBlock("starminer::grass", blockOpacity::OPAQUEBLOCK, { {"all", 1} }, "UltraShiny"); // TODO. Manual texture ID assignment is temporary.
             block::registerBlock("starminer::stone", blockOpacity::OPAQUEBLOCK, { {"all", 2} });
             block::registerBlock("starminer::sand", blockOpacity::OPAQUEBLOCK, { {"all", 3} });
-            block::registerBlock("starminer::marbleBlock", blockOpacity::OPAQUEBLOCK, { {"all", 4}}, "AlphaBlue");
+            block::registerBlock("starminer::marbleBlock", blockOpacity::OPAQUEBLOCK, { {"all", 4}}, "AlphaBlue", "PointLight:BluePointLight");
             block::registerBlock("starminer::dirt", blockOpacity::OPAQUEBLOCK, { {"all", 6} });
             block::registerBlock("starminer::coalOre", blockOpacity::OPAQUEBLOCK, { {"all", 7} });
             block::registerBlock("starminer::ironOre", blockOpacity::OPAQUEBLOCK, { {"all", 8} });
