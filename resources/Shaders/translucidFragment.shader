@@ -16,8 +16,9 @@ flat in int v_materialIndex;
 
 // Uniforms.
 uniform vec3 u_viewPos;
-uniform sampler2D blockTexture;
+uniform sampler2D u_textureAtlas;
 uniform int u_useComplexLighting;
+uniform int u_NPointLights;
 
 // Structs.
 struct Material {
@@ -38,7 +39,9 @@ struct PointLight {
     vec4 diffuse;
     vec4 specular;
     float maxDistance;
-    vec3 padding;
+    float padding1;
+    float padding2;
+    float padding3;
 };
 
 struct SpotLight {
@@ -55,8 +58,7 @@ struct LightInstance {
     vec3 pos;
 	float padding1;
     vec3 dir;
-	float padding2;
-    uint lightTypeIndex;
+	float lightTypeIndex;
 };
 
 // UBOs.
@@ -91,7 +93,6 @@ layout(std430, binding = 3) buffer SpotLightsInstances {
 // Local variables.
 vec4 color;
 vec4 textureColor = vec4(0, 0, 0, 0);
-float specularStrength = 1;
 
 // Functions
 
@@ -146,36 +147,39 @@ void main() {
 	Material material = materials[v_materialIndex];
 
 	LightInstance lightInstance = directionalLightsInstances[0];
-	DirectionalLight light = directionalLights[lightInstance.lightTypeIndex];
-
-	LightInstance lightInstance2 = pointLightsInstances[0];
-	PointLight light2 = pointLights[lightInstance2.lightTypeIndex];
+	DirectionalLight light = directionalLights[int(lightInstance.lightTypeIndex)];
 
 	vec3 norm = normalize(cross(dFdx(v_pos), dFdy(v_pos)));
 	vec3 viewDir = normalize(u_viewPos - v_pos);
-	vec4 textureColor = texture(blockTexture, v_TexCoord);
+	vec4 textureColor = texture(u_textureAtlas, v_TexCoord);
 	if (textureColor.a < 0.1)
 		discard;
 
-	 color = vec4(0.0f);
+	color = vec4(0.0);
 
 	// Apply directional lights.
 	color += CalcDirLight(light, lightInstance, norm, viewDir, material) * u_useComplexLighting;
 
-	// Apply point lights.
-	color += CalcPointLight(light2, lightInstance2, norm, viewDir, material);
+    // Apply point lights.
+    vec4 acumPointLights = vec4(0.0);
+    for(int i = 0; i < u_NPointLights; i++)
+    {
+        LightInstance lightInstance2 = pointLightsInstances[i];
+        PointLight light2 = pointLights[int(lightInstance2.lightTypeIndex)];
+        acumPointLights += CalcPointLight(light2, lightInstance2, norm, viewDir, material);
+    }
 
 	// Apply spot lights.
 
 	// Final color calculation.
-	color = (color * u_useComplexLighting) * textureColor * v_color;
+	color = (color + acumPointLights * u_useComplexLighting) * textureColor * v_color;
 	color.a = textureColor.a;
 
 	// Weight function
 	//float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
 	
 	// store pixel color accumulation
-	accum = vec4(color.rgb, color.a) / 10;
+	accum = vec4(color.rgb * color.a, color.a) / 10;
 
 	// store pixel revealage threshold
 	reveal = color.a;

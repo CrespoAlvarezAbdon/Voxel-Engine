@@ -17,9 +17,8 @@ namespace VoxelEng {
 		// TODO. OPTIMIZE THE SPACE OCUPPIED BY THIS STRUCTURE. ARE THE VEC4 REQUIRED OR CAN WE GO WITH ONLY VEC3?
 		vec3 pos; // Unused in directional light. // Fourth value is for padding.
 		float padding1;
-		vec3 dir; // Fourth value is for padding.
-		float padding2;
-		unsigned int lightTypeIndex; // Inside the light type UBO, which light it is.
+		vec3 dir;
+		float lightTypeIndex;
 
 	};
 

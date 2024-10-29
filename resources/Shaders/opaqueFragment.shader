@@ -15,9 +15,10 @@ flat in int v_materialIndex;
 
 // Uniforms.
 uniform vec3 u_viewPos;
-uniform sampler2D blockTexture;
+uniform sampler2D u_textureAtlas;
 uniform int u_renderMode;
 uniform int u_useComplexLighting;
+uniform int u_NPointLights;
 
 // Structs.
 struct Material {
@@ -57,8 +58,7 @@ struct LightInstance {
     vec3 pos;
 	float padding1;
     vec3 dir;
-	float padding2;
-    uint lightTypeIndex;
+	float lightTypeIndex;
 };
 
 // UBOs.
@@ -148,37 +148,40 @@ void main() {
 		Material material = materials[v_materialIndex];
 
 		LightInstance lightInstance = directionalLightsInstances[0];
-        DirectionalLight light = directionalLights[lightInstance.lightTypeIndex];
-
-		LightInstance lightInstance2 = pointLightsInstances[0];
-        PointLight light2 = pointLights[lightInstance2.lightTypeIndex];
+        DirectionalLight light = directionalLights[int(lightInstance.lightTypeIndex)];
 
 		vec3 norm = normalize(cross(dFdx(v_pos), dFdy(v_pos)));
 		vec3 viewDir = normalize(u_viewPos - v_pos);
-		vec4 textureColor = texture(blockTexture, v_TexCoord);
+		vec4 textureColor = texture(u_textureAtlas, v_TexCoord);
 		if (textureColor.a < 0.1) // Discard transparent fragments.
 			discard;
 
-        color = vec4(0.0f);
+        color = vec4(0.0);
 
 		// Apply directional lights.
 	    color += CalcDirLight(light, lightInstance, norm, viewDir, material) * u_useComplexLighting;
 
 		// Apply point lights.
-		color += CalcPointLight(light2, lightInstance2, norm, viewDir, material);
+        vec4 acumPointLights = vec4(0.0);
+        for(int i = 0; i < u_NPointLights; i++)
+        {
+            LightInstance lightInstance2 = pointLightsInstances[i];
+            PointLight light2 = pointLights[int(lightInstance2.lightTypeIndex)];
+            acumPointLights += CalcPointLight(light2, lightInstance2, norm, viewDir, material);
+        }
 
 		// Apply spot lights.
 
 		// Finally apply texture and v_color
-		color = (color * u_useComplexLighting) * textureColor * v_color;
-		
+		color = (color + acumPointLights * u_useComplexLighting) * textureColor * v_color;
+
 	}
 	else {
 	
 		/*
 		2D rendering
 		*/
-		color = texture(blockTexture, v_TexCoord);
+		color = texture(u_textureAtlas, v_TexCoord);
 	
 	}
 

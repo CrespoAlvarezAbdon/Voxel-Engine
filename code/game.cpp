@@ -193,20 +193,20 @@ namespace VoxelEng {
             // Light types registration.
             registryInsOrdered<std::string, directionalLight>* directionalLightsRegistry = registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>();
             directionalLightsRegistry->insert("BlueDirectionalLight",
-                0.0f, 0.0f, 0.5f,
+                0.0f, 0.0f, 1.0f,
                 0.0f, 0.0f, 1.0f, 
                 0.0f, 0.0f, 1.0f);
 
             registryInsOrdered<std::string, pointLight>* pointLightsRegistry = registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>();
             pointLightsRegistry->insert("RedPointLight",
-                1.0f, 0.0f, 0.0f,
-                1.0f, 0.0f, 0.0f,
-                1.0f, 0.0f, 0.0f,
-                32.0f);
+                0.5f, 0.0f, 0.0f,
+                0.5f, 0.0f, 0.0f,
+                0.5f, 0.0f, 0.0f,
+                16.0f);
             pointLightsRegistry->insert("BluePointLight",
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
+                0.0f, 0.0f, 0.5f,
+                0.0f, 0.0f, 0.5f,
+                0.0f, 0.0f, 0.5f,
                 16.0f);
             pointLightsRegistry->insert("NegativeRedPointLight",
                 -1.0f, 0.0f, 0.0f,
@@ -240,7 +240,7 @@ namespace VoxelEng {
             block::registerBlock("starminer::diamondOre", blockOpacity::OPAQUEBLOCK, { {"all", 10}});
             block::registerBlock("starminer::log", blockOpacity::OPAQUEBLOCK, { {"all", 11}, {"faceY+", 12}, {"faceY-", 12}});
             block::registerBlock("starminer::glass", blockOpacity::FULLTRANSPARENT, { {"all", 13} });
-            block::registerBlock("starminer::glassRed", blockOpacity::TRANSLUCENTBLOCK, { {"all", 14} }, "DeltaGreen");
+            block::registerBlock("starminer::glassRed", blockOpacity::TRANSLUCENTBLOCK, { {"all", 14} });
             block::registerBlock("starminer::glassBlue", blockOpacity::TRANSLUCENTBLOCK, { {"all", 15} });
             block::registerBlock("starminer::marbleBlock2", blockOpacity::OPAQUEBLOCK, { {"all", 16} }, "OmegaRed", "PointLight:RedPointLight");
 
@@ -669,7 +669,7 @@ namespace VoxelEng {
                 opaqueFB_->clearAllTextures();
 
                 opaqueShader_->bind();
-                opaqueShader_->setUniform1i("blockTexture", 0);
+                opaqueShader_->setUniform1i("u_textureAtlas", 0);
                 opaqueShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
                 blockTextureAtlas_->bind();
 
@@ -740,9 +740,11 @@ namespace VoxelEng {
 
                             // TODO.
                             // 1º. EN SETBLOCK DE PLAYER HAY QUE PONER QUE SE ACTUALIZEN LOS DATOS DE NEIGHBORS MINUS DEL LOD2
+                            int nPointLightsChunk = chunk.second.pointLights_.size();
+                            opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
 
                             // Draw lights.
-                            if (!chunk.second.pointLights_.empty())
+                            if (nPointLightsChunk)
                                 pointLightsInstances_->setContentsAndReupload(chunk.second.pointLights_);
                             if (!chunk.second.spotLights_.empty())
                                 spotLightsInstances_->setContentsAndReupload(chunk.second.spotLights_);
@@ -840,6 +842,7 @@ namespace VoxelEng {
                 translucidFB_->bind();
                 translucidFB_->clearTextures({ vec4Zeroes, vec4Ones });
                 translucidShader_->bind();
+                translucidShader_->setUniform1i("u_textureAtlas", 0);
                 translucidShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
                 translucidShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
                 translucidShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
@@ -855,6 +858,15 @@ namespace VoxelEng {
                     for (auto const& chunk : *chunksToDraw_) {
 
                         if (playerCamera_->isInsideFrustum(chunk.second.globalChunkPos)) {
+
+                            std::size_t nPointLightsChunk = chunk.second.pointLights_.size();
+                            translucidShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
+
+                            // Draw lights.
+                            if (nPointLightsChunk)
+                                pointLightsInstances_->setContentsAndReupload(chunk.second.pointLights_);
+                            if (!chunk.second.spotLights_.empty())
+                                spotLightsInstances_->setContentsAndReupload(chunk.second.spotLights_);
 
                             // LOD 1.
                             if (chunkManager::chunkInLODDistance(chunk.first, 1, inLODborder, dirX, dirY, dirZ)) {
