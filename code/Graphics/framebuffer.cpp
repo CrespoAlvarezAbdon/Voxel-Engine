@@ -14,7 +14,7 @@ namespace VoxelEng {
 		GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5,
 		GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7, GL_COLOR_ATTACHMENT8,
 		GL_COLOR_ATTACHMENT9, GL_COLOR_ATTACHMENT10, GL_COLOR_ATTACHMENT11,
-		GL_COLOR_ATTACHMENT12 ,GL_COLOR_ATTACHMENT13, GL_COLOR_ATTACHMENT14, GL_COLOR_ATTACHMENT15};
+		GL_COLOR_ATTACHMENT12, GL_COLOR_ATTACHMENT13, GL_COLOR_ATTACHMENT14, GL_COLOR_ATTACHMENT15};
 
 	framebuffer::framebuffer(unsigned int width, unsigned int height, std::initializer_list<textureType> attachments)
 	: ID_(0)
@@ -25,12 +25,10 @@ namespace VoxelEng {
 
 		bind();
 		
-		// NEW
 		textureType type = textureType::NONE;
 		for (std::initializer_list<textureType>::const_iterator it = attachments.begin(); it != attachments.end(); it++) {
 		
 			type = *it;
-
 			attachedTextures_[type].push_back(std::make_shared<texture>(width, height, type, this));
 
 		}
@@ -39,21 +37,12 @@ namespace VoxelEng {
 		// Tell OpenGL how many buffers will be drawn for this framebuffer. A.K.A how many output targets the fragment shader will have??
 		if (unsigned int nColorAttachments = nAttachments(textureType::COLOR))
 			glDrawBuffers(nColorAttachments, supportedColorBuffers_);
+		else if (nAttachments(textureType::DEPTH) == 1 && attachedTextures_.size() == 1) {
 
-		// OLD
+			glDrawBuffer(GL_NONE);
+			glReadBuffer(GL_NONE);
 
-		// Create and attach texture (color) buffer.
-		//texture_ = new texture(width, height);
-		//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_->rendererID(), 0);
-
-		// Create and attach depth and stencil buffers.
-		//unsigned int rbID;
-		//glGenRenderbuffers(1, &rbID);
-		//glBindRenderbuffer(GL_RENDERBUFFER, rbID);
-		//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height); // POSSIBLE ERROR IGUAL HAY QUE HACER DEPTHTEXTURE COMO EN LEARNOPENGL???
-		//glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-		//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbID);
+		}
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 			logger::errorLog("Error while creating framebuffer");
@@ -95,8 +84,12 @@ namespace VoxelEng {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachedTextures_[type].size(), GL_TEXTURE_2D, t->rendererID(), 0);
 				break;
 
-			case textureType::DEPTH_AND_STENCIL: // TODO. PONER EXCEPCION DE QUE SOLO PUEDE HABER UN DEPTH AND STENCIL ASI QUE ESTE SOBRESCRIBE AL ANTERIOR EN ESTE CASO LUEGO MIRA COMO MANEJAR ESTE Y LOS OTROS CASOS DE INSERCION Y DEMÁS.
+			case textureType::DEPTH_AND_STENCIL:
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, t->rendererID());
+				break;
+
+			case textureType::DEPTH:
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachedTextures_[type].size(), GL_TEXTURE_2D, t->rendererID(), 0);
 				break;
 
 			case textureType::IMAGE:

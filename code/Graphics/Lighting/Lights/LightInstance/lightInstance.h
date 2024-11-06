@@ -4,6 +4,14 @@
 #include <Registry/registryElement.h>
 #include <vec.h>
 
+#if GRAPHICS_API == OPENGL
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm.hpp>
+
+#endif
+
 namespace VoxelEng {
 
 	/**
@@ -19,6 +27,7 @@ namespace VoxelEng {
 		float padding1;
 		vec3 dir;
 		float lightTypeIndex;
+		glm::mat4 MVP;
 
 	};
 

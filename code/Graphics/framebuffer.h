@@ -5,9 +5,9 @@
 #include <unordered_map>
 #include <memory>
 #include <vector>
-#include "../vec.h"
-#include "../Graphics/graphics.h"
-#include "../Graphics/Textures/texture.h"
+#include <vec.h>
+#include <Graphics/graphics.h>
+#include <Graphics/Textures/texture.h>
 
 namespace VoxelEng {
 

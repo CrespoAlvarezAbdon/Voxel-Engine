@@ -48,8 +48,9 @@ namespace VoxelEng {
 
 		/**
 		* @brief Class constructor.
-		* Creates an empty texture with the specified size.
-		* NOTE. If 'bufferToAttachTo' is nullptr, this texture will not be attached to any framebuffer.
+		* Creates an empty texture with the specified size. Type cannot be image texture type.
+		* NOTE. If 'bufferToAttachTo' is nullptr, this texture will not be attached to any framebuffer. 
+		* NOTE. It is assumed that the given framebuffer 'bufferToAttachTo' is currently bound.
 		* NOTE. 'colorAttachmentIndex' is an optional parameter that is used only to specify the index this color texture will ocuppy in the
 		* framebuffer is going to be attached to. Does nothing if 'bufferToAttachTo' is nullptr. Must be positive and not greater than
 		* texture::maxColorAttachmentIndex_. If equal to -1, then the index used will be equal to 
@@ -61,7 +62,7 @@ namespace VoxelEng {
 
 		/**
 		* @brief Class constructor.
-		* Creates a texture out of an image.
+		* Creates an image type texture out of an provided file.
 		*/
 		texture(const std::string& filepath);
 

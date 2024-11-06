@@ -1,7 +1,5 @@
 #include "camera.h"
-
-#include "player.h"
-
+#include <player.h>
 #include <cmath>
 
 

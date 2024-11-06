@@ -45,25 +45,24 @@ namespace VoxelEng {
 
 			case textureType::COLOR:
 
-				glCreateTextures(GL_TEXTURE_2D, 1, &rendererID_); // POSIBLE ERROR HAY QUE USAR glGenTextures(1, &rendererID_);
+				glCreateTextures(GL_TEXTURE_2D, 1, &rendererID_);
 				glBindTexture(GL_TEXTURE_2D, rendererID_);
 
 				// Options used when we need to scale down the texture.
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 				// Options used when we need to scale up the texture.
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // POSIBLE ERROR POR NO PONER GL_LINEAR???
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 				// Everything ready. Send the texture to OpenGL. 
 				// If the last parameter is nullptr, 
 				// we are only allocating space in OpenGL,
 				// not providing it any data.
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr); // POSIBLE ERROR ESTO VA A ANTES QUE TEXPARAMETERI???
-				// POSIBLE ERROR GL_RGB EN VEZ DE GL_RGBA???
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
 				glBindTexture(GL_TEXTURE_2D, 0);
 
-				if (bufferToAttachTo) {
+				if (bufferToAttachTo) { 
 			
 					if (colorAttachmentIndex == -1)
 						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + bufferToAttachTo->nAttachments(type), GL_TEXTURE_2D, rendererID_, 0);
@@ -78,7 +77,7 @@ namespace VoxelEng {
 
 				glGenRenderbuffers(1, &rendererID_);
 				glBindRenderbuffer(GL_RENDERBUFFER, rendererID_);
-				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height); // POSSIBLE ERROR IGUAL HAY QUE HACER DEPTHTEXTURE COMO EN LEARNOPENGL???
+				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
 				glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 				if (bufferToAttachTo)
@@ -88,21 +87,20 @@ namespace VoxelEng {
 
 			case textureType::REVEAL:
 
-				glCreateTextures(GL_TEXTURE_2D, 1, &rendererID_); // POSIBLE ERROR HAY QUE USAR glGenTextures(1, &rendererID_);
+				glCreateTextures(GL_TEXTURE_2D, 1, &rendererID_);
 				glBindTexture(GL_TEXTURE_2D, rendererID_);
 
 				// Options used when we need to scale down the texture.
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 				// Options used when we need to scale up the texture.
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // POSIBLE ERROR POR NO PONER GL_LINEAR???
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 				// Everything ready. Send the texture to OpenGL. 
 				// If the last parameter is nullptr, 
 				// we are only allocating space in OpenGL,
 				// not providing it any data.
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width_, height_, 0, GL_RED, GL_FLOAT, nullptr); // POSIBLE ERROR ESTO VA A ANTES QUE TEXPARAMETERI???
-				// POSIBLE ERROR GL_RGB EN VEZ DE GL_RGBA???
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width_, height_, 0, GL_RED, GL_FLOAT, nullptr);
 
 				glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -119,6 +117,29 @@ namespace VoxelEng {
 
 			case textureType::IMAGE:
 				logger::errorLog("It is not supported to attach Image type textures into a framebuffer");
+				break;
+
+			case textureType::DEPTH:
+				glCreateTextures(GL_TEXTURE_2D, 1, &rendererID_);
+				glBindTexture(GL_TEXTURE_2D, rendererID_);
+
+				// Options used when scaling up/down the texture.
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+				// Everything ready. Send the texture to OpenGL. 
+				// If the last parameter is nullptr, 
+				// we are only allocating space in OpenGL,
+				// not providing it any data.
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+
+				glBindTexture(GL_TEXTURE_2D, 0);
+
+				if (bufferToAttachTo)
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rendererID_, 0);
+
 				break;
 
 			default:
@@ -161,7 +182,7 @@ namespace VoxelEng {
 
 	void texture::bind(unsigned int slot) const {
 
-		glActiveTexture(GL_TEXTURE0 + slot); // POSIBLE ERROR? IGUAL HAY QUE HACER SWI O INCLUSO NO USAR ESTO?? ESTO BASICAMENTE DICE QUE CAMBIES EL SLOT DE TEXTURA ACTIVA.
+		glActiveTexture(GL_TEXTURE0 + slot);
 		glBindTextureUnit(slot, rendererID_);
 
 	}

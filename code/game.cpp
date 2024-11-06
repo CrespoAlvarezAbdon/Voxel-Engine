@@ -91,6 +91,7 @@ namespace VoxelEng {
     std::unordered_map<vec3, chunkRenderingData> const* game::chunksToDraw_ = nullptr;
     const std::vector<model>* game::batchesToDraw_ = nullptr;
 
+    shader* game::shadowDepthShader_ = nullptr;
     shader* game::opaqueShader_ = nullptr;
     shader* game::translucidShader_ = nullptr;
     shader* game::compositeShader_ = nullptr;
@@ -102,6 +103,7 @@ namespace VoxelEng {
     vertexArray* game::entitiesVao_ = nullptr;
     vertexArray* game::screenVao_ = nullptr;
     
+    framebuffer* game::shadowFB_ = nullptr;
     framebuffer* game::opaqueFB_ = nullptr;
     framebuffer* game::translucidFB_ = nullptr;
     framebuffer* game::screenFB_ = nullptr;
@@ -302,6 +304,7 @@ namespace VoxelEng {
             models::loadCustomModel("resources/Models/Warden.obj", 2);
 
             // Create framebuffers.
+            shadowFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), { textureType::COLOR, textureType::DEPTH });
             opaqueFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR, textureType::DEPTH_AND_STENCIL});
             translucidFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR, textureType::COLOR});
 
@@ -350,6 +353,7 @@ namespace VoxelEng {
             input::setControlAction(controlCode::r, inputFunctions::switchComplexLighting, false);
 
             // Load shaders.
+            shadowDepthShader_ = &graphics::shadowDepthShader();
             opaqueShader_ = &graphics::opaqueShader();
             translucidShader_ = &graphics::translucidShader();
             compositeShader_ = &graphics::compositeShader();
@@ -558,7 +562,6 @@ namespace VoxelEng {
                 initGraphicalMode();
 
             chunkManager::setNChunksToCompute(DEF_N_CHUNKS_TO_COMPUTE);
-
             /*
             Level loading.
             */
@@ -684,7 +687,7 @@ namespace VoxelEng {
 
                 MVPmatrix_ = playerCamera_->projectionMatrix() * playerCamera_->viewMatrix();
                 opaqueShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
-                opaqueShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
+                opaqueShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos()); // TODO. DELETE THIS UNUSED UNIFORM.
 
                 /*
                 3D rendering.
@@ -695,18 +698,18 @@ namespace VoxelEng {
 
                 // Receive updated chunk meshes when possible.
                 if (chunkManager::priorityManagerThreadMutex().try_lock()) {
-                
+
                     chunkManager::swapChunkMeshesBuffers();
                     chunksToDraw_ = chunkManager::drawableChunksRead();
 
                     chunkManager::priorityManagerThreadMutex().unlock();
                     chunkManager::priorityManagerThreadCV().notify_one();
-                
+
                 }
                 else if (chunkManager::managerThreadMutex().try_lock()) {
 
                     chunkManager::swapChunkMeshesBuffers();
-                    chunksToDraw_ = chunkManager::drawableChunksRead(); 
+                    chunksToDraw_ = chunkManager::drawableChunksRead();
 
                     chunkManager::managerThreadMutex().unlock();
                     chunkManager::managerThreadCV().notify_one();
@@ -729,7 +732,85 @@ namespace VoxelEng {
                 Opaque pass
                 */
 
+                // Render the shadowmaps.
+                shadowFB_->bind();
+                glClear(GL_DEPTH_BUFFER_BIT);
+                {
+                    shadowDepthShader_->bind();
+                    // TODO. MOVE THIS TO A PROPER PLACE.
+                    // SET THE SUN'S DIRECTIONAL LIGHTING MVP MATRIX.
+                    SSBO<lightInstance>* directionalLightsInstances = registries::get("SSBOs")->pointer<registry<std::string, var>>()->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
+                    lightInstance& instance = directionalLightsInstances->get(0);
+                    instance.pos = vec4(200.0f, 200.0f, 0.0f, 0.0f);
+                    instance.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
+
+                    glm::mat4 view = glm::lookAt(instance.pos, instance.pos + instance.dir, vec3FixedUp);
+
+                    instance.MVP = playerCamera_->projectionMatrix() * view;
+                    directionalLightsInstances->reuploadElement(0);
+                }
+                if (chunksToDraw_) {
+
+                    // chunk.first refers to the chunk's center global postion.
+                    // chunk.second refers to the chunk's vertex data.
+                    for (auto const& chunk : *chunksToDraw_) {
+
+                        if (true) {
+
+                            // Draw terrain
+
+                            // LOD 1 terrain
+                            if (chunkManager::chunkInLODDistance(chunk.first, 1, inLODborder, dirX, dirY, dirZ)) {
+
+                                if (inLODborder) {
+
+                                    if (nVertices = chunk.second.vertices.size() + chunk.second.verticesLOD1_2Boundary.size()) {
+
+                                        chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
+                                        chunksVbo_->setDynamicData(chunk.second.verticesLOD1_2Boundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesLOD1_2Boundary.size() * sizeof(vertex));
+
+                                    }
+
+                                }
+                                else {
+
+                                    if (nVertices = chunk.second.vertices.size() + chunk.second.verticesBoundary.size()) {
+
+                                        chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
+                                        chunksVbo_->setDynamicData(chunk.second.verticesBoundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesBoundary.size() * sizeof(vertex));
+
+                                    }
+
+                                }
+
+                                renderer::draw3D(nVertices);
+
+                            }
+                            else if (chunkManager::chunkInLODDistance(chunk.first, 2, inLODborder, dirX, dirY, dirZ)) { // LOD 2 terrain
+
+                                if (nVertices = chunk.second.verticesLOD2.size() + chunk.second.verticesLOD2Boundary.size()) {
+
+                                    chunksVbo_->setDynamicData(chunk.second.verticesLOD2.data(), 0, chunk.second.verticesLOD2.size() * sizeof(vertex));
+                                    chunksVbo_->setDynamicData(chunk.second.verticesLOD2Boundary.data(), chunk.second.verticesLOD2.size() * sizeof(vertex), chunk.second.verticesLOD2Boundary.size() * sizeof(vertex));
+
+                                    renderer::draw3D(nVertices);
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+                shadowFB_->unbind();
+
                 // Terrain rendering.
+                
+                opaqueFB_->bind();
+                opaqueShader_->bind();
+                shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
                 if (chunksToDraw_) {
 
                     // chunk.first refers to the chunk's center global postion.
@@ -755,32 +836,32 @@ namespace VoxelEng {
                             if (chunkManager::chunkInLODDistance(chunk.first, 1, inLODborder, dirX, dirY, dirZ)) {
 
                                 if (inLODborder) {
-                                
+
                                     if (nVertices = chunk.second.vertices.size() + chunk.second.verticesLOD1_2Boundary.size()) {
 
                                         chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
                                         chunksVbo_->setDynamicData(chunk.second.verticesLOD1_2Boundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesLOD1_2Boundary.size() * sizeof(vertex));
-                                    
+
                                     }
-                                
+
                                 }
                                 else {
-                                
+
                                     if (nVertices = chunk.second.vertices.size() + chunk.second.verticesBoundary.size()) {
 
                                         chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
                                         chunksVbo_->setDynamicData(chunk.second.verticesBoundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesBoundary.size() * sizeof(vertex));
 
                                     }
-                                
+
                                 }
 
                                 renderer::draw3D(nVertices);
 
                             }
                             else if (chunkManager::chunkInLODDistance(chunk.first, 2, inLODborder, dirX, dirY, dirZ)) { // LOD 2 terrain
-                            
-                                if(nVertices = chunk.second.verticesLOD2.size() + chunk.second.verticesLOD2Boundary.size()) {
+
+                                if (nVertices = chunk.second.verticesLOD2.size() + chunk.second.verticesLOD2Boundary.size()) {
 
                                     chunksVbo_->setDynamicData(chunk.second.verticesLOD2.data(), 0, chunk.second.verticesLOD2.size() * sizeof(vertex));
                                     chunksVbo_->setDynamicData(chunk.second.verticesLOD2Boundary.data(), chunk.second.verticesLOD2.size() * sizeof(vertex), chunk.second.verticesLOD2Boundary.size() * sizeof(vertex));
@@ -788,14 +869,15 @@ namespace VoxelEng {
                                     renderer::draw3D(nVertices);
 
                                 }
-                            
+
                             }
-                            
-                        } 
+
+                        }
 
                     }
 
                 }
+                
 
                 // Times calculation.
                 actualTime = glfwGetTime();
@@ -846,7 +928,6 @@ namespace VoxelEng {
                 translucidShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
                 translucidShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
                 translucidShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
-
 
                 // Terrain rendering.
                 vao_->bind();
@@ -956,12 +1037,11 @@ namespace VoxelEng {
                 opaqueFB_->unbind();
 
                 // Clear the window (default framebuffer) to draw the next frame.
-                renderer::clearWindow(); // TODO. IS THIS UNNCECESARRY?
+                renderer::clearWindow();
 
                 screenShader_->bind();
-                //screenShader_->setUniform1i("screenTexture", 0);
 
-                opaqueFB_->getTexture(textureType::COLOR, 0)->bind();
+                opaqueFB_->getTexture(textureType::COLOR, 0)->bind(0);
 
                 screenVbo_->prepareStatic(screenShaderQuad, 6*sizeof(float)*4);
                 renderer::draw2D(6);

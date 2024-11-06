@@ -230,6 +230,7 @@ namespace VoxelEng {
         static std::unordered_map<vec3, chunkRenderingData> const* chunksToDraw_;
         static const std::vector<model>* batchesToDraw_;
 
+        static shader* shadowDepthShader_;
         static shader* opaqueShader_;
         static shader* translucidShader_;
         static shader* compositeShader_;
@@ -242,6 +243,7 @@ namespace VoxelEng {
         static vertexArray* entitiesVao_; // TODO. QUE SE USE SOLO UN VAO ENTRE ENTIDADES Y TERRENO. 
         static vertexArray* screenVao_;
 
+        static framebuffer* shadowFB_;
         static framebuffer* opaqueFB_;
         static framebuffer* translucidFB_;
         static framebuffer* screenFB_;

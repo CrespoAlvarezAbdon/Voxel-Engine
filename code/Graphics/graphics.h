@@ -33,7 +33,7 @@ namespace VoxelEng {
 	//Enums.//
 	//////////
 
-	enum class textureType { NONE = 0, COLOR, DEPTH_AND_STENCIL, REVEAL, IMAGE };
+	enum class textureType { NONE = 0, COLOR, DEPTH_AND_STENCIL, REVEAL, IMAGE, DEPTH };
 
 
 	////////////
@@ -187,6 +187,12 @@ namespace VoxelEng {
 		static void setScreenPassConfig();
 
 		/**
+		* @brief Get the shader using for calculating the shadowed parts of a geometry
+		* from a light's perspective.
+		*/
+		static shader& shadowDepthShader();
+
+		/**
 		* @brief Get the shader used for opaque geometry.
 		*/
 		static shader& opaqueShader();
@@ -213,6 +219,7 @@ namespace VoxelEng {
 		static std::unordered_map<std::string, vertexBuffer> vbos_;
 		static std::unordered_map<std::string, vertexArray> vaos_;
 		static std::unordered_map<std::string, vertexBufferLayout> vboLayouts_;
+		static shader* shadowDepthShader_;
 		static shader* opaqueShader_;
 		static shader* translucidShader_;
 		static shader* compositeShader_;

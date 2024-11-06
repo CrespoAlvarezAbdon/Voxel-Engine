@@ -2,6 +2,8 @@
 
 layout(location = 0) out vec4 color; // Final result.
 
+layout(binding = 1) uniform sampler2D depthMap;
+
 #define MAX_MATERIALS 256 // TODO. MAKE THIS DYNAMIC.
 #define MAX_DIRECTIONAL_LIGHTS 256
 #define MAX_POINT_LIGHTS 256
@@ -11,6 +13,7 @@ layout(location = 0) out vec4 color; // Final result.
 in vec2 v_TexCoord; 
 in vec3 v_pos;
 in vec4 v_color;
+in vec4 v_LightSpacePos;
 flat in int v_materialIndex;
 
 // Uniforms.
@@ -59,6 +62,7 @@ struct LightInstance {
 	float padding1;
     vec3 dir;
 	float lightTypeIndex;
+    mat4 MVP;
 };
 
 // UBOs.
@@ -78,6 +82,7 @@ layout(std140, binding = 4) uniform SpotLights {
     SpotLight spotLights[MAX_SPOT_LIGHTS];
 };
 
+// SSBOs.
 layout(std430, binding = 1) buffer DirectionalLightsInstances {
     LightInstance directionalLightsInstances[];
 };
@@ -90,8 +95,10 @@ layout(std430, binding = 3) buffer SpotLightsInstances {
     LightInstance spotLightsInstances[];
 };
 
-// Functions
+// Variables.
+float shadow = 0.0;
 
+// Functions.
 vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material) {
 
     vec3 lightDir = normalize(-lightInstance.dir);
@@ -107,6 +114,10 @@ vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, v
     vec4 ambient = light.ambient * material.ambient;
     vec4 diffuse  = light.diffuse  * diff * material.diffuse;
     vec4 specular = light.specular * spec * material.specular;
+
+    ambient *= shadow;
+    diffuse *= shadow;
+    specular *= shadow;
 
     return (ambient + diffuse + specular);
 }
@@ -136,6 +147,17 @@ vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 
     return (ambient + diffuse + specular);
 }
 
+
+float ShadowCalculation(vec4 fragPosLightSpace) {
+
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5; 
+    float closestDepth = texture(depthMap, projCoords.xy).r;  
+    float currentDepth = projCoords.z;
+    float s = currentDepth > closestDepth  ? 0.5 : 1.0;
+    return s;
+}
+
 // Main.
 void main() {
 	
@@ -158,6 +180,9 @@ void main() {
 
         color = vec4(0.0);
 
+        // Apply shadows.
+        shadow = ShadowCalculation(v_LightSpacePos);
+
 		// Apply directional lights.
 	    color += CalcDirLight(light, lightInstance, norm, viewDir, material) * u_useComplexLighting;
 
@@ -171,9 +196,23 @@ void main() {
         }
 
 		// Apply spot lights.
+        if(u_useComplexLighting == 1)
+        {
+            int a = 3 + 2 + u_useComplexLighting;
+        }
+        for(int i = 0; i < (u_useComplexLighting + u_viewPos.x); i++)
+        {
+            int a = 3;
+        }
 
 		// Finally apply texture and v_color
 		color = (color + acumPointLights * u_useComplexLighting) * textureColor * v_color;
+        //color.r = texture(depthMap, v_LightSpacePos.xy).z;
+
+        //color = vec4(vec3(LinearizeDepth(gl_FragCoord.z) / 500), 1.0); // perspective
+
+        //vec2 shadowCoord = v_LightSpacePos.xy * 0.5 + 0.5;
+        //color = vec4(shadowCoord, 0.0, 1.0);  // Debug the shadow coordinates
 
 	}
 	else {

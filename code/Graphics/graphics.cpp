@@ -27,6 +27,7 @@ namespace VoxelEng {
 	std::unordered_map<std::string, vertexBuffer> graphics::vbos_;
 	std::unordered_map<std::string, vertexArray> graphics::vaos_;
 	std::unordered_map<std::string, vertexBufferLayout> graphics::vboLayouts_;
+	shader* graphics::shadowDepthShader_ = nullptr;
 	shader* graphics::opaqueShader_ = nullptr;
 	shader* graphics::translucidShader_ = nullptr;
 	shader* graphics::compositeShader_ = nullptr;
@@ -129,7 +130,6 @@ namespace VoxelEng {
 
 				// MORE TODOS.
 				// -CUANDO SUBAS SPOTLIGHTS, CONVERTIR LOS ANGULOS A RADIANES.
-				// -METER TODA LA PARTE CORRESPONDIENTE DE MANEJAR LAS LUCES EN LOS SHADERS, INCLUYENDO EL HECHO DE SOPORTAR VARIAS LUCES. DE MOMENTO NO OPTIMICES NADA PARA QUE VAYAMOS VIENDO EL IMPACTO QUE REALMENTE TIENEN.
 
 				// NOTE. UBOs and SSBOs have do not share binding points between them. So you can have both an UBO and A SSBO with binding point 1.
 
@@ -167,13 +167,15 @@ namespace VoxelEng {
 					static_cast<void*>(new SSBO<lightInstance>("SpotLightsInstances", 1000, 3)), var::varType::SSBO_OF_LIGHTINSTANCES);
 
 				// TODO. MOVE DIRECTIONAL LIGHT INSTANCE CREATION TO WORLD.H SO THAT EACH WORLD/DIMENSION HAS ITS PROPER DIRECTIONAL LIGHTS.
-				SSBO<lightInstance>* chunkLights = SSBORegistry->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
-				chunkLights->get(0).pos = vec4(0.0f, 200.0f, 0.0f, 0.0f);
-				chunkLights->get(0).dir = vec4(0.0f, -1.0f, 0.0f, 0.0f);
-				chunkLights->get(0).lightTypeIndex = 0;
-				chunkLights->reuploadElement(0);
+				SSBO<lightInstance>* directionalLightsInstances = SSBORegistry->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
+				lightInstance& instance = directionalLightsInstances->get(0);
+				instance.pos = vec4(10.0f, 200.0f, 0.0f, 0.0f);
+				instance.dir = vec4(0.0f, -1.0f, 0.0f, 0.0f);
+				instance.lightTypeIndex = 0;
+				directionalLightsInstances->reuploadElement(0);
 
 				// Initialize shaders.
+				shadowDepthShader_ = new shader("shadowDepth", "resources/Shaders/shadowDepthVertex.shader", "resources/Shaders/shadowDepthFragment.shader", { }, { "DirectionalLightsInstances"});
 				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances" });
 				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances" });
 				compositeShader_ = new shader("composite", "resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
@@ -420,6 +422,21 @@ namespace VoxelEng {
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_TRUE); // this way glClear will clear the depth buffer
 		glDisable(GL_BLEND);
+
+	}
+
+	shader& graphics::shadowDepthShader() {
+
+		if (initialised_) {
+
+			return *shadowDepthShader_;
+
+		}
+		else {
+
+			logger::errorLog("Graphics system is not initialised when accessing shadow depth shader");
+
+		}
 
 	}
 
