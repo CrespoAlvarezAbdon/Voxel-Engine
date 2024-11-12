@@ -108,7 +108,8 @@ vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, v
 
     // specular shading
     vec3 reflectDir = reflect(-lightDir, n);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x); // Remember that shininess is a vec4 for padding but 'x' is the real shininess value.
+    float hitByLight = max(dot(viewDir, reflectDir), 0.0);
+    float spec = pow(hitByLight, material.shininess.x); // Remember that shininess is a vec4 for padding but 'x' is the real shininess value.
 
     // combine results
     vec4 ambient = light.ambient * material.ambient;
@@ -116,14 +117,15 @@ vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, v
     vec4 specular = light.specular * spec * material.specular;
 
     ambient *= shadow;
-    diffuse *= shadow;
-    specular *= shadow;
+    diffuse *= (shadow < 1) ? 0 : 1;
+    specular *= (shadow < 1) ? 0 : 1;
 
     return (ambient + diffuse + specular);
+
 }
 
-vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material)
-{
+vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material) {
+
     vec3 lightDir = normalize(lightInstance.pos - v_pos);
 
     // diffuse shading
@@ -145,17 +147,33 @@ vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 
     diffuse *= attenuation;
     specular *= attenuation;
     return (ambient + diffuse + specular);
+
 }
 
 
-float ShadowCalculation(vec4 fragPosLightSpace) {
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance) {
+
+    vec3 lightDir = normalize(lightInstance.pos - v_pos);
+
+    float minBias = 0.0000002;
+    float maxBias = 0.00002;
+    float normalBasedBias = mix(minBias, maxBias, 1.0 - dot(n, lightDir));
 
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5; 
-    float closestDepth = texture(depthMap, projCoords.xy).r;  
+    float sampledShadowDepth = texture(depthMap, projCoords.xy).r;  
+    float shadowDepth = sampledShadowDepth + normalBasedBias;
     float currentDepth = projCoords.z;
-    float s = currentDepth > closestDepth  ? 0.5 : 1.0;
+    
+    //float bias = max(0.000175 * (1.0 - dot(n, lightDir)), 0.00001); 
+    float s = (currentDepth > shadowDepth) ? 0.9 : 1.0;
+
+    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+    if(projCoords.z > 1.0)
+        s = 0.0;
+
     return s;
+
 }
 
 // Main.
@@ -181,7 +199,7 @@ void main() {
         color = vec4(0.0);
 
         // Apply shadows.
-        shadow = ShadowCalculation(v_LightSpacePos);
+        shadow = ShadowCalculation(v_LightSpacePos, norm, lightInstance);
 
 		// Apply directional lights.
 	    color += CalcDirLight(light, lightInstance, norm, viewDir, material) * u_useComplexLighting;
@@ -196,23 +214,9 @@ void main() {
         }
 
 		// Apply spot lights.
-        if(u_useComplexLighting == 1)
-        {
-            int a = 3 + 2 + u_useComplexLighting;
-        }
-        for(int i = 0; i < (u_useComplexLighting + u_viewPos.x); i++)
-        {
-            int a = 3;
-        }
 
 		// Finally apply texture and v_color
 		color = (color + acumPointLights * u_useComplexLighting) * textureColor * v_color;
-        //color.r = texture(depthMap, v_LightSpacePos.xy).z;
-
-        //color = vec4(vec3(LinearizeDepth(gl_FragCoord.z) / 500), 1.0); // perspective
-
-        //vec2 shadowCoord = v_LightSpacePos.xy * 0.5 + 0.5;
-        //color = vec4(shadowCoord, 0.0, 1.0);  // Debug the shadow coordinates
 
 	}
 	else {

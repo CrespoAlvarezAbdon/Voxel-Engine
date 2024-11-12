@@ -1,6 +1,6 @@
 #version 450 core
 
-layout(location = 0) out vec4 color; // Final result.
+//layout(location = 0) out vec4 color; // Final result.
 
 float LinearizeDepth(float depth)
 {
@@ -11,5 +11,5 @@ float LinearizeDepth(float depth)
 void main()
 {             
     gl_FragDepth = gl_FragCoord.z;
-    color = vec4(vec3(LinearizeDepth( gl_FragCoord.z) / 500), 1.0); // perspective
+    //color = vec4(vec3(LinearizeDepth( gl_FragCoord.z) / 500), 1.0); // perspective
 }

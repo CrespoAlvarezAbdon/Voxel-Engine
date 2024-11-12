@@ -736,13 +736,16 @@ namespace VoxelEng {
                 shadowFB_->bind();
                 glClear(GL_DEPTH_BUFFER_BIT);
                 {
+                    //CHUNK_SIZE * 20 * -1
                     shadowDepthShader_->bind();
                     // TODO. MOVE THIS TO A PROPER PLACE.
                     // SET THE SUN'S DIRECTIONAL LIGHTING MVP MATRIX.
                     SSBO<lightInstance>* directionalLightsInstances = registries::get("SSBOs")->pointer<registry<std::string, var>>()->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
                     lightInstance& instance = directionalLightsInstances->get(0);
-                    instance.pos = vec4(200.0f, 200.0f, 0.0f, 0.0f);
+                    instance.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, 0.0f, 0.0f);
                     instance.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
+                    //instance.dir = vec4(-0.5f, -1.0f, -0.5f, 0.0f);
+                    //instance.dir = vec4(0.0f, -1.0f, 0.0f, 0.0f); // ESTA DIRECCIÓN NO FUNCIONA
 
                     glm::mat4 view = glm::lookAt(instance.pos, instance.pos + instance.dir, vec3FixedUp);
 
@@ -807,7 +810,6 @@ namespace VoxelEng {
                 shadowFB_->unbind();
 
                 // Terrain rendering.
-                
                 opaqueFB_->bind();
                 opaqueShader_->bind();
                 shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
