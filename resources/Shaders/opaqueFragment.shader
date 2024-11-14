@@ -108,17 +108,15 @@ vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, v
 
     // specular shading
     vec3 reflectDir = reflect(-lightDir, n);
-    float hitByLight = max(dot(viewDir, reflectDir), 0.0);
-    float spec = pow(hitByLight, material.shininess.x); // Remember that shininess is a vec4 for padding but 'x' is the real shininess value.
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x); // Remember that shininess is a vec4 for padding but 'x' is the real shininess value.
 
     // combine results
     vec4 ambient = light.ambient * material.ambient;
     vec4 diffuse  = light.diffuse  * diff * material.diffuse;
     vec4 specular = light.specular * spec * material.specular;
 
-    ambient *= shadow;
-    diffuse *= (shadow < 1) ? 0 : 1;
-    specular *= (shadow < 1) ? 0 : 1;
+    diffuse *= shadow;
+    specular *= (shadow < 0.75) ? 0 : 1;
 
     return (ambient + diffuse + specular);
 
@@ -150,27 +148,31 @@ vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 
 
 }
 
-
 float ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance) {
-
-    vec3 lightDir = normalize(lightInstance.pos - v_pos);
-
-    float minBias = 0.0000002;
-    float maxBias = 0.00002;
-    float normalBasedBias = mix(minBias, maxBias, 1.0 - dot(n, lightDir));
 
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5; 
     float sampledShadowDepth = texture(depthMap, projCoords.xy).r;  
-    float shadowDepth = sampledShadowDepth + normalBasedBias;
+    float shadowDepth = sampledShadowDepth;
     float currentDepth = projCoords.z;
     
-    //float bias = max(0.000175 * (1.0 - dot(n, lightDir)), 0.00001); 
-    float s = (currentDepth > shadowDepth) ? 0.9 : 1.0;
+    float s = 1.0;
+    float diff = abs(currentDepth - shadowDepth);
+    float shadowThreshold = 0.0002;  // Larger value gives a wider transition zone
+    float shadowSoftness = 0.05;     // Determines how dark the shadow gets
+
+    // Interpolate shadow factor based on difference within the threshold
+    if (diff < shadowThreshold) {
+        // Smoothly interpolate 's' from fully lit to a shadow based on 'diff'
+        s = mix(1.0, shadowSoftness, diff / shadowThreshold);
+    } else if (currentDepth > shadowDepth) {
+        // Fully shadowed area beyond the transition zone
+        s = shadowSoftness;
+    }
 
     // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
     if(projCoords.z > 1.0)
-        s = 0.0;
+        s = 1.0;
 
     return s;
 
