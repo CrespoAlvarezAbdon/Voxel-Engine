@@ -9,6 +9,7 @@
 #include <Graphics/Lighting/Lights/PointLight/pointLight.h>
 #include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
 #include <Graphics/Materials/materials.h>
+#include <Graphics/Vertex/ChunkVertexBuffer/chunkVertexBuffer.h>
 #include <Utilities/Logger/logger.h>
 
 #if GRAPHICS_API == OPENGL
@@ -24,7 +25,7 @@ namespace VoxelEng {
 
 	bool graphics::initialised_ = false;
 	window* graphics::mainWindow_ = nullptr;
-	std::unordered_map<std::string, vertexBuffer> graphics::vbos_;
+	std::unordered_map<std::string, vertexBuffer*> graphics::vbos_;
 	std::unordered_map<std::string, vertexArray> graphics::vaos_;
 	std::unordered_map<std::string, vertexBufferLayout> graphics::vboLayouts_;
 	shader* graphics::shadowDepthShader_ = nullptr;
@@ -82,19 +83,19 @@ namespace VoxelEng {
 				vaos_.insert({ "2D", vertexArray() });
 				vaos_.insert({ "screen", vertexArray() });
 
-				vbos_.insert({ "chunks", vertexBuffer() });
-				vbos_.insert({ "entities", vertexBuffer() });
-				vbos_.insert({ "GUI", vertexBuffer() });
-				vbos_.insert({ "screen", vertexBuffer() });
+				vbos_.insert({ "chunks", new chunkVertexBuffer() });
+				vbos_.insert({ "entities", new vertexBuffer() });
+				vbos_.insert({ "GUI", new vertexBuffer() });
+				vbos_.insert({ "screen", new vertexBuffer() });
 
 				vaos_.at("3D").generate();
 				vaos_.at("3Dentities").generate();
 				vaos_.at("2D").generate();
 				vaos_.at("screen").generate();
-				vbos_.at("chunks").generate();
-				vbos_.at("entities").generate();
-				vbos_.at("GUI").generate();
-				vbos_.at("screen").generate();
+				vbos_.at("chunks")->generate();
+				vbos_.at("entities")->generate();
+				vbos_.at("GUI")->generate();
+				vbos_.at("screen")->generate();
 
 				vertexBufferLayout& layout3D = vboLayouts_.insert({ "3D", vertexBufferLayout() }).first->second;
 				vertexBufferLayout& layout2D = vboLayouts_.insert({ "2D", vertexBufferLayout() }).first->second;
@@ -107,25 +108,25 @@ namespace VoxelEng {
 				layout3D.push<unsigned char>(4, false);
 				layout3D.push<normalVec>(1, false);
 				vaos_.at("3D").bind();
-				vbos_.at("chunks").bind();
+				vbos_.at("chunks")->bind();
 				vaos_.at("3D").addLayout(layout3D);
 
 				vaos_.at("3Dentities").bind();
-				vbos_.at("entities").bind();
+				vbos_.at("entities")->bind();
 				vaos_.at("3Dentities").addLayout(layout3D);
 
 				// The same for 2D rendering.
 				layout2D.push<GLfloat>(2, true);
 				layout2D.push<GLfloat>(2, true);
 				vaos_.at("2D").bind();
-				vbos_.at("GUI").bind();
+				vbos_.at("GUI")->bind();
 				vaos_.at("2D").addLayout(layout2D);
 
 				// The same for screen rendering.
 				layoutScreen.push<GLfloat>(2, true);
 				layoutScreen.push<GLfloat>(2, true);
 				vaos_.at("screen").bind();
-				vbos_.at("screen").bind();
+				vbos_.at("screen")->bind();
 				vaos_.at("screen").addLayout(layoutScreen);
 
 				// MORE TODOS.
@@ -273,7 +274,7 @@ namespace VoxelEng {
 
 	}
 
-	const vertexBuffer& graphics::cVbo(const std::string& vboName) {
+	const vertexBuffer* graphics::cPVbo(const std::string& vboName) {
 
 		if (vbos_.contains(vboName))
 			return vbos_[vboName];
@@ -329,7 +330,7 @@ namespace VoxelEng {
 	
 	}
 
-	vertexBuffer& graphics::vbo(const std::string& vboName) {
+	vertexBuffer* graphics::pVbo(const std::string& vboName) {
 
 		if (vbos_.contains(vboName))
 			return vbos_[vboName];

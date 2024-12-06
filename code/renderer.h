@@ -50,10 +50,20 @@ namespace VoxelEng {
 		static void draw3D(const indexBuffer& ib);
 
 		/**
-		* @brief Draws 'count' model triangles into a 3D space.
+		* @brief Draws model triangles into a 3D space space using the vertices stored in the currently bound VBO
+		* from vertex number 0 to vertex number 'count'.
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
-		static void draw3D(int count);
+		static void draw3D(long long count);
+
+		/**
+		* @brief Draws model triangles into a 3D space space using the vertices stored in the currently bound VBO
+		* from vertex number 'startPos' to vertex number 'endPos'.
+		* @param startPos The index in the VBO for the initial vertex to use.
+		* @param endPos The index in the VBO for the last vertex to use. The index must be greater than or equal to 'startPos'.
+		* WARNING. Must be called in a thread with valid graphics API context.
+		*/
+		static void draw3D(long long startPos, long long endPos);
 
 		/**
 		* @brief Draw 'nPrimitives' primitives, taking into account that the vertex
@@ -81,24 +91,39 @@ namespace VoxelEng {
 
 	private:
 
+		static void draw3D_(long long startPos, long long endPos);
 
 	};
 
 	inline void renderer::draw3D(const indexBuffer& ib) {
 
-		glDrawElements(GL_TRIANGLES, ib.nIndices(), GL_UNSIGNED_INT, nullptr);
+		#if GRAPHICS_API == OPENGL
+
+			glDrawElements(GL_TRIANGLES, ib.nIndices(), GL_UNSIGNED_INT, nullptr);
+
+		#endif
 
 	}
 
-	inline void renderer::draw3D(int count) {
+	inline void renderer::draw3D(long long count) {
 
-		glDrawArrays(GL_TRIANGLES, 0, count);
+		draw3D_(0, count);
 
+	}
+
+	inline void renderer::draw3D(long long startPos, long long endPos) {
+	
+		draw3D_(startPos, endPos);
+	
 	}
 
 	inline void renderer::multiDraw3D(int* indices, int* sizes, std::size_t nPrimitives) {
 
-		glMultiDrawArrays(GL_TRIANGLES, indices, sizes, nPrimitives);
+		#if GRAPHICS_API == OPENGL
+
+			glMultiDrawArrays(GL_TRIANGLES, indices, sizes, nPrimitives);
+
+		#endif
 	
 	}
 
@@ -108,14 +133,32 @@ namespace VoxelEng {
 		// but it is left as is in case this separation is needed
 		// in the future for whatever reason.
 
-		glDrawArrays(GL_TRIANGLES, 0, count);
+		#if GRAPHICS_API == OPENGL
+
+			glDrawArrays(GL_TRIANGLES, 0, count);
+
+		#endif
 
 	}
 
 	inline void renderer::clearWindow() {
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // TODO. HACE FALTA EL TERCERO?
+		#if GRAPHICS_API == OPENGL
 
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+		#endif
+	
+	}
+
+	inline void renderer::draw3D_(long long startPos, long long endPos) {
+
+		#if GRAPHICS_API == OPENGL
+
+			glDrawArrays(GL_TRIANGLES, startPos, endPos);
+
+		#endif
+		
 	}
 
 }

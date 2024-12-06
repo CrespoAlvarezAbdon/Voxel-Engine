@@ -11,7 +11,7 @@
 #define _VOXELENG_GAMEWINDOW_
 
 #include <string>
-#include "definitions.h"
+#include <definitions.h>
 
 #if GRAPHICS_API == OPENGL
 

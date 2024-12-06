@@ -24,7 +24,6 @@
 #include "inputFunctions.h"
 #include "renderer.h"
 #include "utilities.h"
-#include "vertex.h"
 #include "worldGen.h"
 #include <Entities/plane.h>
 #include <Registry/registries.h> // This header also includes the classes that derive from 'registeredElement'.
@@ -37,9 +36,10 @@
 #include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
 #include <Graphics/Materials/materials.h>
 #include <Graphics/Lighting/Lights/light.h>
+#include <Graphics/Vertex/vertex.h>
+#include <Graphics/Vertex/ChunkVertexBuffer/chunkVertexBuffer.h>
+#include <Time/Timer/timer.h>
 #include <Utilities/Var/var.h>
-#include "timer.h"
-
 
 #if GRAPHICS_API == OPENGL
 
@@ -49,7 +49,6 @@
 #include <gtc/matrix_transform.hpp>
 
 #endif
-
 
 namespace VoxelEng {
 
@@ -88,7 +87,9 @@ namespace VoxelEng {
     camera* game::playerCamera_ = nullptr;
     texture* game::blockTextureAtlas_ = nullptr;
 
-    std::unordered_map<vec3, chunkRenderingData> const* game::chunksToDraw_ = nullptr;
+    std::unordered_map<vec3, chunkRenderingData> const * game::chunksRenderingData_ = nullptr;
+    std::unordered_map<vec3, chunkVBOoperation> const * game::chunksVBOoperations_ = nullptr;
+
     const std::vector<model>* game::batchesToDraw_ = nullptr;
 
     shader* game::shadowDepthShader_ = nullptr;
@@ -96,7 +97,7 @@ namespace VoxelEng {
     shader* game::translucidShader_ = nullptr;
     shader* game::compositeShader_ = nullptr;
     shader* game::screenShader_ = nullptr;
-    vertexBuffer* game::chunksVbo_ = nullptr;
+    chunkVertexBuffer* game::chunksVbo_ = nullptr;
     vertexBuffer* game::entitiesVbo_ = nullptr;
     vertexBuffer* game::screenVbo_ = nullptr;
     vertexArray* game::vao_ = nullptr;
@@ -290,7 +291,7 @@ namespace VoxelEng {
             pointLightsInstances_ = SSBORegistry->get("PointLightsInstances")->pointer<SSBO<lightInstance>>();
             spotLightsInstances_ = SSBORegistry->get("SpotLightsInstances")->pointer<SSBO<lightInstance>>();
 
-            chunksVbo_ = &graphics::vbo("chunks"),
+            chunksVbo_ = static_cast<chunkVertexBuffer*>(graphics::pVbo("chunks"));
             entitiesVbo_ = &graphics::vbo("entities");
             screenVbo_ = &graphics::vbo("screen");
             vao_ = &graphics::vao("3D");
@@ -558,6 +559,10 @@ namespace VoxelEng {
         
         if (loopSelection_ == engineMode::INITLEVEL || loopSelection_ == engineMode::INITRECORD) {
 
+            // Variables used only on this loop.
+
+            std::unordered_set<vec3> chunksToDraw;
+
             if (!graphicalModeInitialised_)
                 initGraphicalMode();
 
@@ -661,6 +666,8 @@ namespace VoxelEng {
             blockViewDir dirZ = blockViewDir::NONE;
 
             // Spawn test entities here.
+
+            bool once = false;
             
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //TODO. ADD THIS AS AN OPTION.
             while (loopSelection_ == engineMode::EDITLEVEL || loopSelection_ == engineMode::PLAYINGRECORD) {
@@ -699,8 +706,9 @@ namespace VoxelEng {
                 // Receive updated chunk meshes when possible.
                 if (chunkManager::priorityManagerThreadMutex().try_lock()) {
 
+                    // TODO. METER LOS CAMBIOS QUE METAS EN EL DRAWABLES CHUNKSREAD TAMBIEN AQUI EN LA VERSIÓN PRIORITY.
                     chunkManager::swapChunkMeshesBuffers();
-                    chunksToDraw_ = chunkManager::drawableChunksRead();
+                    chunksRenderingData_ = chunkManager::drawableChunksRead();
 
                     chunkManager::priorityManagerThreadMutex().unlock();
                     chunkManager::priorityManagerThreadCV().notify_one();
@@ -709,11 +717,41 @@ namespace VoxelEng {
                 else if (chunkManager::managerThreadMutex().try_lock()) {
 
                     chunkManager::swapChunkMeshesBuffers();
-                    chunksToDraw_ = chunkManager::drawableChunksRead();
+                    chunksRenderingData_ = chunkManager::drawableChunksRead();
+                    chunksVBOoperations_ = chunkManager::chunkVBOoperationsRead();
 
                     chunkManager::managerThreadMutex().unlock();
                     chunkManager::managerThreadCV().notify_one();
 
+                }
+
+                // Upload changes in chunk vertex data to chunk VBO.
+                if (chunksVBOoperations_) {
+                
+                    for (auto it = chunksVBOoperations_->cbegin(); it != chunksVBOoperations_->cend(); it++) {
+
+                        bool b = chunksRenderingData_->contains(it->first); // DEBUG PURPOSES ONLY.
+                        
+                        if (it->second == chunkVBOoperation::PUSH) {
+                        
+                            const chunkRenderingData& chunkRenderData = chunksRenderingData_->at(it->first);
+                            if (chunkRenderData.vertices.size()) {
+                            
+                                chunksVbo_->pushDynamicData(it->first, chunkRenderData.vertices.data(), chunkRenderData.vertices.size() * sizeof(vertex));
+                                chunksToDraw.insert(it->first);
+                            
+                            }
+                        
+                        }
+                        else if (it->second == chunkVBOoperation::FREE) {
+                        
+                            chunksVbo_->freeDynamicData(it->first);
+                            chunksToDraw.erase(it->first);
+                        
+                        }
+
+                    }
+                
                 }
 
                 // TODO. METER KEYBIND PARA HACER REMESH DEL CHUNK DONDE ESTÁ EL PLAYER ACTUALMENTE FOR DEBUGGING PURPOSES.
@@ -734,145 +772,66 @@ namespace VoxelEng {
 
                 // Render the shadowmaps.
                 shadowFB_->bind();
-                glClear(GL_DEPTH_BUFFER_BIT);
+                //if(once)
+                    glClear(GL_DEPTH_BUFFER_BIT);
                 {
-                    //CHUNK_SIZE * 20 * -1
                     shadowDepthShader_->bind();
                     // TODO. MOVE THIS TO A PROPER PLACE.
-                    // SET THE SUN'S DIRECTIONAL LIGHTING MVP MATRIX.
+                    // Set the sun's directional light MVP matrix..
                     SSBO<lightInstance>* directionalLightsInstances = registries::get("SSBOs")->pointer<registry<std::string, var>>()->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
                     lightInstance& instance = directionalLightsInstances->get(0);
                     instance.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, 0.0f, 0.0f);
                     instance.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
-                    //instance.dir = vec4(-0.5f, -1.0f, -0.5f, 0.0f);
-                    //instance.dir = vec4(0.0f, -1.0f, 0.0f, 0.0f); // ESTA DIRECCIÓN NO FUNCIONA
+                    //instance.dir = vec4(0.0f, -1.0f, 0.0f, 0.0f); // TODO. ESTA DIRECCIÓN NO FUNCIONA
 
                     glm::mat4 view = glm::lookAt(instance.pos, instance.pos + instance.dir, vec3FixedUp);
-
                     instance.MVP = playerCamera_->projectionMatrix() * view;
                     directionalLightsInstances->reuploadElement(0);
                 }
-                if (chunksToDraw_) {
+                if (chunksRenderingData_) {
 
                     // chunk.first refers to the chunk's center global postion.
                     // chunk.second refers to the chunk's vertex data.
-                    for (auto const& chunk : *chunksToDraw_) {
+                    for (vec3 const& chunkPos : chunksToDraw) {
 
-                        if (true) {
-
-                            // Draw terrain
-
-                            // LOD 1 terrain
-                            if (chunkManager::chunkInLODDistance(chunk.first, 1, inLODborder, dirX, dirY, dirZ)) {
-
-                                if (inLODborder) {
-
-                                    if (nVertices = chunk.second.vertices.size() + chunk.second.verticesLOD1_2Boundary.size()) {
-
-                                        chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
-                                        chunksVbo_->setDynamicData(chunk.second.verticesLOD1_2Boundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesLOD1_2Boundary.size() * sizeof(vertex));
-
-                                    }
-
-                                }
-                                else {
-
-                                    if (nVertices = chunk.second.vertices.size() + chunk.second.verticesBoundary.size()) {
-
-                                        chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
-                                        chunksVbo_->setDynamicData(chunk.second.verticesBoundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesBoundary.size() * sizeof(vertex));
-
-                                    }
-
-                                }
-
-                                renderer::draw3D(nVertices);
-
-                            }
-                            else if (chunkManager::chunkInLODDistance(chunk.first, 2, inLODborder, dirX, dirY, dirZ)) { // LOD 2 terrain
-
-                                if (nVertices = chunk.second.verticesLOD2.size() + chunk.second.verticesLOD2Boundary.size()) {
-
-                                    chunksVbo_->setDynamicData(chunk.second.verticesLOD2.data(), 0, chunk.second.verticesLOD2.size() * sizeof(vertex));
-                                    chunksVbo_->setDynamicData(chunk.second.verticesLOD2Boundary.data(), chunk.second.verticesLOD2.size() * sizeof(vertex), chunk.second.verticesLOD2Boundary.size() * sizeof(vertex));
-
-                                    renderer::draw3D(nVertices);
-
-                                }
-
-                            }
-
-                        }
+                        // Draw terrain.
+                        const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos);
+                        renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
 
                     }
 
                 }
                 shadowFB_->unbind();
 
+                once = false;
+
                 // Terrain rendering.
                 opaqueFB_->bind();
                 opaqueShader_->bind();
                 shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
-                if (chunksToDraw_) {
+                if (chunksRenderingData_) {
 
                     // chunk.first refers to the chunk's center global postion.
                     // chunk.second refers to the chunk's vertex data.
-                    for (auto const& chunk : *chunksToDraw_) {
+                    for (vec3 const& chunkPos : chunksToDraw) {
 
-                        if (playerCamera_->isInsideFrustum(chunk.second.globalChunkPos)) {
+                        const chunkRenderingData& chunk = chunksRenderingData_->at(chunkPos);
 
-                            // TODO.
-                            // 1º. EN SETBLOCK DE PLAYER HAY QUE PONER QUE SE ACTUALIZEN LOS DATOS DE NEIGHBORS MINUS DEL LOD2
-                            int nPointLightsChunk = chunk.second.pointLights_.size();
+                        if (playerCamera_->isInsideFrustum(chunk.globalChunkPos)) {
+
+                            // TODO. EN SETBLOCK DE PLAYER HAY QUE PONER QUE SE ACTUALIZEN LOS DATOS DE NEIGHBORS MINUS DEL LOD2
+                            int nPointLightsChunk = chunk.pointLights_.size();
                             opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
 
-                            // Draw lights.
+                            // Upload dynamic lights.
                             if (nPointLightsChunk)
-                                pointLightsInstances_->setContentsAndReupload(chunk.second.pointLights_);
-                            if (!chunk.second.spotLights_.empty())
-                                spotLightsInstances_->setContentsAndReupload(chunk.second.spotLights_);
+                                pointLightsInstances_->setContentsAndReupload(chunk.pointLights_);
+                            if (!chunk.spotLights_.empty())
+                                spotLightsInstances_->setContentsAndReupload(chunk.spotLights_);
 
-                            // Draw terrain
-
-                            // LOD 1 terrain
-                            if (chunkManager::chunkInLODDistance(chunk.first, 1, inLODborder, dirX, dirY, dirZ)) {
-
-                                if (inLODborder) {
-
-                                    if (nVertices = chunk.second.vertices.size() + chunk.second.verticesLOD1_2Boundary.size()) {
-
-                                        chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
-                                        chunksVbo_->setDynamicData(chunk.second.verticesLOD1_2Boundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesLOD1_2Boundary.size() * sizeof(vertex));
-
-                                    }
-
-                                }
-                                else {
-
-                                    if (nVertices = chunk.second.vertices.size() + chunk.second.verticesBoundary.size()) {
-
-                                        chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
-                                        chunksVbo_->setDynamicData(chunk.second.verticesBoundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesBoundary.size() * sizeof(vertex));
-
-                                    }
-
-                                }
-
-                                renderer::draw3D(nVertices);
-
-                            }
-                            else if (chunkManager::chunkInLODDistance(chunk.first, 2, inLODborder, dirX, dirY, dirZ)) { // LOD 2 terrain
-
-                                if (nVertices = chunk.second.verticesLOD2.size() + chunk.second.verticesLOD2Boundary.size()) {
-
-                                    chunksVbo_->setDynamicData(chunk.second.verticesLOD2.data(), 0, chunk.second.verticesLOD2.size() * sizeof(vertex));
-                                    chunksVbo_->setDynamicData(chunk.second.verticesLOD2Boundary.data(), chunk.second.verticesLOD2.size() * sizeof(vertex), chunk.second.verticesLOD2Boundary.size() * sizeof(vertex));
-
-                                    renderer::draw3D(nVertices);
-
-                                }
-
-                            }
+                            // Draw terrain.
+                            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos);
+                            renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
 
                         }
 
@@ -894,6 +853,7 @@ namespace VoxelEng {
                     logger::debugLog(std::to_string(1000.0 / nFramesDrawn) + "ms/frame");
                     nFramesDrawn = 0;
                     lastSecondTime = glfwGetTime();
+                    once = true;
 
                 }
 
@@ -934,62 +894,27 @@ namespace VoxelEng {
                 // Terrain rendering.
                 vao_->bind();
                 chunksVbo_->bind();
-                if (chunksToDraw_) {
+                if (chunksRenderingData_) {
 
                     // chunk.first refers to the chunk's center global postion.
                     // chunk.second refers to the chunk's vertex data.
-                    for (auto const& chunk : *chunksToDraw_) {
+                    for (auto const& chunk : *chunksRenderingData_) {
 
                         if (playerCamera_->isInsideFrustum(chunk.second.globalChunkPos)) {
 
                             std::size_t nPointLightsChunk = chunk.second.pointLights_.size();
                             translucidShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
 
-                            // Draw lights.
+                            // Upload dynamic lights.
                             if (nPointLightsChunk)
                                 pointLightsInstances_->setContentsAndReupload(chunk.second.pointLights_);
                             if (!chunk.second.spotLights_.empty())
                                 spotLightsInstances_->setContentsAndReupload(chunk.second.spotLights_);
 
-                            // LOD 1.
-                            if (chunkManager::chunkInLODDistance(chunk.first, 1, inLODborder, dirX, dirY, dirZ)) {
+                            //chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
+                            //chunksVbo_->setDynamicData(chunk.second.verticesLOD1_2Boundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesLOD1_2Boundary.size() * sizeof(vertex));
 
-                                if (inLODborder) {
-
-                                    if (nVertices = chunk.second.translucentVertices.size() + chunk.second.translucentVerticesLOD1_2Boundary.size()) {
-
-                                        chunksVbo_->setDynamicData(chunk.second.translucentVertices.data(), 0, chunk.second.translucentVertices.size() * sizeof(vertex));
-                                        chunksVbo_->setDynamicData(chunk.second.translucentVerticesLOD1_2Boundary.data(), chunk.second.translucentVertices.size() * sizeof(vertex), chunk.second.translucentVerticesLOD1_2Boundary.size() * sizeof(vertex));
-
-                                    }
-
-                                }
-                                else {
-
-                                    if (nVertices = chunk.second.translucentVertices.size() + chunk.second.translucentVerticesBoundary.size()) {
-
-                                        chunksVbo_->setDynamicData(chunk.second.translucentVertices.data(), 0, chunk.second.translucentVertices.size() * sizeof(vertex));
-                                        chunksVbo_->setDynamicData(chunk.second.translucentVerticesBoundary.data(), chunk.second.translucentVertices.size() * sizeof(vertex), chunk.second.translucentVerticesBoundary.size() * sizeof(vertex));
-
-                                    }
-
-                                }
-
-                                renderer::draw3D(nVertices);
-
-                            }
-                            else if (chunkManager::chunkInLODDistance(chunk.first, 2, inLODborder, dirX, dirY, dirZ)) { // Probably will add LOD levels 3 and 4 in the future
-
-                                if (nVertices = chunk.second.translucentVerticesLOD2.size() + chunk.second.translucentVerticesLOD2Boundary.size()) {
-
-                                    chunksVbo_->setDynamicData(chunk.second.translucentVerticesLOD2.data(), 0, chunk.second.translucentVerticesLOD2.size() * sizeof(vertex));
-                                    chunksVbo_->setDynamicData(chunk.second.translucentVerticesLOD2Boundary.data(), chunk.second.translucentVerticesLOD2.size() * sizeof(vertex), chunk.second.translucentVerticesLOD2Boundary.size() * sizeof(vertex));
-
-                                    renderer::draw3D(nVertices);
-
-                                }
-
-                            }
+                            //renderer::draw3D(nVertices);
 
                         }
 
@@ -1554,12 +1479,13 @@ namespace VoxelEng {
 
         }
 
-        chunksToDraw_ = nullptr; // TODO. IGUAL ESTO DA ERROR??
+        chunksRenderingData_ = nullptr;
+        chunksVBOoperations_ = nullptr;
+
         batchesToDraw_ = nullptr;
 
         graphicalModeInitialised_ = false;
 
-        
     }
 
 }

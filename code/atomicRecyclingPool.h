@@ -1,7 +1,7 @@
 #ifndef _VOXELENG_ATOMIC_RECYCLING_POOL_
 #define _VOXELENG_ATOMIC_RECYCLING_POOL_
 
-#include "recyclingPool.h"
+#include <recyclingPool.h>
 
 namespace VoxelEng {
 

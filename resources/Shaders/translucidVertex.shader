@@ -11,10 +11,9 @@
 // };
 // Then location = 0 refers to float positions[3] and
 // location = 1 refers to float textureCoords[2].
-layout(location = 0) in vec4 position; // Vertices' positions.
+layout(location = 0) in vec3 position; // Vertices' positions.
 layout(location = 1) in vec2 texCoord;
 layout(location = 2) in vec4 vertexColor;
-layout(location = 4) in vec3 normal;
 layout(location = 3) in vec4 additionalData; // First byte is material index.
 // The things above this line are also denominated as render targets.
 
@@ -34,12 +33,12 @@ void main() {
 
 		// Export variables to fragment shader.
 		v_TexCoord = texCoord;
-		v_pos = position.xyz;
+		v_pos = position;
 
 		v_color = vertexColor;
 		v_materialIndex = int(additionalData.x);
 
-		gl_Position = u_MVP * position;
+		gl_Position = u_MVP * vec4(position, 1.0);
 
 	}
 	else if (u_renderMode == 1) { // 2D rendering.

@@ -18,11 +18,11 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "chunk.h"
-#include "database.h"
-#include "definitions.h"
-#include "Graphics/graphics.h"
-#include "vec.h"
+#include <chunk.h>
+#include <database.h>
+#include <definitions.h>
+#include <Graphics/graphics.h>
+#include <vec.h>
 
 #if GRAPHICS_API == OPENGL
 

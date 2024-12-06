@@ -9,7 +9,7 @@
 #ifndef _VOXELENG_FRUSTUM_
 #define _VOXELENG_FRUSTUM_
 
-#include "../../Math/mathPlane.h"
+#include <Math/mathPlane.h>
 
 namespace VoxelEng {
 

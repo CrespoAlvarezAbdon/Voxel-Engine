@@ -285,7 +285,7 @@ namespace AIExample {
 
 	// 'miningWorldGen' class.
 
-	const std::uniform_int_distribution<unsigned int> miningWorldGen::int6Dice_(1, 6);
+	std::uniform_int_distribution<unsigned int> miningWorldGen::int6Dice_(1, 6);
 	std::uniform_int_distribution<unsigned int> miningWorldGen::intDice_(1, 100);
 	std::uniform_real_distribution<float> miningWorldGen::floatDice_(1.0f, 100.f);
 

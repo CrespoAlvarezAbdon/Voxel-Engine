@@ -181,7 +181,7 @@ namespace AIExample {
 		Attributes.
 		*/
 
-		static const std::uniform_int_distribution<unsigned int> int6Dice_;
+		static std::uniform_int_distribution<unsigned int> int6Dice_;
 		static std::uniform_int_distribution<unsigned int> intDice_;
 		static std::uniform_real_distribution<float> floatDice_;
 

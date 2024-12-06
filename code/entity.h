@@ -18,13 +18,13 @@
 #include <unordered_set>
 #include <vector>
 #include <mutex>
-#include "batch.h"
-#include "camera.h"
-#include "chunk.h"
-#include "definitions.h"
-#include "vec.h"
-#include "Graphics/transform.h"
-#include "Graphics/Models/model.h"
+#include <batch.h>
+#include <camera.h>
+#include <chunk.h>
+#include <definitions.h>
+#include <vec.h>
+#include <Graphics/transform.h>
+#include <Graphics/Models/model.h>
 
 
 namespace VoxelEng {

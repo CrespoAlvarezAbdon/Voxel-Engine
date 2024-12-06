@@ -15,14 +15,14 @@
 #include <unordered_set>
 #include <string>
 #include <mutex>
-#include "controls.h"
-#include "definitions.h"
-#include "vertexBuffer.h"
-#include "vertexArray.h"
-#include "vertex.h"
-#include "gameWindow.h"
-#include "vec.h"
-#include "Graphics/Shaders/shader.h"
+#include <controls.h>
+#include <definitions.h>
+#include <gameWindow.h>
+#include <vec.h>
+#include <Graphics/Shaders/shader.h>
+#include <Graphics/Vertex/vertex.h>
+#include <Graphics/Vertex/VertexArray/vertexArray.h>
+#include <Graphics/Vertex/VertexBuffer/vertexBuffer.h>
 
 #if GRAPHICS_API == OPENGL
 

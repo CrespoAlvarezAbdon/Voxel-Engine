@@ -12,21 +12,24 @@
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
+
 #include <AIAPI.h>
 #include <camera.h>
 #include <player.h>
 #include <input.h>
 #include <gui.h>
 #include <game.h>
-#include <timer.h>
+#include <Time/Timer/timer.h>
 #include <Graphics/graphics.h>
 #include <Graphics/Lighting/Lights/light.h>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
 #include <Graphics/Lighting/Lights/PointLight/pointLight.h>
 #include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
+#include <Graphics/Vertex/ChunkVertexBuffer/chunkVertexBuffer.h>
 #include <Registry/registries.h>
 #include <Utilities/Logger/logger.h>
 #include <Utilities/Var/var.h>
+
 #include <AI/AIGameEx1.h>
 
 
@@ -410,7 +413,7 @@ namespace VoxelEng {
             model* chunkModel = nullptr;
             model* chunkModelLOD2 = nullptr;
             renderingData_.vertices = model();
-            renderingData_.verticesBoundary = model();
+            //renderingData_.verticesBoundary = model();
             renderingData_.translucentVertices = model();
             renderingData_.translucentVerticesBoundary = model();
 
@@ -839,7 +842,7 @@ namespace VoxelEng {
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
+                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.vertices;
 
                                 // Create the face's vertices for face z-.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -975,7 +978,7 @@ namespace VoxelEng {
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
+                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.vertices;
 
                                 // Create the face's vertices for z+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -1105,7 +1108,7 @@ namespace VoxelEng {
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
+                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.vertices;
 
                                 // Create the face's vertices for face y-.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -1240,7 +1243,7 @@ namespace VoxelEng {
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
+                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.vertices;
 
                                 // Create the face's vertices for face y+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -1370,7 +1373,7 @@ namespace VoxelEng {
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
+                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.vertices;
 
                                 // Create the face's vertices for face x-.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -1505,7 +1508,7 @@ namespace VoxelEng {
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.verticesBoundary;
+                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVerticesBoundary : &renderingData_.vertices;
 
                                 // Create the face's vertices for face x+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -1626,7 +1629,7 @@ namespace VoxelEng {
         }
 
         renderingData_.totalSize = 
-            renderingData_.vertices.size() + renderingData_.verticesBoundary.size() + 
+            renderingData_.vertices.size() + 0 + 
             renderingData_.translucentVertices.size() + renderingData_.translucentVerticesBoundary.size() +
             renderingData_.verticesLOD2.size() + renderingData_.verticesLOD2Boundary.size() + 
             renderingData_.translucentVerticesLOD2.size() + renderingData_.translucentVerticesLOD2Boundary.size() +
@@ -1928,9 +1931,14 @@ namespace VoxelEng {
     std::atomic<bool> chunkManager::waitInitialTerrainLoaded_ = true;
 
     std::unordered_map<vec3, chunk*> chunkManager::clientChunks_;
-    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesUpdated_;
-    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesWrite_;
-    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesRead_;
+    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesUpdated_ = nullptr;
+    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesWrite_ = nullptr;
+    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesRead_ = nullptr;
+
+    std::unordered_map<vec3, chunkVBOoperation>* chunkManager::chunkVBOoperationsWrite_ = nullptr;
+    std::unordered_map<vec3, chunkVBOoperation>* chunkManager::chunkVBOoperationsRead_ = nullptr;
+    std::mutex chunkManager::chunkVBOoperationsMutex_;
+
     std::list<chunk*> chunkManager::newChunkMeshes_;
     std::list<chunk*> chunkManager::priorityNewChunkMeshes_;
 
@@ -1968,7 +1976,7 @@ namespace VoxelEng {
     chunkEvent chunkManager::onChunkLoad_("On chunk load");
     chunkEvent chunkManager::onChunkUnload_("On chunk unload");
 
-    vertexBuffer* chunkManager::vbo_ = nullptr;
+    chunkVertexBuffer* chunkManager::vbo_ = nullptr;
 
     std::string chunkManager::openedTerrainFileName_;
 
@@ -1992,14 +2000,17 @@ namespace VoxelEng {
             chunkMeshesWrite_ = new std::unordered_map<vec3, chunkRenderingData>;
             chunkMeshesRead_ = new std::unordered_map<vec3, chunkRenderingData>;
 
+            chunkVBOoperationsWrite_ = new std::unordered_map<vec3, chunkVBOoperation>;
+            chunkVBOoperationsRead_ = new std::unordered_map<vec3, chunkVBOoperation>;
+
             chunkTasks_ = new threadPool(MAX_N_CHUNK_SIMULT_TASKS);
             priorityChunkTasks_ = new threadPool(MAX_N_CHUNK_SIMULT_TASKS);
             loadChunkJobs_ = new atomicRecyclingPool<chunkJob>(MAX_N_CHUNK_SIMULT_TASKS);
             loadChunkJobs_->setAllFreeOnClear(true);
             chunksPool_.setAllFreeOnClear(false);
-            vbo_ = &graphics::vbo("chunks");
+            vbo_ = static_cast<chunkVertexBuffer*>(graphics::pVbo("chunks"));
             vbo_->bind();
-            vbo_->prepareDynamic(4 * nMaxChunkVertsToCompute() * sizeof(vertex));
+            vbo_->prepareDynamic(1024 * 1024 * 1024); // 1024 MB = 1GB.
 
             clearChunksFlag_ = false;
             priorityUpdatesRemaining_ = false;
@@ -2020,14 +2031,16 @@ namespace VoxelEng {
 
             c = *it;     
             c->lockSharedRenderingDataMutex();
-
             chunkMeshesUpdated_->operator[](c->chunkPos()) = c->renderingData();
-            it = priorityNewChunkMeshes_.erase(it);
-                
             c->unlockSharedRenderingDataMutex();
 
-        }
+            it = priorityNewChunkMeshes_.erase(it);
 
+            chunkVBOoperationsMutex_.lock();
+            chunkVBOoperationsWrite_->operator[](c->chunkPos()) = chunkVBOoperation::PUSH;
+            chunkVBOoperationsMutex_.unlock();
+
+        }
         *chunkMeshesWrite_ = *chunkMeshesUpdated_;
 
     }
@@ -2043,8 +2056,15 @@ namespace VoxelEng {
             while (priorityUpdatesRemaining_)
                 priorityUpdatesRemainingCV_.wait(priorityUpdatesLock);
 
-            if (!chunkInRenderDistance(it->first))
+            if (!chunkInRenderDistance(it->first)) {
+            
+                chunkVBOoperationsMutex_.lock();
+                chunkVBOoperationsWrite_->operator[](it->first) = chunkVBOoperation::FREE;
+                chunkVBOoperationsMutex_.unlock();
+
                 it = chunkMeshesUpdated_->erase(it);
+            
+            }
             else
                 it++;
 
@@ -2065,6 +2085,10 @@ namespace VoxelEng {
                     chunkMeshesUpdated_->operator[](c->chunkPos()) = data;
                 c->unlockSharedRenderingDataMutex();
 
+                chunkVBOoperationsMutex_.lock();
+                chunkVBOoperationsWrite_->operator[](c->chunkPos()) = chunkVBOoperation::PUSH;
+                chunkVBOoperationsMutex_.unlock();
+
                 it = newChunkMeshes_.erase(it);
 
             }
@@ -2083,6 +2107,11 @@ namespace VoxelEng {
         std::unordered_map<vec3, chunkRenderingData>* aux = chunkMeshesWrite_;
         chunkMeshesWrite_ = chunkMeshesRead_;
         chunkMeshesRead_ = aux;
+
+        chunkVBOoperationsRead_->clear(); // Rendering thread is assumed to be synchronised and waiting with the chunk management thread so this is safe.
+        std::unordered_map<vec3, chunkVBOoperation>* auxChunkVBOoperations = chunkVBOoperationsWrite_;
+        chunkVBOoperationsWrite_ = chunkVBOoperationsRead_;
+        chunkVBOoperationsRead_ = auxChunkVBOoperations;
     
     }
 
@@ -2589,6 +2618,10 @@ namespace VoxelEng {
                         
                             frontierIt_++;
                             unloadFrontierChunk(chunkPos);
+
+                            chunkVBOoperationsMutex_.lock();
+                            chunkVBOoperationsWrite_->operator[](chunkPos) = chunkVBOoperation::FREE;
+                            chunkVBOoperationsMutex_.unlock();
                         
                         }
                         else if 
@@ -2916,6 +2949,14 @@ namespace VoxelEng {
         if (chunkMeshesRead_)
             chunkMeshesRead_->clear();
 
+        chunkVBOoperationsMutex_.lock();
+        if (chunkVBOoperationsRead_)
+            chunkVBOoperationsRead_->clear();
+
+        if (chunkVBOoperationsWrite_)
+            chunkVBOoperationsWrite_->clear();
+        chunkVBOoperationsMutex_.unlock();
+
         chunksPool_.clear();
 
         priorityNewChunkMeshesMutex_.lock();
@@ -2989,6 +3030,22 @@ namespace VoxelEng {
             chunkMeshesRead_ = nullptr;
 
         }
+
+        chunkVBOoperationsMutex_.lock();
+        if (chunkVBOoperationsRead_) {
+
+            delete chunkVBOoperationsRead_;
+            chunkVBOoperationsRead_ = nullptr;
+
+        }
+
+        if (chunkVBOoperationsWrite_) {
+
+            delete chunkVBOoperationsWrite_;
+            chunkVBOoperationsWrite_ = nullptr;
+
+        }
+        chunkVBOoperationsMutex_.unlock();
 
         initialised_ = false;
         

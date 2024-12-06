@@ -418,7 +418,7 @@ namespace VoxelEng {
 
 	}
 
-	uint32_t encodeNormalIntoGL_INT_2_10_10_10_REV(float normalX, float normalY, float normalZ) {
+	uint32_t packNormalIntoGL_INT_2_10_10_10_REV(float normalX, float normalY, float normalZ) {
 
 		// Convert from [-1.0, 1.0] normal component range to [-512, 511] 10-bit range.
 		int32_t x = static_cast<int32_t>(normalX * 511.0f);

@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <Utilities/Logger/logger.h>
 
-
 namespace VoxelEng {
 
 	/////////////

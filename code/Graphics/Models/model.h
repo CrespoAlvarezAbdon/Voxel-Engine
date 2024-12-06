@@ -14,10 +14,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "../../vertex.h"
-#include "../../block.h"
-#include "../../definitions.h"
-#include "../../Graphics/transform.h"
+#include <Graphics/Vertex/vertex.h>
+#include <block.h>
+#include <definitions.h>
+#include <Graphics/transform.h>
 
 
 namespace VoxelEng {
@@ -34,10 +34,11 @@ namespace VoxelEng {
 	/////////////////////
 
 	/**
-	* @brief An entity's model is simply a ordered collection
+	* @brief A model is simply a ordered collection
 	* of vertices, so that the first one connects with the next, and
 	* that one with the next one, etc... in order for the engine
 	* to properly draw it.
+	* 
 	*/
 	typedef std::vector<vertex> model;
 
@@ -153,7 +154,7 @@ namespace VoxelEng {
 		*/
 
 		static bool initialised_;
-		static std::unordered_map<unsigned int, model*> models_; // RENOMBRAR ESTO COMO modelsVertices_ Y METER UN models_ QUE YA TENGA LOS MODELOS "BAKEADOS" Y METER MÉTODO REGISTER MODELO PARA TODOS CON UNA OPCION DE GUARDAR SUS VERTICES Y TRIANGULOS POR SEPARADO O SOLO SU MODELO BAKEADO O AMBAS COSAS.
+		static std::unordered_map<unsigned int, model*> models_;
 		static std::unordered_map<unsigned int, modelTriangles*> triangles_; // NOTE. If a model has a nullptr here, it means that no triangle indexing is used.
 		static std::unordered_map<unsigned int, modelNormals*> normals_;
 

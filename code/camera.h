@@ -9,13 +9,13 @@
 #ifndef _VOXELENG_CAMERA_
 #define _VOXELENG_CAMERA_
 
-#include "chunk.h"
-#include "definitions.h"
-#include "gameWindow.h"
-#include "quaternion.h"
-#include "vec.h"
-#include "Graphics/transform.h"
-#include "Graphics/Frustum/frustum.h"
+#include <chunk.h>
+#include <definitions.h>
+#include <gameWindow.h>
+#include <quaternion.h>
+#include <vec.h>
+#include <Graphics/transform.h>
+#include <Graphics/Frustum/frustum.h>
 
 #if GRAPHICS_API == OPENGL
 

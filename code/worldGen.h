@@ -15,8 +15,9 @@
 #include <atomic>
 #include <random>
 #include <limits>
-#include "chunk.h"
-#include "definitions.h"
+
+#include <chunk.h>
+#include <definitions.h>
 #include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {

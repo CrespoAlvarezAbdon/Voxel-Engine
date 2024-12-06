@@ -3,7 +3,6 @@
 
 #include <unordered_map>
 
-
 namespace VoxelEng {
 
 	/////////////////////////

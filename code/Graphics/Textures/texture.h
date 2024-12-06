@@ -12,7 +12,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include "../graphics.h"
+#include <Graphics/graphics.h>
 
 #if GRAPHICS_API == OPENGL
 

@@ -11,7 +11,7 @@
 #define _VOXELENG_VERTEXBUFFERLAYOUT_
 
 #include <vector>
-#include "../../../definitions.h"
+#include <definitions.h>
 
 #if GRAPHICS_API == OPENGL
 

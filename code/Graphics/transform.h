@@ -10,8 +10,8 @@
 #define _VOXELENG_TRANSFORM_
 
 #include <cmath>
-#include "../definitions.h"
-#include "../vec.h"
+#include <definitions.h>
+#include <vec.h>
 
 namespace VoxelEng {
 

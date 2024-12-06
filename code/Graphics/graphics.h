@@ -19,11 +19,12 @@
 #include <vector>
 #include <batch.h>
 #include <indexBuffer.h>
-#include <vertexArray.h>
-#include <vertexBuffer.h>
 #include <gameWindow.h>
 #include <Graphics/Shaders/shader.h>
 #include <Graphics/UBOs/UBOs.h>
+
+#include <Graphics/Vertex/VertexArray/vertexArray.h>
+#include <Graphics/Vertex/VertexBuffer/vertexBuffer.h>
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
 
 
@@ -94,6 +95,11 @@ namespace VoxelEng {
 		static const vertexBuffer& cVbo(const std::string& vboName);
 
 		/**
+		* @brief Get a previously registered vertex buffer.
+		*/
+		static const vertexBuffer* cPVbo(const std::string& vboName);
+
+		/**
 		* @brief Get a previously registered vertex array.
 		*/
 		static const vertexArray& cVao(const std::string& vboName);
@@ -135,6 +141,11 @@ namespace VoxelEng {
 		* @brief Get a previously registered vertex buffer.
 		*/
 		static vertexBuffer& vbo(const std::string& vboName);
+
+		/**
+		* @brief Get a previously registered vertex buffer.
+		*/
+		static vertexBuffer* pVbo(const std::string& vboName);
 
 		/**
 		* @brief Get a previously registered vertex array.
@@ -216,7 +227,7 @@ namespace VoxelEng {
 
 		static bool initialised_;
 		static window* mainWindow_;
-		static std::unordered_map<std::string, vertexBuffer> vbos_;
+		static std::unordered_map<std::string, vertexBuffer*> vbos_;
 		static std::unordered_map<std::string, vertexArray> vaos_;
 		static std::unordered_map<std::string, vertexBufferLayout> vboLayouts_;
 		static shader* shadowDepthShader_;
@@ -245,6 +256,12 @@ namespace VoxelEng {
 	
 	}
 
+	inline const vertexBuffer& graphics::cVbo(const std::string& vboName) {
+
+		return *cPVbo(vboName);
+
+	}
+
 	inline const shader& graphics::cOpaqueShader() {
 
 		return opaqueShader();
@@ -266,6 +283,12 @@ namespace VoxelEng {
 	inline const shader& graphics::cScreenShader() {
 
 		return screenShader();
+
+	}
+
+	inline vertexBuffer& graphics::vbo(const std::string& vboName) {
+
+		return *pVbo(vboName);
 
 	}
 

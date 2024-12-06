@@ -20,12 +20,13 @@
 #include <unordered_set>
 #include <fstream>
 #include <filesystem>
-#include "chunk.h"
-#include "definitions.h"
-#include "entity.h"
-#include "game.h"
-#include "time.h"
-#include "worldGen.h"
+
+#include <chunk.h>
+#include <definitions.h>
+#include <entity.h>
+#include <game.h>
+#include <worldGen.h>
+#include <Time/time.h>
 #include <Utilities/Logger/logger.h>
 
 

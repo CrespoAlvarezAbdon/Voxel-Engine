@@ -52,6 +52,13 @@ namespace VoxelEng {
 		void prepareDynamic(long long size);
 
 		/**
+		* @brief Push the given data next to the last pushed portion of data.
+		* @param data Pointer to the begininng of the given data to push.
+		* @param size The given data's size.
+		*/
+		void pushDynamicData(const void* data, long long size);
+
+		/**
 		* @brief Replaces the vertex's data with new one.
 		* WARNING. Must be called in a thread with valid graphics API context.
 		* This vertex buffer must have been initialized as a dynamic geometry
@@ -79,11 +86,17 @@ namespace VoxelEng {
 		* WARNING. Must be called in a thread with valid graphics API context.
 		*/
 		~vertexBuffer();
+
+	protected:
+
+		long long lastPushedBytePos_;
+		long long maxSize_;
+
 		
 	private:
 
-		unsigned int rendererID_; // TODO. POSIBLE ERROR AQUI POR CAMBIAR DE GLUINT?
-
+		unsigned int rendererID_;
+		
 	};
 
 }

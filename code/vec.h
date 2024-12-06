@@ -9,14 +9,17 @@
 #ifndef _VOXELENG_VEC_
 #define _VOXELENG_VEC_
 
+#include <unordered_map>
 #include <string>
-#include "definitions.h"
+#include <definitions.h>
 
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <hash.hpp>
 
 #endif
 
@@ -36,7 +39,6 @@ namespace VoxelEng {
 
 
 	#endif
-
 
 	// Constants.
 

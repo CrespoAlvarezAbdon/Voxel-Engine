@@ -10,6 +10,7 @@
 #include <string>
 #include <filesystem>
 #include <chunk.h>
+#include <utilities.h>
 #include <Graphics/Textures/texture.h>
 #include <Utilities/Logger/logger.h>
 
@@ -58,6 +59,7 @@ namespace VoxelEng {
             model* emptyVertices = new model{};
             modelTriangles* emptyTriangles = new modelTriangles{};
             modelNormals* emptyNormals = new modelNormals{};
+
 
             // Block model.
             model* blockVertices = new model {

@@ -14,19 +14,22 @@
 #include <condition_variable>
 #include <thread>
 #include <mutex>
-#include "chunk.h"
-#include "definitions.h"
-#include "gameWindow.h"
-#include "indexBuffer.h"
-#include "vertexBuffer.h"
-#include "vertexArray.h"
-#include <Utilities/Logger/logger.h>
-#include "world.h"
-#include "vec.h"
+#include <unordered_map>
+#include <unordered_set>
+
+#include <chunk.h>
+#include <definitions.h>
+#include <gameWindow.h>
+#include <indexBuffer.h>
+#include <world.h>
+#include <vec.h>
 #include <Graphics/framebuffer.h>
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
 #include <Graphics/SSBO/SSBO.h>
 #include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
+#include <Graphics/Vertex/VertexArray/vertexArray.h>
+#include <Graphics/Vertex/VertexBuffer/vertexBuffer.h>
+#include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {
 
@@ -227,7 +230,9 @@ namespace VoxelEng {
         static camera* playerCamera_;
 
         static texture* blockTextureAtlas_;
-        static std::unordered_map<vec3, chunkRenderingData> const* chunksToDraw_;
+        static std::unordered_map<vec3, chunkRenderingData> const * chunksRenderingData_;
+        static std::unordered_map<vec3, chunkVBOoperation> const * chunksVBOoperations_;
+
         static const std::vector<model>* batchesToDraw_;
 
         static shader* shadowDepthShader_;
@@ -236,7 +241,7 @@ namespace VoxelEng {
         static shader* compositeShader_;
         static shader* screenShader_;
 
-        static vertexBuffer* chunksVbo_;
+        static chunkVertexBuffer* chunksVbo_;
         static vertexBuffer* entitiesVbo_;
         static vertexBuffer* screenVbo_;
         static vertexArray* vao_;
