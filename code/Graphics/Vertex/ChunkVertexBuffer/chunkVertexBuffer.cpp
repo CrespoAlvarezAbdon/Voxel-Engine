@@ -50,8 +50,12 @@ namespace VoxelEng {
                     chunkVertexBufferZones_[chunkPos] = { freedZonesBySize_.begin()->startPos , size };
                     glBufferSubData(GL_ARRAY_BUFFER, freedZonesBySize_.begin()->startPos, size, data);
 
-                    freedZonesBySize_.erase(freedZonesBySize_.begin());
                     freedZones_.erase(freedZonesBySize_.begin());
+                    freedZonesBySize_.erase(freedZonesBySize_.begin());
+
+                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
+                    //if (freedZonesBySize_.size() != freedZones_.size())
+                        //logger::errorLog("Sizes cannot be different!");
 
                 }
                 else { // size < freedZonesBySize_.begin()->size
@@ -62,11 +66,19 @@ namespace VoxelEng {
                     freedZonesBySize::iterator itSize = freedZonesBySize_.insert({ freedZonesBySize_.begin()->startPos + size, freedZonesBySize_.begin()->size - size  }).first;
                     auto itDebug = freedZones_.insert(itSize);
 
-                    if (itDebug.first.operator*().operator*().size < 0)
-                        throw std::runtime_error("Size cannot be negative");
+                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
+                    //if (freedZonesBySize_.size() != freedZones_.size())
+                        //logger::errorLog("Sizes cannot be different!");
 
-                    freedZonesBySize_.erase(freedZonesBySize_.begin());
+                    //if (itDebug.first.operator*().operator*().size < 0)
+                        //throw std::runtime_error("Size cannot be negative");
+
                     freedZones_.erase(freedZonesBySize_.begin());
+                    freedZonesBySize_.erase(freedZonesBySize_.begin());
+
+                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
+                    //if (freedZonesBySize_.size() != freedZones_.size())
+                        //logger::errorLog("Sizes cannot be different!");
 
                 }
 
@@ -82,8 +94,12 @@ namespace VoxelEng {
                 freedZonesBySize::iterator itSize = freedZonesBySize_.insert({ preexistingZone.startPos + size, preexistingZone.size - size }).first;
                 auto itDebug = freedZones_.insert(itSize);
 
-                if (itDebug.first.operator*().operator*().size < 0)
-                    throw std::runtime_error("Size cannot be negative");
+                //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
+                //if (freedZonesBySize_.size() != freedZones_.size())
+                    //logger::errorLog("Sizes cannot be different!");
+
+                //if (itDebug.first.operator*().operator*().size < 0)
+                    //throw std::runtime_error("Size cannot be negative");
 
                 // Update buffer zone.
                 preexistingZone.size = size;
@@ -130,8 +146,10 @@ namespace VoxelEng {
                             preexistingZone.startPos = freedZonesBySize_.begin()->startPos;
                             preexistingZone.size = size;
 
-                            freedZonesBySize_.erase(freedZonesBySize_.begin());
                             freedZones_.erase(freedZonesBySize_.begin());
+                            freedZonesBySize_.erase(freedZonesBySize_.begin());
+
+                            //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
 
                         }
                         else { // size < freedZonesBySize_.begin()->size
@@ -142,11 +160,15 @@ namespace VoxelEng {
                             freedZonesBySize::iterator itSize = freedZonesBySize_.insert({ freedZonesBySize_.begin()->startPos + size, freedZonesBySize_.begin()->size - size }).first;
                             auto itDebug = freedZones_.insert(itSize);
 
-                            if (itDebug.first.operator*().operator*().size < 0)
-                                throw std::runtime_error("Size cannot be negative");
+                            //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
 
-                            freedZonesBySize_.erase(freedZonesBySize_.begin());
+                            //if (itDebug.first.operator*().operator*().size < 0)
+                                //throw std::runtime_error("Size cannot be negative");
+
                             freedZones_.erase(freedZonesBySize_.begin());
+                            freedZonesBySize_.erase(freedZonesBySize_.begin());
+
+                            //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
 
                         }
                     
@@ -168,11 +190,15 @@ namespace VoxelEng {
             // ME HA SALIDO QUE FREEDZONESBYSIZE Y FREEDZONES TIENEN DISTINTOS TAMAÑOS. ASI QUE EN ALGÚN MOMENTO SOLO SE ESTÁN INSERTANDO O BORRANDO EN UNO SOLO DE LOS DOS.
             freedZonesBySize::iterator itSize = freedZonesBySize_.insert(chunkVertexBufferZones_[chunkPos]).first;
             freedZones::iterator it = freedZones_.insert(itSize).first;
-            if (it.operator*().operator*().size < 0)
-                throw std::runtime_error("Size cannot be negative");
+            //if (it.operator*().operator*().size < 0)
+                //throw std::runtime_error("Size cannot be negative");
             chunkVertexBufferZones_.erase(chunkPos);
 
-            logger::debugLog("flag 1");
+            //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
+            //if (freedZonesBySize_.size() != freedZones_.size())
+                //logger::errorLog("Sizes cannot be different!");
+
+            //logger::debugLog("flag 1");
 
             // Merge free zones if possible to avoid memory fragmentation.
 
@@ -185,21 +211,29 @@ namespace VoxelEng {
 
                     chunkVertexBufferZone mergedZone = { itPrevious->operator->()->startPos, itPrevious->operator->()->size + it->operator->()->size };
                     
-                    if (mergedZone.size < 0)
-                        throw std::runtime_error("Size cannot be negative");
+                    //if (mergedZone.size < 0)
+                        //throw std::runtime_error("Size cannot be negative");
                     
                     freedZonesBySize_.erase(*it);
                     freedZonesBySize_.erase(*itPrevious);
                     freedZones_.erase(it);
                     freedZones_.erase(itPrevious);
 
+                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
+                    //if (freedZonesBySize_.size() != freedZones_.size())
+                        //logger::errorLog("Sizes cannot be different!");
+
                     itSize = freedZonesBySize_.insert(mergedZone).first;
                     it = freedZones_.insert(itSize).first;
 
-                    if (it.operator*().operator*().size < 0)
-                        throw std::runtime_error("Size cannot be negative");
+                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
+                    //if (freedZonesBySize_.size() != freedZones_.size())
+                        //logger::errorLog("Sizes cannot be different!");
 
-                    logger::debugLog("flag 2");
+                    //if (it.operator*().operator*().size < 0)
+                        //throw std::runtime_error("Size cannot be negative");
+
+                    //logger::debugLog("flag 2");
 
                 }
 
@@ -214,21 +248,29 @@ namespace VoxelEng {
 
                     chunkVertexBufferZone mergedZone = { it->operator->()->startPos, it->operator->()->size + itNext->operator->()->size };
                     
-                    if (mergedZone.size < 0)
-                        throw std::runtime_error("Size cannot be negative");
+                    //if (mergedZone.size < 0)
+                        //throw std::runtime_error("Size cannot be negative");
 
-                    logger::debugLog("flag 3");
+                    //logger::debugLog("flag 3");
                     
                     freedZonesBySize_.erase(*it);
                     freedZonesBySize_.erase(*itNext);
                     freedZones_.erase(it);
                     freedZones_.erase(itNext);
 
+                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
+                    //if (freedZonesBySize_.size() != freedZones_.size())
+                        //logger::errorLog("Sizes cannot be different!");
+
                     itSize = freedZonesBySize_.insert(mergedZone).first;
                     freedZones_.insert(itSize).first;
 
-                    if (it.operator*().operator*().size < 0)
-                        throw std::runtime_error("Size cannot be negative");
+                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
+                    //if (freedZonesBySize_.size() != freedZones_.size())
+                        //logger::errorLog("Sizes cannot be different!");
+
+                    //if (it.operator*().operator*().size < 0)
+                        //throw std::runtime_error("Size cannot be negative");
 
                 }
 

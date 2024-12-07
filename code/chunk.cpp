@@ -2036,10 +2036,6 @@ namespace VoxelEng {
 
             it = priorityNewChunkMeshes_.erase(it);
 
-            chunkVBOoperationsMutex_.lock();
-            chunkVBOoperationsWrite_->operator[](c->chunkPos()) = chunkVBOoperation::PUSH;
-            chunkVBOoperationsMutex_.unlock();
-
         }
         *chunkMeshesWrite_ = *chunkMeshesUpdated_;
 
@@ -2081,13 +2077,18 @@ namespace VoxelEng {
 
                 c->lockSharedRenderingDataMutex();
                 chunkRenderingData& data = c->renderingData();
-                if (data.totalSize)
+                if (data.totalSize) {
+                
                     chunkMeshesUpdated_->operator[](c->chunkPos()) = data;
-                c->unlockSharedRenderingDataMutex();
 
-                chunkVBOoperationsMutex_.lock();
-                chunkVBOoperationsWrite_->operator[](c->chunkPos()) = chunkVBOoperation::PUSH;
-                chunkVBOoperationsMutex_.unlock();
+                    chunkVBOoperationsMutex_.lock();
+                    chunkVBOoperationsWrite_->operator[](c->chunkPos()) = chunkVBOoperation::PUSH;
+                    chunkVBOoperationsMutex_.unlock();
+
+                    logger::debugLog("Chunkpos " + std::to_string(c->chunkPos()) + " with data " + std::to_string(data.totalSize));
+                
+                }
+                c->unlockSharedRenderingDataMutex();
 
                 it = newChunkMeshes_.erase(it);
 
