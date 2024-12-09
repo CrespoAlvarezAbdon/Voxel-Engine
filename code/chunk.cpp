@@ -2031,7 +2031,18 @@ namespace VoxelEng {
 
             c = *it;     
             c->lockSharedRenderingDataMutex();
-            chunkMeshesUpdated_->operator[](c->chunkPos()) = c->renderingData();
+            chunkRenderingData& data = c->renderingData();
+            if (data.totalSize) {
+
+                chunkMeshesUpdated_->operator[](c->chunkPos()) = data;
+
+                chunkVBOoperationsMutex_.lock();
+                chunkVBOoperationsWrite_->operator[](c->chunkPos()) = chunkVBOoperation::PUSH;
+                chunkVBOoperationsMutex_.unlock();
+
+                //logger::debugLog("Chunkpos " + std::to_string(c->chunkPos()) + " with PRIORITY data " + std::to_string(data.totalSize));
+
+            }
             c->unlockSharedRenderingDataMutex();
 
             it = priorityNewChunkMeshes_.erase(it);
@@ -2085,7 +2096,7 @@ namespace VoxelEng {
                     chunkVBOoperationsWrite_->operator[](c->chunkPos()) = chunkVBOoperation::PUSH;
                     chunkVBOoperationsMutex_.unlock();
 
-                    logger::debugLog("Chunkpos " + std::to_string(c->chunkPos()) + " with data " + std::to_string(data.totalSize));
+                    //logger::debugLog("Chunkpos " + std::to_string(c->chunkPos()) + " with data " + std::to_string(data.totalSize));
                 
                 }
                 c->unlockSharedRenderingDataMutex();

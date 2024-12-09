@@ -709,6 +709,7 @@ namespace VoxelEng {
                     // TODO. METER LOS CAMBIOS QUE METAS EN EL DRAWABLES CHUNKSREAD TAMBIEN AQUI EN LA VERSIÓN PRIORITY.
                     chunkManager::swapChunkMeshesBuffers();
                     chunksRenderingData_ = chunkManager::drawableChunksRead();
+                    chunksVBOoperations_ = chunkManager::chunkVBOoperationsRead();
 
                     chunkManager::priorityManagerThreadMutex().unlock();
                     chunkManager::priorityManagerThreadCV().notify_one();
