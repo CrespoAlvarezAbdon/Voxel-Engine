@@ -305,7 +305,7 @@ namespace VoxelEng {
             models::loadCustomModel("resources/Models/Warden.obj", 2);
 
             // Create framebuffers.
-            shadowFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), { textureType::COLOR, textureType::DEPTH });
+            shadowFB_ = new framebuffer(4096, 4096, { textureType::COLOR, textureType::DEPTH });
             opaqueFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR, textureType::DEPTH_AND_STENCIL});
             translucidFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR, textureType::COLOR});
 
@@ -315,7 +315,7 @@ namespace VoxelEng {
             screenFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR});
 
             // Load texture atlas and configure it.
-            blockTextureAtlas_ = new texture("resources/Textures/atlas.png");
+            blockTextureAtlas_ = new texture("resources/Textures/atlasMinecraft.png");
             texture::setBlockAtlas(*blockTextureAtlas_);
             texture::setBlockAtlasResolution(16);
 
@@ -666,8 +666,6 @@ namespace VoxelEng {
             blockViewDir dirZ = blockViewDir::NONE;
 
             // Spawn test entities here.
-
-            bool once = false;
             
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //TODO. ADD THIS AS AN OPTION.
             while (loopSelection_ == engineMode::EDITLEVEL || loopSelection_ == engineMode::PLAYINGRECORD) {
@@ -679,9 +677,8 @@ namespace VoxelEng {
                 opaqueFB_->clearAllTextures();
 
                 opaqueShader_->bind();
-                opaqueShader_->setUniform1i("u_textureAtlas", 0);
                 opaqueShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
-                blockTextureAtlas_->bind();
+                blockTextureAtlas_->bind(0);
 
                 // The window size callback by GLFW gets called every time the user is resizing the window so the heavy resize processing is done here
                 // after the player has stopped resizing the window.
@@ -772,21 +769,23 @@ namespace VoxelEng {
                 */
 
                 // Render the shadowmaps.
+                glViewport(0, 0, 4096, 4096);
                 shadowFB_->bind();
-                //if(once)
-                    glClear(GL_DEPTH_BUFFER_BIT);
+                glClear(GL_DEPTH_BUFFER_BIT);
                 {
+                    // CHUNK_SIZE * 20 * -1
                     shadowDepthShader_->bind();
                     // TODO. MOVE THIS TO A PROPER PLACE.
-                    // Set the sun's directional light MVP matrix..
+                    // Set the sun's directional light MVP matrix.
                     SSBO<lightInstance>* directionalLightsInstances = registries::get("SSBOs")->pointer<registry<std::string, var>>()->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
                     lightInstance& instance = directionalLightsInstances->get(0);
                     instance.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, 0.0f, 0.0f);
                     instance.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
                     //instance.dir = vec4(0.0f, -1.0f, 0.0f, 0.0f); // TODO. ESTA DIRECCIÓN NO FUNCIONA
 
-                    glm::mat4 view = glm::lookAt(instance.pos, instance.pos + instance.dir, vec3FixedUp);
-                    instance.MVP = playerCamera_->projectionMatrix() * view;
+                    glm::mat4 view = glm::lookAt(instance.pos, vec3Zero, vec3FixedUp);
+                    glm::mat4 proj = glm::ortho(-320.0f, 320.0f, -384.0f, 384.0f, zNear_, zFar_);
+                    instance.MVP = proj * view;
                     directionalLightsInstances->reuploadElement(0);
                 }
                 if (chunksRenderingData_) {
@@ -803,8 +802,7 @@ namespace VoxelEng {
 
                 }
                 shadowFB_->unbind();
-
-                once = false;
+                glViewport(0, 0, mainWindow_->width(), mainWindow_->height());
 
                 // Terrain rendering.
                 opaqueFB_->bind();
@@ -854,7 +852,6 @@ namespace VoxelEng {
                     logger::debugLog(std::to_string(1000.0 / nFramesDrawn) + "ms/frame");
                     nFramesDrawn = 0;
                     lastSecondTime = glfwGetTime();
-                    once = true;
 
                 }
 

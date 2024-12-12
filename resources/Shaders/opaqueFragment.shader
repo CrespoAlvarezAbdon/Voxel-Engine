@@ -2,6 +2,7 @@
 
 layout(location = 0) out vec4 color; // Final result.
 
+layout(binding = 0) uniform sampler2D textureAtlas;
 layout(binding = 1) uniform sampler2D depthMap;
 
 #define MAX_MATERIALS 256 // TODO. MAKE THIS DYNAMIC.
@@ -15,10 +16,10 @@ in vec3 v_pos;
 in vec4 v_color;
 in vec4 v_LightSpacePos;
 flat in int v_materialIndex;
+flat in vec3 v_globalPos;
 
 // Uniforms.
 uniform vec3 u_viewPos;
-uniform sampler2D u_textureAtlas;
 uniform int u_renderMode;
 uniform int u_useComplexLighting;
 uniform int u_NPointLights;
@@ -148,33 +149,91 @@ vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 
 
 }
 
-float ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance) {
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance)
+{
+    vec2 texelSize = 1.0 / textureSize(depthMap, 0);
 
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    projCoords = projCoords * 0.5 + 0.5; 
-    float sampledShadowDepth = texture(depthMap, projCoords.xy).r;  
-    float shadowDepth = sampledShadowDepth;
-    float currentDepth = projCoords.z;
-    
-    float s = 1.0;
-    float diff = abs(currentDepth - shadowDepth);
-    float shadowThreshold = 0.0002;  // Larger value gives a wider transition zone
-    float shadowSoftness = 0.05;     // Determines how dark the shadow gets
+    projCoords = projCoords * 0.5 + 0.5;
 
-    // Interpolate shadow factor based on difference within the threshold
-    if (diff < shadowThreshold) {
-        // Smoothly interpolate 's' from fully lit to a shadow based on 'diff'
-        s = mix(1.0, shadowSoftness, diff / shadowThreshold);
-    } else if (currentDepth > shadowDepth) {
-        // Fully shadowed area beyond the transition zone
-        s = shadowSoftness;
-    }
+    float closestDepth = texture(depthMap, projCoords.xy).r; 
+    float currentDepth = projCoords.z;
+
+    vec3 normal = normalize(n);
+    vec3 lightDir = normalize(lightInstance.pos - v_pos);
+    float lightDist = length(lightInstance.pos - v_pos);
+    float depthBias = 0.000005 * (1.0 - dot(normal, lightDir));
+    float bias = max(depthBias * smoothstep(0.0, 1.0, projCoords.z), 0.000001);
+
+    float s = currentDepth > closestDepth  ? 0.0 : 1.0;
 
     // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
     if(projCoords.z > 1.0)
         s = 1.0;
 
+    if(s == 0.0)
+    {
+        closestDepth = texture(depthMap, projCoords.xy + vec2(1, 0) * texelSize).r; 
+        float s2 = currentDepth - 0.0001 > closestDepth  ? 0.0 : 1.0;
+        if (s != s2)
+        {
+            s = 1.0;
+        }
+    }
+        
     return s;
+
+    // COSAS A INTENTAR.
+    // 1º. HACER UN PCF PERO DE 9X9 O 25X25 Y QUE EN VEZ DE ACUMULAR GUARDE TODOS LOS VALORES Y SI TODOS NO SON IGUALES PONER S A 1.
+    // 2º. EL METER EL PASS ADICIONAL ENTRE SHADOW PASS Y OPAQUE PASS PARA QUE HAYA SMOOTH LIGHTING OFF DE MINECRAFT PERO EN SHADERS.
+   
+
+    // PCF
+    s = 1.0;
+    
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            s += currentDepth > pcfDepth  ? 0.0 : 1.0;        
+        }    
+    }
+    s /= 9.0;
+
+}
+
+float ShadowCalculation2(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance)
+{
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+
+    float closestDepth = texture(depthMap, projCoords.xy).r; 
+    float currentDepth = projCoords.z;
+
+    vec3 normal = normalize(n);
+    vec3 lightDir = normalize(lightInstance.pos - v_pos);
+    // check whether current frag pos is in shadow
+    float s = currentDepth - 0.001 > closestDepth  ? 0.0 : 1.0;
+
+    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+    if(projCoords.z > 1.0)
+        s = 1.0;
+        
+    return s;
+
+    // PCF
+    s = 0.0;
+    vec2 texelSize = 1.0 / textureSize(depthMap, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            s += currentDepth - 0.001 > pcfDepth  ? 0.0 : 1.0;        
+        }    
+    }
+    s /= 9.0;
 
 }
 
@@ -194,14 +253,14 @@ void main() {
 
 		vec3 norm = normalize(cross(dFdx(v_pos), dFdy(v_pos)));
 		vec3 viewDir = normalize(u_viewPos - v_pos);
-		vec4 textureColor = texture(u_textureAtlas, v_TexCoord);
+		vec4 textureColor = texture(textureAtlas, v_TexCoord);
 		if (textureColor.a < 0.1) // Discard transparent fragments.
 			discard;
 
         color = vec4(0.0);
 
         // Apply shadows.
-        shadow = ShadowCalculation(v_LightSpacePos, norm, lightInstance);
+        shadow = ShadowCalculation2(v_LightSpacePos, norm, lightInstance);
 
 		// Apply directional lights.
 	    color += CalcDirLight(light, lightInstance, norm, viewDir, material) * u_useComplexLighting;
@@ -226,7 +285,7 @@ void main() {
 		/*
 		2D rendering
 		*/
-		color = texture(u_textureAtlas, v_TexCoord);
+		color = texture(textureAtlas, v_TexCoord);
 	
 	}
 

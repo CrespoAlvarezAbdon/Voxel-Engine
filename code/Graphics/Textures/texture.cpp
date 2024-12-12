@@ -133,7 +133,7 @@ namespace VoxelEng {
 				// If the last parameter is nullptr, 
 				// we are only allocating space in OpenGL,
 				// not providing it any data.
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 
 				glBindTexture(GL_TEXTURE_2D, 0);
 

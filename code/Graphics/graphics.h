@@ -34,7 +34,7 @@ namespace VoxelEng {
 	//Enums.//
 	//////////
 
-	enum class textureType { NONE = 0, COLOR, DEPTH_AND_STENCIL, REVEAL, IMAGE, DEPTH };
+	enum class textureType { NONE = 0, COLOR, DEPTH_AND_STENCIL, REVEAL, IMAGE, DEPTH, FLOAT };
 
 
 	////////////

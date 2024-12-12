@@ -34,7 +34,8 @@ namespace VoxelEng {
 		float textureCoords[2] = {0,0};
 		unsigned char color[4] = {255,255,255,255}; // RGBA stored in 32-bits.
 		unsigned char additionalData[4] = {0,0,0,0}; // First byte is material index.
-		normalVec normals;
+		//normalVec normals;
+		float globalPos[3] = { 0,0,0 };
 
 	};
 

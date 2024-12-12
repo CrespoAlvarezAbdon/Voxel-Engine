@@ -452,6 +452,10 @@ namespace VoxelEng {
                             block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
                             const varRef& emittedLight = b.emittedLight();
 
+                            aux.globalPos[0] =  x;
+                            aux.globalPos[1] =  y;
+                            aux.globalPos[2] =  z;
+
                             // Add block's light if required.
                             if (!emittedLight.isNull()) {
 
@@ -831,6 +835,10 @@ namespace VoxelEng {
                 for (x = 0; x < CHUNK_SIZE; x++)
                     for (y = 0; y < CHUNK_SIZE; y++) {
 
+                        aux.globalPos[0] = chunkPos_.x * CHUNK_SIZE + x;
+                        aux.globalPos[1] = chunkPos_.y * CHUNK_SIZE + y;
+                        aux.globalPos[2] = chunkPos_.z * CHUNK_SIZE + CHUNK_SIZE_LIMIT;
+
                         // LOD 1.
                         localID = blocksLocalIDs[x][y][CHUNK_SIZE_LIMIT];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
@@ -968,6 +976,10 @@ namespace VoxelEng {
                 for (x = 0; x < CHUNK_SIZE; x++)
                     for (y = 0; y < CHUNK_SIZE; y++) {
 
+                        aux.globalPos[0] = chunkPos_.x * CHUNK_SIZE + x;
+                        aux.globalPos[1] = chunkPos_.y * CHUNK_SIZE + y;
+                        aux.globalPos[2] = chunkPos_.z * CHUNK_SIZE + 0;
+
                         localID = blocksLocalIDs[x][y][0];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
@@ -1097,6 +1109,10 @@ namespace VoxelEng {
 
                 for (x = 0; x < CHUNK_SIZE; x++)
                     for (z = 0; z < CHUNK_SIZE; z++) {
+
+                        aux.globalPos[0] = chunkPos_.x * CHUNK_SIZE + x;
+                        aux.globalPos[1] = chunkPos_.y * CHUNK_SIZE + CHUNK_SIZE_LIMIT;
+                        aux.globalPos[2] = chunkPos_.z * CHUNK_SIZE + z;
 
                         // LOD 1.
                         localID = blocksLocalIDs[x][CHUNK_SIZE_LIMIT][z];
@@ -1233,6 +1249,10 @@ namespace VoxelEng {
                 for (x = 0; x < CHUNK_SIZE; x++)
                     for (z = 0; z < CHUNK_SIZE; z++) {
 
+                        aux.globalPos[0] = chunkPos_.x * CHUNK_SIZE + x;
+                        aux.globalPos[1] = chunkPos_.y * CHUNK_SIZE + 0;
+                        aux.globalPos[2] = chunkPos_.z * CHUNK_SIZE + z;
+
                         localID = blocksLocalIDs[x][0][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
@@ -1362,6 +1382,10 @@ namespace VoxelEng {
 
                 for (y = 0; y < CHUNK_SIZE; y++)
                     for (z = 0; z < CHUNK_SIZE; z++) {
+
+                        aux.globalPos[0] = chunkPos_.x * CHUNK_SIZE + CHUNK_SIZE_LIMIT;
+                        aux.globalPos[1] = chunkPos_.y * CHUNK_SIZE + y;
+                        aux.globalPos[2] = chunkPos_.z * CHUNK_SIZE + z;
 
                         // LOD 1.
                         localID = blocksLocalIDs[CHUNK_SIZE_LIMIT][y][z];
@@ -1497,6 +1521,10 @@ namespace VoxelEng {
 
                 for (y = 0; y < CHUNK_SIZE; y++)
                     for (z = 0; z < CHUNK_SIZE; z++) {
+
+                        aux.globalPos[0] = chunkPos_.x * CHUNK_SIZE + 0;
+                        aux.globalPos[1] = chunkPos_.y * CHUNK_SIZE + y;
+                        aux.globalPos[2] = chunkPos_.z * CHUNK_SIZE + z;
 
                         localID = blocksLocalIDs[0][y][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
