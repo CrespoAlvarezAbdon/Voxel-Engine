@@ -1,22 +1,24 @@
 #include "chunkVertexBuffer.h"
 
 #include <stdexcept>
-
 #include "Utilities/Logger/logger.h"
 
 namespace VoxelEng {
 
-    const chunkVertexBufferZone& chunkVertexBuffer::bufferZone(const vec3& chunkPos) {
+    const chunkVertexBufferZone& chunkVertexBuffer::bufferZone(const vec3& chunkPos, bool isTranslucidGeometry) {
 
-        if (chunkVertexBufferZones_.contains(chunkPos))
-            return chunkVertexBufferZones_.at(chunkPos);
+        std::unordered_map<vec3, chunkVertexBufferZone>& bufferZones =
+            isTranslucidGeometry ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
+
+        if (bufferZones.contains(chunkPos))
+            return bufferZones.at(chunkPos);
         else
-            throw std::runtime_error("There is no chunk with chunk position " + std::to_string(chunkPos)
-                + " with an associated buffer zone");
+            throw std::runtime_error("There is no chunk position " + std::to_string(chunkPos)
+                + " with an associated buffer zone for " + (isTranslucidGeometry ? "translucid" : "opaque/transparent") + " geometry");
 
     }
 
-    void chunkVertexBuffer::pushDynamicData(const vec3& chunkPos, const void* data, long long size) {
+    void chunkVertexBuffer::pushDynamicData(const vec3& chunkPos, const void* data, long long size, bool isTranslucidGeometry) {
 
         if (size <= 0)
             throw std::runtime_error("Size of the data to push cannot be equal to or lower than 0");
@@ -24,8 +26,11 @@ namespace VoxelEng {
         if (data == nullptr)
             throw std::runtime_error("The provided pointer for the data to be pushed cannot be null");
 
-        auto itPreexistingZone = chunkVertexBufferZones_.find(chunkPos);
-        if (itPreexistingZone == chunkVertexBufferZones_.end()) {
+        std::unordered_map<vec3, chunkVertexBufferZone>& bufferZones = 
+            isTranslucidGeometry ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
+
+        auto itPreexistingZone = bufferZones.find(chunkPos);
+        if (itPreexistingZone == bufferZones.end()) {
 
             // Use freed zone if possible.
             if (freedZonesBySize_.begin() == freedZonesBySize_.end() || size > freedZonesBySize_.begin()->size) {
@@ -33,7 +38,7 @@ namespace VoxelEng {
                 // There is no freed zone with size greater than or equal to the required by this chunk's vertex data.
                 if (lastPushedBytePos_ + size < maxSize_) {
 
-                    chunkVertexBufferZones_[chunkPos] = { lastPushedBytePos_ , size };
+                    bufferZones[chunkPos] = { lastPushedBytePos_ , size };
                     glBufferSubData(GL_ARRAY_BUFFER, lastPushedBytePos_, size, data);
                     lastPushedBytePos_ += size;
 
@@ -47,7 +52,7 @@ namespace VoxelEng {
 
                 if (size == freedZonesBySize_.begin()->size) {
 
-                    chunkVertexBufferZones_[chunkPos] = { freedZonesBySize_.begin()->startPos , size };
+                    bufferZones[chunkPos] = { freedZonesBySize_.begin()->startPos , size };
                     glBufferSubData(GL_ARRAY_BUFFER, freedZonesBySize_.begin()->startPos, size, data);
 
                     freedZones_.erase(freedZonesBySize_.begin());
@@ -60,10 +65,11 @@ namespace VoxelEng {
                 }
                 else { // size < freedZonesBySize_.begin()->size
 
-                    chunkVertexBufferZones_[chunkPos] = { freedZonesBySize_.begin()->startPos , size };
+                    bufferZones[chunkPos] = { freedZonesBySize_.begin()->startPos , size };
                     glBufferSubData(GL_ARRAY_BUFFER, freedZonesBySize_.begin()->startPos, size, data);
 
-                    freedZonesBySize::iterator itSize = freedZonesBySize_.insert({ freedZonesBySize_.begin()->startPos + size, freedZonesBySize_.begin()->size - size  }).first;
+                    freedZonesBySize::iterator itSize = freedZonesBySize_.insert(
+                        { freedZonesBySize_.begin()->startPos + size, freedZonesBySize_.begin()->size - size }).first;
                     auto itDebug = freedZones_.insert(itSize);
 
                     //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
@@ -85,13 +91,14 @@ namespace VoxelEng {
             }
 
         }
-        else {
+        else { // There is already an entry of the specified geometry type of the given chunk position.
 
             chunkVertexBufferZone& preexistingZone = (itPreexistingZone->second);
             if (size < preexistingZone.size) {
             
                 // Create free zone with the unused space.
-                freedZonesBySize::iterator itSize = freedZonesBySize_.insert({ preexistingZone.startPos + size, preexistingZone.size - size }).first;
+                freedZonesBySize::iterator itSize = freedZonesBySize_.insert(
+                    { preexistingZone.startPos + size, preexistingZone.size - size }).first;
                 auto itDebug = freedZones_.insert(itSize);
 
                 //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
@@ -114,7 +121,7 @@ namespace VoxelEng {
             }
             else if (size > preexistingZone.size) {
             
-                if(preexistingZone.startPos + preexistingZone.size == lastPushedBytePos_) {
+                if(preexistingZone.startPos + preexistingZone.size == lastPushedBytePos_) { // If this preexisting zone is the last buffer zone.
                 
                     preexistingZone.size = size;
                     if (preexistingZone.startPos + preexistingZone.size < maxSize_)
@@ -183,16 +190,18 @@ namespace VoxelEng {
         }
     }
 
-    void chunkVertexBuffer::freeDynamicData(const vec3& chunkPos) {
+    void chunkVertexBuffer::freeDynamicData(const vec3& chunkPos, bool isTranslucidGeometry) {
 
-        if (chunkVertexBufferZones_.contains(chunkPos)) {
+        std::unordered_map<vec3, chunkVertexBufferZone>& bufferZones =
+            isTranslucidGeometry ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
 
-            // ME HA SALIDO QUE FREEDZONESBYSIZE Y FREEDZONES TIENEN DISTINTOS TAMAÑOS. ASI QUE EN ALGÚN MOMENTO SOLO SE ESTÁN INSERTANDO O BORRANDO EN UNO SOLO DE LOS DOS.
-            freedZonesBySize::iterator itSize = freedZonesBySize_.insert(chunkVertexBufferZones_[chunkPos]).first;
+        if (bufferZones.contains(chunkPos)) {
+
+            freedZonesBySize::iterator itSize = freedZonesBySize_.insert(bufferZones[chunkPos]).first;
             freedZones::iterator it = freedZones_.insert(itSize).first;
             //if (it.operator*().operator*().size < 0)
                 //throw std::runtime_error("Size cannot be negative");
-            chunkVertexBufferZones_.erase(chunkPos);
+            bufferZones.erase(chunkPos);
 
             //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
             //if (freedZonesBySize_.size() != freedZones_.size())
@@ -201,7 +210,6 @@ namespace VoxelEng {
             //logger::debugLog("flag 1");
 
             // Merge free zones if possible to avoid memory fragmentation.
-
             if (it != freedZones_.begin()) {
 
                 freedZones::iterator itPrevious = --it;

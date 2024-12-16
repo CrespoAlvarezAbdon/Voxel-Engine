@@ -3,6 +3,8 @@
 layout(location = 0) out vec4 accum;
 layout(location = 1) out float reveal;
 
+layout(binding = 1) uniform sampler2D depthMap;
+
 #define MAX_MATERIALS 256 // TODO. MAKE THIS DYNAMIC.
 #define MAX_DIRECTIONAL_LIGHTS 256
 #define MAX_POINT_LIGHTS 256
@@ -12,6 +14,7 @@ layout(location = 1) out float reveal;
 in vec2 v_TexCoord;
 in vec3 v_pos;
 in vec4 v_color;
+in vec4 v_LightSpacePos;
 flat in int v_materialIndex;
 
 // Uniforms.
@@ -59,6 +62,7 @@ struct LightInstance {
 	float padding1;
     vec3 dir;
 	float lightTypeIndex;
+    mat4 MVP;
 };
 
 // UBOs.
@@ -78,6 +82,7 @@ layout(std140, binding = 4) uniform SpotLights {
     SpotLight spotLights[MAX_SPOT_LIGHTS];
 };
 
+// SSBOs.
 layout(std430, binding = 1) buffer DirectionalLightsInstances {
     LightInstance directionalLightsInstances[];
 };
@@ -90,9 +95,9 @@ layout(std430, binding = 3) buffer SpotLightsInstances {
     LightInstance spotLightsInstances[];
 };
 
-// Local variables.
+// Variables.
 vec4 color;
-vec4 textureColor = vec4(0, 0, 0, 0);
+float shadow = 0.0;
 
 // Functions
 
@@ -112,7 +117,11 @@ vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, v
     vec4 diffuse  = light.diffuse  * diff * material.diffuse;
     vec4 specular = light.specular * spec * material.specular;
 
+    diffuse *= shadow;
+    specular *= (shadow < 0.75) ? 0 : 1;
+
     return (ambient + diffuse + specular);
+
 }
 
 vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material)
@@ -140,6 +149,40 @@ vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 
     return (ambient + diffuse + specular);
 }
 
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance)
+{
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+
+    float closestDepth = texture(depthMap, projCoords.xy).r; 
+    float currentDepth = projCoords.z;
+
+    vec3 normal = normalize(n);
+    vec3 lightDir = normalize(lightInstance.pos - v_pos);
+    // check whether current frag pos is in shadow
+    float s = currentDepth - 0.001 > closestDepth  ? 0.0 : 1.0;
+
+    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+    if(projCoords.z > 1.0)
+        s = 1.0;
+        
+    return s;
+
+    // PCF
+    s = 0.0;
+    vec2 texelSize = 1.0 / textureSize(depthMap, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            s += currentDepth - 0.001 > pcfDepth  ? 0.0 : 1.0;        
+        }    
+    }
+    s /= 9.0;
+
+}
+
 // Main.
 void main() {
 
@@ -156,6 +199,8 @@ void main() {
 		discard;
 
 	color = vec4(0.0);
+
+    shadow = ShadowCalculation(v_LightSpacePos, norm, lightInstance);
 
 	// Apply directional lights.
 	color += CalcDirLight(light, lightInstance, norm, viewDir, material) * u_useComplexLighting;

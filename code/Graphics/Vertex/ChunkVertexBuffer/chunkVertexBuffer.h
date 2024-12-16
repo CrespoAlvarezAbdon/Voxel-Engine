@@ -9,6 +9,13 @@
 
 namespace VoxelEng {
 
+	////////////
+	//Structs.//
+	////////////
+
+	/**
+	* @brief Represents a portion of the chunk vertex buffer.
+	*/
 	struct chunkVertexBufferZone {
 
 		long long startPos; // Index of the first byte.
@@ -42,9 +49,11 @@ namespace VoxelEng {
 		* @brief Get the buffer zone for the specified chunk. Throws exception if there is no buffer zone associated
 		* with the specified chunk.
 		* @param chunkPos The position in chunk coordinates of the specified chunk.
+		* @param isTranslucidGeometry Whether the given vertex data corresponds to translucid geometry (true)
+		* or not (false).
 		* @returns The buffer zone for the specified chunk.
 		*/
-		const chunkVertexBufferZone& bufferZone(const vec3& chunkPos);
+		const chunkVertexBufferZone& bufferZone(const vec3& chunkPos, bool isTranslucidGeometry);
 
 
 		// Modifiers.
@@ -56,15 +65,20 @@ namespace VoxelEng {
 		* @param chunkPos The position in chunk coordinates of the chunk whose data is being pushed into the VBO.
 		* @param data Pointer to the begininng of the given data to push.
 		* @param size The given data's size. Must be greater than 0 or otherwise an exception will be thrown.
+		* @param isTranslucidGeometry Whether the given vertex data corresponds to translucid geometry (true)
+		* or not (false).
 		*/
-		void pushDynamicData(const vec3& chunkPos, const void* data, long long size);
+		void pushDynamicData(const vec3& chunkPos, const void* data, long long size, bool isTranslucidGeometry);
 
 		/**
 		* @brief Will mark the zone of the buffer memory reserved for the given chunk as free.
 		* This zone will not be rendered when calling to chunkVertexBuffer::renderAll().
 		* The given chunk must have a zone of the buffer memory reserved for it, otherwise it will do nothing.
+		* @param chunkPos The chunk position corresponding to the reserved buffer zone to free.
+		* @param isTranslucidGeometry Whether the given vertex data corresponds to translucid geometry (true)
+		* or not (false).
 		*/
-		void freeDynamicData(const vec3& chunkPos);
+		void freeDynamicData(const vec3& chunkPos, bool isTranslucidGeometry);
 
 	private:
 
@@ -93,6 +107,7 @@ namespace VoxelEng {
 		typedef std::set<freedZonesBySize::iterator, compareByStartPos> freedZones;
 
 		std::unordered_map<vec3, chunkVertexBufferZone> chunkVertexBufferZones_;
+		std::unordered_map<vec3, chunkVertexBufferZone> chunkTranslucidVertexBufferZones_;
 		freedZones freedZones_;
 		freedZonesBySize freedZonesBySize_;
 	

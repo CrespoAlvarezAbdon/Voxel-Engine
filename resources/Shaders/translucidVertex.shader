@@ -1,4 +1,4 @@
-#version 420 core
+#version 450 core
 
 // Example of use of location
 // If the vertex structure is
@@ -21,8 +21,24 @@ layout(location = 3) in vec4 additionalData; // First byte is material index.
 out vec2 v_TexCoord;
 out vec3 v_pos;
 out vec4 v_color;
+out vec4 v_LightSpacePos;
 flat out int v_materialIndex;
 
+// Structs.
+struct LightInstance {
+    vec3 pos;
+	float padding1;
+    vec3 dir;
+	float lightTypeIndex;
+    mat4 MVP;
+};
+
+// SSBOs.
+layout(std430, binding = 1) buffer DirectionalLightsInstances {
+    LightInstance directionalLightsInstances[];
+};
+
+// Uniforms.
 uniform int u_renderMode;
 uniform mat4 u_MVP; // u_MVP stands for u_Model_view_projection_matrix although only the view and projection matrix are currently used.
 uniform mat4 u_MVPGUI;
@@ -31,9 +47,12 @@ void main() {
 
 	if (u_renderMode == 0) { // 3D rendering.
 
+		LightInstance lightInstance = directionalLightsInstances[0];
+
 		// Export variables to fragment shader.
 		v_TexCoord = texCoord;
 		v_pos = position;
+		v_LightSpacePos = lightInstance.MVP * vec4(position, 1.0);
 
 		v_color = vertexColor;
 		v_materialIndex = int(additionalData.x);

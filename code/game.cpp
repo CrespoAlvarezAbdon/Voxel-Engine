@@ -315,7 +315,7 @@ namespace VoxelEng {
             screenFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR});
 
             // Load texture atlas and configure it.
-            blockTextureAtlas_ = new texture("resources/Textures/atlasMinecraft.png");
+            blockTextureAtlas_ = new texture("resources/Textures/atlas.png");
             texture::setBlockAtlas(*blockTextureAtlas_);
             texture::setBlockAtlasResolution(16);
 
@@ -561,7 +561,8 @@ namespace VoxelEng {
 
             // Variables used only on this loop.
 
-            std::unordered_set<vec3> chunksToDraw;
+            std::unordered_set<vec3> opaqueChunkGeometryToDraw;
+            std::unordered_set<vec3> translucentChunkGeometryToDraw;
 
             if (!graphicalModeInitialised_)
                 initGraphicalMode();
@@ -703,7 +704,6 @@ namespace VoxelEng {
                 // Receive updated chunk meshes when possible.
                 if (chunkManager::priorityManagerThreadMutex().try_lock()) {
 
-                    // TODO. METER LOS CAMBIOS QUE METAS EN EL DRAWABLES CHUNKSREAD TAMBIEN AQUI EN LA VERSIÓN PRIORITY.
                     chunkManager::swapChunkMeshesBuffers();
                     chunksRenderingData_ = chunkManager::drawableChunksRead();
                     chunksVBOoperations_ = chunkManager::chunkVBOoperationsRead();
@@ -728,23 +728,38 @@ namespace VoxelEng {
                 
                     for (auto it = chunksVBOoperations_->cbegin(); it != chunksVBOoperations_->cend(); it++) {
 
-                        bool b = chunksRenderingData_->contains(it->first); // DEBUG PURPOSES ONLY.
+                        //bool b = chunksRenderingData_->contains(it->first); // DEBUG.
                         
                         if (it->second == chunkVBOoperation::PUSH) {
                         
                             const chunkRenderingData& chunkRenderData = chunksRenderingData_->at(it->first);
                             if (chunkRenderData.vertices.size()) {
                             
-                                chunksVbo_->pushDynamicData(it->first, chunkRenderData.vertices.data(), chunkRenderData.vertices.size() * sizeof(vertex));
-                                chunksToDraw.insert(it->first);
+                                chunksVbo_->pushDynamicData(it->first,
+                                    chunkRenderData.vertices.data(), chunkRenderData.vertices.size() * sizeof(vertex),
+                                    false);
+
+                                opaqueChunkGeometryToDraw.insert(it->first);
                             
+                            }
+
+                            if (chunkRenderData.translucentVertices.size()) {
+
+                                chunksVbo_->pushDynamicData(it->first,
+                                    chunkRenderData.translucentVertices.data(), chunkRenderData.translucentVertices.size() * sizeof(vertex),
+                                    true);
+
+                                translucentChunkGeometryToDraw.insert(it->first);
+
                             }
                         
                         }
                         else if (it->second == chunkVBOoperation::FREE) {
                         
-                            chunksVbo_->freeDynamicData(it->first);
-                            chunksToDraw.erase(it->first);
+                            chunksVbo_->freeDynamicData(it->first, false);
+                            chunksVbo_->freeDynamicData(it->first, true);
+                            opaqueChunkGeometryToDraw.erase(it->first);
+                            translucentChunkGeometryToDraw.erase(it->first);
                         
                         }
 
@@ -765,7 +780,7 @@ namespace VoxelEng {
                 }
 
                 /*
-                Opaque pass
+                Shadow pass.
                 */
 
                 // Render the shadowmaps.
@@ -781,21 +796,27 @@ namespace VoxelEng {
                     lightInstance& instance = directionalLightsInstances->get(0);
                     instance.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, 0.0f, 0.0f);
                     instance.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
-                    //instance.dir = vec4(0.0f, -1.0f, 0.0f, 0.0f); // TODO. ESTA DIRECCIÓN NO FUNCIONA
+                    //instance.dir = vec4(0.0f, -1.0f, 0.0f, 0.0f);
 
-                    glm::mat4 view = glm::lookAt(instance.pos, vec3Zero, vec3FixedUp);
                     glm::mat4 proj = glm::ortho(-320.0f, 320.0f, -384.0f, 384.0f, zNear_, zFar_);
+                    glm::mat4 view = glm::lookAt(instance.pos, vec3Zero, vec3FixedUp);
                     instance.MVP = proj * view;
                     directionalLightsInstances->reuploadElement(0);
                 }
                 if (chunksRenderingData_) {
 
-                    // chunk.first refers to the chunk's center global postion.
-                    // chunk.second refers to the chunk's vertex data.
-                    for (vec3 const& chunkPos : chunksToDraw) {
+                    for (vec3 const& chunkPos : opaqueChunkGeometryToDraw) {
 
                         // Draw terrain.
-                        const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos);
+                        const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, false);
+                        renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
+
+                    }
+
+                    for (vec3 const& chunkPos : translucentChunkGeometryToDraw) {
+
+                        // Draw terrain.
+                        const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, true);
                         renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
 
                     }
@@ -804,15 +825,18 @@ namespace VoxelEng {
                 shadowFB_->unbind();
                 glViewport(0, 0, mainWindow_->width(), mainWindow_->height());
 
+
+                /*
+                Opaque pass.
+                */
+
                 // Terrain rendering.
                 opaqueFB_->bind();
                 opaqueShader_->bind();
                 shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
                 if (chunksRenderingData_) {
 
-                    // chunk.first refers to the chunk's center global postion.
-                    // chunk.second refers to the chunk's vertex data.
-                    for (vec3 const& chunkPos : chunksToDraw) {
+                    for (vec3 const& chunkPos : opaqueChunkGeometryToDraw) {
 
                         const chunkRenderingData& chunk = chunksRenderingData_->at(chunkPos);
 
@@ -829,7 +853,7 @@ namespace VoxelEng {
                                 spotLightsInstances_->setContentsAndReupload(chunk.spotLights_);
 
                             // Draw terrain.
-                            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos);
+                            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, false);
                             renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
 
                         }
@@ -892,27 +916,27 @@ namespace VoxelEng {
                 // Terrain rendering.
                 vao_->bind();
                 chunksVbo_->bind();
+                shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
                 if (chunksRenderingData_) {
 
-                    // chunk.first refers to the chunk's center global postion.
-                    // chunk.second refers to the chunk's vertex data.
-                    for (auto const& chunk : *chunksRenderingData_) {
+                    for (vec3 const& chunkPos : translucentChunkGeometryToDraw) {
 
-                        if (playerCamera_->isInsideFrustum(chunk.second.globalChunkPos)) {
+                        const chunkRenderingData& chunk = chunksRenderingData_->at(chunkPos);
 
-                            std::size_t nPointLightsChunk = chunk.second.pointLights_.size();
-                            translucidShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
+                        if (playerCamera_->isInsideFrustum(chunk.globalChunkPos)) {
+
+                            int nPointLightsChunk = chunk.pointLights_.size();
+                            opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
 
                             // Upload dynamic lights.
                             if (nPointLightsChunk)
-                                pointLightsInstances_->setContentsAndReupload(chunk.second.pointLights_);
-                            if (!chunk.second.spotLights_.empty())
-                                spotLightsInstances_->setContentsAndReupload(chunk.second.spotLights_);
+                                pointLightsInstances_->setContentsAndReupload(chunk.pointLights_);
+                            if (!chunk.spotLights_.empty())
+                                spotLightsInstances_->setContentsAndReupload(chunk.spotLights_);
 
-                            //chunksVbo_->setDynamicData(chunk.second.vertices.data(), 0, chunk.second.vertices.size() * sizeof(vertex));
-                            //chunksVbo_->setDynamicData(chunk.second.verticesLOD1_2Boundary.data(), chunk.second.vertices.size() * sizeof(vertex), chunk.second.verticesLOD1_2Boundary.size() * sizeof(vertex));
-
-                            //renderer::draw3D(nVertices);
+                            // Draw terrain.
+                            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, true);
+                            renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
 
                         }
 
