@@ -92,7 +92,8 @@ namespace VoxelEng {
 
     const std::vector<model>* game::batchesToDraw_ = nullptr;
 
-    shader* game::shadowDepthShader_ = nullptr;
+    shader* game::shadowShader_ = nullptr;
+    shader* game::translucentShadowShader_ = nullptr;
     shader* game::opaqueShader_ = nullptr;
     shader* game::translucidShader_ = nullptr;
     shader* game::compositeShader_ = nullptr;
@@ -105,6 +106,7 @@ namespace VoxelEng {
     vertexArray* game::screenVao_ = nullptr;
     
     framebuffer* game::shadowFB_ = nullptr;
+    framebuffer* game::translucentShadowFB_ = nullptr;
     framebuffer* game::opaqueFB_ = nullptr;
     framebuffer* game::translucidFB_ = nullptr;
     framebuffer* game::screenFB_ = nullptr;
@@ -113,6 +115,26 @@ namespace VoxelEng {
     SSBO<lightInstance>* game::pointLightsInstances_ = nullptr;
     SSBO<lightInstance>* game::spotLightsInstances_ = nullptr;
 
+    std::unordered_set<vec3> game::opaqueChunkGeometryToDraw;
+    std::unordered_set<vec3> game::translucentChunkGeometryToDraw;
+    float game::screenShaderQuad[24] = {
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+        1.0f,  1.0f,  1.0f, 1.0f
+    };
+    double game::lastSecondTime = 0.0;
+    double game::lastFrameTime = 0.0;
+    double game::actualTime = 0.0;
+    int game::nFramesDrawn = 0;
+    unsigned int game::nVertices = 0;
+    unsigned int game::nTranslucentVertices = 0;
+
+    
     #if GRAPHICS_API == OPENGL
 
         glm::mat4 game::MVPmatrix_;
@@ -305,7 +327,8 @@ namespace VoxelEng {
             models::loadCustomModel("resources/Models/Warden.obj", 2);
 
             // Create framebuffers.
-            shadowFB_ = new framebuffer(4096, 4096, { textureType::COLOR, textureType::DEPTH });
+            shadowFB_ = new framebuffer(4096, 4096, { textureType::DEPTH });
+            translucentShadowFB_ = new framebuffer(4096, 4096, { textureType::COLOR, textureType::DEPTH});
             opaqueFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR, textureType::DEPTH_AND_STENCIL});
             translucidFB_ = new framebuffer(mainWindow_->width(), mainWindow_->height(), {textureType::COLOR, textureType::COLOR});
 
@@ -354,7 +377,8 @@ namespace VoxelEng {
             input::setControlAction(controlCode::r, inputFunctions::switchComplexLighting, false);
 
             // Load shaders.
-            shadowDepthShader_ = &graphics::shadowDepthShader();
+            shadowShader_ = &graphics::shadowShader();
+            translucentShadowShader_ = &graphics::translucentShadowShader();
             opaqueShader_ = &graphics::opaqueShader();
             translucidShader_ = &graphics::translucidShader();
             compositeShader_ = &graphics::compositeShader();
@@ -555,131 +579,117 @@ namespace VoxelEng {
 
     }
 
-    void game::gameLoop(const std::string& terrainFile) {
+    void game::setupGameLoop() {
+    
+        // Variables used only on this loop.
+        opaqueChunkGeometryToDraw.clear();
+        translucentChunkGeometryToDraw.clear();
+        lastSecondTime = glfwGetTime(); // How much time has passed since the last second passed.
+        lastFrameTime = lastSecondTime;
+        actualTime = 0;
+        nFramesDrawn = 0;
+        nVertices = 0;
+        nTranslucentVertices = 0;
+
+        if (!graphicalModeInitialised_)
+            initGraphicalMode();
+
+        chunkManager::setNChunksToCompute(DEF_N_CHUNKS_TO_COMPUTE);
+
+        /*
+        Level loading.
+        */
+
+        // Start the terrain management and loading of the world.
+        if (chunkManagementThread_)
+            delete chunkManagementThread_;
+        if (priorityChunkUpdatesThread_)
+            delete priorityChunkUpdatesThread_;
+        chunkManagementThread_ = new std::thread(&chunkManager::manageChunks);
+        priorityChunkUpdatesThread_ = new std::thread(&chunkManager::manageChunkPriorityUpdates);
+
+        if (loopSelection_ == engineMode::INITRECORD) {
+
+            if (!GUImanager::isLevelGUIElementRegistered("pauseIcon")) {
+
+                GUImanager::addGUIBox("pauseIcon", 0.15, 0.85, 0.1, 0.1, 1021);
+                input::setControlAction(controlCode::rightArrow, inputFunctions::recordForward, false);
+                input::setControlAction(controlCode::downArrow, inputFunctions::recordPause, false);
+                input::setControlAction(controlCode::leftArrow, inputFunctions::recordBackwards, false);
+                input::setControlAction(controlCode::x, inputFunctions::exitRecord, false);
+
+                world::addGlobalTickFunction("playRecordTick", TickFunctions::playRecordTick);
+
+            }
+
+            // Things to apply when the terrain is loaded.
+            chunkManager::waitInitialTerrainLoaded();
+
+            setLoopSelection(engineMode::PLAYINGRECORD);
+
+        }
+        else {
+
+            if (!GUImanager::isLevelGUIElementRegistered("blockPreview")) {
+
+                GUImanager::addGUIBox("blockPreview", 0.15, 0.85, 0.1, 0.1, 1);
+                input::setControlAction(controlCode::alpha1, inputFunctions::selectBlockSlot1, false);
+                input::setControlAction(controlCode::alpha2, inputFunctions::selectBlockSlot2, false);
+                input::setControlAction(controlCode::alpha3, inputFunctions::selectBlockSlot3, false);
+                input::setControlAction(controlCode::alpha4, inputFunctions::selectBlockSlot4, false);
+                input::setControlAction(controlCode::alpha5, inputFunctions::selectBlockSlot5, false);
+                input::setControlAction(controlCode::alpha6, inputFunctions::selectBlockSlot6, false);
+                input::setControlAction(controlCode::alpha7, inputFunctions::selectBlockSlot7, false);
+                input::setControlAction(controlCode::alpha8, inputFunctions::selectBlockSlot8, false);
+                input::setControlAction(controlCode::alpha9, inputFunctions::selectBlockSlot9, false);
+                input::setControlAction(controlCode::p, inputFunctions::intentionalCrash, false);
+
+            }
+
+            // Things to apply when the terrain is loaded.
+            chunkManager::waitInitialTerrainLoaded();
+
+            setLoopSelection(engineMode::EDITLEVEL);
+
+        }
+
+        // Start threads that require the world to be loaded first.
+        if (!AIAPI::aiGame::playingRecord())
+            playerInputThread_ = new std::thread(&player::processSelectionRaycast);
+        tickManagementThread_ = new std::thread(&world::processWorldTicks);
+
+        /*
+        Rendering loop.
+        */
+
+        // Configure game window's settings.
+        mainWindow_->changeStateMouseLock(false);
+
+        // Set shader options.
+        opaqueShader_->setUniform1i("u_useComplexLighting", 0);
+
+        // Spawn test entities here.
+
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //TODO. ADD THIS AS AN OPTION.
+    
+    }
+
+    void game::gameLoop() {
         
         if (loopSelection_ == engineMode::INITLEVEL || loopSelection_ == engineMode::INITRECORD) {
 
-            // Variables used only on this loop.
+            setupGameLoop();
 
-            std::unordered_set<vec3> opaqueChunkGeometryToDraw;
-            std::unordered_set<vec3> translucentChunkGeometryToDraw;
-
-            if (!graphicalModeInitialised_)
-                initGraphicalMode();
-
-            chunkManager::setNChunksToCompute(DEF_N_CHUNKS_TO_COMPUTE);
-            /*
-            Level loading.
-            */
-            
-            // Start the terrain management and loading of the world.
-            if (chunkManagementThread_)
-                delete chunkManagementThread_;
-            if (priorityChunkUpdatesThread_)
-                delete priorityChunkUpdatesThread_;
-            chunkManagementThread_ = new std::thread(&chunkManager::manageChunks);
-            priorityChunkUpdatesThread_ = new std::thread(&chunkManager::manageChunkPriorityUpdates);
-
-            if (loopSelection_ == engineMode::INITRECORD) {
-
-                if (!GUImanager::isLevelGUIElementRegistered("pauseIcon")) {
-
-                    GUImanager::addGUIBox("pauseIcon", 0.15, 0.85, 0.1, 0.1, 1021);
-                    input::setControlAction(controlCode::rightArrow, inputFunctions::recordForward, false);
-                    input::setControlAction(controlCode::downArrow, inputFunctions::recordPause, false);
-                    input::setControlAction(controlCode::leftArrow, inputFunctions::recordBackwards, false);
-                    input::setControlAction(controlCode::x, inputFunctions::exitRecord, false);
-
-                    world::addGlobalTickFunction("playRecordTick", TickFunctions::playRecordTick);
-
-                }
-
-                // Things to apply when the terrain is loaded.
-                chunkManager::waitInitialTerrainLoaded();
-
-                setLoopSelection(engineMode::PLAYINGRECORD);
-
-            }
-            else {
-
-                if (!GUImanager::isLevelGUIElementRegistered("blockPreview")) {
-                
-                    GUImanager::addGUIBox("blockPreview", 0.15, 0.85, 0.1, 0.1, 1);
-                    input::setControlAction(controlCode::alpha1, inputFunctions::selectBlockSlot1, false);
-                    input::setControlAction(controlCode::alpha2, inputFunctions::selectBlockSlot2, false);
-                    input::setControlAction(controlCode::alpha3, inputFunctions::selectBlockSlot3, false);
-                    input::setControlAction(controlCode::alpha4, inputFunctions::selectBlockSlot4, false);
-                    input::setControlAction(controlCode::alpha5, inputFunctions::selectBlockSlot5, false);
-                    input::setControlAction(controlCode::alpha6, inputFunctions::selectBlockSlot6, false);
-                    input::setControlAction(controlCode::alpha7, inputFunctions::selectBlockSlot7, false);
-                    input::setControlAction(controlCode::alpha8, inputFunctions::selectBlockSlot8, false);
-                    input::setControlAction(controlCode::alpha9, inputFunctions::selectBlockSlot9, false);
-                    input::setControlAction(controlCode::p, inputFunctions::intentionalCrash, false);
-
-                }
-
-                // Things to apply when the terrain is loaded.
-                chunkManager::waitInitialTerrainLoaded();
-
-                setLoopSelection(engineMode::EDITLEVEL);
-
-            }
-
-            // Start threads that require the world to be loaded first.
-            if (!AIAPI::aiGame::playingRecord())
-                playerInputThread_ = new std::thread(&player::processSelectionRaycast);
-            tickManagementThread_ = new std::thread(&world::processWorldTicks);
-
-            /*
-            Rendering loop.
-            */
-
-            // Configure game window's settings.
-            mainWindow_->changeStateMouseLock(false);
-
-            // Set shader options.
-            opaqueShader_->setUniform1i("u_useComplexLighting", 0);
-
-            // Frame buffer things go here.
-            float screenShaderQuad[] = {
-                // positions   // texCoords
-                -1.0f,  1.0f,  0.0f, 1.0f,
-                -1.0f, -1.0f,  0.0f, 0.0f,
-                1.0f, -1.0f,  1.0f, 0.0f,
-
-                -1.0f,  1.0f,  0.0f, 1.0f,
-                1.0f, -1.0f,  1.0f, 0.0f,
-                1.0f,  1.0f,  1.0f, 1.0f
-            };
-
-            // Time/FPS related stuff.
-            double lastSecondTime = glfwGetTime(), // How much time has passed since the last second passed.
-                   lastFrameTime = lastSecondTime,
-                   actualTime;
-            int nFramesDrawn = 0; 
-            unsigned int nVertices = 0;
-            unsigned int nTranslucentVertices = 0;
-
-            // LOD related stuff.
-            bool inLODborder = false;
-            blockViewDir dirX = blockViewDir::NONE;
-            blockViewDir dirY = blockViewDir::NONE;
-            blockViewDir dirZ = blockViewDir::NONE;
-
-            // Spawn test entities here.
-            
-            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //TODO. ADD THIS AS AN OPTION.
             while (loopSelection_ == engineMode::EDITLEVEL || loopSelection_ == engineMode::PLAYINGRECORD) {
 
+                blockTextureAtlas_->bind(0);
+                
                 graphics::setDepthTest(true);
                 graphics::setOpaquePassConfig();
-
                 opaqueFB_->bind();
                 opaqueFB_->clearAllTextures();
-
                 opaqueShader_->bind();
                 opaqueShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
-                blockTextureAtlas_->bind(0);
 
                 // The window size callback by GLFW gets called every time the user is resizing the window so the heavy resize processing is done here
                 // after the player has stopped resizing the window.
@@ -783,18 +793,19 @@ namespace VoxelEng {
                 Shadow pass.
                 */
 
-                // Render the shadowmaps.
                 glViewport(0, 0, 4096, 4096);
+
+                // Opaque shadowmap.
                 shadowFB_->bind();
                 glClear(GL_DEPTH_BUFFER_BIT);
                 {
                     // CHUNK_SIZE * 20 * -1
-                    shadowDepthShader_->bind();
+                    shadowShader_->bind();
                     // TODO. MOVE THIS TO A PROPER PLACE.
                     // Set the sun's directional light MVP matrix.
                     SSBO<lightInstance>* directionalLightsInstances = registries::get("SSBOs")->pointer<registry<std::string, var>>()->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
                     lightInstance& instance = directionalLightsInstances->get(0);
-                    instance.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, 0.0f, 0.0f);
+                    instance.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, .0f, 0.0f);
                     instance.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
                     //instance.dir = vec4(0.0f, -1.0f, 0.0f, 0.0f);
 
@@ -813,6 +824,15 @@ namespace VoxelEng {
 
                     }
 
+                }
+                shadowFB_->unbind();
+
+                // Translucent shadowmap.
+                translucentShadowFB_->bind();
+                translucentShadowShader_->bind();
+                glClear(GL_DEPTH_BUFFER_BIT);
+                if (chunksRenderingData_) {
+
                     for (vec3 const& chunkPos : translucentChunkGeometryToDraw) {
 
                         // Draw terrain.
@@ -822,7 +842,7 @@ namespace VoxelEng {
                     }
 
                 }
-                shadowFB_->unbind();
+                translucentShadowFB_->unbind();
                 glViewport(0, 0, mainWindow_->width(), mainWindow_->height());
 
 
@@ -834,6 +854,8 @@ namespace VoxelEng {
                 opaqueFB_->bind();
                 opaqueShader_->bind();
                 shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
+                translucentShadowFB_->getTexture(textureType::COLOR, 0)->bind(2);
+                translucentShadowFB_->getTexture(textureType::DEPTH, 0)->bind(3);
                 if (chunksRenderingData_) {
 
                     for (vec3 const& chunkPos : opaqueChunkGeometryToDraw) {
@@ -862,7 +884,6 @@ namespace VoxelEng {
 
                 }
                 
-
                 // Times calculation.
                 actualTime = glfwGetTime();
                 timeStep_ = actualTime - lastFrameTime;
@@ -908,7 +929,6 @@ namespace VoxelEng {
                 translucidFB_->bind();
                 translucidFB_->clearTextures({ vec4Zeroes, vec4Ones });
                 translucidShader_->bind();
-                translucidShader_->setUniform1i("u_textureAtlas", 0);
                 translucidShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
                 translucidShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
                 translucidShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
@@ -995,7 +1015,6 @@ namespace VoxelEng {
                 screenVbo_->prepareStatic(screenShaderQuad, 6*sizeof(float)*4);
                 renderer::draw2D(6);
 
-
                 // Swap front and back buffers.
                 glfwSwapBuffers(mainWindow_->windowAPIpointer());
 
@@ -1004,9 +1023,6 @@ namespace VoxelEng {
 
                 // Handle user inputs.
                 input::handleInputs();
-
-                // Reset things for the next iteration.
-                graphics::setDepthTest(true);
 
             }
 

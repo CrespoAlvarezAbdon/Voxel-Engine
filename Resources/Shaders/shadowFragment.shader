@@ -1,6 +1,5 @@
 #version 450 core
 
-layout(location = 0) out vec4 shadowColor; // Final result.
 layout(binding = 0) uniform sampler2D textureAtlas;
 
 // Input varyings.
@@ -12,8 +11,6 @@ void main()
     
     if (textureColor.a < 0.1) // Discard transparent fragments.
         discard;
-
-    shadowColor = textureColor;
 
     gl_FragDepth = gl_FragCoord.z;
 }

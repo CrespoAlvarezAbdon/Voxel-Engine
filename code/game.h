@@ -128,11 +128,15 @@ namespace VoxelEng {
 		static void mainMenuLoop();
 
         /**
-        * @brief Graphical mode main loop when in a level.
-        * @param terrainFile The file from where to load the terrain for the level. If terrainFile is equal to "", then either a new level will be generated or
-        * a level from a slot will be loaded (depending on the selected save slot).
+        * @brief To be called before entering the game loop. Setups any variables that are needed
+        * before running said loop.
         */
-		static void gameLoop(const std::string& terrainFile = "");
+        static void setupGameLoop();
+
+        /**
+        * @brief Graphical mode main loop when in a level.
+        */
+		static void gameLoop();
 
         /**
         * @brief Set the engine's current execution mode.
@@ -235,7 +239,8 @@ namespace VoxelEng {
 
         static const std::vector<model>* batchesToDraw_;
 
-        static shader* shadowDepthShader_;
+        static shader* shadowShader_;
+        static shader* translucentShadowShader_;
         static shader* opaqueShader_;
         static shader* translucidShader_;
         static shader* compositeShader_;
@@ -249,6 +254,7 @@ namespace VoxelEng {
         static vertexArray* screenVao_;
 
         static framebuffer* shadowFB_;
+        static framebuffer* translucentShadowFB_;
         static framebuffer* opaqueFB_;
         static framebuffer* translucidFB_;
         static framebuffer* screenFB_;
@@ -256,6 +262,17 @@ namespace VoxelEng {
         static SSBO<lightInstance>* directionalLightsInstances_;
         static SSBO<lightInstance>* pointLightsInstances_;
         static SSBO<lightInstance>* spotLightsInstances_;
+
+        // Gameloop-exclusive variables.
+        static std::unordered_set<vec3> opaqueChunkGeometryToDraw;
+        static std::unordered_set<vec3> translucentChunkGeometryToDraw;
+        static float screenShaderQuad[24];
+        static double lastSecondTime;
+        static double lastFrameTime;
+        static double actualTime;
+        static int nFramesDrawn;
+        static unsigned int nVertices;
+        static unsigned int nTranslucentVertices;
 
         #if GRAPHICS_API == OPENGL
 

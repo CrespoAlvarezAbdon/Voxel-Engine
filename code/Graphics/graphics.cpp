@@ -28,7 +28,8 @@ namespace VoxelEng {
 	std::unordered_map<std::string, vertexBuffer*> graphics::vbos_;
 	std::unordered_map<std::string, vertexArray> graphics::vaos_;
 	std::unordered_map<std::string, vertexBufferLayout> graphics::vboLayouts_;
-	shader* graphics::shadowDepthShader_ = nullptr;
+	shader* graphics::shadowShader_ = nullptr;
+	shader* graphics::translucentShadowShader_ = nullptr;
 	shader* graphics::opaqueShader_ = nullptr;
 	shader* graphics::translucidShader_ = nullptr;
 	shader* graphics::compositeShader_ = nullptr;
@@ -107,7 +108,6 @@ namespace VoxelEng {
 				layout3D.push<unsigned char>(4, true);
 				layout3D.push<unsigned char>(4, false);
 				//layout3D.push<normalVec>(1, false);
-				layout3D.push<GLfloat>(3, true);
 				vaos_.at("3D").bind();
 				vbos_.at("chunks")->bind();
 				vaos_.at("3D").addLayout(layout3D);
@@ -177,7 +177,8 @@ namespace VoxelEng {
 				directionalLightsInstances->reuploadElement(0);
 
 				// Initialize shaders.
-				shadowDepthShader_ = new shader("shadowDepth", "resources/Shaders/shadowDepthVertex.shader", "resources/Shaders/shadowDepthFragment.shader", { }, { "DirectionalLightsInstances"});
+				shadowShader_ = new shader("shadow", "resources/Shaders/shadowVertex.shader", "resources/Shaders/shadowFragment.shader", { }, { "DirectionalLightsInstances"});
+				translucentShadowShader_ = new shader("translucentShadow", "resources/Shaders/translucentShadowVertex.shader", "resources/Shaders/translucentShadowFragment.shader", { }, { "DirectionalLightsInstances" });
 				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances" });
 				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances" });
 				compositeShader_ = new shader("composite", "resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
@@ -213,6 +214,20 @@ namespace VoxelEng {
 			#endif
 
 			mainWindow_ = nullptr;
+
+			if (shadowShader_) {
+
+				delete shadowShader_;
+				shadowShader_ = nullptr;
+
+			}
+
+			if (translucentShadowShader_) {
+
+				delete translucentShadowShader_;
+				translucentShadowShader_ = nullptr;
+
+			}
 
 			if (opaqueShader_) {
 
@@ -414,8 +429,7 @@ namespace VoxelEng {
 	void graphics::setCompositePassConfig() {
 
 		glDepthFunc(GL_ALWAYS);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		blending(true);
 
 	}
 
@@ -427,78 +441,57 @@ namespace VoxelEng {
 
 	}
 
-	shader& graphics::shadowDepthShader() {
+	shader& graphics::shadowShader() {
 
-		if (initialised_) {
+		if (initialised_)
+			return *shadowShader_;
+		else
+			logger::errorLog("Graphics system must be initialised when accessing shadow shader");
 
-			return *shadowDepthShader_;
+	}
 
-		}
-		else {
+	shader& graphics::translucentShadowShader() {
 
-			logger::errorLog("Graphics system is not initialised when accessing shadow depth shader");
-
-		}
+		if (initialised_)
+			return *translucentShadowShader_;
+		else
+			logger::errorLog("Graphics system must be initialised when accessing translucent shadow shader");
 
 	}
 
 	shader& graphics::opaqueShader() {
 
-		if (initialised_) {
-
+		if (initialised_)
 			return *opaqueShader_;
-
-		}
-		else {
-
+		else
 			logger::errorLog("Graphics system is not initialised when accessing opaque shader");
-
-		}
 
 	}
 
 	shader& graphics::translucidShader() {
 
-		if (initialised_) {
-
+		if (initialised_)
 			return *translucidShader_;
-
-		}
-		else {
-
+		else
 			logger::errorLog("Graphics system is not initialised when accessing translucid shader");
-
-		}
 
 	}
 
 	shader& graphics::compositeShader() {
 
-		if (initialised_) {
-
+		if (initialised_)
 			return *compositeShader_;
-
-		}
-		else {
-
+		else
 			logger::errorLog("Graphics system is not initialised when accessing composite shader");
-
-		}
 
 	}
 
 	shader& graphics::screenShader() {
 
-		if (initialised_) {
-
+		if (initialised_)
 			return *screenShader_;
-
-		}
-		else {
-
+		else
 			logger::errorLog("Graphics system is not initialised when accessing screen shader");
-
-		}
 
 	}
 

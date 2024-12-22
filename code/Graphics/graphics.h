@@ -198,10 +198,16 @@ namespace VoxelEng {
 		static void setScreenPassConfig();
 
 		/**
-		* @brief Get the shader using for calculating the shadowed parts of a geometry
+		* @brief Get the shader using for calculating the shadowed parts of opaque/transparent geometry
 		* from a light's perspective.
 		*/
-		static shader& shadowDepthShader();
+		static shader& shadowShader();
+
+		/**
+		* @brief Get the shader using for calculating the shadowed parts of translucent geometry
+		* from a light's perspective.
+		*/
+		static shader& translucentShadowShader();
 
 		/**
 		* @brief Get the shader used for opaque geometry.
@@ -230,7 +236,8 @@ namespace VoxelEng {
 		static std::unordered_map<std::string, vertexBuffer*> vbos_;
 		static std::unordered_map<std::string, vertexArray> vaos_;
 		static std::unordered_map<std::string, vertexBufferLayout> vboLayouts_;
-		static shader* shadowDepthShader_;
+		static shader* shadowShader_;
+		static shader* translucentShadowShader_;
 		static shader* opaqueShader_;
 		static shader* translucidShader_;
 		static shader* compositeShader_;

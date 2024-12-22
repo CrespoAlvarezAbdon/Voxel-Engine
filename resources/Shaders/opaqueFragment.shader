@@ -4,6 +4,8 @@ layout(location = 0) out vec4 color; // Final result.
 
 layout(binding = 0) uniform sampler2D textureAtlas;
 layout(binding = 1) uniform sampler2D depthMap;
+layout(binding = 2) uniform sampler2D shadowColor;
+layout(binding = 3) uniform sampler2D translucentDepthMap;
 
 #define MAX_MATERIALS 256 // TODO. MAKE THIS DYNAMIC.
 #define MAX_DIRECTIONAL_LIGHTS 256
@@ -16,7 +18,6 @@ in vec3 v_pos;
 in vec4 v_color;
 in vec4 v_LightSpacePos;
 flat in int v_materialIndex;
-flat in vec3 v_globalPos;
 
 // Uniforms.
 uniform vec3 u_viewPos;
@@ -97,27 +98,24 @@ layout(std430, binding = 3) buffer SpotLightsInstances {
 };
 
 // Variables.
-float shadow = 0.0;
+float shadow = 1.0;
+float translucentShadow = 1.0;
+vec4 coloredShadow = vec4(0.0);
 
 // Functions.
-vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material) {
+vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, float shadow, float hitDirLightModifier, Material material) {
 
-    vec3 lightDir = normalize(-lightInstance.dir);
+    // Specular shading calculations.
+    vec3 reflectDir = reflect(lightInstance.dir, n);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x); // Remember that 'shininess' is a vec4 for padding but 'x' is actually the shininess value.
 
-    // diffuse shading
-    float diff = max(dot(n, lightDir), 0.0);
-
-    // specular shading
-    vec3 reflectDir = reflect(-lightDir, n);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x); // Remember that shininess is a vec4 for padding but 'x' is the real shininess value.
-
-    // combine results
     vec4 ambient = light.ambient * material.ambient;
-    vec4 diffuse  = light.diffuse  * diff * material.diffuse;
+    vec4 diffuse  = light.diffuse * hitDirLightModifier * material.diffuse;
     vec4 specular = light.specular * spec * material.specular;
 
     diffuse *= shadow;
-    specular *= (shadow < 0.75) ? 0 : 1;
+    diffuse *= translucentShadow;
+    specular *= (shadow < 0.75 || translucentShadow < 0.75) ? 0 : 1;
 
     return (ambient + diffuse + specular);
 
@@ -127,18 +125,17 @@ vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 
 
     vec3 lightDir = normalize(lightInstance.pos - v_pos);
 
-    // diffuse shading
+    // Diffuse shading calculations.
     float diff = max(dot(n, lightDir), 0.0);
 
-    // specular shading
+    // Specular shading calculations.
     vec3 reflectDir = reflect(-lightDir, n);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x);
 
-    // attenuation
+    // Get light attenuation.
     float distance = length(lightInstance.pos - v_pos);
     float attenuation = max(1.0 - distance / (light.maxDistance), 0.0);
 
-    // combine results
     vec4 ambient = light.ambient * material.ambient;
     vec4 diffuse  = light.diffuse  * diff * material.diffuse;
     vec4 specular = light.specular * spec * material.specular;
@@ -149,37 +146,43 @@ vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 
 
 }
 
-float ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance)
-{
-    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    projCoords = projCoords * 0.5 + 0.5;
+void ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance) {
 
-    float closestDepth = texture(depthMap, projCoords.xy).r; 
-    float currentDepth = projCoords.z;
+    if(u_useComplexLighting == 1) {
 
-    vec3 normal = normalize(n);
-    vec3 lightDir = normalize(lightInstance.pos - v_pos);
-    // check whether current frag pos is in shadow
-    float s = currentDepth - 0.001 > closestDepth  ? 0.0 : 1.0;
+        float bias = 0.001;
+        vec3 displacedPos = fragPosLightSpace.xyz + bias * n;
+        vec3 projCoords = displacedPos.xyz / fragPosLightSpace.w;
+        projCoords = projCoords * 0.5 + 0.5;
 
-    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-    if(projCoords.z > 1.0)
-        s = 1.0;
+        float closestDepth = texture(depthMap, projCoords.xy).r; 
+        float closestTranslucentDepth = texture(translucentDepthMap, projCoords.xy).r;
+        float currentDepth = projCoords.z;
+
+        vec3 normal = normalize(n);
+        vec3 lightDir = normalize(lightInstance.pos - v_pos);
         
-    return s;
+        //float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
+        //float bias = 0.001 * (1.0 - dot(normal, lightDir)) + 0.0001;
+        shadow = currentDepth - bias > closestDepth ? 0.0 : 1.0;
+        translucentShadow = currentDepth -bias > closestTranslucentDepth ? 0.0 : 1.0;
 
-    // PCF
-    s = 0.0;
-    vec2 texelSize = 1.0 / textureSize(depthMap, 0);
-    for(int x = -1; x <= 1; ++x)
-    {
-        for(int y = -1; y <= 1; ++y)
-        {
-            float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            s += currentDepth - 0.001 > pcfDepth  ? 0.0 : 1.0;        
-        }    
+        // Keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+        if(projCoords.z > 1.0) {
+
+            shadow = 1.0;
+            translucentShadow = 1.0;
+
+        }
+            
+        // Get shadow's color.
+        if (translucentShadow == 0.0 && shadow == 1.0) {
+
+            coloredShadow = texture(shadowColor, projCoords.xy);
+
+        }
+
     }
-    s /= 9.0;
 
 }
 
@@ -192,28 +195,32 @@ void main() {
 		3D rendering.
 		*/
 
-		Material material = materials[v_materialIndex];
-
+        // Get information from SSBOs.
+        Material material = materials[v_materialIndex];
 		LightInstance lightInstance = directionalLightsInstances[0];
         DirectionalLight light = directionalLights[int(lightInstance.lightTypeIndex)];
 
-		vec3 norm = normalize(cross(dFdx(v_pos), dFdy(v_pos)));
+        // Initialize variables.
+        vec4 textureColor = texture(textureAtlas, v_TexCoord);
+        vec3 norm = normalize(cross(dFdx(v_pos), dFdy(v_pos)));
 		vec3 viewDir = normalize(u_viewPos - v_pos);
-		vec4 textureColor = texture(textureAtlas, v_TexCoord);
-		if (textureColor.a < 0.1) // Discard transparent fragments.
-			discard;
+        float hitDirLightModifier = max(dot(norm, normalize(-lightInstance.dir)), 0.0);
+        bool isTransparent = textureColor.a < 0.1;
 
-        color = vec4(0.0);
+        // Discard transparent fragments.
+		if (isTransparent) 
+			discard;        
 
         // Apply shadows.
-        shadow = ShadowCalculation(v_LightSpacePos, norm, lightInstance);
+        ShadowCalculation(v_LightSpacePos, norm, lightInstance);
 
 		// Apply directional lights.
-	    color += CalcDirLight(light, lightInstance, norm, viewDir, material) * u_useComplexLighting;
+	    color = CalcDirLight(light, lightInstance, norm, viewDir, shadow, hitDirLightModifier, material) * u_useComplexLighting;
 
 		// Apply point lights.
         vec4 acumPointLights = vec4(0.0);
-        for(int i = 0; i < u_NPointLights; i++)
+        int nPointLights = u_NPointLights * u_useComplexLighting;
+        for(int i = 0; i < nPointLights; i++)
         {
             LightInstance lightInstance2 = pointLightsInstances[i];
             PointLight light2 = pointLights[int(lightInstance2.lightTypeIndex)];
@@ -223,7 +230,12 @@ void main() {
 		// Apply spot lights.
 
 		// Finally apply texture and v_color
-		color = (color + acumPointLights * u_useComplexLighting) * textureColor * v_color;
+		color = (color + acumPointLights) * textureColor * v_color;
+
+        if(translucentShadow == 0.0 && hitDirLightModifier > 0.5)
+        {
+            color += coloredShadow;
+        }
 
 	}
 	else {

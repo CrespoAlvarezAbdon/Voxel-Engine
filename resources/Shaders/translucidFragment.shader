@@ -96,8 +96,8 @@ layout(std430, binding = 3) buffer SpotLightsInstances {
 };
 
 // Variables.
+float shadow = 1.0;
 vec4 color;
-float shadow = 0.0;
 
 // Functions
 
@@ -124,8 +124,7 @@ vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, v
 
 }
 
-vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material)
-{
+vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material) {
     vec3 lightDir = normalize(lightInstance.pos - v_pos);
 
     // diffuse shading
@@ -149,7 +148,7 @@ vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 
     return (ambient + diffuse + specular);
 }
 
-float ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance)
+void ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance)
 {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
@@ -159,27 +158,13 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInsta
 
     vec3 normal = normalize(n);
     vec3 lightDir = normalize(lightInstance.pos - v_pos);
-    // check whether current frag pos is in shadow
-    float s = currentDepth - 0.001 > closestDepth  ? 0.0 : 1.0;
+
+    float bias = 0.001;
+    shadow = currentDepth - bias > closestDepth ? 0.0 : 1.0;
 
     // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
     if(projCoords.z > 1.0)
-        s = 1.0;
-        
-    return s;
-
-    // PCF
-    s = 0.0;
-    vec2 texelSize = 1.0 / textureSize(depthMap, 0);
-    for(int x = -1; x <= 1; ++x)
-    {
-        for(int y = -1; y <= 1; ++y)
-        {
-            float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            s += currentDepth - 0.001 > pcfDepth  ? 0.0 : 1.0;        
-        }    
-    }
-    s /= 9.0;
+        shadow = 1.0;
 
 }
 
@@ -200,10 +185,10 @@ void main() {
 
 	color = vec4(0.0);
 
-    shadow = ShadowCalculation(v_LightSpacePos, norm, lightInstance);
+    ShadowCalculation(v_LightSpacePos, norm, lightInstance);
 
 	// Apply directional lights.
-	color += CalcDirLight(light, lightInstance, norm, viewDir, material) * u_useComplexLighting;
+	color += CalcDirLight(light, lightInstance, norm, viewDir, material);
 
     // Apply point lights.
     vec4 acumPointLights = vec4(0.0);

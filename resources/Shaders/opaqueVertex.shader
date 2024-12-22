@@ -15,7 +15,6 @@ layout(location = 0) in vec3 position; // Vertices' positions.
 layout(location = 1) in vec2 texCoord;
 layout(location = 2) in vec4 vertexColor;
 layout(location = 3) in vec4 additionalData; // First byte is material index.
-layout(location = 4) in vec3 globalPos;
 // The things above this line are also denominated as render targets.
 
 // This are output varying variables. These are variables that are shared between shader programs.
@@ -24,7 +23,6 @@ out vec3 v_pos;
 out vec4 v_color;
 out vec4 v_LightSpacePos;
 flat out int v_materialIndex;
-flat out vec3 v_globalPos;
 
 // Structs.
 struct LightInstance {
@@ -58,7 +56,6 @@ void main() {
 
 		v_color = vertexColor;
 		v_materialIndex = int(additionalData.x);
-		v_globalPos = globalPos;
 
 		gl_Position = u_MVP * vec4(position, 1.0);
 

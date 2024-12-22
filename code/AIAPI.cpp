@@ -723,7 +723,7 @@ namespace VoxelEng {
 					GUImanager::changeGUIState("mainMenu.exitButton", false);
 					GUImanager::bindActKeyFunction("mainMenu", nullptr, controlCode::noKey);
 
-					game::gameLoop(chunkManager::openedTerrainFileName());
+					game::gameLoop();
 
 					stopPlayingRecord();
 					oldActualTime_ = 0;
