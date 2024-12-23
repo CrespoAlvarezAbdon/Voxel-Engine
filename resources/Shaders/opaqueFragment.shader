@@ -151,7 +151,7 @@ void ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstan
     if(u_useComplexLighting == 1) {
 
         float bias = 0.001;
-        vec3 displacedPos = fragPosLightSpace.xyz + bias * n;
+        vec3 displacedPos = fragPosLightSpace.xyz;
         vec3 projCoords = displacedPos.xyz / fragPosLightSpace.w;
         projCoords = projCoords * 0.5 + 0.5;
 

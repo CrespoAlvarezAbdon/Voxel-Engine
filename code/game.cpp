@@ -674,6 +674,288 @@ namespace VoxelEng {
     
     }
 
+    void game::preRenderingSetup() {
+   
+        // Times calculation.
+        actualTime = glfwGetTime();
+        timeStep_ = actualTime - lastFrameTime;
+        lastFrameTime = actualTime;
+
+        // ms/frame calculation and display.
+        nFramesDrawn++;
+        if (actualTime - lastSecondTime >= 1.0) {
+
+            //std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame and total vertices is " << std::to_string(totalVertices);
+            logger::debugLog(std::to_string(1000.0 / nFramesDrawn) + "ms/frame");
+            nFramesDrawn = 0;
+            lastSecondTime = glfwGetTime();
+
+        }
+
+        if (mainWindow_->wasResized())
+            mainWindow_->resizeHeavyProcessing();
+        if (!mainWindow_->isMouseFree())
+            player::updateTransform(game::timeStep());
+
+        playerCamera_->updateView();
+        MVPmatrix_ = playerCamera_->projectionMatrix() * playerCamera_->viewMatrix();
+
+        blockTextureAtlas_->bind(0);
+
+        // Set the sun's directional light MVP matrix.
+        SSBO<lightInstance>* directionalLightsInstances = registries::get("SSBOs")->pointer<registry<std::string, var>>()->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
+        lightInstance& instance = directionalLightsInstances->get(0);
+        instance.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, .0f, 0.0f);
+        instance.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
+        glm::mat4 proj = glm::ortho(-320.0f, 320.0f, -384.0f, 384.0f, zNear_, zFar_);
+        glm::mat4 view = glm::lookAt(instance.pos, vec3Zero, vec3FixedUp);
+        instance.MVP = proj * view;
+        directionalLightsInstances->reuploadElement(0);
+    
+    }
+
+    void game::syncWithMeshingThreads() {
+    
+        // Receive updated chunk meshes when possible.
+        if (chunkManager::priorityManagerThreadMutex().try_lock()) {
+
+            chunkManager::swapChunkMeshesBuffers();
+            chunksRenderingData_ = chunkManager::drawableChunksRead();
+            chunksVBOoperations_ = chunkManager::chunkVBOoperationsRead();
+
+            chunkManager::priorityManagerThreadMutex().unlock();
+            chunkManager::priorityManagerThreadCV().notify_one();
+
+        }
+        else if (chunkManager::managerThreadMutex().try_lock()) {
+
+            chunkManager::swapChunkMeshesBuffers();
+            chunksRenderingData_ = chunkManager::drawableChunksRead();
+            chunksVBOoperations_ = chunkManager::chunkVBOoperationsRead();
+
+            chunkManager::managerThreadMutex().unlock();
+            chunkManager::managerThreadCV().notify_one();
+
+        }
+
+        // TODO. METER KEYBIND PARA HACER REMESH DEL CHUNK DONDE ESTÁ EL PLAYER ACTUALMENTE FOR DEBUGGING PURPOSES.
+        // Coordinate rendering thread and the thread in charge of generating entity render data if necessary.
+        if (entityManager::syncMutex().try_lock()) {
+
+            entityManager::swapReadWrite();
+            batchesToDraw_ = entityManager::renderingData();
+
+            entityManager::syncMutex().unlock();
+            entityManager::entityManagerCV().notify_one();
+
+        }
+    
+    }
+
+    void game::shadowPass() {
+    
+        graphics::setDepthTest(true);
+        graphics::setOpaquePassConfig();
+        glViewport(0, 0, 4096, 4096);
+
+        // Opaque shadowmap.
+        shadowFB_->bind();
+        shadowShader_->bind();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        if (chunksRenderingData_) {
+
+            for (vec3 const& chunkPos : opaqueChunkGeometryToDraw) {
+
+                // Draw terrain.
+                const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, false);
+                renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
+
+            }
+
+        }
+        shadowFB_->unbind();
+
+        // Translucent shadowmap.
+        translucentShadowFB_->bind();
+        translucentShadowShader_->bind();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        if (chunksRenderingData_) {
+
+            for (vec3 const& chunkPos : translucentChunkGeometryToDraw) {
+
+                // Draw terrain.
+                const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, true);
+                renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
+
+            }
+
+        }
+        translucentShadowFB_->unbind();
+
+        glViewport(0, 0, mainWindow_->width(), mainWindow_->height());
+    
+    }
+
+    void game::opaquePass() {
+    
+        // Terrain rendering.
+        graphics::setDepthTest(true);
+        graphics::setOpaquePassConfig();
+        opaqueFB_->bind();
+        opaqueFB_->clearAllTextures();
+        opaqueShader_->bind();
+        opaqueShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
+        opaqueShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
+        opaqueShader_->setUniform1i("u_renderMode", 0); // renderMode = 0 stands for 3D rendering mode.
+        shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
+        translucentShadowFB_->getTexture(textureType::COLOR, 0)->bind(2);
+        translucentShadowFB_->getTexture(textureType::DEPTH, 0)->bind(3);
+        if (chunksRenderingData_) {
+
+            for (vec3 const& chunkPos : opaqueChunkGeometryToDraw) {
+
+                const chunkRenderingData& chunk = chunksRenderingData_->at(chunkPos);
+
+                if (playerCamera_->isInsideFrustum(chunk.globalChunkPos)) {
+
+                    // TODO. EN SETBLOCK DE PLAYER HAY QUE PONER QUE SE ACTUALIZEN LOS DATOS DE NEIGHBORS MINUS DEL LOD2
+                    int nPointLightsChunk = chunk.pointLights_.size();
+                    opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
+
+                    // Upload dynamic lights.
+                    if (nPointLightsChunk)
+                        pointLightsInstances_->setContentsAndReupload(chunk.pointLights_);
+                    if (!chunk.spotLights_.empty())
+                        spotLightsInstances_->setContentsAndReupload(chunk.spotLights_);
+
+                    // Draw terrain.
+                    const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, false);
+                    renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
+
+                }
+
+            }
+
+        }
+
+        // Entity rendering. // TODO. HAY QUE METER TAMBIÉN LO DE VERTICES TRANSLÚCIDOS PARA LAS ENTIDADES.
+        entitiesVao_->bind();
+        entitiesVbo_->bind();
+
+        if (batchesToDraw_) {
+
+            for (auto const& batch : *batchesToDraw_) {
+
+                if (nVertices = batch.size()) {
+
+                    entitiesVbo_->prepareStatic(batch.data(), sizeof(vertex) * nVertices);
+
+                    renderer::draw3D(nVertices);
+
+                }
+
+            }
+
+        }
+    
+    }
+
+    void game::translucentPass() {
+
+        graphics::setDepthTest(true);
+        graphics::setTranslucidPassConfig();
+        translucidFB_->bind();
+        translucidFB_->clearTextures({ vec4Zeroes, vec4Ones });
+        translucidShader_->bind();
+        translucidShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
+        translucidShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
+        translucidShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
+
+        // Terrain rendering.
+        vao_->bind();
+        chunksVbo_->bind();
+        shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
+        if (chunksRenderingData_) {
+
+            for (vec3 const& chunkPos : translucentChunkGeometryToDraw) {
+
+                const chunkRenderingData& chunk = chunksRenderingData_->at(chunkPos);
+
+                if (playerCamera_->isInsideFrustum(chunk.globalChunkPos)) {
+
+                    int nPointLightsChunk = chunk.pointLights_.size();
+                    opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
+
+                    // Upload dynamic lights.
+                    if (nPointLightsChunk)
+                        pointLightsInstances_->setContentsAndReupload(chunk.pointLights_);
+                    if (!chunk.spotLights_.empty())
+                        spotLightsInstances_->setContentsAndReupload(chunk.spotLights_);
+
+                    // Draw terrain.
+                    const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, true);
+                    renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
+
+                }
+
+            }
+
+        }
+
+    }
+
+    void game::compositePass() {
+
+        graphics::setCompositePassConfig();
+        opaqueFB_->bind();
+
+        compositeShader_->bind();
+
+        translucidFB_->getTexture(textureType::COLOR, 0)->bind(0);
+        translucidFB_->getTexture(textureType::COLOR, 1)->bind(1);
+
+        screenVao_->bind();
+        screenVbo_->bind();
+
+        screenVbo_->prepareStatic(screenShaderQuad, 6 * sizeof(float) * 4);
+        renderer::draw2D(6);
+
+    }
+
+    void game::GUIpass() {
+    
+        graphics::setDepthTest(false);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
+        graphics::blending(true);
+
+        opaqueFB_->bind();
+
+        opaqueShader_->bind();
+        opaqueShader_->setUniform1i("u_renderMode", 1);
+        blockTextureAtlas_->bind();
+
+        GUImanager::drawGUI();
+    
+    }
+
+    void game::screenPass() {
+
+        graphics::setScreenPassConfig();
+        opaqueFB_->unbind();
+
+        // Clear the window (default framebuffer) to draw the next frame.
+        renderer::clearWindow();
+
+        screenShader_->bind();
+
+        opaqueFB_->getTexture(textureType::COLOR, 0)->bind(0);
+
+        screenVbo_->prepareStatic(screenShaderQuad, 6 * sizeof(float) * 4);
+        renderer::draw2D(6);
+
+    }
+
     void game::gameLoop() {
         
         if (loopSelection_ == engineMode::INITLEVEL || loopSelection_ == engineMode::INITRECORD) {
@@ -682,75 +964,34 @@ namespace VoxelEng {
 
             while (loopSelection_ == engineMode::EDITLEVEL || loopSelection_ == engineMode::PLAYINGRECORD) {
 
-                blockTextureAtlas_->bind(0);
-                
-                graphics::setDepthTest(true);
-                graphics::setOpaquePassConfig();
-                opaqueFB_->bind();
-                opaqueFB_->clearAllTextures();
-                opaqueShader_->bind();
-                opaqueShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
+                preRenderingSetup();
 
-                // The window size callback by GLFW gets called every time the user is resizing the window so the heavy resize processing is done here
-                // after the player has stopped resizing the window.
-                if (mainWindow_->wasResized())
-                    mainWindow_->resizeHeavyProcessing();
-
-                if (!mainWindow_->isMouseFree())
-                    player::updateTransform(game::timeStep());
-                playerCamera_->updateView();
-
-                MVPmatrix_ = playerCamera_->projectionMatrix() * playerCamera_->viewMatrix();
-                opaqueShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
-                opaqueShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos()); // TODO. DELETE THIS UNUSED UNIFORM.
+                syncWithMeshingThreads();
 
                 /*
                 3D rendering.
                 */
-                opaqueShader_->setUniform1i("u_renderMode", 0); // renderMode = 0 stands for 3D rendering mode.
                 vao_->bind();
                 chunksVbo_->bind();
 
-                // Receive updated chunk meshes when possible.
-                if (chunkManager::priorityManagerThreadMutex().try_lock()) {
-
-                    chunkManager::swapChunkMeshesBuffers();
-                    chunksRenderingData_ = chunkManager::drawableChunksRead();
-                    chunksVBOoperations_ = chunkManager::chunkVBOoperationsRead();
-
-                    chunkManager::priorityManagerThreadMutex().unlock();
-                    chunkManager::priorityManagerThreadCV().notify_one();
-
-                }
-                else if (chunkManager::managerThreadMutex().try_lock()) {
-
-                    chunkManager::swapChunkMeshesBuffers();
-                    chunksRenderingData_ = chunkManager::drawableChunksRead();
-                    chunksVBOoperations_ = chunkManager::chunkVBOoperationsRead();
-
-                    chunkManager::managerThreadMutex().unlock();
-                    chunkManager::managerThreadCV().notify_one();
-
-                }
-
                 // Upload changes in chunk vertex data to chunk VBO.
                 if (chunksVBOoperations_) {
-                
+
                     for (auto it = chunksVBOoperations_->cbegin(); it != chunksVBOoperations_->cend(); it++) {
 
                         //bool b = chunksRenderingData_->contains(it->first); // DEBUG.
-                        
+
                         if (it->second == chunkVBOoperation::PUSH) {
-                        
+
                             const chunkRenderingData& chunkRenderData = chunksRenderingData_->at(it->first);
                             if (chunkRenderData.vertices.size()) {
-                            
+
                                 chunksVbo_->pushDynamicData(it->first,
                                     chunkRenderData.vertices.data(), chunkRenderData.vertices.size() * sizeof(vertex),
                                     false);
 
                                 opaqueChunkGeometryToDraw.insert(it->first);
-                            
+
                             }
 
                             if (chunkRenderData.translucentVertices.size()) {
@@ -762,157 +1003,14 @@ namespace VoxelEng {
                                 translucentChunkGeometryToDraw.insert(it->first);
 
                             }
-                        
+
                         }
                         else if (it->second == chunkVBOoperation::FREE) {
-                        
+
                             chunksVbo_->freeDynamicData(it->first, false);
                             chunksVbo_->freeDynamicData(it->first, true);
                             opaqueChunkGeometryToDraw.erase(it->first);
                             translucentChunkGeometryToDraw.erase(it->first);
-                        
-                        }
-
-                    }
-                
-                }
-
-                // TODO. METER KEYBIND PARA HACER REMESH DEL CHUNK DONDE ESTÁ EL PLAYER ACTUALMENTE FOR DEBUGGING PURPOSES.
-                // Coordinate rendering thread and the thread in charge of generating entity render data if necessary.
-                if (entityManager::syncMutex().try_lock()) {
-
-                    entityManager::swapReadWrite();
-                    batchesToDraw_ = entityManager::renderingData();
-
-                    entityManager::syncMutex().unlock();
-                    entityManager::entityManagerCV().notify_one();
-
-                }
-
-                /*
-                Shadow pass.
-                */
-
-                glViewport(0, 0, 4096, 4096);
-
-                // Opaque shadowmap.
-                shadowFB_->bind();
-                glClear(GL_DEPTH_BUFFER_BIT);
-                {
-                    // CHUNK_SIZE * 20 * -1
-                    shadowShader_->bind();
-                    // TODO. MOVE THIS TO A PROPER PLACE.
-                    // Set the sun's directional light MVP matrix.
-                    SSBO<lightInstance>* directionalLightsInstances = registries::get("SSBOs")->pointer<registry<std::string, var>>()->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
-                    lightInstance& instance = directionalLightsInstances->get(0);
-                    instance.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, .0f, 0.0f);
-                    instance.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
-                    //instance.dir = vec4(0.0f, -1.0f, 0.0f, 0.0f);
-
-                    glm::mat4 proj = glm::ortho(-320.0f, 320.0f, -384.0f, 384.0f, zNear_, zFar_);
-                    glm::mat4 view = glm::lookAt(instance.pos, vec3Zero, vec3FixedUp);
-                    instance.MVP = proj * view;
-                    directionalLightsInstances->reuploadElement(0);
-                }
-                if (chunksRenderingData_) {
-
-                    for (vec3 const& chunkPos : opaqueChunkGeometryToDraw) {
-
-                        // Draw terrain.
-                        const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, false);
-                        renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
-
-                    }
-
-                }
-                shadowFB_->unbind();
-
-                // Translucent shadowmap.
-                translucentShadowFB_->bind();
-                translucentShadowShader_->bind();
-                glClear(GL_DEPTH_BUFFER_BIT);
-                if (chunksRenderingData_) {
-
-                    for (vec3 const& chunkPos : translucentChunkGeometryToDraw) {
-
-                        // Draw terrain.
-                        const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, true);
-                        renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
-
-                    }
-
-                }
-                translucentShadowFB_->unbind();
-                glViewport(0, 0, mainWindow_->width(), mainWindow_->height());
-
-
-                /*
-                Opaque pass.
-                */
-
-                // Terrain rendering.
-                opaqueFB_->bind();
-                opaqueShader_->bind();
-                shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
-                translucentShadowFB_->getTexture(textureType::COLOR, 0)->bind(2);
-                translucentShadowFB_->getTexture(textureType::DEPTH, 0)->bind(3);
-                if (chunksRenderingData_) {
-
-                    for (vec3 const& chunkPos : opaqueChunkGeometryToDraw) {
-
-                        const chunkRenderingData& chunk = chunksRenderingData_->at(chunkPos);
-
-                        if (playerCamera_->isInsideFrustum(chunk.globalChunkPos)) {
-
-                            // TODO. EN SETBLOCK DE PLAYER HAY QUE PONER QUE SE ACTUALIZEN LOS DATOS DE NEIGHBORS MINUS DEL LOD2
-                            int nPointLightsChunk = chunk.pointLights_.size();
-                            opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
-
-                            // Upload dynamic lights.
-                            if (nPointLightsChunk)
-                                pointLightsInstances_->setContentsAndReupload(chunk.pointLights_);
-                            if (!chunk.spotLights_.empty())
-                                spotLightsInstances_->setContentsAndReupload(chunk.spotLights_);
-
-                            // Draw terrain.
-                            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, false);
-                            renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
-
-                        }
-
-                    }
-
-                }
-                
-                // Times calculation.
-                actualTime = glfwGetTime();
-                timeStep_ = actualTime - lastFrameTime;
-                lastFrameTime = actualTime;
-
-                // ms/frame calculation and display.
-                nFramesDrawn++;
-                if (actualTime - lastSecondTime >= 1.0) {
-
-                    //std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame and total vertices is " << std::to_string(totalVertices);
-                    logger::debugLog(std::to_string(1000.0 / nFramesDrawn) + "ms/frame");
-                    nFramesDrawn = 0;
-                    lastSecondTime = glfwGetTime();
-
-                }
-
-                // Entity rendering. // TODO. HAY QUE METER AQUÍ TAMBIÉN LO DE VERTICES TRANSLÚCIDOS PARA LAS ENTIDADES.
-                entitiesVao_->bind();
-                entitiesVbo_->bind();
-
-                if (batchesToDraw_) {
-
-                    for (auto const& batch : *batchesToDraw_) {
-
-                        if (nVertices = batch.size()) {
-
-                            entitiesVbo_->prepareStatic(batch.data(), sizeof(vertex) * nVertices);
-
-                            renderer::draw3D(nVertices);
 
                         }
 
@@ -920,100 +1018,17 @@ namespace VoxelEng {
 
                 }
 
-                /*
-                Transparent pass.
-                */
+                shadowPass();
 
-                graphics::setDepthTest(true);
-                graphics::setTranslucidPassConfig();
-                translucidFB_->bind();
-                translucidFB_->clearTextures({ vec4Zeroes, vec4Ones });
-                translucidShader_->bind();
-                translucidShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
-                translucidShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
-                translucidShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
+                opaquePass();
 
-                // Terrain rendering.
-                vao_->bind();
-                chunksVbo_->bind();
-                shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
-                if (chunksRenderingData_) {
+                translucentPass();
 
-                    for (vec3 const& chunkPos : translucentChunkGeometryToDraw) {
+                compositePass();
 
-                        const chunkRenderingData& chunk = chunksRenderingData_->at(chunkPos);
+                GUIpass();
 
-                        if (playerCamera_->isInsideFrustum(chunk.globalChunkPos)) {
-
-                            int nPointLightsChunk = chunk.pointLights_.size();
-                            opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
-
-                            // Upload dynamic lights.
-                            if (nPointLightsChunk)
-                                pointLightsInstances_->setContentsAndReupload(chunk.pointLights_);
-                            if (!chunk.spotLights_.empty())
-                                spotLightsInstances_->setContentsAndReupload(chunk.spotLights_);
-
-                            // Draw terrain.
-                            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, true);
-                            renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
-
-                        }
-
-                    }
-
-                }
-
-
-                /*
-                Composite pass.
-                */
-                graphics::setCompositePassConfig();
-                opaqueFB_->bind();
-
-                compositeShader_->bind();
-
-                translucidFB_->getTexture(textureType::COLOR, 0)->bind(0);
-                translucidFB_->getTexture(textureType::COLOR, 1)->bind(1);
-
-                screenVao_->bind();
-                screenVbo_->bind();
-
-                screenVbo_->prepareStatic(screenShaderQuad, 6 * sizeof(float) * 4);
-                renderer::draw2D(6);
-
-
-                /*
-                GUI rendering
-                */
-                graphics::setDepthTest(false);
-                glDepthFunc(GL_LESS);
-                glDepthMask(GL_TRUE);
-                graphics::blending(true);
-
-                opaqueFB_->bind();
-
-                opaqueShader_->bind();
-                opaqueShader_->setUniform1i("u_renderMode", 1);
-                blockTextureAtlas_->bind();
-
-                GUImanager::drawGUI();
-
-                /*
-                Screen pass.
-                */
-                graphics::setScreenPassConfig();
-                opaqueFB_->unbind();
-
-                // Clear the window (default framebuffer) to draw the next frame.
-                renderer::clearWindow();
-
-                screenShader_->bind();
-
-                opaqueFB_->getTexture(textureType::COLOR, 0)->bind(0);
-
-                screenVbo_->prepareStatic(screenShaderQuad, 6*sizeof(float)*4);
-                renderer::draw2D(6);
+                screenPass();
 
                 // Swap front and back buffers.
                 glfwSwapBuffers(mainWindow_->windowAPIpointer());

@@ -134,6 +134,47 @@ namespace VoxelEng {
         static void setupGameLoop();
 
         /**
+        * @brief Operations to be done before starting any type of rendering on the current frame.
+        */
+        static void preRenderingSetup();
+
+        /**
+        * @brief Sync with meshing threads in order to obtain latest stable mesh data.
+        */
+        static void syncWithMeshingThreads();
+
+        /**
+        * @brief Compute the shadow maps.
+        */
+        static void shadowPass();
+
+        /**
+        * @brief Render the opaque geometry. Transparent geometry is also handled here.
+        */
+        static void opaquePass();
+
+        /**
+        * @brief Render the translucent geometry.
+        */
+        static void translucentPass();
+
+        /**
+        * @brief Composite the rendering results of the last opaque and translucent passes that were computed.
+        */
+        static void compositePass();
+
+        /**
+        * @brief Render the Graphical User Interface.
+        */
+        static void GUIpass();
+
+        /**
+        * @brief Use the results of the last composite pass that was computed to render the final image to
+        * the engine's main window.
+        */
+        static void screenPass();
+
+        /**
         * @brief Graphical mode main loop when in a level.
         */
 		static void gameLoop();
