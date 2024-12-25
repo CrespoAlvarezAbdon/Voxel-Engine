@@ -41,6 +41,16 @@ namespace VoxelEng {
 		unsigned int nAttachments(textureType type) const;
 
 		/**
+		* @brief Get the framebuffer's width set for all its attachments.
+		*/
+		unsigned int width() const;
+
+		/**
+		* @brief Get the framebuffer's height set for all its attachments.
+		*/
+		unsigned int height() const;
+
+		/**
 		* @brief Returns the framebuffer's texture.
 		* For example, getTexture(framebufferAttachment::COLOR, 3) will get the third
 		* color buffer that was attached to the framebuffer.
@@ -120,6 +130,18 @@ namespace VoxelEng {
 
 		return attachedTextures_.contains(type) ? attachedTextures_.at(type).size() : 0;
 	
+	}
+
+	inline unsigned int framebuffer::width() const {
+	
+		return attachedTextures_.begin()->second.begin()->get()->width();
+	
+	}
+
+	inline unsigned int framebuffer::height() const {
+
+		return attachedTextures_.begin()->second.begin()->get()->height();
+
 	}
 
 	inline void framebuffer::unbindAll() {

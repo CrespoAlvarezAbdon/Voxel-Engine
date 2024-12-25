@@ -1,6 +1,7 @@
 #include "Framebuffer.h"
 #include <Graphics/graphics.h>
 #include <Utilities/Logger/logger.h>
+#include <stdexcept>
 
 #if GRAPHICS_API == OPENGL
 
@@ -20,6 +21,9 @@ namespace VoxelEng {
 	: ID_(0)
 	{
 	
+		if (attachments.size() == 0)
+			throw std::runtime_error("Cannot create an empty framebuffer with no attachments");
+
 		// Create framebuffer.
 		glGenFramebuffers(1, &ID_);
 

@@ -29,7 +29,6 @@ namespace VoxelEng {
 
 	public:
 
-
 		// Observers.
 
 		/**
@@ -123,6 +122,9 @@ namespace VoxelEng {
 	requires T1smallerOrEqualToT2<T1, T2>
 	inline const T1& palette<T1, T2>::getT1(const T2& l) const {
 	
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
+
 		if (T2ToT1_.contains(l))
 			return T2ToT1_[l];
 		else
@@ -133,6 +135,9 @@ namespace VoxelEng {
 	template<typename T1, typename T2>
 	requires T1smallerOrEqualToT2<T1, T2>
 	const T2& palette<T1, T2>::getT2(const T1& s) const {
+
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
 
 		if (T1ToT2_.contains(s))
 			return T1ToT2_[s];
@@ -145,6 +150,9 @@ namespace VoxelEng {
 	requires T1smallerOrEqualToT2<T1, T2>
 	inline bool palette<T1, T2>::containsT1(const T1& s) const {
 	
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
+
 		return T1ToT2_.contains(s);
 	
 	}
@@ -152,6 +160,9 @@ namespace VoxelEng {
 	template<typename T1, typename T2>
 	requires T1smallerOrEqualToT2<T1, T2>
 	inline bool palette<T1, T2>::containsT2(const T2& l) const {
+
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
 
 		return T2ToT1_.contains(l);
 
@@ -161,6 +172,9 @@ namespace VoxelEng {
 	requires T1smallerOrEqualToT2<T1, T2>
 	inline std::size_t palette<T1, T2>::size() const {
 
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
+
 		return T1ToT2_.size();
 
 	}
@@ -169,6 +183,9 @@ namespace VoxelEng {
 	requires T1smallerOrEqualToT2<T1, T2>
 	std::unordered_map<T1, T2>::const_iterator palette<T1, T2>::cbegin() const {
 	
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
+
 		return T1ToT2_.cbegin();
 	
 	}
@@ -177,6 +194,9 @@ namespace VoxelEng {
 	requires T1smallerOrEqualToT2<T1, T2>
 	std::unordered_map<T1, T2>::const_iterator palette<T1, T2>::cend() const {
 	
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
+
 		return T1ToT2_.cend();
 	
 	}
@@ -184,6 +204,9 @@ namespace VoxelEng {
 	template<typename T1, typename T2>
 	requires T1smallerOrEqualToT2<T1, T2>
 	T1& palette<T1, T2>::getT1(const T2& l) {
+
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
 
 		if (T2ToT1_.contains(l))
 			return T2ToT1_[l];
@@ -195,6 +218,9 @@ namespace VoxelEng {
 	template<typename T1, typename T2>
 	requires T1smallerOrEqualToT2<T1, T2>
 	T2& palette<T1, T2>::getT2(const T1& s) {
+
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
 
 		if (T1ToT2_.contains(s))
 			return T1ToT2_[s];
@@ -210,6 +236,9 @@ namespace VoxelEng {
 		T1ToT2_[s] = l;
 		T2ToT1_[l] = s;
 
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
+
 	}
 
 	template<typename T1, typename T2>
@@ -219,6 +248,9 @@ namespace VoxelEng {
 		const T2& l = T1ToT2_[s];
 		T2ToT1_.erase(l);
 		T1ToT2_.erase(s);
+
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
 
 	}
 
@@ -230,6 +262,9 @@ namespace VoxelEng {
 		T1ToT2_.erase(s);
 		T2ToT1_.erase(l);
 
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
+
 	}
 
 	template<typename T1, typename T2>
@@ -238,6 +273,9 @@ namespace VoxelEng {
 	
 		T1ToT2_.clear();
 		T2ToT1_.clear();
+
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
 	
 	}
 

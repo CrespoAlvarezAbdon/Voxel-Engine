@@ -284,6 +284,23 @@ namespace VoxelEng {
 		*/
 		unsigned int nNeighbors() const;
 
+		/**
+		* @brief Returns the chunk's palette that maps the local block IDs with the global block IDs.
+		*/
+		const palette<unsigned short, unsigned int>& getPalette() const;
+
+		/**
+		* @brief Returns the chunk's palette count that contains the number of global IDs mapped to
+		* local IDs for this chunk.
+		*/
+		const std::unordered_map<unsigned short, unsigned short>& getPaletteCount() const;
+
+		/**
+		* @brief Get the free local IDs available for this chunk's block palette.
+		* @returns The free local IDs available for this chunk's block palette.
+		*/
+		const std::unordered_set<unsigned short>& getFreeLocalIDs() const;
+
 
 		// Modifiers.
 
@@ -332,6 +349,12 @@ namespace VoxelEng {
 		* local IDs for this chunk.
 		*/
 		std::unordered_map<unsigned short, unsigned short>& getPaletteCount();
+
+		/**
+		* @brief Get the free local IDs available for this chunk's block palette.
+		* @returns The free local IDs available for this chunk's block palette.
+		*/
+		std::unordered_set<unsigned short>& getFreeLocalIDs();
 
 		/**
 		* @brief Sets the value of a block within the chunk.
@@ -690,6 +713,24 @@ namespace VoxelEng {
 	
 	}
 
+	inline const palette<unsigned short, unsigned int>& chunk::getPalette() const {
+	
+		return palette_;
+	
+	}
+
+	inline const std::unordered_map<unsigned short, unsigned short>& chunk::getPaletteCount() const {
+	
+		return paletteCount_;
+	
+	}
+
+	inline const std::unordered_set<unsigned short>& chunk::getFreeLocalIDs() const {
+	
+		return freeLocalIDs_;
+	
+	}
+
 	inline void* chunk::blocks() {
 	
 		return blocksLocalIDs;
@@ -741,6 +782,12 @@ namespace VoxelEng {
 	inline std::unordered_map<unsigned short, unsigned short>& chunk::getPaletteCount() {
 	
 		return paletteCount_;
+	
+	}
+
+	inline std::unordered_set<unsigned short>& chunk::getFreeLocalIDs() {
+	
+		return freeLocalIDs_;
 	
 	}
 
@@ -1418,6 +1465,13 @@ namespace VoxelEng {
 		* @brief Serialize the chunk's data in order to save it into auxiliary memory.
 		*/
 		static std::string serializeChunk(chunk* c);
+
+		/**
+		* @brief Deserialize the given chunk data into the given chunk.
+		* @param c The given chunk to fill with the given chunk data.
+		* @param data The data to fill the given chunk with.
+		*/
+		static void deserializeChunk(chunk* c, const std::string& data);
 
 		/**
 		* @brief Load chunk at specified chunk coordinates.

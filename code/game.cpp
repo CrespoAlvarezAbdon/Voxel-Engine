@@ -756,7 +756,7 @@ namespace VoxelEng {
     
         graphics::setDepthTest(true);
         graphics::setOpaquePassConfig();
-        glViewport(0, 0, 4096, 4096);
+        glViewport(0, 0, shadowFB_->width(), shadowFB_->height());
 
         // Opaque shadowmap.
         shadowFB_->bind();

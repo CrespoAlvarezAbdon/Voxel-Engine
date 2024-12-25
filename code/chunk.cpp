@@ -210,6 +210,10 @@ namespace VoxelEng {
                      oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
         needsRemesh_ = needsRemesh_ || oldGlobalID != newGlobalID;
 
+        int a = -1;
+        if (actualLocalID)
+            a = palette_.getT2(actualLocalID);
+
         if (actualLocalID) {
 
             if (paletteCount_.at(actualLocalID) == 1) { // The old local ID is no longer used at (x,y,z).
@@ -236,7 +240,7 @@ namespace VoxelEng {
             }
             else { // The new block does not have an associated local ID in the palette.
 
-                if (freeLocalIDs_.empty()) {
+                if (freeLocalIDs_.empty()) { 
 
                     actualLocalID = palette_.size() + 1;
 
@@ -1728,155 +1732,8 @@ namespace VoxelEng {
         else if (type_ == chunkJobType::LOAD) {
         
             chunk_->makeEmpty();
-            if (world::isSaved(chunk_->chunkPos())) { // Load previously saved chunk.
-
-                std::string data = world::loadChunk(chunk_->chunkPos());
-                std::string word;
-                char c = 0;
-                unsigned int index = 0,
-                             nBytes = data.size();
-                const char* dataBegin = &data[index];
-                unsigned short localID = 0;
-                unsigned int globalID = 0;
-                unsigned short count = 0;
-
-                chunk_->blockDataMutex().lock();
-                std::memcpy(chunk_->blocks(), dataBegin, sizeof(unsigned short) * nBlocksChunk);
-                index += sizeof(unsigned short) * nBlocksChunk + 1;
-
-                std::memcpy(chunk_->neighborBlocksPlusX(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-                index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
-
-                std::memcpy(chunk_->neighborBlocksMinusX(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-                index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
-
-                std::memcpy(chunk_->neighborBlocksPlusY(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-                index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
-
-                std::memcpy(chunk_->neighborBlocksMinusY(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-                index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
-
-                std::memcpy(chunk_->neighborBlocksPlusZ(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-                index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
-
-                std::memcpy(chunk_->neighborBlocksMinusZ(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-                index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
-
-                palette<unsigned short, unsigned int>& chunkPalette = chunk_->getPalette();
-                c = data[index];
-                while (c != '@') {
-
-                    while (c != '|') {
-                    
-                        word += c;
-
-                        c = data[++index];
-                    
-                    }
-
-                    localID = sto<unsigned short>(word);
-                    word.clear();
-
-                    c = data[++index];
-
-                    while (c != '|') {
-
-                        word += c;
-
-                        c = data[++index];
-
-                    }
-
-                    globalID = block::getBlockC(word).intID();
-                    word.clear();
-
-                    chunkPalette.insert(localID, globalID);
-
-                    c = data[++index];
-
-                }
-
-                std::unordered_map<unsigned short, unsigned short>& chunkPaletteCount = chunk_->getPaletteCount();
-                c = data[++index]; // Skip the '@' delimiter character.
-                while (c != '@') {
-
-                    while (c != '|') {
-
-                        word += c;
-
-                        c = data[++index];
-
-                    }
-
-                    localID = sto<unsigned short>(word);
-                    word.clear();
-
-                    c = data[++index];
-
-                    while (c != '|') {
-
-                        word += c;
-                        c = data[++index];
-
-                    }
-
-                    count = sto<unsigned short>(word);
-                    word.clear();
-
-                    chunkPaletteCount[localID] = count;
-
-                    c = data[++index];
-
-                }
-                chunk_->blockDataMutex().unlock();
-
-                c = data[++index]; // Skip the '@' delimiter character
-                unsigned int state = 0;
-                while (index < nBytes) {
-                
-                    while (c != '|') {
-
-                        word += c;
-
-                        c = data[++index];
-
-                    }
-
-                    switch (state) {
-                    
-                    case 0:
-                        chunk_->nBlocks(sto<unsigned short>(word));
-                        break;
-                    case 1:
-                        chunk_->nBlocksPlusX(sto<unsigned short>(word));
-                        break;
-                    case 2:
-                        chunk_->nBlocksMinusX(sto<unsigned short>(word));
-                        break;
-                    case 3:
-                        chunk_->nBlocksPlusY(sto<unsigned short>(word));
-                        break;
-                    case 4:
-                        chunk_->nBlocksMinusY(sto<unsigned short>(word));
-                        break;
-                    case 5:
-                        chunk_->nBlocksPlusZ(sto<unsigned short>(word));
-                        break;
-                    case 6:
-                        chunk_->nBlocksMinusZ(sto<unsigned short>(word));
-                        break;
-                    
-                    }
-
-                    word.clear();
-                    c = data[++index];
-                    state++;
-                
-                }
-
-                chunk_->needsRemesh(true); // TODO. EL BUG ES QUE SI MODIFICO UN BLOCK EN UN BORDE, TAMBIEN HAY QUE GUARDAR EL CHUNK VECINO QUE LE HACE FRONTERA.
-
-            }
+            if (world::isSaved(chunk_->chunkPos())) // Load previously saved chunk.
+                chunkManager::deserializeChunk(chunk_, world::loadChunk(chunk_->chunkPos()));
             else // Generate new chunk.
                 worldGen::generate(*chunk_);
 
@@ -2885,6 +2742,12 @@ namespace VoxelEng {
 
         data += '@';
 
+        const std::unordered_set<unsigned short>& chunkFreeLocalIDs = c->getFreeLocalIDs();
+        for (auto it = chunkFreeLocalIDs.cbegin(); it != chunkFreeLocalIDs.cend(); it++)
+            data += std::to_string(*it) + '|';
+
+        data += '@';
+
         data += std::to_string(c->nBlocks()) + '|' + std::to_string(c->nBlocksPlusX()) + '|' + std::to_string(c->nBlocksMinusX()) + '|' + std::to_string(c->nBlocksPlusY()) + '|' + std::to_string(c->nBlocksMinusY()) + '|' + std::to_string(c->nBlocksPlusZ()) + '|' + std::to_string(c->nBlocksMinusZ()) + '|';
 
         c->blockDataMutex().unlock_shared();
@@ -2893,6 +2756,176 @@ namespace VoxelEng {
         logger::debugLog("Time for saving chunks is " + std::to_string(t.getDurationMs()));
 
         return data;
+    
+    }
+
+    void chunkManager::deserializeChunk(chunk* chunk, const std::string& data) {
+    
+        std::string word;
+        char c = 0;
+        unsigned int index = 0,
+            nBytes = data.size();
+        const char* dataBegin = &data[index];
+        unsigned short localID = 0;
+        unsigned int globalID = 0;
+        unsigned short count = 0;
+
+        chunk->blockDataMutex().lock();
+        std::memcpy(chunk->blocks(), dataBegin, sizeof(unsigned short) * nBlocksChunk);
+        index += sizeof(unsigned short) * nBlocksChunk + 1;
+
+        std::memcpy(chunk->neighborBlocksPlusX(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
+        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
+
+        std::memcpy(chunk->neighborBlocksMinusX(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
+        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
+
+        std::memcpy(chunk->neighborBlocksPlusY(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
+        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
+
+        std::memcpy(chunk->neighborBlocksMinusY(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
+        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
+
+        std::memcpy(chunk->neighborBlocksPlusZ(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
+        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
+
+        std::memcpy(chunk->neighborBlocksMinusZ(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
+        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
+
+        palette<unsigned short, unsigned int>& chunkPalette = chunk->getPalette();
+        c = data[index];
+        while (c != '@') {
+
+            while (c != '|') {
+
+                word += c;
+
+                c = data[++index];
+
+            }
+
+            localID = sto<unsigned short>(word);
+            word.clear();
+
+            c = data[++index];
+
+            while (c != '|') {
+
+                word += c;
+
+                c = data[++index];
+
+            }
+
+            globalID = block::getBlockC(word).intID();
+            word.clear();
+
+            chunkPalette.insert(localID, globalID);
+
+            c = data[++index];
+
+        }
+
+        std::unordered_map<unsigned short, unsigned short>& chunkPaletteCount = chunk->getPaletteCount();
+        c = data[++index]; // Skip the '@' delimiter character.
+        while (c != '@') {
+
+            while (c != '|') {
+
+                word += c;
+
+                c = data[++index];
+
+            }
+
+            localID = sto<unsigned short>(word);
+            word.clear();
+
+            c = data[++index];
+
+            while (c != '|') {
+
+                word += c;
+                c = data[++index];
+
+            }
+
+            count = sto<unsigned short>(word);
+            word.clear();
+
+            chunkPaletteCount[localID] = count;
+
+            c = data[++index];
+
+        }
+
+        std::unordered_set<unsigned short>& chunkFreeLocalIDs = chunk->getFreeLocalIDs();
+        c = data[++index]; // Skip the '@' delimiter character.
+        while (c != '@') {
+
+            while (c != '|') {
+
+                word += c;
+
+                c = data[++index];
+
+            }
+
+            localID = sto<unsigned short>(word);
+            chunkFreeLocalIDs.insert(localID);
+            word.clear();
+
+            c = data[++index];
+
+        }
+
+        chunk->blockDataMutex().unlock();
+
+        c = data[++index]; // Skip the '@' delimiter character
+        unsigned int state = 0;
+        while (index < nBytes) {
+
+            while (c != '|') {
+
+                word += c;
+
+                c = data[++index];
+
+            }
+
+            switch (state) {
+
+            case 0:
+                chunk->nBlocks(sto<unsigned short>(word));
+                break;
+            case 1:
+                chunk->nBlocksPlusX(sto<unsigned short>(word));
+                break;
+            case 2:
+                chunk->nBlocksMinusX(sto<unsigned short>(word));
+                break;
+            case 3:
+                chunk->nBlocksPlusY(sto<unsigned short>(word));
+                break;
+            case 4:
+                chunk->nBlocksMinusY(sto<unsigned short>(word));
+                break;
+            case 5:
+                chunk->nBlocksPlusZ(sto<unsigned short>(word));
+                break;
+            case 6:
+                chunk->nBlocksMinusZ(sto<unsigned short>(word));
+                break;
+
+            }
+
+            word.clear();
+            c = data[++index];
+            state++;
+
+        }
+
+        chunk->needsRemesh(true); // TODO. EL BUG ES QUE SI MODIFICO UN BLOCK EN UN BORDE, TAMBIEN HAY QUE GUARDAR EL CHUNK VECINO QUE LE HACE FRONTERA.
     
     }
 
