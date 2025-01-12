@@ -225,7 +225,7 @@ namespace VoxelEng {
 		if (T1ToT2_.contains(s))
 			return T1ToT2_[s];
 		else
-			logger::errorLog("The specified T1 key is not present in the palette");
+ 			logger::errorLog("The specified T1 key is not present in the palette");
 
 	}
 

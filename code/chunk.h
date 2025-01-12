@@ -96,19 +96,7 @@ namespace VoxelEng {
 
 		// LOD 1.
 		model vertices;
-		//model verticesBoundary;
 		model translucentVertices;
-		model translucentVerticesBoundary;
-
-		// Model that serves as a transition between a LOD 1 and a LOD 2 chunk.
-		model verticesLOD1_2Boundary;
-		model translucentVerticesLOD1_2Boundary;
-
-		// LOD 2.
-		model verticesLOD2;
-		model verticesLOD2Boundary;
-		model translucentVerticesLOD2;
-		model translucentVerticesLOD2Boundary;
 
 		std::vector<lightInstance> pointLights_;
 		std::vector<lightInstance> spotLights_;
@@ -301,6 +289,12 @@ namespace VoxelEng {
 		*/
 		const std::unordered_set<unsigned short>& getFreeLocalIDs() const;
 
+		/**
+		* @brief Get the positions of all the point lights affecting this chunk.
+		* @returns The positions of all the point lights affecting this chunk.
+		*/
+		const std::unordered_set<vec3>& getFloodPointLightPositions() const;
+
 
 		// Modifiers.
 
@@ -355,6 +349,12 @@ namespace VoxelEng {
 		* @returns The free local IDs available for this chunk's block palette.
 		*/
 		std::unordered_set<unsigned short>& getFreeLocalIDs();
+
+		/**
+		* @brief Get the positions of all the point lights affecting this chunk.
+		* @returns The positions of all the point lights affecting this chunk.
+		*/
+		std::unordered_set<vec3>& getFloodPointLightPositions();
 
 		/**
 		* @brief Sets the value of a block within the chunk.
@@ -530,8 +530,10 @@ namespace VoxelEng {
 		palette<unsigned short, unsigned int> palette_;
 		std::unordered_map<unsigned short, unsigned short> paletteCount_;
 		std::unordered_set<unsigned short> freeLocalIDs_;
-		unsigned short blocksLocalIDs[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+		unsigned short blocksLocalIDs_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
+		unsigned char blockLight_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+		std::unordered_set<vec3> floodPointLightPositions_;
 
 		unsigned short neighborBlocksPlusX_[CHUNK_SIZE][CHUNK_SIZE];
 		unsigned short neighborBlocksMinusX_[CHUNK_SIZE][CHUNK_SIZE];
@@ -583,7 +585,7 @@ namespace VoxelEng {
 
 	inline const void* chunk::blocks() const {
 
-		return blocksLocalIDs;
+		return blocksLocalIDs_;
 
 	}
 
@@ -697,7 +699,7 @@ namespace VoxelEng {
 
 	inline bool chunk::isEmptyBlock(GLbyte x, GLbyte y, GLbyte z) const {
 	
-		return blocksLocalIDs[x][y][z] == 0;
+		return blocksLocalIDs_[x][y][z] == 0;
 	
 	}
 
@@ -731,9 +733,15 @@ namespace VoxelEng {
 	
 	}
 
+	inline const std::unordered_set<vec3>& chunk::getFloodPointLightPositions() const {
+	
+		return floodPointLightPositions_;
+	
+	}
+
 	inline void* chunk::blocks() {
 	
-		return blocksLocalIDs;
+		return blocksLocalIDs_;
 	
 	}
 
@@ -789,6 +797,12 @@ namespace VoxelEng {
 	
 		return freeLocalIDs_;
 	
+	}
+
+	inline std::unordered_set<vec3>& chunk::getFloodPointLightPositions() {
+
+		return floodPointLightPositions_;
+
 	}
 
 	inline const block& chunk::setBlock(const vec3& chunkRelPos, const block& b, bool modification) {

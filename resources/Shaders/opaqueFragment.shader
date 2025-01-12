@@ -227,6 +227,12 @@ void main() {
             acumPointLights += CalcPointLight(light2, lightInstance2, norm, viewDir, material);
         }
 
+        acumPointLights.r = 0.5;
+        for(int j = 0; j < 32768; j++)
+        {
+            acumPointLights *= 2;
+        }
+
 		// Apply spot lights.
 
 		// Finally apply texture and v_color
