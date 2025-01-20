@@ -6,7 +6,6 @@
 #include <cstring>
 #include <cmath>
 #include <chrono>
-#include <cstring>
 #include <fstream>
 #include <format>
 #include <filesystem>
@@ -86,18 +85,12 @@ namespace VoxelEng {
 
         std::memset(blocksLocalIDs_, 0, nBlocksChunk * sizeof(unsigned short));
 
-        std::memset(blockLight_, 0, nBlocksChunk * sizeof(unsigned char));
-
         std::memset(neighborBlocksPlusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksPlusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksPlusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-
-        std::memset(neighborBlocksMinusXLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusYLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusZLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
     
     }
    
@@ -117,18 +110,12 @@ namespace VoxelEng {
 
         std::memset(blocksLocalIDs_, 0, nBlocksChunk * sizeof(unsigned short));
 
-        std::memset(blockLight_, 0, nBlocksChunk * sizeof(unsigned char));
-
         std::memset(neighborBlocksPlusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksPlusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksPlusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-
-        std::memset(neighborBlocksMinusXLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusYLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusZLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         
         if (!empty)
             worldGen::generate(*this); // This can only call to setBlock to modify the chunk and that method already takes care of 'blocksMutex_'.
@@ -159,7 +146,6 @@ namespace VoxelEng {
 
         std::memcpy(blocksLocalIDs_, c.blocksLocalIDs_, nBlocksChunk * sizeof(unsigned short));
 
-        std::memcpy(blockLight_, c.blockLight_, nBlocksChunk * sizeof(unsigned char));
         floodPointLightPositions_ = c.floodPointLightPositions_;
 
         std::memcpy(neighborBlocksPlusX_, c.neighborBlocksPlusX_, nBlocksChunkEdge * sizeof(unsigned short));
@@ -168,10 +154,6 @@ namespace VoxelEng {
         std::memcpy(neighborBlocksMinusY_, c.neighborBlocksMinusY_, nBlocksChunkEdge * sizeof(unsigned short));
         std::memcpy(neighborBlocksPlusZ_, c.neighborBlocksPlusZ_, nBlocksChunkEdge * sizeof(unsigned short));
         std::memcpy(neighborBlocksMinusZ_, c.neighborBlocksMinusZ_, nBlocksChunkEdge * sizeof(unsigned short));
-
-        std::memcpy(neighborBlocksMinusXLOD2_, c.neighborBlocksMinusXLOD2_, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memcpy(neighborBlocksMinusYLOD2_, c.neighborBlocksMinusYLOD2_, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memcpy(neighborBlocksMinusZLOD2_, c.neighborBlocksMinusZLOD2_, nBlocksChunkEdge * sizeof(unsigned short));
 
         renderingData_.vertices = c.renderingData_.vertices;
 
@@ -206,46 +188,7 @@ namespace VoxelEng {
         else if (oldLocalID && !actualLocalID)
             nBlocks_--;
 
-        // Update block light information.
-        const block& oldB = block::getBlockC(oldGlobalID);
-        const varRef& oldEmittedLight = oldB.emittedLight();
-        const varRef& emittedLight = b.emittedLight();
-
-        if (!oldEmittedLight.isNull()) { // Remove old light pos.
-
-            if (emittedLight.getVarType() == var::varType::POINTLIGHT) {
-
-                floodPointLightPositions_.erase(vec3{ x,y,z });
-
-            }
-            else if (emittedLight.getVarType() == var::varType::SPOTLIGHT) {
-
-                throw std::runtime_error("This is not implemented yet");
-
-            }
-
-        }
-
-        if (!emittedLight.isNull()) { // Add new light pos.
-
-            if (emittedLight.getVarType() == var::varType::POINTLIGHT) {
-
-                floodPointLightPositions_.insert(vec3{ x,y,z });
-
-            }
-            else if (emittedLight.getVarType() == var::varType::SPOTLIGHT) {
-
-                throw std::runtime_error("This is not implemented yet");
-
-            }
-            else if (emittedLight.getVarType() == var::varType::DIRECTIONALLIGHT)
-                throw std::runtime_error("Directional lights cannot be applied by blocks");
-            else
-                throw std::runtime_error("Unknown light type for block specified (varType number is " + std::to_string((int)emittedLight.getVarType()) + ")");
-
-        }
-
-        return oldB;
+        return block::getBlockC(oldGlobalID);
 
     }
 
@@ -337,7 +280,7 @@ namespace VoxelEng {
             }
             else if (LOD == 2) {
 
-                neighborBlocks = &neighborBlocksMinusXLOD2_;
+                neighborBlocks = &neighborBlocksMinusX_;
 
             }
             else
@@ -376,7 +319,7 @@ namespace VoxelEng {
             }
             else if (LOD == 2) {
 
-                neighborBlocks = &neighborBlocksMinusYLOD2_;
+                neighborBlocks = &neighborBlocksMinusY_;
 
             }
             else
@@ -415,7 +358,7 @@ namespace VoxelEng {
             }
             else if (LOD == 2) {
 
-                neighborBlocks = &neighborBlocksMinusZLOD2_;
+                neighborBlocks = &neighborBlocksMinusZ_;
 
             }
             else
@@ -460,13 +403,9 @@ namespace VoxelEng {
 
             renderingData_.vertices = model();
             renderingData_.translucentVertices = model();
-            renderingData_.pointLights_ = std::vector<lightInstance>();
-            renderingData_.spotLights_ = std::vector<lightInstance>();
-
-            std::memset(blockLight_, 0, nBlocksChunk * sizeof(unsigned char));
-
-            bool blockLightChecked[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-            std::memset(blockLightChecked, 0, nBlocksChunk * sizeof(bool));
+            renderingData_.pointLights = std::vector<lightInstance>();
+            renderingData_.spotLights = std::vector<lightInstance>();
+            renderingData_.chunkAdditionalBlockData.clear();
 
             // Read chunk data section starts.
             blocksMutex_.lock_shared();
@@ -481,122 +420,11 @@ namespace VoxelEng {
                 y = 0,
                 z = 0;
             unsigned short localID = 0;
-
-            // Update block light render information.
-            std::deque<std::pair<vec3, unsigned char>> floodLightPositions;
-            for (auto it = floodPointLightPositions_.cbegin(); it != floodPointLightPositions_.cend(); it++) {
-            
-                x = it->x;
-                y = it->y;
-                z = it->z;
-
-                localID = blocksLocalIDs_[x][y][z];
-                block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
-                const varRef& emittedLight = b.emittedLight();
-
-                // Add block's light.
-                if (!emittedLight.isNull()) {
-
-                    if (emittedLight.getVarType() == var::varType::POINTLIGHT) {
-
-                        lightInstance& instance = renderingData_.pointLights_.emplace_back();
-                        instance.pos = getGlobalPos(chunkPos_.x, chunkPos_.y, chunkPos_.z, x, y, z);
-                        instance.lightTypeIndex = b.emittedLightIndex();
-
-                        // Search for blocks affected by this light.
-                        std::memset(blockLightChecked, 0, nBlocksChunk * sizeof(bool));
-                        floodLightPositions.clear();
-                        floodLightPositions.emplace_back(vec3{ x, y, z }, 15);
-                        while (floodLightPositions.size() > 0) {
-
-                            //std::cout << std::to_string(floodLightPositions.size()) << std::endl;
-                            const vec3& pos = floodLightPositions.front().first;
-                            //std::cout << std::to_string(pos) << std::endl;
-                            unsigned char lightLevelToApply = floodLightPositions.front().second;
-                            //std::cout << "light " << std::to_string(lightLevelToApply) << std::endl;
-
-                            if (lightLevelToApply > 0 && !blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z]) {
-
-                                blockLight_[(int)pos.x][(int)pos.y][(int)pos.z] = lightLevelToApply;
-
-                                //+x
-                                if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x + 1][(int)pos.y][(int)pos.z] == 0 &&
-                                    blockLight_[(int)pos.x + 1][(int)pos.y][(int)pos.z] + 1 < lightLevelToApply) {
-
-                                    floodLightPositions.emplace_back(vec3{ pos.x + 1, pos.y, pos.z }, lightLevelToApply - 1);
-
-                                }
-
-                                //-x
-                                if (pos.x > 0 && blocksLocalIDs_[(int)pos.x - 1][(int)pos.y][(int)pos.z] == 0 &&
-                                    blockLight_[(int)pos.x - 1][(int)pos.y][(int)pos.z] + 1 < lightLevelToApply) {
-
-                                    floodLightPositions.emplace_back(vec3{ pos.x - 1, pos.y, pos.z }, lightLevelToApply - 1);
-
-                                }
-
-                                //+y
-                                if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y + 1][(int)pos.z] == 0 &&
-                                    blockLight_[(int)pos.x][(int)pos.y + 1][(int)pos.z] + 1 < lightLevelToApply) {
-
-                                    floodLightPositions.emplace_back(vec3{ pos.x, pos.y + 1, pos.z }, lightLevelToApply - 1);
-
-                                }
-
-                                //-y
-                                if (pos.y > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y - 1][(int)pos.z] == 0 &&
-                                    blockLight_[(int)pos.x][(int)pos.y - 1][(int)pos.z] + 1 < lightLevelToApply) {
-
-                                    floodLightPositions.emplace_back(vec3{ pos.x, pos.y - 1, pos.z }, lightLevelToApply - 1);
-
-                                }
-
-                                //+z
-                                if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z + 1] == 0 &&
-                                    blockLight_[(int)pos.x][(int)pos.y][(int)pos.z + 1] + 1 < lightLevelToApply) {
-
-                                    floodLightPositions.emplace_back(vec3{ pos.x, pos.y, pos.z + 1 }, lightLevelToApply - 1);
-
-                                }
-
-                                //-z
-                                if (pos.z > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z - 1] == 0 &&
-                                    blockLight_[(int)pos.x][(int)pos.y][(int)pos.z - 1] + 1 < lightLevelToApply) {
-
-                                    floodLightPositions.emplace_back(vec3{ pos.x, pos.y, pos.z - 1 }, lightLevelToApply - 1);
-
-                                }
-
-                            }
-
-                            blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z] = true;
-
-                            floodLightPositions.pop_front();
-
-                        }
-
-                    }
-                    else if (emittedLight.getVarType() == var::varType::SPOTLIGHT) {
-
-                        lightInstance& instance = renderingData_.spotLights_.emplace_back();
-                        instance.pos = getGlobalPos(chunkPos_.x, chunkPos_.y, chunkPos_.z, x, y, z);
-                        instance.lightTypeIndex = b.emittedLightIndex();
-
-                    }
-                    else if (emittedLight.getVarType() == var::varType::DIRECTIONALLIGHT)
-                        throw std::runtime_error("Directional lights cannot be applied by blocks");
-                    else
-                        throw std::runtime_error("Unknown light type for block specified (varType number is " + std::to_string((int)emittedLight.getVarType()) + ")");
-
-                }
-
-            }
             
             // Render faces that do not require data from neighbor chunks.
             vertex aux;
             const block* bNeighbor = nullptr;
             unsigned short neighborLocalID = 0;
-            bool blockHasLight = false;
             if (nBlocks_ && nBlocks_ < nBlocksChunk)
                 for (x = 0; x < CHUNK_SIZE; x++)
                     for (y = 0; y < CHUNK_SIZE; y++)
@@ -606,10 +434,10 @@ namespace VoxelEng {
                             block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
                             const varRef& emittedLight = b.emittedLight();
 
-                            blockHasLight = blockLight_[x][y][z] > 0;
-
                             // Add block's model to the mesh if necessary.
                             if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+
+                                renderingData_.chunkAdditionalBlockData.isSolid[x][y][z] = 0;
 
                                 // z+
                                 if (z < CHUNK_SIZE_LIMIT && (neighborLocalID = blocksLocalIDs_[x][y][z + 1])) {
@@ -627,7 +455,9 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + 1 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.color[0] = blockHasLight ? 0 : 255;
+                                            aux.additionalData[1] = x;
+                                            aux.additionalData[2] = y;
+                                            aux.additionalData[3] = z;
 
                                             chunkModel->push_back(aux);
 
@@ -656,7 +486,9 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.color[0] = blockHasLight ? 0 : 255;
+                                            aux.additionalData[1] = x;
+                                            aux.additionalData[2] = y;
+                                            aux.additionalData[3] = z;
 
                                             chunkModel->push_back(aux);
 
@@ -685,7 +517,9 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.color[0] = blockHasLight ? 0 : 255;
+                                            aux.additionalData[1] = x;
+                                            aux.additionalData[2] = y;
+                                            aux.additionalData[3] = z;
 
                                             chunkModel->push_back(aux);
 
@@ -714,7 +548,9 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.color[0] = blockHasLight ? 0 : 255;
+                                            aux.additionalData[1] = x;
+                                            aux.additionalData[2] = y;
+                                            aux.additionalData[3] = z;
 
                                             chunkModel->push_back(aux);
 
@@ -743,7 +579,9 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.color[0] = blockHasLight ? 0 : 255;
+                                            aux.additionalData[1] = x;
+                                            aux.additionalData[2] = y;
+                                            aux.additionalData[3] = z;
 
                                             chunkModel->push_back(aux);
 
@@ -772,7 +610,9 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.color[0] = blockHasLight ? 0 : 255;
+                                            aux.additionalData[1] = x;
+                                            aux.additionalData[2] = y;
+                                            aux.additionalData[3] = z;
 
                                             chunkModel->push_back(aux);
 
@@ -784,6 +624,33 @@ namespace VoxelEng {
                                     }
 
                                 }
+
+                            }
+                            else
+                                renderingData_.chunkAdditionalBlockData.isSolid[x][y][z] = 1;
+
+                            if (!emittedLight.isNull()) {
+
+                                renderingData_.chunkAdditionalBlockData.isSolid[x][y][z] = 0;
+
+                                if (emittedLight.getVarType() == var::varType::POINTLIGHT) {
+
+                                    lightInstance& instance = renderingData_.pointLights.emplace_back();
+                                    instance.pos = getGlobalPos(chunkPos_.x, chunkPos_.y, chunkPos_.z, x, y, z);
+                                    instance.lightTypeIndex = b.emittedLightIndex();
+
+                                }
+                                else if (emittedLight.getVarType() == var::varType::SPOTLIGHT) {
+
+                                    lightInstance& instance = renderingData_.spotLights.emplace_back();
+                                    instance.pos = getGlobalPos(chunkPos_.x, chunkPos_.y, chunkPos_.z, x, y, z);
+                                    instance.lightTypeIndex = b.emittedLightIndex();
+
+                                }
+                                else if (emittedLight.getVarType() == var::varType::DIRECTIONALLIGHT)
+                                    throw std::runtime_error("Directional lights cannot be applied by blocks");
+                                else
+                                    throw std::runtime_error("Unknown light type for block specified (varType number is " + std::to_string((int)emittedLight.getVarType()) + ")");
 
                             }
 
@@ -814,6 +681,9 @@ namespace VoxelEng {
                                     aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
                                     aux.positions[2] = (chunkPos_.z + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
                                     aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.additionalData[1] = x;
+                                    aux.additionalData[2] = y;
+                                    aux.additionalData[3] = z;
 
                                     chunkModel->push_back(aux);
 
@@ -825,6 +695,8 @@ namespace VoxelEng {
                             }
 
                         }
+                        //else
+                            //renderingData_.chunkAdditionalBlockData.isSolid[x][y][CHUNK_SIZE_LIMIT] = 1;
 
                     }
             
@@ -853,6 +725,9 @@ namespace VoxelEng {
                                     aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
                                     aux.positions[2] = (chunkPos_.z - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
                                     aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.additionalData[1] = x;
+                                    aux.additionalData[2] = y;
+                                    aux.additionalData[3] = z;
 
                                     chunkModel->push_back(aux);
 
@@ -864,6 +739,8 @@ namespace VoxelEng {
                             }
 
                         }
+                        //else
+                            //renderingData_.chunkAdditionalBlockData.isSolid[x][y][0] = 1;
 
                     }
 
@@ -892,6 +769,9 @@ namespace VoxelEng {
                                     aux.positions[1] = (chunkPos_.y + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
                                     aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.additionalData[1] = x;
+                                    aux.additionalData[2] = y;
+                                    aux.additionalData[3] = z;
 
                                     chunkModel->push_back(aux);
 
@@ -903,6 +783,8 @@ namespace VoxelEng {
                             }
 
                         }
+                        //else
+                            //renderingData_.chunkAdditionalBlockData.isSolid[x][CHUNK_SIZE_LIMIT][z] = 1;
 
                     }
 
@@ -931,6 +813,9 @@ namespace VoxelEng {
                                     aux.positions[1] = (chunkPos_.y - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
                                     aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.additionalData[1] = x;
+                                    aux.additionalData[2] = y;
+                                    aux.additionalData[3] = z;
 
                                     chunkModel->push_back(aux);
 
@@ -942,17 +827,12 @@ namespace VoxelEng {
                             }
 
                         }
+                        //else
+                            //renderingData_.chunkAdditionalBlockData.isSolid[x][0][z] = 1;
 
                     }
 
             }
-
-            for (int i = 0; i < 16; i++)
-                for (int j = 0; j < 16; j++)
-                {
-                    if (neighborBlocksPlusX_[i][j] > 16)
-                        int a = 3 + 2;
-                }
 
             if (nBlocksPlusX_) {
 
@@ -977,6 +857,9 @@ namespace VoxelEng {
                                     aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
                                     aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.additionalData[1] = x;
+                                    aux.additionalData[2] = y;
+                                    aux.additionalData[3] = z;
 
                                     chunkModel->push_back(aux);
 
@@ -988,6 +871,8 @@ namespace VoxelEng {
                             }
 
                         }
+                        //else
+                            //renderingData_.chunkAdditionalBlockData.isSolid[CHUNK_SIZE_LIMIT][y][z] = 1;
 
                     }
 
@@ -1016,6 +901,9 @@ namespace VoxelEng {
                                     aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
                                     aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.additionalData[1] = x;
+                                    aux.additionalData[2] = y;
+                                    aux.additionalData[3] = z;
 
                                     chunkModel->push_back(aux);
 
@@ -1027,6 +915,8 @@ namespace VoxelEng {
                             }
 
                         }
+                        //else
+                            //renderingData_.chunkAdditionalBlockData.isSolid[0][y][z] = 1;
 
                     }
 
@@ -1058,8 +948,6 @@ namespace VoxelEng {
 
         std::memset(blocksLocalIDs_, 0, nBlocksChunk * sizeof(unsigned short));
 
-        std::memset(blockLight_, 0, nBlocksChunk * sizeof(unsigned char));
-
         floodPointLightPositions_.clear();
 
         std::memset(neighborBlocksPlusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
@@ -1068,10 +956,6 @@ namespace VoxelEng {
         std::memset(neighborBlocksMinusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksPlusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-
-        std::memset(neighborBlocksMinusXLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusYLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusZLOD2_, 0, nBlocksChunkEdge * sizeof(unsigned short));
 
         palette_.clear();
         paletteCount_.clear();
@@ -1111,7 +995,6 @@ namespace VoxelEng {
         event::notify();
 
     }
-
 
     // 'loadChunkJob' class.
 

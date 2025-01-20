@@ -25,7 +25,6 @@ namespace VoxelEng {
 	template <class T>
 	requires std::default_initializable<T>
 	class SSBO {
-
 	public:
 
 		// Constructors.
@@ -102,6 +101,13 @@ namespace VoxelEng {
 		* @param elements The new contents of the SSBO.
 		*/
 		void setContentsAndReupload(const std::vector<T>& elements);
+
+		/**
+		* @brief Set the SSBO's contents and reupload them. Will reallocate buffer if the current size is lower
+		* than for the element to upload.
+		* @param elements The new contents of the SSBO.
+		*/
+		void setContentsAndReupload(const T& element);
 
 
 		// Destructors.
@@ -272,6 +278,31 @@ namespace VoxelEng {
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 		}
+
+	}
+
+	template <typename T>
+	requires std::default_initializable<T>
+	void SSBO<T>::setContentsAndReupload(const T& element) {
+
+		if (elements_.empty()) {
+		
+			elements_.emplace_back(element);
+
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
+			glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(T), elements_.data(), GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+		
+		}
+		else {
+		
+			elements_[0] = element;
+
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(T), elements_.data());
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+		
+		}	
 
 	}
 	

@@ -109,7 +109,6 @@ namespace VoxelEng {
 		* WARNING. Shader must be bound before calling this method.
 		*/
 		template <typename T>
-		requires std::derived_from<T, registryElement>
 		void bindUBO(const UBO<T>& ubo);
 
 		/**
@@ -121,8 +120,8 @@ namespace VoxelEng {
 		* WARNING. Shader must be bound before calling this method.
 		*/
 		template <typename T>
-		requires std::derived_from<T, registryElement>
 		void bindSSBO(const SSBO<T>& ssbo);
+
 
 		// Destructors.
 
@@ -160,7 +159,6 @@ namespace VoxelEng {
 	};
 
 	template <typename T>
-	requires std::derived_from<T, registryElement>
 	void shader::bindUBO(const UBO<T>& ubo) {
 
 		const std::string& uboName = ubo.name();
@@ -173,7 +171,6 @@ namespace VoxelEng {
 	}
 
 	template <typename T>
-	requires std::derived_from<T, registryElement>
 	void shader::bindSSBO(const SSBO<T>& ssbo) {
 
 		const std::string& ssboName = ssbo.name();

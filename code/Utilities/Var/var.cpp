@@ -2,6 +2,7 @@
 #include <Utilities/Logger/logger.h>
 
 // Includes of the headers that define the types supported by the var class.
+#include <Chunk/ChunkAdditionalBlockData/chunkAdditionalBlockData.h>
 #include <Graphics/UBOs/UBOs.h>
 #include <Graphics/SSBO/SSBO.h>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
@@ -54,6 +55,10 @@ namespace VoxelEng {
 
 		case varType::SSBO_OF_LIGHTINSTANCES:
 			delete static_cast<SSBO<lightInstance>*>(pointer_);
+			break;
+
+		case varType::SSBO_OF_CHUNK_ADDITIONAL_BLOCK_DATA:
+			delete static_cast<SSBO<chunkAdditionalBlockData>*>(pointer_);
 			break;
 
 		case varType::REGISTRYINSORDERED_OF_STRINGS_MATERIALS:

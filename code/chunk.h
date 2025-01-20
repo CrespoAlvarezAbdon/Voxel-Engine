@@ -26,7 +26,6 @@
 #include <utility>
 #include <vector>
 #include <time.h>
-
 #include <atomicRecyclingPool.h>
 #include <block.h>
 #include <definitions.h>
@@ -36,12 +35,12 @@
 #include <palette.h>
 #include <vec.h>
 #include <utilities.h>
+#include <Chunk/ChunkAdditionalBlockData/chunkAdditionalBlockData.h>
 #include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 #include <Graphics/Textures/texture.h>
 #include <Graphics/Shaders/shader.h>
 #include <Graphics/Models/model.h>
 #include <Graphics/Vertex/vertex.h>
-
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
 #include <Registry/RegistryInsOrdered/registryInsOrdered.h>
 
@@ -98,8 +97,10 @@ namespace VoxelEng {
 		model vertices;
 		model translucentVertices;
 
-		std::vector<lightInstance> pointLights_;
-		std::vector<lightInstance> spotLights_;
+		std::vector<lightInstance> pointLights;
+		std::vector<lightInstance> spotLights;
+
+		chunkAdditionalBlockData chunkAdditionalBlockData;
 
 		unsigned int totalSize = 0;
 
@@ -532,7 +533,6 @@ namespace VoxelEng {
 		std::unordered_set<unsigned short> freeLocalIDs_;
 		unsigned short blocksLocalIDs_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
-		unsigned char blockLight_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 		std::unordered_set<vec3> floodPointLightPositions_;
 
 		unsigned short neighborBlocksPlusX_[CHUNK_SIZE][CHUNK_SIZE];
@@ -541,10 +541,6 @@ namespace VoxelEng {
 		unsigned short neighborBlocksMinusY_[CHUNK_SIZE][CHUNK_SIZE];
 		unsigned short neighborBlocksPlusZ_[CHUNK_SIZE][CHUNK_SIZE];
 		unsigned short neighborBlocksMinusZ_[CHUNK_SIZE][CHUNK_SIZE];
-
-		unsigned short neighborBlocksMinusXLOD2_[CHUNK_SIZE][CHUNK_SIZE];
-		unsigned short neighborBlocksMinusYLOD2_[CHUNK_SIZE][CHUNK_SIZE];
-		unsigned short neighborBlocksMinusZLOD2_[CHUNK_SIZE][CHUNK_SIZE];
 
 		bool modified_;
 		

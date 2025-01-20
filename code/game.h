@@ -23,6 +23,7 @@
 #include <indexBuffer.h>
 #include <world.h>
 #include <vec.h>
+#include <Chunk/ChunkAdditionalBlockData/chunkAdditionalBlockData.h>
 #include <Graphics/framebuffer.h>
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
 #include <Graphics/SSBO/SSBO.h>
@@ -303,6 +304,7 @@ namespace VoxelEng {
         static SSBO<lightInstance>* directionalLightsInstances_;
         static SSBO<lightInstance>* pointLightsInstances_;
         static SSBO<lightInstance>* spotLightsInstances_;
+        static SSBO<chunkAdditionalBlockData>* chunkAdditionalBlockData_;
 
         // Gameloop-exclusive variables.
         static std::unordered_set<vec3> opaqueChunkGeometryToDraw;

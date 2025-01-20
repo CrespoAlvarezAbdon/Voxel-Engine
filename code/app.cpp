@@ -13,14 +13,16 @@
 
 // NO SE GUARDAN LAS FREE LOCAL IDS DE LOS CHUNKS GUARDADOS POR ESO NOS DA EL ERROR.
 
+
+// MAÑANA
+// 1º PROBLEMA. NO ESTAMOS RELLENANDO
+
 int main() {
 
     try {
 
         // Start engine.
         VoxelEng::game::init();
-        
-        
 
         // Initialize AI API and register AI games.
         VoxelEng::AIAPI::aiGame::init();

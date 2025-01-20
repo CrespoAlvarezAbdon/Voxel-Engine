@@ -23,6 +23,7 @@ out vec3 v_pos;
 out vec4 v_color;
 out vec4 v_LightSpacePos;
 flat out int v_materialIndex;
+flat out vec3 v_chunkPos;
 
 // Structs.
 struct LightInstance {
@@ -55,7 +56,8 @@ void main() {
 		v_LightSpacePos = lightInstance.MVP * vec4(position, 1.0);
 
 		v_color = vertexColor;
-		v_materialIndex = int(additionalData.x);
+		v_materialIndex = int(additionalData[0]);
+		v_chunkPos = vec3(additionalData[1], additionalData[2], additionalData[3]);
 
 		gl_Position = u_MVP * vec4(position, 1.0);
 
