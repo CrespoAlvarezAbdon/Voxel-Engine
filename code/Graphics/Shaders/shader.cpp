@@ -4,7 +4,6 @@
 #include <ios>
 #include <fstream>
 #include <stdexcept>
-#include <Chunk/ChunkAdditionalBlockData/chunkAdditionalBlockData.h>
 #include <Registry/registries.h>
 #include <Registry/registry.h>
 #include <Graphics/Materials/materials.h>
@@ -145,10 +144,6 @@ namespace VoxelEng {
 
             case var::varType::SSBO_OF_LIGHTINSTANCES:
                 bindSSBO(*ssbo->pointer<SSBO<lightInstance>>());
-                break;
-
-            case var::varType::SSBO_OF_CHUNK_ADDITIONAL_BLOCK_DATA:
-                bindSSBO(*ssbo->pointer<SSBO<chunkAdditionalBlockData>>());
                 break;
 
             default:

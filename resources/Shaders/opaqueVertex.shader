@@ -22,8 +22,8 @@ out vec2 v_TexCoord;
 out vec3 v_pos;
 out vec4 v_color;
 out vec4 v_LightSpacePos;
+out vec3 v_blockLightColor;
 flat out int v_materialIndex;
-flat out vec3 v_chunkPos;
 
 // Structs.
 struct LightInstance {
@@ -49,7 +49,7 @@ void main() {
 	if (u_renderMode == 0) { // 3D rendering.
 
 		LightInstance lightInstance = directionalLightsInstances[0];
-
+		
 		// Export variables to fragment shader.
 		v_TexCoord = texCoord;
 		v_pos = position;
@@ -57,7 +57,7 @@ void main() {
 
 		v_color = vertexColor;
 		v_materialIndex = int(additionalData[0]);
-		v_chunkPos = vec3(additionalData[1], additionalData[2], additionalData[3]);
+		v_blockLightColor = vec3(additionalData[1], additionalData[2], additionalData[3]);
 
 		gl_Position = u_MVP * vec4(position, 1.0);
 

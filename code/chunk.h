@@ -35,7 +35,6 @@
 #include <palette.h>
 #include <vec.h>
 #include <utilities.h>
-#include <Chunk/ChunkAdditionalBlockData/chunkAdditionalBlockData.h>
 #include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 #include <Graphics/Textures/texture.h>
 #include <Graphics/Shaders/shader.h>
@@ -99,8 +98,6 @@ namespace VoxelEng {
 
 		std::vector<lightInstance> pointLights;
 		std::vector<lightInstance> spotLights;
-
-		chunkAdditionalBlockData chunkAdditionalBlockData;
 
 		unsigned int totalSize = 0;
 
@@ -533,6 +530,7 @@ namespace VoxelEng {
 		std::unordered_set<unsigned short> freeLocalIDs_;
 		unsigned short blocksLocalIDs_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
+		unsigned char blockLight_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 		std::unordered_set<vec3> floodPointLightPositions_;
 
 		unsigned short neighborBlocksPlusX_[CHUNK_SIZE][CHUNK_SIZE];

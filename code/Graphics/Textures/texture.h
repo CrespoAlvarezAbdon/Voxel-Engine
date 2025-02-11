@@ -70,12 +70,12 @@ namespace VoxelEng {
 		// Observers.
 
 		/**
-		* @brief Returns the texture's width.
+		* @brief Returns the texture first dimension's size.
 		*/
 		int width() const;
 
 		/**
-		* @brief Returns the texture's width.
+		* @brief Returns the texture second dimension's size.
 		*/
 		int height() const;
 
@@ -126,12 +126,12 @@ namespace VoxelEng {
 		/**
 		* @brief Bind the texture to an graphics API texture slot (slot 0 by default).
 		*/
-		void bind(unsigned int slot = 0) const;
+		void bind(int slot = 0);
 
 		/**
 		* @brief Unbind the texture.
 		*/
-		void unbind() const;
+		void unbind();
 
 
 		// Destructors.
@@ -141,7 +141,11 @@ namespace VoxelEng {
 		*/
 		~texture();
 
-	private:
+	protected:
+
+		/*
+		Attributes.
+		*/
 
 		static texture const* blockTextureAtlas_;
 		static unsigned int blockAtlasResolution_;
@@ -150,13 +154,23 @@ namespace VoxelEng {
 		static const int maxColorAttachmentIndex_;
 
 		GLuint rendererID_;
+		int textureUnitSlot_;
 		std::string textureFilepath_; 
-		// Local buffer to store the texture data when loading it from disk.
+
 		unsigned char* buffer_;
-		int width_,
-			height_,
-			bitsPerPixel_;
+		int width_;
+		int height_;
+		int bitsPerPixel_;
 		textureType type_;
+
+
+		/*
+		Methods.
+		*/
+
+		texture(unsigned int width, unsigned int height, unsigned int bitsPerPixel, textureType textureType);
+
+		void destroy();
 
 	};
 
@@ -211,6 +225,23 @@ namespace VoxelEng {
 	inline void texture::setBlockAtlasResolution(int resolution) {
 
 		blockAtlasResolution_ = resolution;
+
+	}
+
+	inline texture::~texture() {
+
+		destroy();
+
+	}
+
+	inline texture::texture(unsigned int width, unsigned int height, unsigned int bitsPerPixel, textureType textureType)
+	: rendererID_(0), textureUnitSlot_(-1), buffer_(nullptr), width_(width), height_(height), bitsPerPixel_(bitsPerPixel), type_(textureType)
+	{
+	}
+
+	inline void texture::destroy() {
+
+		glDeleteTextures(1, &rendererID_);
 
 	}
 

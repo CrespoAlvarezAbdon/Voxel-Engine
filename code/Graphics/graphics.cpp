@@ -1,7 +1,6 @@
 #include "graphics.h"
 
 #include <definitions.h>
-#include <Chunk/ChunkAdditionalBlockData/chunkAdditionalBlockData.h>
 #include <Registry/registries.h>
 #include <Registry/RegistryInsOrdered/registryInsOrdered.h>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
@@ -168,9 +167,6 @@ namespace VoxelEng {
 				SSBORegistry->insert("SpotLightsInstances",
 					static_cast<void*>(new SSBO<lightInstance>("SpotLightsInstances", 1000, 3)), var::varType::SSBO_OF_LIGHTINSTANCES);
 
-				SSBORegistry->insert("ChunkAdditionalBlockDataSSBO",
-					static_cast<void*>(new SSBO<chunkAdditionalBlockData>("ChunkAdditionalBlockDataSSBO", 1, 4)), var::varType::SSBO_OF_CHUNK_ADDITIONAL_BLOCK_DATA);
-
 				// TODO. MOVE DIRECTIONAL LIGHT INSTANCE CREATION TO WORLD.H SO THAT EACH WORLD/DIMENSION HAS ITS PROPER DIRECTIONAL LIGHTS.
 				SSBO<lightInstance>* directionalLightsInstances = SSBORegistry->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
 				lightInstance& instance = directionalLightsInstances->get(0);
@@ -182,7 +178,7 @@ namespace VoxelEng {
 				// Initialize shaders.
 				shadowShader_ = new shader("shadow", "resources/Shaders/shadowVertex.shader", "resources/Shaders/shadowFragment.shader", { }, { "DirectionalLightsInstances"});
 				translucentShadowShader_ = new shader("translucentShadow", "resources/Shaders/translucentShadowVertex.shader", "resources/Shaders/translucentShadowFragment.shader", { }, { "DirectionalLightsInstances" });
-				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances", "ChunkAdditionalBlockDataSSBO"});
+				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances"});
 				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances" });
 				compositeShader_ = new shader("composite", "resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
 				screenShader_ = new shader("screenQuad", "resources/Shaders/screenVertex.shader", "resources/Shaders/screenFragment.shader");

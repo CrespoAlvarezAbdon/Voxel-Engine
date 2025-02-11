@@ -1,6 +1,7 @@
 #include "texture.h"
-#include "../framebuffer.h"
-#include "../../External code/stb_image.h"
+#include <stdexcept>
+#include <External code/stb_image.h>
+#include <Graphics/framebuffer.h>
 #include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {
@@ -32,7 +33,7 @@ namespace VoxelEng {
 
 
 	texture::texture(unsigned int width, unsigned int height, textureType type, framebuffer* bufferToAttachTo, int colorAttachmentIndex)
-	: rendererID_(0), textureFilepath_(""), buffer_(nullptr), width_(width), height_(height), bitsPerPixel_(0), type_(type) {
+	: rendererID_(0), textureUnitSlot_(-1), textureFilepath_(""), buffer_(nullptr), width_(width), height_(height), bitsPerPixel_(0), type_(type) {
 	
 		if (bufferToAttachTo && type != textureType::DEPTH_AND_STENCIL && (colorAttachmentIndex < -1 || colorAttachmentIndex > maxColorAttachmentIndex_))
 			logger::errorLog("The value provided for the 'colorAttachmentIndex' parameter (" + std::to_string(colorAttachmentIndex) + ") is not valid.");
@@ -151,7 +152,7 @@ namespace VoxelEng {
 	}
 
 	texture::texture(const std::string& filepath)
-	: rendererID_(0), textureFilepath_(filepath), buffer_(nullptr), width_(0), height_(0), bitsPerPixel_(0), type_(textureType::IMAGE) {
+	: rendererID_(0), textureUnitSlot_(-1), textureFilepath_(filepath), buffer_(nullptr), width_(0), height_(0), bitsPerPixel_(0), type_(textureType::IMAGE) {
 
 		stbi_set_flip_vertically_on_load(1); // What this does is flip the texture because OpenGL expects the texture to begin in a strange point when loading PNG files ¬¬
 		buffer_ = stbi_load(filepath.c_str(), &width_, &height_, &bitsPerPixel_, 4); // Last parameter is how many channels we want. We are using RGBA (A stands for Alpha) so we want four channels
@@ -180,22 +181,29 @@ namespace VoxelEng {
 
 	}
 
-	void texture::bind(unsigned int slot) const {
+	void texture::bind(int slot) {
 
-		glActiveTexture(GL_TEXTURE0 + slot);
-		glBindTextureUnit(slot, rendererID_);
+		if (slot == -1)
+			throw std::runtime_error("Texture unit slot to bound cannot be 0");
+		else {
 
+			textureUnitSlot_ = slot;
+			glActiveTexture(GL_TEXTURE0 + textureUnitSlot_);
+			glBindTextureUnit(textureUnitSlot_, rendererID_);
+
+		}
 	}
 
-	void texture::unbind() const {
+	inline void texture::unbind() {
 
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-	}
-
-	texture::~texture() {
-
-		glDeleteTextures(1, &rendererID_);
+		if (textureUnitSlot_ == -1)
+			throw std::runtime_error("This texture is not bound so it cannot be unbound.");
+		else {
+		
+			glBindTextureUnit(textureUnitSlot_, 0);
+			textureUnitSlot_ = -1;
+		
+		}
 
 	}
 

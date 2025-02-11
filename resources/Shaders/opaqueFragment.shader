@@ -17,11 +17,12 @@ in vec2 v_TexCoord;
 in vec3 v_pos;
 in vec4 v_color;
 in vec4 v_LightSpacePos;
+in vec3 v_blockLightColor;
 flat in int v_materialIndex;
-flat in vec3 v_chunkPos;
 
 // Uniforms.
 uniform vec3 u_viewPos;
+uniform vec3 u_chunkPos;
 uniform int u_renderMode;
 uniform int u_useComplexLighting;
 uniform int u_NPointLights;
@@ -68,10 +69,6 @@ struct LightInstance {
     mat4 MVP;
 };
 
-struct ChunkAdditionalBlockData {
-    uint[16][16][16] isSolid;
-};
-
 // UBOs.
 layout(std140, binding = 1) uniform Materials {
     Material materials[MAX_MATERIALS];
@@ -102,16 +99,11 @@ layout(std430, binding = 3) buffer SpotLightsInstances {
     LightInstance spotLightsInstances[];
 };
 
-layout(std430, binding = 4) buffer ChunkAdditionalBlockDataSSBO {
-    ChunkAdditionalBlockData chunkAdditionalBlockData;
-};
-
 // Variables.
 float shadow = 1.0;
 float translucentShadow = 1.0;
 vec4 coloredShadow = vec4(0.0);
 
-// Functions.
 vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, float shadow, float hitDirLightModifier, Material material) {
 
     // Specular shading calculations.
@@ -136,80 +128,35 @@ int floorMod(int a, int b) {
 
 }
 
+float floorMod(float a, float b) {
+
+    return a - b * floor(a / b);
+
+}
+
 vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material) {
+    
+    vec3 lightDir = normalize(lightInstance.pos - v_pos);
 
-    // First, check if the fragment is actually hit by this light with DDA algorithm.
-    bool hitByLight = false;
+    // Diffuse shading calculations.
+    float diff = max(dot(n, lightDir), 0.0);
 
-    vec3 chunkLightPos = lightInstance.pos;
-    chunkLightPos.x = int(floor(chunkLightPos.x));
-    chunkLightPos.y = int(floor(chunkLightPos.y));
-    chunkLightPos.z = int(floor(chunkLightPos.z));
-    chunkLightPos.x = int(floorMod(int(chunkLightPos.x >= 0 ? chunkLightPos.x : 16 + chunkLightPos.x), 16));
-    chunkLightPos.y = int(floorMod(int(chunkLightPos.y >= 0 ? chunkLightPos.y : 16 + chunkLightPos.y), 16));
-    chunkLightPos.z = int(floorMod(int(chunkLightPos.z >= 0 ? chunkLightPos.z : 16 + chunkLightPos.z), 16));
+    // Specular shading calculations.
+    vec3 reflectDir = reflect(-lightDir, n);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x);
 
-    vec3 blockToLightDir = chunkLightPos - v_chunkPos;
+    // Get light attenuation.
+    float distance = length(lightInstance.pos - v_pos);
+    float attenuation = max(1.0 - distance / (light.maxDistance), 0.0);
 
-    float step = max(abs(blockToLightDir.x), max(abs(blockToLightDir.y), abs(blockToLightDir.z)));
-    float stepX = blockToLightDir.x / step;
-    float stepY = blockToLightDir.y / step;
-    float stepZ = blockToLightDir.z / step;
+    vec4 ambient = light.ambient * material.ambient;
+    vec4 diffuse = light.diffuse * diff * material.diffuse;
+    vec4 specular = light.specular * spec * material.specular;
+    ambient *= attenuation;
+    diffuse *= attenuation;
+    specular *= attenuation;
+    return (ambient + diffuse + specular);
 
-    vec3 currentPos = v_chunkPos;
-
-    int voxelX = int((currentPos.x));
-    int voxelY = int((currentPos.y));
-    int voxelZ = int((currentPos.z));
-
-    for(int i = 0; i <= int(step) && !hitByLight; i++) {
-
-        if (voxelX < 0 || voxelX >= 16 || voxelY < 0 || voxelY >= 16 || voxelZ < 0 || voxelZ >= 16)
-            break;
-
-        if (chunkAdditionalBlockData.isSolid[voxelX][voxelY][voxelZ] == 1)
-            break;
-
-        if(voxelX == chunkLightPos.x && voxelY == chunkLightPos.y && voxelZ == chunkLightPos.z)
-            hitByLight = true;
-
-        currentPos.x += stepX;
-        currentPos.y += stepY;
-        currentPos.z += stepZ;
-
-        voxelX = int(round(currentPos.x));
-        voxelY = int(round(currentPos.y));
-        voxelZ = int(round(currentPos.z));
-
-    }
-// 13 4 12
-    if(hitByLight)
-    {
-        vec3 lightDir = normalize(lightInstance.pos - v_pos);
-
-        // Diffuse shading calculations.
-        float diff = max(dot(n, lightDir), 0.0);
-
-        // Specular shading calculations.
-        vec3 reflectDir = reflect(-lightDir, n);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x);
-
-        // Get light attenuation.
-        float distance = length(lightInstance.pos - v_pos);
-        float attenuation = max(1.0 - distance / (light.maxDistance), 0.0);
-
-        vec4 ambient = light.ambient * material.ambient;
-        vec4 diffuse = light.diffuse * diff * material.diffuse;
-        vec4 specular = light.specular * spec * material.specular;
-        ambient *= attenuation;
-        diffuse *= attenuation;
-        specular *= attenuation;
-        return (ambient + diffuse + specular);
-    }
-    else
-    {
-        return vec4(0.0);
-    }
 }
 
 void ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance) {
@@ -285,13 +232,14 @@ void main() {
 
 		// Apply point lights.
         vec4 acumPointLights = vec4(0.0);
-        int nPointLights = u_NPointLights * u_useComplexLighting;
+        /*int nPointLights = u_NPointLights * u_useComplexLighting;
         for(int i = 0; i < nPointLights; i++)
         {
             LightInstance lightInstance2 = pointLightsInstances[i];
             PointLight light2 = pointLights[int(lightInstance2.lightTypeIndex)];
             acumPointLights += CalcPointLight(light2, lightInstance2, norm, viewDir, material);
-        }
+        }*/
+        acumPointLights.rgb = v_blockLightColor;
 
 		// Apply spot lights.
 

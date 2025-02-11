@@ -272,6 +272,7 @@ namespace VoxelEng {
 	requires std::derived_from<T, worldGen>
 	inline void worldGen::registerGen(const std::string& genName) {
 
+		// TODO. EACH GENERATOR SHOULD HAVE ITS OWN PARAMETERS. THIS IS TEMPORARY.
 		generators_.insert({ genName, new T(
 			block::getBlockC("starminer::coalOre"), block::getBlockC("starminer::ironOre"), 
 			block::getBlockC("starminer::goldOre") , block::getBlockC("starminer::diamondOre"),

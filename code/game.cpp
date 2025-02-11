@@ -29,7 +29,6 @@
 #include <Registry/registries.h> // This header also includes the classes that derive from 'registeredElement'.
 #include <Registry/registry.h>
 #include <Graphics/graphics.h>
-#include <Graphics/Textures/texture.h>
 #include <Graphics/Frustum/frustum.h>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
 #include <Graphics/Lighting/Lights/PointLight/pointLight.h>
@@ -114,7 +113,6 @@ namespace VoxelEng {
     SSBO<lightInstance>* game::directionalLightsInstances_ = nullptr;
     SSBO<lightInstance>* game::pointLightsInstances_ = nullptr;
     SSBO<lightInstance>* game::spotLightsInstances_ = nullptr;
-    SSBO<chunkAdditionalBlockData>* game::chunkAdditionalBlockData_ = nullptr;
 
     std::unordered_set<vec3> game::opaqueChunkGeometryToDraw;
     std::unordered_set<vec3> game::translucentChunkGeometryToDraw;
@@ -313,7 +311,6 @@ namespace VoxelEng {
             directionalLightsInstances_ = SSBORegistry->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
             pointLightsInstances_ = SSBORegistry->get("PointLightsInstances")->pointer<SSBO<lightInstance>>();
             spotLightsInstances_ = SSBORegistry->get("SpotLightsInstances")->pointer<SSBO<lightInstance>>();
-            chunkAdditionalBlockData_ = SSBORegistry->get("ChunkAdditionalBlockDataSSBO")->pointer<SSBO<chunkAdditionalBlockData>>();
 
             chunksVbo_ = static_cast<chunkVertexBuffer*>(graphics::pVbo("chunks"));
             entitiesVbo_ = &graphics::vbo("entities");
@@ -820,16 +817,14 @@ namespace VoxelEng {
 
                 if (playerCamera_->isInsideFrustum(chunk.globalChunkPos)) {
 
-                    // TODO. EN SETBLOCK DE PLAYER HAY QUE PONER QUE SE ACTUALIZEN LOS DATOS DE NEIGHBORS MINUS DEL LOD2
                     int nPointLightsChunk = chunk.pointLights.size();
-                    opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
+                    //opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
 
                     // Upload dynamic lights.
                     if (nPointLightsChunk)
                         pointLightsInstances_->setContentsAndReupload(chunk.pointLights);
                     if (!chunk.spotLights.empty())
                         spotLightsInstances_->setContentsAndReupload(chunk.spotLights);
-                    chunkAdditionalBlockData_->setContentsAndReupload(chunk.chunkAdditionalBlockData);
 
                     // Draw terrain.
                     const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, false);
@@ -887,7 +882,7 @@ namespace VoxelEng {
                 if (playerCamera_->isInsideFrustum(chunk.globalChunkPos)) {
 
                     int nPointLightsChunk = chunk.pointLights.size();
-                    opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
+                    //opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
 
                     // Upload dynamic lights.
                     if (nPointLightsChunk)
