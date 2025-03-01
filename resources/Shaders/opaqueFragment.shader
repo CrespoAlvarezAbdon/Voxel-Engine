@@ -18,6 +18,8 @@ in vec3 v_pos;
 in vec4 v_color;
 in vec4 v_LightSpacePos;
 in vec3 v_blockLightColor;
+in vec2 v_baryCoords;
+in vec3 v_mixedVertexColorData;
 flat in int v_materialIndex;
 
 // Uniforms.
@@ -239,7 +241,8 @@ void main() {
             PointLight light2 = pointLights[int(lightInstance2.lightTypeIndex)];
             acumPointLights += CalcPointLight(light2, lightInstance2, norm, viewDir, material);
         }*/
-        acumPointLights.rgb = v_blockLightColor;
+        acumPointLights.rgb = v_blockLightColor + v_baryCoords.x * v_baryCoords.y * v_mixedVertexColorData;
+        //acumPointLights.rgb = v_blockLightColor;
 
 		// Apply spot lights.
 

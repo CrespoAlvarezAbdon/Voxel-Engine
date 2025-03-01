@@ -126,6 +126,15 @@ namespace VoxelEng {
 		* @param applyNormalization Whether to apply normalization to the pushed elements (true) or not (false).
 		*/
 		template <>
+		void push<char>(unsigned int count, bool applyNormalization);
+
+		/**
+		* @brief Now the vertex data will have 'count' more unsigned ints at the end.
+		* Be aware that vertex data alignment must be of 4 bytes.
+		* @param count Number of elements to push.
+		* @param applyNormalization Whether to apply normalization to the pushed elements (true) or not (false).
+		*/
+		template <>
 		void push<GLbyte>(unsigned int count, bool applyNormalization);
 
 		/**

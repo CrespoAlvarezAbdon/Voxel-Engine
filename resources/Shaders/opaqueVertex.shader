@@ -15,6 +15,8 @@ layout(location = 0) in vec3 position; // Vertices' positions.
 layout(location = 1) in vec2 texCoord;
 layout(location = 2) in vec4 vertexColor;
 layout(location = 3) in vec4 additionalData; // First byte is material index.
+layout(location = 4) in vec4 extraLightData;
+layout(location = 5) in vec4 mixedVertexColorData;
 // The things above this line are also denominated as render targets.
 
 // This are output varying variables. These are variables that are shared between shader programs.
@@ -23,6 +25,8 @@ out vec3 v_pos;
 out vec4 v_color;
 out vec4 v_LightSpacePos;
 out vec3 v_blockLightColor;
+out vec2 v_baryCoords;
+out vec3 v_mixedVertexColorData;
 flat out int v_materialIndex;
 
 // Structs.
@@ -57,7 +61,10 @@ void main() {
 
 		v_color = vertexColor;
 		v_materialIndex = int(additionalData[0]);
+		
 		v_blockLightColor = vec3(additionalData[1], additionalData[2], additionalData[3]);
+		v_baryCoords = vec2(int(extraLightData[0]), int(extraLightData[1]));
+		v_mixedVertexColorData = mixedVertexColorData.rgb;
 
 		gl_Position = u_MVP * vec4(position, 1.0);
 

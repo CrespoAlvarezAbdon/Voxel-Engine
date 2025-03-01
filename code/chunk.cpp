@@ -464,9 +464,8 @@ namespace VoxelEng {
             blocksMutex_.lock_shared();
 
             // COSAS QUE HACER.
-            // 1º. SMOOTH LIGHTING QUE HACE MINECRAFT.
-            // 2º. SOPORTE PARA LOS BORDES DE LOS CHUNKS.
-            // 3º. SOPORTE PARA QUE UNA LUZ AFECTE A VARIOS CHUNKS.
+            // 1º. SOPORTE PARA LOS BORDES DE LOS CHUNKS.
+            // 2º. SOPORTE PARA QUE UNA LUZ AFECTE A VARIOS CHUNKS.
 
             int x = 0,
                 y = 0,
@@ -497,7 +496,7 @@ namespace VoxelEng {
                         // Search for blocks affected by this light.
                         std::memset(blockLightChecked, 0, nBlocksChunk * sizeof(bool));
                         floodLightPositions.clear();
-                        floodLightPositions.emplace_back(vec3{ x, y, z }, 7);
+                        floodLightPositions.emplace_back(vec3{ x, y, z }, 8);
                         while (floodLightPositions.size() > 0) {
 
                             //std::cout << std::to_string(floodLightPositions.size()) << std::endl;
@@ -618,7 +617,34 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + 1 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = blockHasLight ? 255 : 0;
+                                            aux.additionalData[1] = 0;
+                                            aux.additionalData[3] = 0;
+
+                                            switch (vertex)
+                                            {
+                                                case 0: // block vertex 0 (B)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y-1][z] + blockLight_[x-1][y-1][z]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 1: // block vertex 3 (C)
+                                                case 4:
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y+1][z] + blockLight_[x-1][y+1][z]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 1;
+                                                    break;
+                                                case 2: // block vertex 1 (A)
+                                                case 3:
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y-1][z] + blockLight_[x+1][y-1][z]) / 4.0f;
+                                                    aux.lightExtraData[0] = 1;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 5: // block vertex 2 (D)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y+1][z] + blockLight_[x+1][y+1][z]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                            }
 
                                             chunkModel->push_back(aux);
 
@@ -647,7 +673,34 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = blockHasLight ? 255 : 0;
+                                            aux.additionalData[1] = 0;
+                                            aux.additionalData[3] = 0;
+
+                                            switch (vertex)
+                                            {
+                                                case 0: // block vertex 5 (B)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y-1][z] + blockLight_[x+1][y-1][z]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 1: // block vertex 6 (C)
+                                                case 4:
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y+1][z] + blockLight_[x+1][y+1][z]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 1;
+                                                    break;
+                                                case 2: // block vertex 4 (A)
+                                                case 3:
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y-1][z] + blockLight_[x-1][y-1][z]) / 4.0f;
+                                                    aux.lightExtraData[0] = 1;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 5: // block vertex 7 (D)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y+1][z] + blockLight_[x-1][y+1][z]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                            }
 
                                             chunkModel->push_back(aux);
 
@@ -676,7 +729,34 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = blockHasLight ? 255 : 0;
+                                            aux.additionalData[1] = 0;
+                                            aux.additionalData[3] = 0;
+
+                                            switch (vertex)
+                                            {
+                                                case 0: // block vertex 1 (B)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y][z-1] + blockLight_[x+1][y][z-1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 1: // block vertex 5 (C)
+                                                case 4:
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y][z+1] + blockLight_[x+1][y][z+1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 1;
+                                                    break;
+                                                case 2: // block vertex 0 (A)
+                                                case 3:
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y][z-1] + blockLight_[x-1][y][z-1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 1;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 5: // block vertex 4 (D)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y][z+1] + blockLight_[x-1][y][z+1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                            }
 
                                             chunkModel->push_back(aux);
 
@@ -705,20 +785,47 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = blockHasLight ? 255 : 0;
+                                            aux.additionalData[1] = 0;
+                                            aux.additionalData[3] = 0;
+
+                                            switch (vertex) 
+                                            {
+                                                case 0: // block vertex 3 (B)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y][z-1] + blockLight_[x-1][y][z-1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 1: // block vertex 7 (C)
+                                                case 4:
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y][z+1] + blockLight_[x-1][y][z+1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 1;
+                                                    break;
+                                                case 2: // block vertex 2 (A)
+                                                case 3:
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y][z-1] + blockLight_[x+1][y][z-1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 1;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 5: // block vertex 6 (D)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y][z+1] + blockLight_[x+1][y][z+1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                            }
 
                                             chunkModel->push_back(aux);
 
                                         }
 
                                         // Add texture to the face.
-                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY+");
+                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY+"); // TODO. MAÑANA METER EL EXTRACOLORDATA SUPPORT PARA CADA FACE
 
                                     }
 
                                 }
 
-                                // x+
+                                // Draw face for block at x + 1.
                                 if (x < CHUNK_SIZE_LIMIT && (neighborLocalID = blocksLocalIDs_[x + 1][y][z])) {
 
                                     bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
@@ -734,7 +841,34 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = blockHasLight ? 255 : 0;
+                                            aux.additionalData[1] = 0;
+                                            aux.additionalData[3] = 0;
+
+                                            switch (vertex)
+                                            {
+                                                case 0: // block vertex 4 (B)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z+1] + blockLight_[x][y-1][z] + blockLight_[x][y-1][z+1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 1: // block vertex 7 (C)
+                                                case 4: 
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z+1] + blockLight_[x][y+1][z] + blockLight_[x][y+1][z+1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 1;
+                                                    break;
+                                                case 2: // block vertex 0 (A)
+                                                case 3: 
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z-1] + blockLight_[x][y-1][z] + blockLight_[x][y-1][z-1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 1;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 5: // block vertex 3 (D)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z-1] + blockLight_[x][y+1][z] + blockLight_[x][y+1][z-1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                            }
 
                                             chunkModel->push_back(aux);
 
@@ -763,7 +897,34 @@ namespace VoxelEng {
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
                                             aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = blockHasLight ? 255 : 0;
+                                            aux.additionalData[1] = 0;
+                                            aux.additionalData[3] = 0;
+
+                                            switch (vertex)
+                                            {
+                                                case 0: // block vertex 1 (B)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z-1] + blockLight_[x][y][z-1] + blockLight_[x][y-1][z-1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 1: // block vertex 2 (C)
+                                                case 4:
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z-1] + blockLight_[x][y+1][z] + blockLight_[x][y+1][z-1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 1;
+                                                    break;
+                                                case 2: // block vertex 5 (A)
+                                                case 3: 
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z+1] + blockLight_[x][y-1][z] + blockLight_[x][y-1][z+1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 1;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                                case 5: // block vertex 6 (D)
+                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z+1] + blockLight_[x][y+1][z] + blockLight_[x][y+1][z+1]) / 4.0f;
+                                                    aux.lightExtraData[0] = 0;
+                                                    aux.lightExtraData[1] = 0;
+                                                    break;
+                                            }
 
                                             chunkModel->push_back(aux);
 

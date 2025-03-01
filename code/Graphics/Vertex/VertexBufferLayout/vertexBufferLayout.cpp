@@ -56,6 +56,16 @@ namespace VoxelEng {
 	}
 
 	template <>
+	void vertexBufferLayout::push<char>(unsigned int count, bool applyNormalization)
+	{
+
+		elements_.push_back({ GL_BYTE, count, applyNormalization });
+
+		stride_ += count * graphicsAPISizeOf(GL_BYTE);
+
+	}
+
+	template <>
 	void vertexBufferLayout::push<GLbyte>(unsigned int count, bool applyNormalization)
 	{
 
