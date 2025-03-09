@@ -24,9 +24,9 @@ out vec2 v_TexCoord;
 out vec3 v_pos;
 out vec4 v_color;
 out vec4 v_LightSpacePos;
-out vec3 v_blockLightColor;
+out vec4 v_blockLightColor;
 out vec2 v_baryCoords;
-out vec3 v_mixedVertexColorData;
+out vec4 v_mixedVertexColorData;
 flat out int v_materialIndex;
 
 // Structs.
@@ -60,11 +60,11 @@ void main() {
 		v_LightSpacePos = lightInstance.MVP * vec4(position, 1.0);
 
 		v_color = vertexColor;
-		v_materialIndex = int(additionalData[0]);
+		v_materialIndex = int(extraLightData[2]);
 		
-		v_blockLightColor = vec3(additionalData[1], additionalData[2], additionalData[3]);
+		v_blockLightColor = additionalData;
 		v_baryCoords = vec2(int(extraLightData[0]), int(extraLightData[1]));
-		v_mixedVertexColorData = mixedVertexColorData.rgb;
+		v_mixedVertexColorData = mixedVertexColorData;
 
 		gl_Position = u_MVP * vec4(position, 1.0);
 

@@ -10,6 +10,7 @@
 #define _VOXELENG_VERTEX_
 
 #include <definitions.h>
+#include <vec.h>
 
 #if GRAPHICS_API == OPENGL
 
@@ -30,12 +31,13 @@ namespace VoxelEng {
 	*/
 	struct vertex {
 
+		// TOMORROW. REORGANIZE THIS.
 		float positions[3] = {0,0,0}; // 0 = coord in X axis, 1 = coord in Y axis and 2 = coord in Z axis.
 		float textureCoords[2] = {0,0};
 		unsigned char color[4] = {255,255,255,255}; // RGBA stored in 32-bits.
-		char additionalData[4] = {0,0,0,0}; // First byte is material index. The next three are the light applied to this vertex.
-		char lightExtraData[4] = {0,0,0,0}; // First two bytes are barycentric coordinates of the vertex. The rest are free.
-		char colorExtraData[4] = {0,0,0,0}; // First three bytes are the colors of the four vertices of the same face block added like this: -ColorVertexA + ColorVertexB - ColorVertexC + ColorVertexD 
+		basic_vec4 additionalData; // Color light values.
+		basic_vec4 lightExtraData; // First two bytes are barycentric coordinates of the vertex. Third byte is material index.
+		basic_vec4 colorExtraData; // The colors of the four vertices of the same face block added like this: -ColorVertexA + ColorVertexB - ColorVertexC + ColorVertexD 
 
 	};
 

@@ -17,9 +17,9 @@ in vec2 v_TexCoord;
 in vec3 v_pos;
 in vec4 v_color;
 in vec4 v_LightSpacePos;
-in vec3 v_blockLightColor;
+in vec4 v_blockLightColor;
 in vec2 v_baryCoords;
-in vec3 v_mixedVertexColorData;
+in vec4 v_mixedVertexColorData;
 flat in int v_materialIndex;
 
 // Uniforms.
@@ -233,16 +233,7 @@ void main() {
 	    color = CalcDirLight(light, lightInstance, norm, viewDir, shadow, hitDirLightModifier, material) * u_useComplexLighting;
 
 		// Apply point lights.
-        vec4 acumPointLights = vec4(0.0);
-        /*int nPointLights = u_NPointLights * u_useComplexLighting;
-        for(int i = 0; i < nPointLights; i++)
-        {
-            LightInstance lightInstance2 = pointLightsInstances[i];
-            PointLight light2 = pointLights[int(lightInstance2.lightTypeIndex)];
-            acumPointLights += CalcPointLight(light2, lightInstance2, norm, viewDir, material);
-        }*/
-        acumPointLights.rgb = v_blockLightColor + v_baryCoords.x * v_baryCoords.y * v_mixedVertexColorData;
-        //acumPointLights.rgb = v_blockLightColor;
+        vec4 acumPointLights = (v_blockLightColor + v_baryCoords.x * v_baryCoords.y * v_mixedVertexColorData) * u_useComplexLighting;
 
 		// Apply spot lights.
 
@@ -251,7 +242,7 @@ void main() {
 
         if(translucentShadow == 0.0 && hitDirLightModifier > 0.5)
         {
-            color += coloredShadow;
+            color += coloredShadow * u_useComplexLighting;
         }
 
 	}

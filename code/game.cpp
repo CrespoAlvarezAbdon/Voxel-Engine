@@ -223,25 +223,25 @@ namespace VoxelEng {
 
             registryInsOrdered<std::string, pointLight>* pointLightsRegistry = registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>();
             pointLightsRegistry->insert("RedPointLight",
-                0.5f, 0.0f, 0.0f,
-                0.5f, 0.0f, 0.0f,
-                0.5f, 0.0f, 0.0f,
-                16.0f);
+                8.0f, 0.0f, 0.0f,
+                8.0f, 0.0f, 0.0f,
+                8.0f, 0.0f, 0.0f,
+                8.0f);
             pointLightsRegistry->insert("BluePointLight",
-                0.0f, 0.0f, 0.5f,
-                0.0f, 0.0f, 0.5f,
-                0.0f, 0.0f, 0.5f,
-                16.0f);
+                0.0f, 0.0f, 8.0f,
+                0.0f, 0.0f, 8.0f,
+                0.0f, 0.0f, 8.0f,
+                8.0f);
             pointLightsRegistry->insert("NegativeRedPointLight",
-                -1.0f, 0.0f, 0.0f,
-                -1.0f, 0.0f, 0.0f,
-                -1.0f, 0.0f, 0.0f,
-                16.0f);
+                -8.0f, 0.0f, 0.0f,
+                -8.0f, 0.0f, 0.0f,
+                -8.0f, 0.0f, 0.0f,
+                8.0f);
             pointLightsRegistry->insert("NegativePointLight",
-                -100.0f, -100.0f, -100.0f,
-                -100.0f, -100.0f, -100.0f,
-                -100.0f, -100.0f, -100.0f,
-                16.0f);
+                -8.0f, -8.0f, -8.0f,
+                -8.0f, -8.0f, -8.0f,
+                -8.0f, -8.0f, -8.0f,
+                8.0f);
 
             registryInsOrdered<std::string, spotLight>* spotLightsRegistry = registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>();
             spotLightsRegistry->insert("GreenSpotLight",

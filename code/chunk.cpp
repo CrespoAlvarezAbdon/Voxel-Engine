@@ -85,7 +85,8 @@ namespace VoxelEng {
 
         std::memset(blocksLocalIDs_, 0, nBlocksChunk * sizeof(unsigned short));
 
-        std::memset(blockLight_, 0, nBlocksChunk * sizeof(bool));
+        std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basic_vec4));
+        std::memset(blockLightLevel_, -1, nBlocksChunk * sizeof(char));
 
         std::memset(neighborBlocksPlusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
@@ -112,7 +113,8 @@ namespace VoxelEng {
 
         std::memset(blocksLocalIDs_, 0, nBlocksChunk * sizeof(unsigned short));
 
-        std::memset(blockLight_, 0, nBlocksChunk * sizeof(bool));
+        std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basic_vec4));
+        std::memset(blockLightLevel_, -1, nBlocksChunk * sizeof(char));
 
         std::memset(neighborBlocksPlusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         std::memset(neighborBlocksMinusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
@@ -150,7 +152,8 @@ namespace VoxelEng {
 
         std::memcpy(blocksLocalIDs_, c.blocksLocalIDs_, nBlocksChunk * sizeof(unsigned short));
 
-        std::memcpy(blockLight_, c.blockLight_, nBlocksChunk * sizeof(bool));
+        std::memcpy(blockLightColor_, c.blockLightColor_, nBlocksChunk * sizeof(basic_vec4));
+        std::memcpy(blockLightLevel_, c.blockLightLevel_, nBlocksChunk * sizeof(char));
 
         floodPointLightPositions_ = c.floodPointLightPositions_;
 
@@ -456,7 +459,8 @@ namespace VoxelEng {
             renderingData_.pointLights = std::vector<lightInstance>();
             renderingData_.spotLights = std::vector<lightInstance>();
 
-            std::memset(blockLight_, 0, 4096 * sizeof(bool));
+            std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basic_vec4));
+            std::memset(blockLightLevel_, -1, nBlocksChunk * sizeof(char));
 
             bool blockLightChecked[16][16][16];
 
@@ -473,7 +477,7 @@ namespace VoxelEng {
             unsigned short localID = 0;
 
             // Update block light render information.
-            std::deque<std::pair<vec3, unsigned char>> floodLightPositions;
+            std::deque<std::pair<vec3, char>> floodLightPositions; // Second value is the counter of how many blocks can the light still spread from the location in the first value.
             for (auto it = floodPointLightPositions_.cbegin(); it != floodPointLightPositions_.cend(); it++) {
 
                 x = it->x;
@@ -489,77 +493,72 @@ namespace VoxelEng {
 
                     if (emittedLight.getVarType() == var::varType::POINTLIGHT) {
 
-                        lightInstance& instance = renderingData_.pointLights.emplace_back();
-                        instance.pos = getGlobalPos(chunkPos_.x, chunkPos_.y, chunkPos_.z, x, y, z);
-                        instance.lightTypeIndex = b.emittedLightIndex();
+                        const pointLight& light = *(emittedLight.pointer<pointLight>());
 
                         // Search for blocks affected by this light.
                         std::memset(blockLightChecked, 0, nBlocksChunk * sizeof(bool));
                         floodLightPositions.clear();
-                        floodLightPositions.emplace_back(vec3{ x, y, z }, 8);
+                        basic_vec4 lightColor = light.color();
+                        floodLightPositions.emplace_back(vec3{ x, y, z }, light.maxDistance());
                         while (floodLightPositions.size() > 0) {
 
                             //std::cout << std::to_string(floodLightPositions.size()) << std::endl;
                             const vec3& pos = floodLightPositions.front().first;
                             //std::cout << std::to_string(pos) << std::endl;
-                            unsigned char lightLevelToApply = floodLightPositions.front().second;
+                            char lightLevelToApply = floodLightPositions.front().second;
                             //std::cout << "light " << std::to_string(lightLevelToApply) << std::endl;
 
                             if (lightLevelToApply > 0 && !blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z]) {
 
-                                blockLight_[(int)pos.x][(int)pos.y][(int)pos.z] = lightLevelToApply;
+                                float lightLevelScale = lightLevelToApply / 8.0f; // 8 is the maximum allowed light level.
+                                blockLightColor_[(int)pos.x][(int)pos.y][(int)pos.z] += lightColor * lightLevelScale; // TODO. PONER MIX DE COLORES.
+                                blockLightLevel_[(int)pos.x][(int)pos.y][(int)pos.z] = lightLevelToApply;
+
+                                blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z] = true;
 
                                 //+x
-                                if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x + 1][(int)pos.y][(int)pos.z] == 0 &&
-                                    blockLight_[(int)pos.x + 1][(int)pos.y][(int)pos.z] + 1 < lightLevelToApply) {
+                                if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x + 1][(int)pos.y][(int)pos.z] == 0 ) {
 
                                     floodLightPositions.emplace_back(vec3{ pos.x + 1, pos.y, pos.z }, lightLevelToApply - 1);
 
                                 }
 
                                 //-x
-                                if (pos.x > 0 && blocksLocalIDs_[(int)pos.x - 1][(int)pos.y][(int)pos.z] == 0 &&
-                                    blockLight_[(int)pos.x - 1][(int)pos.y][(int)pos.z] + 1 < lightLevelToApply) {
+                                if (pos.x > 0 && blocksLocalIDs_[(int)pos.x - 1][(int)pos.y][(int)pos.z] == 0 ) {
 
                                     floodLightPositions.emplace_back(vec3{ pos.x - 1, pos.y, pos.z }, lightLevelToApply - 1);
 
                                 }
 
                                 //+y
-                                if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y + 1][(int)pos.z] == 0 &&
-                                    blockLight_[(int)pos.x][(int)pos.y + 1][(int)pos.z] + 1 < lightLevelToApply) {
+                                if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y + 1][(int)pos.z] == 0 ) {
 
                                     floodLightPositions.emplace_back(vec3{ pos.x, pos.y + 1, pos.z }, lightLevelToApply - 1);
 
                                 }
 
                                 //-y
-                                if (pos.y > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y - 1][(int)pos.z] == 0 &&
-                                    blockLight_[(int)pos.x][(int)pos.y - 1][(int)pos.z] + 1 < lightLevelToApply) {
+                                if (pos.y > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y - 1][(int)pos.z] == 0 ) {
 
                                     floodLightPositions.emplace_back(vec3{ pos.x, pos.y - 1, pos.z }, lightLevelToApply - 1);
 
                                 }
 
                                 //+z
-                                if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z + 1] == 0 &&
-                                    blockLight_[(int)pos.x][(int)pos.y][(int)pos.z + 1] + 1 < lightLevelToApply) {
+                                if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z + 1] == 0 ) {
 
                                     floodLightPositions.emplace_back(vec3{ pos.x, pos.y, pos.z + 1 }, lightLevelToApply - 1);
 
                                 }
 
                                 //-z
-                                if (pos.z > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z - 1] == 0 &&
-                                    blockLight_[(int)pos.x][(int)pos.y][(int)pos.z - 1] + 1 < lightLevelToApply) {
+                                if (pos.z > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z - 1] == 0 ) {
 
                                     floodLightPositions.emplace_back(vec3{ pos.x, pos.y, pos.z - 1 }, lightLevelToApply - 1);
 
                                 }
 
                             }
-
-                            blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z] = true;
 
                             floodLightPositions.pop_front();
 
@@ -596,7 +595,7 @@ namespace VoxelEng {
                             block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
                             const varRef& emittedLight = b.emittedLight();
 
-                            blockHasLight = blockLight_[x][y][z] > 0;
+                            blockHasLight = blockLightLevel_[x][y][z] > 0;
 
                             // Add block's model to the mesh if necessary.
                             if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
@@ -616,33 +615,31 @@ namespace VoxelEng {
                                             aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + 1 + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
-                                            aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = 0;
-                                            aux.additionalData[3] = 0;
+                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
 
                                             switch (vertex)
                                             {
                                                 case 0: // block vertex 0 (B)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y-1][z] + blockLight_[x-1][y-1][z]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x - 1][y][z] + blockLightColor_[x][y - 1][z] + blockLightColor_[x - 1][y - 1][z]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 3 (C)
                                                 case 4:
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y+1][z] + blockLight_[x-1][y+1][z]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 1;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x - 1][y][z] + blockLightColor_[x][y + 1][z] + blockLightColor_[x - 1][y + 1][z]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 1 (A)
                                                 case 3:
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y-1][z] + blockLight_[x+1][y-1][z]) / 4.0f;
-                                                    aux.lightExtraData[0] = 1;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x + 1][y][z] + blockLightColor_[x][y - 1][z] + blockLightColor_[x + 1][y - 1][z]) / 4;
+                                                    aux.lightExtraData.x = 1;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 2 (D)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y+1][z] + blockLight_[x+1][y+1][z]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x + 1][y][z] + blockLightColor_[x][y + 1][z] + blockLightColor_[x + 1][y + 1][z]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                             }
 
@@ -672,33 +669,31 @@ namespace VoxelEng {
                                             aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z - 1 + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
-                                            aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = 0;
-                                            aux.additionalData[3] = 0;
+                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
 
                                             switch (vertex)
                                             {
                                                 case 0: // block vertex 5 (B)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y-1][z] + blockLight_[x+1][y-1][z]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x+1][y][z] + blockLightColor_[x][y-1][z] + blockLightColor_[x+1][y-1][z]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 6 (C)
                                                 case 4:
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y+1][z] + blockLight_[x+1][y+1][z]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 1;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x+1][y][z] + blockLightColor_[x][y+1][z] + blockLightColor_[x+1][y+1][z]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 4 (A)
                                                 case 3:
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y-1][z] + blockLight_[x-1][y-1][z]) / 4.0f;
-                                                    aux.lightExtraData[0] = 1;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y-1][z] + blockLightColor_[x-1][y-1][z]) / 4;
+                                                    aux.lightExtraData.x = 1;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 7 (D)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y+1][z] + blockLight_[x-1][y+1][z]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y+1][z] + blockLightColor_[x-1][y+1][z]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                             }
 
@@ -728,33 +723,31 @@ namespace VoxelEng {
                                             aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
-                                            aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = 0;
-                                            aux.additionalData[3] = 0;
-
+                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
+                                            
                                             switch (vertex)
                                             {
                                                 case 0: // block vertex 1 (B)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y][z-1] + blockLight_[x+1][y][z-1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x + 1][y][z] + blockLightColor_[x][y][z - 1] + blockLightColor_[x + 1][y][z - 1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 5 (C)
                                                 case 4:
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y][z+1] + blockLight_[x+1][y][z+1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 1;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x+1][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x+1][y][z+1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 0 (A)
                                                 case 3:
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y][z-1] + blockLight_[x-1][y][z-1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 1;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x-1][y][z-1]) / 4;
+                                                    aux.lightExtraData.x = 1;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 4 (D)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y][z+1] + blockLight_[x-1][y][z+1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x-1][y][z+1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                             }
 
@@ -784,33 +777,31 @@ namespace VoxelEng {
                                             aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
-                                            aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = 0;
-                                            aux.additionalData[3] = 0;
+                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
 
                                             switch (vertex) 
                                             {
                                                 case 0: // block vertex 3 (B)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y][z-1] + blockLight_[x-1][y][z-1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x-1][y][z-1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 7 (C)
                                                 case 4:
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x-1][y][z] + blockLight_[x][y][z+1] + blockLight_[x-1][y][z+1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 1;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x-1][y][z+1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 2 (A)
                                                 case 3:
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y][z-1] + blockLight_[x+1][y][z-1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 1;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x+1][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x+1][y][z-1]) / 4;
+                                                    aux.lightExtraData.x = 1;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 6 (D)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x+1][y][z] + blockLight_[x][y][z+1] + blockLight_[x+1][y][z+1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x+1][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x+1][y][z+1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                             }
 
@@ -840,33 +831,31 @@ namespace VoxelEng {
                                             aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + 1 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
-                                            aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = 0;
-                                            aux.additionalData[3] = 0;
+                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
 
                                             switch (vertex)
                                             {
                                                 case 0: // block vertex 4 (B)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z+1] + blockLight_[x][y-1][z] + blockLight_[x][y-1][z+1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x][y-1][z] + blockLightColor_[x][y-1][z+1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 7 (C)
                                                 case 4: 
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z+1] + blockLight_[x][y+1][z] + blockLight_[x][y+1][z+1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 1;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x][y+1][z] + blockLightColor_[x][y+1][z+1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 0 (A)
                                                 case 3: 
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z-1] + blockLight_[x][y-1][z] + blockLight_[x][y-1][z-1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 1;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x][y-1][z] + blockLightColor_[x][y-1][z-1]) / 4;
+                                                    aux.lightExtraData.x = 1;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 3 (D)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z-1] + blockLight_[x][y+1][z] + blockLight_[x][y+1][z-1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x][y+1][z] + blockLightColor_[x][y+1][z-1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                             }
 
@@ -896,33 +885,31 @@ namespace VoxelEng {
                                             aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
                                             aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
                                             aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
-                                            aux.additionalData[0] = bNeighbor->getMaterialIndex();
-                                            aux.additionalData[1] = 0;
-                                            aux.additionalData[3] = 0;
+                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
 
                                             switch (vertex)
                                             {
                                                 case 0: // block vertex 1 (B)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z-1] + blockLight_[x][y][z-1] + blockLight_[x][y-1][z-1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x][y-1][z] + blockLightColor_[x][y-1][z-1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 2 (C)
                                                 case 4:
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z-1] + blockLight_[x][y+1][z] + blockLight_[x][y+1][z-1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 1;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x][y+1][z] + blockLightColor_[x][y+1][z-1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 5 (A)
                                                 case 3: 
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z+1] + blockLight_[x][y-1][z] + blockLight_[x][y-1][z+1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 1;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x][y-1][z] + blockLightColor_[x][y-1][z+1]) / 4;
+                                                    aux.lightExtraData.x = 1;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 6 (D)
-                                                    aux.additionalData[2] = (blockLight_[x][y][z] + blockLight_[x][y][z+1] + blockLight_[x][y+1][z] + blockLight_[x][y+1][z+1]) / 4.0f;
-                                                    aux.lightExtraData[0] = 0;
-                                                    aux.lightExtraData[1] = 0;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x][y+1][z] + blockLightColor_[x][y+1][z+1]) / 4;
+                                                    aux.lightExtraData.x = 0;
+                                                    aux.lightExtraData.y = 0;
                                                     break;
                                             }
 
@@ -965,7 +952,7 @@ namespace VoxelEng {
                                     aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
                                     aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
                                     aux.positions[2] = (chunkPos_.z + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
-                                    aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
 
                                     chunkModel->push_back(aux);
 
@@ -1004,7 +991,7 @@ namespace VoxelEng {
                                     aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
                                     aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
                                     aux.positions[2] = (chunkPos_.z - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
-                                    aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
 
                                     chunkModel->push_back(aux);
 
@@ -1043,7 +1030,7 @@ namespace VoxelEng {
                                     aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
                                     aux.positions[1] = (chunkPos_.y + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
-                                    aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
 
                                     chunkModel->push_back(aux);
 
@@ -1082,7 +1069,7 @@ namespace VoxelEng {
                                     aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
                                     aux.positions[1] = (chunkPos_.y - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
-                                    aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
 
                                     chunkModel->push_back(aux);
 
@@ -1121,7 +1108,7 @@ namespace VoxelEng {
                                     aux.positions[0] = (chunkPos_.x + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
                                     aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
-                                    aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
 
                                     chunkModel->push_back(aux);
 
@@ -1160,7 +1147,7 @@ namespace VoxelEng {
                                     aux.positions[0] = (chunkPos_.x - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
                                     aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
-                                    aux.additionalData[0] = bNeighbor->getMaterialIndex();
+                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
 
                                     chunkModel->push_back(aux);
 

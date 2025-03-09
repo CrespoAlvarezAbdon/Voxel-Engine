@@ -46,6 +46,11 @@ namespace VoxelEng {
 		*/
 		static unsigned int nArgs();
 
+		/**
+		* @brief Get the light's maximum spread distance.
+		*/
+		float maxDistance() const;
+
 	protected:
 
 		static const unsigned int nArgs_;
@@ -71,6 +76,12 @@ namespace VoxelEng {
 
 		return light::nArgs() + nArgs_;
 
+	}
+
+	inline float pointLight::maxDistance() const {
+	
+		return maxDistance_;
+	
 	}
 
 }

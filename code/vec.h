@@ -40,6 +40,85 @@ namespace VoxelEng {
 
 	#endif
 
+	struct basic_vec4 
+	{
+		char x;
+		char y;
+		char z;
+		char w;
+
+		basic_vec4();
+
+		basic_vec4(char x, char y, char z, char w);
+
+		/**
+		* @brief Perform component-based addition of two vectors.
+		* @param v The right operand vector.
+		* @return A vector with the result of the addition.
+		*/
+		basic_vec4 operator+(const basic_vec4 v2) const;
+
+		/**
+		* @brief Component-based add the right operand vector to the left operand vector.
+		* @param v The right operand vector.
+		* @return The left operand vector.
+		*/
+		basic_vec4& operator+=(const basic_vec4 v2);
+
+		/**
+		* @brief Multiply the vector's component by the given number.
+		* The multiplication will be done with the given number's type and then cast back to the vector components' type.
+		* @param scale The given number.
+		* @return A vector with the result of this operation.
+		*/
+		basic_vec4 operator*(float scalar) const;
+
+		/**
+		* @brief Divide the vector's component by the given number.
+		* The multiplication will be done with the given number's type and then cast back to the vector components' type.
+		* @param scale The given number.
+		* @return A vector with the result of this operation.
+		*/
+		basic_vec4 operator/(char scalar) const;
+
+	};
+
+	inline basic_vec4::basic_vec4()
+	: x(0), y(0), z(0), w(0)
+	{}
+
+	inline basic_vec4::basic_vec4(char x, char y, char z, char w) 
+	: x(x), y(y), z(z), w(w)
+	{}
+
+	inline basic_vec4 basic_vec4::operator+(basic_vec4 v) const {
+
+		return basic_vec4{ x + v.x, y + v.y, z + v.z, w + v.w };
+
+	}
+
+	inline basic_vec4& basic_vec4::operator+=(basic_vec4 v) {
+
+		x += v.x;
+		y += v.y;
+		z += v.z;
+		return *this;
+
+	}
+
+	inline basic_vec4 basic_vec4::operator*(float scalar) const {
+	
+		return basic_vec4{ static_cast<char>(x * scalar), static_cast<char>(y * scalar), static_cast<char>(z * scalar), static_cast<char>(w * scalar) };
+	
+	}
+
+	inline basic_vec4 basic_vec4::operator/(char scalar) const {
+
+		return basic_vec4{ x / scalar, y / scalar, z / scalar, w / scalar };
+
+	}
+
+
 	// Constants.
 
 	/**

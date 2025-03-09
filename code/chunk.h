@@ -530,7 +530,8 @@ namespace VoxelEng {
 		std::unordered_set<unsigned short> freeLocalIDs_;
 		unsigned short blocksLocalIDs_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
-		unsigned char blockLight_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting value in the specific block. Opaque blocks have 0 light.
+		basic_vec4 blockLightColor_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
+		char blockLightLevel_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting value in the specific block. Opaque blocks have -1 light and air blocks have 0 light by default.
 		std::unordered_set<vec3> floodPointLightPositions_;
 
 		unsigned short neighborBlocksPlusX_[CHUNK_SIZE][CHUNK_SIZE];

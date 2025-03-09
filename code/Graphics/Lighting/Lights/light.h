@@ -61,6 +61,11 @@ namespace VoxelEng {
 		*/
 		static unsigned int nArgs();
 
+		/**
+		* @brief Get the color provided by this light.
+		*/
+		basic_vec4 color() const;
+
 	protected:
 
 		static bool initialised_;
@@ -68,7 +73,7 @@ namespace VoxelEng {
 		static const unsigned int nArgs_;
 
 		float ambient_[4];
-		float diffuse_[4];
+		float diffuse_[4]; // TODO. LEAVE ONLY THIS AND CHANGE IT TO CVEC3
 		float specular_[4];
 
 	};
@@ -93,6 +98,13 @@ namespace VoxelEng {
 
 		return nArgs_;
 
+	}
+
+	inline basic_vec4 light::color() const
+	{
+	
+		return basic_vec4(diffuse_[0], diffuse_[1], diffuse_[2], diffuse_[3]);
+	
 	}
 
 }
