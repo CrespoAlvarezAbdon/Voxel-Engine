@@ -64,7 +64,7 @@ namespace VoxelEng {
 		/**
 		* @brief Get the color provided by this light.
 		*/
-		basic_vec4 color() const;
+		basicVec4 color() const;
 
 	protected:
 
@@ -100,10 +100,10 @@ namespace VoxelEng {
 
 	}
 
-	inline basic_vec4 light::color() const
+	inline basicVec4 light::color() const
 	{
 	
-		return basic_vec4(diffuse_[0], diffuse_[1], diffuse_[2], diffuse_[3]);
+		return basicVec4(diffuse_[0], diffuse_[1], diffuse_[2], diffuse_[3]);
 	
 	}
 

@@ -85,7 +85,7 @@ namespace VoxelEng {
 
         std::memset(blocksLocalIDs_, 0, nBlocksChunk * sizeof(unsigned short));
 
-        std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basic_vec4));
+        std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basicVec4));
         std::memset(blockLightLevel_, -1, nBlocksChunk * sizeof(char));
 
         std::memset(neighborBlocksPlusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
@@ -113,7 +113,7 @@ namespace VoxelEng {
 
         std::memset(blocksLocalIDs_, 0, nBlocksChunk * sizeof(unsigned short));
 
-        std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basic_vec4));
+        std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basicVec4));
         std::memset(blockLightLevel_, -1, nBlocksChunk * sizeof(char));
 
         std::memset(neighborBlocksPlusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
@@ -152,7 +152,7 @@ namespace VoxelEng {
 
         std::memcpy(blocksLocalIDs_, c.blocksLocalIDs_, nBlocksChunk * sizeof(unsigned short));
 
-        std::memcpy(blockLightColor_, c.blockLightColor_, nBlocksChunk * sizeof(basic_vec4));
+        std::memcpy(blockLightColor_, c.blockLightColor_, nBlocksChunk * sizeof(basicVec4));
         std::memcpy(blockLightLevel_, c.blockLightLevel_, nBlocksChunk * sizeof(char));
 
         floodPointLightPositions_ = c.floodPointLightPositions_;
@@ -459,7 +459,7 @@ namespace VoxelEng {
             renderingData_.pointLights = std::vector<lightInstance>();
             renderingData_.spotLights = std::vector<lightInstance>();
 
-            std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basic_vec4));
+            std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basicVec4));
             std::memset(blockLightLevel_, -1, nBlocksChunk * sizeof(char));
 
             bool blockLightChecked[16][16][16];
@@ -498,7 +498,7 @@ namespace VoxelEng {
                         // Search for blocks affected by this light.
                         std::memset(blockLightChecked, 0, nBlocksChunk * sizeof(bool));
                         floodLightPositions.clear();
-                        basic_vec4 lightColor = light.color();
+                        basicVec4 lightColor = light.color();
                         floodLightPositions.emplace_back(vec3{ x, y, z }, light.maxDistance());
                         while (floodLightPositions.size() > 0) {
 
@@ -511,7 +511,7 @@ namespace VoxelEng {
                             if (lightLevelToApply > 0 && !blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z]) {
 
                                 float lightLevelScale = lightLevelToApply / 8.0f; // 8 is the maximum allowed light level.
-                                blockLightColor_[(int)pos.x][(int)pos.y][(int)pos.z] += lightColor * lightLevelScale; // TODO. PONER MIX DE COLORES.
+                                blockLightColor_[(int)pos.x][(int)pos.y][(int)pos.z] += lightColor * lightLevelScale;
                                 blockLightLevel_[(int)pos.x][(int)pos.y][(int)pos.z] = lightLevelToApply;
 
                                 blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z] = true;
@@ -583,6 +583,12 @@ namespace VoxelEng {
 
             // Render faces that do not require data from neighbor chunks.
             bool blockHasLight = false;
+            bool xIs0 = false;
+            bool yIs0 = false;
+            bool zIs0 = false;
+            bool xIsChunkLimit = false;
+            bool yIsChunkLimit = false;
+            bool zIsChunkLimit = false;
             vertex aux;
             const block* bNeighbor = nullptr;
             unsigned short neighborLocalID = 0;
@@ -590,6 +596,13 @@ namespace VoxelEng {
                 for (x = 0; x < CHUNK_SIZE; x++)
                     for (y = 0; y < CHUNK_SIZE; y++)
                         for (z = 0; z < CHUNK_SIZE; z++) {
+
+                            xIs0 = x == 0;
+                            yIs0 = y == 0;
+                            zIs0 = z == 0;
+                            xIsChunkLimit = x == CHUNK_SIZE_LIMIT;
+                            yIsChunkLimit = y == CHUNK_SIZE_LIMIT;
+                            zIsChunkLimit = z == CHUNK_SIZE_LIMIT;
 
                             localID = blocksLocalIDs_[x][y][z];
                             block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
@@ -620,24 +633,24 @@ namespace VoxelEng {
                                             switch (vertex)
                                             {
                                                 case 0: // block vertex 0 (B)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x - 1][y][z] + blockLightColor_[x][y - 1][z] + blockLightColor_[x - 1][y - 1][z]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIs0 ? basicVec4Zeroes : blockLightColor_[x - 1][y][z]) + (yIs0 ? blockLightColor_[x][y - 1][z] : basicVec4Zeroes) + ((xIs0 || yIs0) ? basicVec4Zeroes : blockLightColor_[x - 1][y - 1][z])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 3 (C)
                                                 case 4:
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x - 1][y][z] + blockLightColor_[x][y + 1][z] + blockLightColor_[x - 1][y + 1][z]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIs0 ? basicVec4Zeroes : blockLightColor_[x - 1][y][z]) + (yIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y + 1][z]) + ((xIs0 || yIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x - 1][y + 1][z])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 1 (A)
                                                 case 3:
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x + 1][y][z] + blockLightColor_[x][y - 1][z] + blockLightColor_[x + 1][y - 1][z]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x + 1][y][z]) + (yIs0 ? basicVec4Zeroes : blockLightColor_[x][y - 1][z]) + ((xIsChunkLimit || yIs0) ? basicVec4Zeroes : blockLightColor_[x + 1][y - 1][z])) / 4;
                                                     aux.lightExtraData.x = 1;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 2 (D)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x + 1][y][z] + blockLightColor_[x][y + 1][z] + blockLightColor_[x + 1][y + 1][z]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x + 1][y][z]) + (yIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y + 1][z]) + ((xIsChunkLimit || yIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x + 1][y + 1][z])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
@@ -674,24 +687,24 @@ namespace VoxelEng {
                                             switch (vertex)
                                             {
                                                 case 0: // block vertex 5 (B)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x+1][y][z] + blockLightColor_[x][y-1][z] + blockLightColor_[x+1][y-1][z]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x+1][y][z]) + (yIs0 ? basicVec4Zeroes : blockLightColor_[x][y-1][z]) + ((xIsChunkLimit || yIs0) ? basicVec4Zeroes : blockLightColor_[x+1][y-1][z])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 6 (C)
                                                 case 4:
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x+1][y][z] + blockLightColor_[x][y+1][z] + blockLightColor_[x+1][y+1][z]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x+1][y][z]) + (yIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y+1][z]) + ((xIsChunkLimit || yIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x+1][y+1][z])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 4 (A)
                                                 case 3:
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y-1][z] + blockLightColor_[x-1][y-1][z]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIs0 ? basicVec4Zeroes : blockLightColor_[x-1][y][z]) + (yIs0 ? basicVec4Zeroes : blockLightColor_[x][y-1][z]) + ((xIs0 || yIs0) ? basicVec4Zeroes : blockLightColor_[x-1][y-1][z])) / 4;
                                                     aux.lightExtraData.x = 1;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 7 (D)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y+1][z] + blockLightColor_[x-1][y+1][z]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIs0 ? basicVec4Zeroes : blockLightColor_[x-1][y][z]) + (yIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y+1][z]) + ((xIs0 || yIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x-1][y+1][z])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
@@ -728,24 +741,24 @@ namespace VoxelEng {
                                             switch (vertex)
                                             {
                                                 case 0: // block vertex 1 (B)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x + 1][y][z] + blockLightColor_[x][y][z - 1] + blockLightColor_[x + 1][y][z - 1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x + 1][y][z]) + (zIs0 ? basicVec4Zeroes : blockLightColor_[x][y][z - 1]) + ((xIsChunkLimit || zIs0) ? basicVec4Zeroes : blockLightColor_[x + 1][y][z - 1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 5 (C)
                                                 case 4:
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x+1][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x+1][y][z+1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x+1][y][z]) + (zIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y][z+1]) + ((xIsChunkLimit || zIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x+1][y][z+1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 0 (A)
                                                 case 3:
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x-1][y][z-1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIs0 ? basicVec4Zeroes : blockLightColor_[x-1][y][z]) + (zIs0 ? basicVec4Zeroes : blockLightColor_[x][y][z-1]) + ((xIs0 || zIs0) ? basicVec4Zeroes : blockLightColor_[x-1][y][z-1])) / 4;
                                                     aux.lightExtraData.x = 1;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 4 (D)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x-1][y][z+1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIs0 ? basicVec4Zeroes : blockLightColor_[x-1][y][z]) + (zIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y][z+1]) + ((xIs0 || zIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x-1][y][z+1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
@@ -782,24 +795,24 @@ namespace VoxelEng {
                                             switch (vertex) 
                                             {
                                                 case 0: // block vertex 3 (B)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x-1][y][z-1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIs0 ? basicVec4Zeroes : blockLightColor_[x-1][y][z]) + (zIs0 ? basicVec4Zeroes : blockLightColor_[x][y][z-1]) + ((xIs0 || zIs0) ? basicVec4Zeroes : blockLightColor_[x-1][y][z-1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 7 (C)
                                                 case 4:
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x-1][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x-1][y][z+1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIs0 ? basicVec4Zeroes : blockLightColor_[x-1][y][z]) + (zIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y][z+1]) + ((xIs0 || zIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x-1][y][z+1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 2 (A)
                                                 case 3:
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x+1][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x+1][y][z-1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x+1][y][z]) + (zIs0 ? basicVec4Zeroes : blockLightColor_[x][y][z-1]) + ((xIsChunkLimit || zIs0) ? basicVec4Zeroes : blockLightColor_[x+1][y][z-1])) / 4;
                                                     aux.lightExtraData.x = 1;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 6 (D)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x+1][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x+1][y][z+1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (xIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x+1][y][z]) + (zIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y][z+1]) + ((xIsChunkLimit || zIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x+1][y][z+1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
@@ -810,7 +823,7 @@ namespace VoxelEng {
                                         }
 
                                         // Add texture to the face.
-                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY+"); // TODO. MAÑANA METER EL EXTRACOLORDATA SUPPORT PARA CADA FACE
+                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY+");
 
                                     }
 
@@ -836,24 +849,24 @@ namespace VoxelEng {
                                             switch (vertex)
                                             {
                                                 case 0: // block vertex 4 (B)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x][y-1][z] + blockLightColor_[x][y-1][z+1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (zIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y][z+1]) + (yIs0 ? basicVec4Zeroes : blockLightColor_[x][y-1][z]) + ((yIs0 || zIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x][y-1][z+1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 7 (C)
                                                 case 4: 
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x][y+1][z] + blockLightColor_[x][y+1][z+1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (zIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y][z+1]) + (yIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y+1][z]) + ((yIsChunkLimit || zIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x][y+1][z+1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 0 (A)
                                                 case 3: 
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x][y-1][z] + blockLightColor_[x][y-1][z-1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (zIs0 ? basicVec4Zeroes : blockLightColor_[x][y][z-1]) + (yIs0 ? basicVec4Zeroes : blockLightColor_[x][y-1][z]) + ((yIs0 || zIs0) ? basicVec4Zeroes : blockLightColor_[x][y-1][z-1])) / 4;
                                                     aux.lightExtraData.x = 1;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 3 (D)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x][y+1][z] + blockLightColor_[x][y+1][z-1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (zIs0 ? basicVec4Zeroes : blockLightColor_[x][y][z-1]) + (yIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y+1][z]) + ((yIsChunkLimit || zIs0) ? basicVec4Zeroes : blockLightColor_[x][y+1][z-1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
@@ -890,24 +903,24 @@ namespace VoxelEng {
                                             switch (vertex)
                                             {
                                                 case 0: // block vertex 1 (B)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x][y-1][z] + blockLightColor_[x][y-1][z-1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (zIs0 ? basicVec4Zeroes : blockLightColor_[x][y][z-1]) + (yIs0 ? basicVec4Zeroes : blockLightColor_[x][y-1][z]) + ((yIs0 || zIs0) ? basicVec4Zeroes : blockLightColor_[x][y-1][z-1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 1: // block vertex 2 (C)
                                                 case 4:
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z-1] + blockLightColor_[x][y+1][z] + blockLightColor_[x][y+1][z-1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (zIs0 ? basicVec4Zeroes : blockLightColor_[x][y][z-1]) + (yIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y+1][z]) + ((yIsChunkLimit || zIs0) ? basicVec4Zeroes : blockLightColor_[x][y+1][z-1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 1;
                                                     break;
                                                 case 2: // block vertex 5 (A)
                                                 case 3: 
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x][y-1][z] + blockLightColor_[x][y-1][z+1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (zIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y][z+1]) + (yIs0 ? basicVec4Zeroes : blockLightColor_[x][y-1][z]) + ((yIs0 || zIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x][y-1][z+1])) / 4;
                                                     aux.lightExtraData.x = 1;
                                                     aux.lightExtraData.y = 0;
                                                     break;
                                                 case 5: // block vertex 6 (D)
-                                                    aux.additionalData = (blockLightColor_[x][y][z] + blockLightColor_[x][y][z+1] + blockLightColor_[x][y+1][z] + blockLightColor_[x][y+1][z+1]) / 4;
+                                                    aux.additionalData = (blockLightColor_[x][y][z] + (zIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y][z+1]) + (yIsChunkLimit ? basicVec4Zeroes : blockLightColor_[x][y+1][z]) + ((yIsChunkLimit || zIsChunkLimit) ? basicVec4Zeroes : blockLightColor_[x][y+1][z+1])) / 4;
                                                     aux.lightExtraData.x = 0;
                                                     aux.lightExtraData.y = 0;
                                                     break;
@@ -928,6 +941,7 @@ namespace VoxelEng {
 
                         }
 
+            
             if (nBlocksPlusZ_) {
             
                 for (x = 0; x < CHUNK_SIZE; x++)

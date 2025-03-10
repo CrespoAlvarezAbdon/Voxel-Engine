@@ -40,30 +40,30 @@ namespace VoxelEng {
 
 	#endif
 
-	struct basic_vec4 
+	struct basicVec4 
 	{
 		char x;
 		char y;
 		char z;
 		char w;
 
-		basic_vec4();
+		basicVec4();
 
-		basic_vec4(char x, char y, char z, char w);
+		basicVec4(char x, char y, char z, char w);
 
 		/**
 		* @brief Perform component-based addition of two vectors.
 		* @param v The right operand vector.
 		* @return A vector with the result of the addition.
 		*/
-		basic_vec4 operator+(const basic_vec4 v2) const;
+		basicVec4 operator+(const basicVec4 v2) const;
 
 		/**
 		* @brief Component-based add the right operand vector to the left operand vector.
 		* @param v The right operand vector.
 		* @return The left operand vector.
 		*/
-		basic_vec4& operator+=(const basic_vec4 v2);
+		basicVec4& operator+=(const basicVec4 v2);
 
 		/**
 		* @brief Multiply the vector's component by the given number.
@@ -71,7 +71,7 @@ namespace VoxelEng {
 		* @param scale The given number.
 		* @return A vector with the result of this operation.
 		*/
-		basic_vec4 operator*(float scalar) const;
+		basicVec4 operator*(float scalar) const;
 
 		/**
 		* @brief Divide the vector's component by the given number.
@@ -79,25 +79,25 @@ namespace VoxelEng {
 		* @param scale The given number.
 		* @return A vector with the result of this operation.
 		*/
-		basic_vec4 operator/(char scalar) const;
+		basicVec4 operator/(char scalar) const;
 
 	};
 
-	inline basic_vec4::basic_vec4()
+	inline basicVec4::basicVec4()
 	: x(0), y(0), z(0), w(0)
 	{}
 
-	inline basic_vec4::basic_vec4(char x, char y, char z, char w) 
+	inline basicVec4::basicVec4(char x, char y, char z, char w)
 	: x(x), y(y), z(z), w(w)
 	{}
 
-	inline basic_vec4 basic_vec4::operator+(basic_vec4 v) const {
+	inline basicVec4 basicVec4::operator+(basicVec4 v) const {
 
-		return basic_vec4{ x + v.x, y + v.y, z + v.z, w + v.w };
+		return basicVec4{ x + v.x, y + v.y, z + v.z, w + v.w };
 
 	}
 
-	inline basic_vec4& basic_vec4::operator+=(basic_vec4 v) {
+	inline basicVec4& basicVec4::operator+=(basicVec4 v) {
 
 		x += v.x;
 		y += v.y;
@@ -106,15 +106,15 @@ namespace VoxelEng {
 
 	}
 
-	inline basic_vec4 basic_vec4::operator*(float scalar) const {
+	inline basicVec4 basicVec4::operator*(float scalar) const {
 	
-		return basic_vec4{ static_cast<char>(x * scalar), static_cast<char>(y * scalar), static_cast<char>(z * scalar), static_cast<char>(w * scalar) };
+		return basicVec4{ static_cast<char>(x * scalar), static_cast<char>(y * scalar), static_cast<char>(z * scalar), static_cast<char>(w * scalar) };
 	
 	}
 
-	inline basic_vec4 basic_vec4::operator/(char scalar) const {
+	inline basicVec4 basicVec4::operator/(char scalar) const {
 
-		return basic_vec4{ x / scalar, y / scalar, z / scalar, w / scalar };
+		return basicVec4{ x / scalar, y / scalar, z / scalar, w / scalar };
 
 	}
 
@@ -157,6 +157,11 @@ namespace VoxelEng {
 	* @brief vec4 filled only with ones.
 	*/
 	const vec4 vec4Ones(1, 1, 1, 1);
+
+	/**
+	* @brief 
+	*/
+	const basicVec4 basicVec4Zeroes(0, 0, 0, 0);
 
 
 	// Operators.

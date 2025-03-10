@@ -35,9 +35,9 @@ namespace VoxelEng {
 		float positions[3] = {0,0,0}; // 0 = coord in X axis, 1 = coord in Y axis and 2 = coord in Z axis.
 		float textureCoords[2] = {0,0};
 		unsigned char color[4] = {255,255,255,255}; // RGBA stored in 32-bits.
-		basic_vec4 additionalData; // Color light values.
-		basic_vec4 lightExtraData; // First two bytes are barycentric coordinates of the vertex. Third byte is material index.
-		basic_vec4 colorExtraData; // The colors of the four vertices of the same face block added like this: -ColorVertexA + ColorVertexB - ColorVertexC + ColorVertexD 
+		basicVec4 additionalData; // Color light values.
+		basicVec4 lightExtraData; // First two bytes are barycentric coordinates of the vertex. Third byte is material index.
+		basicVec4 colorExtraData; // The colors of the four vertices of the same face block added like this: -ColorVertexA + ColorVertexB - ColorVertexC + ColorVertexD 
 
 	};
 

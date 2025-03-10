@@ -337,7 +337,7 @@ namespace VoxelEng {
         // X and Y is upper right corner.
         // X2 and Y is upper left corner.
 
-        basic_vec4 extraColorData;
+        basicVec4 extraColorData;
         
 
         if (textureID) {
