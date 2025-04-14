@@ -163,7 +163,7 @@ namespace VoxelEng {
 					else {
 					
 						VoxelEng::logger::debugLog("Inversely Rotating view dir " + std::to_string(game->getParam<int>(1)));
-						game->rotateAgentViewDir(game->getParam<unsigned int>(0), inverseUDirection(game->getParam<blockViewDir>(1)));
+						game->rotateAgentViewDir(game->getParam<unsigned int>(0), inverseDirection(game->getParam<blockViewDir>(1)));
 					
 					}
 
@@ -1359,9 +1359,9 @@ namespace VoxelEng {
 					if (recording_)
 						recordAction("rotateAgentViewDir", { agentID, direction });
 
-					entityManager::getEntity(AIagentEntityID_[agentID]).rotateView(uDirectionToVec3(direction) * 90.0f);
+					entityManager::getEntity(AIagentEntityID_[agentID]).rotateView(directionToVec3(direction) * 90.0f);
 
-					AIagentLookDirection_[agentID] = rotateUDirection(AIagentLookDirection_[agentID], direction);
+					AIagentLookDirection_[agentID] = rotateDirection(AIagentLookDirection_[agentID], direction);
 
 				}
 
@@ -1420,7 +1420,7 @@ namespace VoxelEng {
 			float vecX = 0.0f;
 			float vecY = 0.0f;
 			float vecZ = 0.0f;
-			uDirectionToVec3(direction, x, y, z);
+			directionToVec3(direction, x, y, z);
 
 			unsigned int ID = entityManager::spawnEntity(entityTypeID, x, y, z, VoxelEng::applyRotationMode::EULER_ANGLES, vecX, vecY, vecZ);
 

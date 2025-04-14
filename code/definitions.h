@@ -50,13 +50,9 @@ namespace VoxelEng {
 	/**
 	* @brief The different graphics APIs supported by the engine.
 	*/
-	enum class graphicsAPI {OPENGL};
+	enum class graphicsAPI { OPENGL };
 
-	/**
-	* @brief Viewing directions expressed in a discrete and simple way. It could be seen as a "blocky" viewing direction
-	* if it could be compared to block coordinates, which are only integer coordinates compared to global coordinates.
-	*/
-	enum class blockViewDir {NONE, PLUSY, NEGY, PLUSX, NEGX, PLUSZ, NEGZ};
+	
 
 
 	//////////////
@@ -68,6 +64,12 @@ namespace VoxelEng {
 	*/
 	const graphicsAPI graphicsAPIUsed = graphicsAPI::OPENGL;
 	
+	/**
+	* @brief Number of chunk neighbors that a certain chunk has. Neighbor chunks
+	* are those that share a border with the chunk.
+	*/
+	const unsigned int CHUNK_NEIGHBORS = 6;
+
 	/**
 	* @brief Minimal block texture size in pixels.
 	*/
@@ -102,16 +104,6 @@ namespace VoxelEng {
 	* @brief Total number of chunks to compute in the Y axis (both in the +Y direction and the -Y direction).
 	*/
 	const int totalYChunks = yChunksRange * 2;
-
-	/**
-	* @brief Maximum distance in chunk coordinates from the player for anything rendered in LOD level 1 (100% resolution).
-	*/
-	const int LODlevel1Range = 10;
-
-	/**
-	* @brief Maximum distance in chunk coordinates from the player for anything rendered in LOD level 2 (50% resolution).
-	*/
-	const int LODlevel2Range = 20;
 
 	/**
 	* @brief Default width for a game window.
@@ -149,9 +141,11 @@ namespace VoxelEng {
 	const float piDiv = 3.1415926f / 180.0f;
 
 	/**
-	* @brief Default maximum distance that a light source can emit to.
+	* @brief Default maximum intensity that a light source can emit to.
+	* Light intensity is decreased minimally by one per block travelled, so it also dictactes the
+	* maximum distance travelled by light from its source block.
 	*/
-	const float defaultLightMaxDistance = 16.0f;
+	const char lightMaxIntensity = 8;
 
 
 	/////////////////////

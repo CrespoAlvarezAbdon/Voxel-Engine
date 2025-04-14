@@ -16,6 +16,7 @@
 #include <vector>
 #include <functional>
 #include <mutex>
+#include <atomicRecyclingPool.h>
 
 #if GRAPHICS_API == OPENGL
 
@@ -25,6 +26,8 @@
 
 
 namespace VoxelEng {
+
+	typedef std::function<void(void*)> task;
 
 	/**
 	* @brief Jobs are computational steps that solve some small tasks that are to be processed
@@ -37,14 +40,40 @@ namespace VoxelEng {
 	public:
 
 		/**
-		* @brief Represents the small tasks to be done by all the assigned
-		* threads in order to complete the computation of the main task. 
+		* @brief Set the task to be process along with the data needed for it (optional).
 		*/
-		virtual void process() = 0;
+		void setTask(const task& task, void* data = nullptr, atomicRecyclingPool<job>* jobPool = nullptr);
+
+		/**
+		* @brief Process the given task.
+		*/
+		void process();
 
 	private:
 
+		task task_;
+		void* data_;
+		atomicRecyclingPool<job>* jobPool_;
+
 	};
+
+	inline void job::setTask(const task& task, void* data, atomicRecyclingPool<job>* jobPool) {
+	
+		task_ = task;
+		data_ = data;
+		jobPool_ = jobPool;
+	
+	}
+
+	inline void job::process() {
+
+		task_(data_);
+
+		if (jobPool_)
+			jobPool_->free(*this);
+
+	}
+
 
 	/**
 	* @brief A collection of threads that are commonly used to divide the workload

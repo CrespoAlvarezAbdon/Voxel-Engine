@@ -9,7 +9,7 @@
 #ifndef _VOXELENG_MATH_PLANE_
 #define _VOXELENG_MATH_PLANE_
 
-#include "../vec.h"
+#include <vec.h>
 
 #if GRAPHICS_API == OPENGL
 

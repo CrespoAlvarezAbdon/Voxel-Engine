@@ -27,6 +27,7 @@
 #include <game.h>
 #include <worldGen.h>
 #include <Time/time.h>
+#include <Utilities/BlockViewDir/blockViewDir.hpp>
 #include <Utilities/Logger/logger.h>
 
 

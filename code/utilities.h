@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <definitions.h>
 #include <vec.h>
+#include <Utilities/BlockViewDir/blockViewDir.hpp>
 #include <Utilities/Logger/logger.h>
 
 #if GRAPHICS_API == OPENGL
@@ -70,32 +71,6 @@ namespace VoxelEng {
 	* if vector = 0.0f, 1.0f, 1.0f, it will return 1.
 	*/
 	unsigned int indMaxVec(const vec3& vector);
-
-	/**
-	* @brief Returns 'direction' in a vec3.
-	*/
-	vec3 uDirectionToVec3(blockViewDir direction);
-
-	/**
-	* @brief Returns 'direction' in three floats.
-	*/
-	void uDirectionToVec3(blockViewDir direction, float& x, float& y, float& z);
-
-	/**
-	* @brief Returns 'direction' in as a Block View Direction by rounding to the
-	* nearest direction.
-	*/
-	blockViewDir vec3ToUDirection(const vec3& direction);
-
-	/**
-	* @brief Returns the rotated direction.
-	*/
-	blockViewDir rotateUDirection(blockViewDir dir, blockViewDir rot);
-
-	/**
-	* @brief Returns the inverse direction.
-	*/
-	blockViewDir inverseUDirection(blockViewDir dir);
 
 	/**
 	* @brief Returns true if 'string' only contains alphanumeric characters

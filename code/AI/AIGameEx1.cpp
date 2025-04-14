@@ -142,7 +142,7 @@ namespace AIExample {
 				switch (action) {
 				
 					case 0: // Move forward to the direction the agent is looking at.
-						game->moveEntity(individualID, VoxelEng::uDirectionToVec3(blockViewDir));
+						game->moveEntity(individualID, VoxelEng::directionToVec3(blockViewDir));
 						remainingActions--;
 						break;
 
@@ -324,23 +324,19 @@ namespace AIExample {
 		int x, y, z;
 		// TODO. Optimise when terrainFeature class and ore subclass are properly defined.
 
-		// DUMMY.
-		unsigned int LOD = 2;
-		unsigned int limit = (VoxelEng::CHUNK_SIZE / LOD - 1) * LOD;
-
 		for (x = 0; x < VoxelEng::CHUNK_SIZE; x++)
 			for (z = 0; z < VoxelEng::CHUNK_SIZE; z++)
 				for (y = 0; y < VoxelEng::CHUNK_SIZE; y++) {
 
 					blockPos = VoxelEng::getGlobalPos(chunkPos, x, y, z);
 					height = heightMap[x][z];
-
+					
 					if (blockPos.y < height - 3)
 						chunk.setBlock(x, y, z, layer2_, false);
 					else if (blockPos.y < height)
 						chunk.setBlock(x, y, z, layer1_, false);
 					else if (blockPos.y == height)
-						chunk.setBlock(x, y, z, layer0_, false);
+						chunk.setBlock(x, y, z, (x == 0 && z == 0) ? lightBlock_ : layer0_, false);
 
 				}
 
@@ -375,21 +371,6 @@ namespace AIExample {
 				else if (blockPos.y == height)
 					chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer0_, false);
 
-				// Generate data for the chunk's low resolution meshes.
-				if ((y == 0 || y % LOD == 0) && (z == 0 || z % LOD == 0)) {
-				
-					blockPos = VoxelEng::getGlobalPos(chunkPos.x - 1, chunkPos.y, chunkPos.z, limit, y, z);
-					height = heightMapMinusX[limit][z];
-
-					if (blockPos.y < height - 3)
-						chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer2_, false, LOD);
-					else if (blockPos.y < height)
-						chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer1_, false, LOD);
-					else if (blockPos.y == height)
-						chunk.setBlockNeighbor(y, z, VoxelEng::blockViewDir::NEGX, layer0_, false, LOD);
-				
-				}
-
 			}
 
 		// Y+
@@ -422,20 +403,6 @@ namespace AIExample {
 				else if (blockPos.y == height)
 					chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer0_, false);
 
-				// Generate data for the chunk's low resolution meshes.
-				if ((x == 0 || x % LOD == 0) && (z == 0 || z % LOD == 0)) {
-
-					blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y - 1, chunkPos.z, x, limit, z);
-
-					if (blockPos.y < height - 3)
-						chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer2_, false, LOD);
-					else if (blockPos.y < height)
-						chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer1_, false, LOD);
-					else if (blockPos.y == height)
-						chunk.setBlockNeighbor(x, z, VoxelEng::blockViewDir::NEGY, layer0_, false, LOD);
-
-				}
-
 			}
 
 		// Z+
@@ -467,21 +434,6 @@ namespace AIExample {
 					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer1_, false);
 				else if (blockPos.y == height)
 					chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer0_, false);
-
-				// Generate data for the chunk's LOD 2 meshes.
-				if ((x == 0 || x % LOD == 0) || (y == 0 || y % LOD == 0)) {
-
-					blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z - 1, x, y, limit);
-					height = heightMapMinusZ[x][limit];
-
-					if (blockPos.y < height - 3)
-						chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer2_, false, LOD);
-					else if (blockPos.y < height)
-						chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer1_, false, LOD);
-					else if (blockPos.y == height)
-						chunk.setBlockNeighbor(x, y, VoxelEng::blockViewDir::NEGZ, layer0_, false, LOD);
-
-				}
 
 			}
 

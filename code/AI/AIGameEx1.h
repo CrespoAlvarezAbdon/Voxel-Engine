@@ -192,7 +192,8 @@ namespace AIExample {
 			                 & layer0_,
 							 & layer1_,
 							 & layer2_,
-							 & air_;
+							 & air_,
+			                 & lightBlock_;
 
 		bool spawnSet_;
 		int maxBlockYCoord_; // TODO. REMOVE THIS
@@ -249,7 +250,7 @@ namespace AIExample {
 	inline miningWorldGen::miningWorldGen(const VoxelEng::block& ore1, const VoxelEng::block& ore2, const VoxelEng::block& ore3, const VoxelEng::block& ore4,
 		const VoxelEng::block& layer0, const VoxelEng::block& layer1, const VoxelEng::block& layer2, const VoxelEng::block& air)
 	: spawnSet_(false), maxBlockYCoord_(0), AISpawnPos_(VoxelEng::vec3Zero), ore1_(ore1), ore2_(ore2), ore3_(ore3), ore4_(ore4),
-	  layer0_(layer0), layer1_(layer1), layer2_(layer2), air_(air),
+	  layer0_(layer0), layer1_(layer1), layer2_(layer2), air_(air), lightBlock_(VoxelEng::block::getBlockC("starminer::marbleBlock2")),
 	  ore1SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 8)),
 	  ore2SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 7)),
 	  ore3SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 5)),

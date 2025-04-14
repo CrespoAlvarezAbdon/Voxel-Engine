@@ -61,7 +61,7 @@ namespace VoxelEng {
 	};
 
 	inline pointLight::pointLight()
-	: light(), maxDistance_(defaultLightMaxDistance), padding_{0.0f, 0.0f, 0.0f}
+	: light(), maxDistance_(lightMaxIntensity), padding_{0.0f, 0.0f, 0.0f}
 	{}
 
 	inline pointLight::pointLight(float ambientR, float ambientG, float ambientB, 

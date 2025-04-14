@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <Utilities/Logger/logger.h>
 
+#include <vec.h>
+
 namespace VoxelEng {
 
 	/////////////
@@ -126,7 +128,7 @@ namespace VoxelEng {
 			throw std::runtime_error("Palete is corrupt!");
 
 		if (T2ToT1_.contains(l))
-			return T2ToT1_[l];
+			return T2ToT1_.at(l);
 		else
 			logger::errorLog("The specified T2 key is not present in the palette");
 	
@@ -140,7 +142,7 @@ namespace VoxelEng {
 			throw std::runtime_error("Palete is corrupt!");
 
 		if (T1ToT2_.contains(s))
-			return T1ToT2_[s];
+			return T1ToT2_.at(s);
 		else
 			logger::errorLog("The specified T1 key is not present in the palette");
 
@@ -209,7 +211,7 @@ namespace VoxelEng {
 			throw std::runtime_error("Palete is corrupt!");
 
 		if (T2ToT1_.contains(l))
-			return T2ToT1_[l];
+			return T2ToT1_.at(l);
 		else
 			logger::errorLog("The specified T2 key is not present in the palette");
 
@@ -223,7 +225,7 @@ namespace VoxelEng {
 			throw std::runtime_error("Palete is corrupt!");
 
 		if (T1ToT2_.contains(s))
-			return T1ToT2_[s];
+			return T1ToT2_.at(s);
 		else
  			logger::errorLog("The specified T1 key is not present in the palette");
 
@@ -245,7 +247,7 @@ namespace VoxelEng {
 	requires T1smallerOrEqualToT2<T1, T2>
 	void palette<T1, T2>::eraseT1(const T1& s) {
 
-		const T2& l = T1ToT2_[s];
+		const T2& l = T1ToT2_.at(s);
 		T2ToT1_.erase(l);
 		T1ToT2_.erase(s);
 
@@ -258,7 +260,7 @@ namespace VoxelEng {
 	requires T1smallerOrEqualToT2<T1, T2>
 	void palette<T1, T2>::eraseT2(const T2& l) {
 
-		const T1& s = T2ToT1_[l];
+		const T1& s = T2ToT1_.at(l);
 		T1ToT2_.erase(s);
 		T2ToT1_.erase(l);
 

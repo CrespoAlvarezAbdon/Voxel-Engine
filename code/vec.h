@@ -11,7 +11,7 @@
 
 #include <unordered_map>
 #include <string>
-#include <definitions.h>
+#include <stdexcept>
 
 #if GRAPHICS_API == OPENGL
 
@@ -25,6 +25,12 @@
 
 
 namespace VoxelEng {
+
+	/////////////////////////
+	//Forward declarations.//
+	/////////////////////////
+	enum class blockViewDir;
+
 
 	// Type definitions.
 
@@ -40,6 +46,46 @@ namespace VoxelEng {
 
 	#endif
 
+	// Other operators.
+
+	vec3 operator+(const vec3& v, blockViewDir viewDir);
+
+
+	/**
+	* @brief Vector of 3 bytes, 1 byte per component.
+	*/
+	struct basicVec3
+	{
+		char x;
+		char y;
+		char z;
+
+		/**
+		* @brief Default class constructor.
+		*/
+		basicVec3();
+
+		/**
+		* @brief Class constructor.
+		* @param x First component.
+		* @param y Second component.
+		* @param z Third component.
+		*/
+		basicVec3(char x, char y, char z);
+	};
+
+	inline basicVec3::basicVec3()
+	: x(0), y(0), z(0)
+	{}
+
+	inline basicVec3::basicVec3(char x, char y, char z)
+	: x(x), y(y), z(z)
+	{}
+
+
+	/**
+	* @brief Vector of 4 bytes, 1 byte per component.
+	*/
 	struct basicVec4 
 	{
 		char x;
@@ -47,8 +93,18 @@ namespace VoxelEng {
 		char z;
 		char w;
 
+		/**
+		* @brief Default class constructor.
+		*/
 		basicVec4();
 
+		/**
+		* @brief Class constructor.
+		* @param x First component.
+		* @param y Second component.
+		* @param z Third component.
+		* @param w Fourth component.
+		*/
 		basicVec4(char x, char y, char z, char w);
 
 		/**

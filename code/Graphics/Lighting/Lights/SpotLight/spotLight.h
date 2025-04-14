@@ -60,7 +60,7 @@ namespace VoxelEng {
 	};
 
 	inline spotLight::spotLight()
-		: directionalLight(), cutOffAngle_(90.0f), outerCutOffAngle_(45.0f), maxDistance_(defaultLightMaxDistance), padding_{0.0f}
+		: directionalLight(), cutOffAngle_(90.0f), outerCutOffAngle_(45.0f), maxDistance_(lightMaxIntensity), padding_{0.0f}
 	{}
 
 	inline spotLight::spotLight(float ambientR, float ambientG, float ambientB,

@@ -26,6 +26,7 @@
 #include <utility>
 #include <vector>
 #include <time.h>
+#include <functional>
 #include <atomicRecyclingPool.h>
 #include <block.h>
 #include <definitions.h>
@@ -35,6 +36,8 @@
 #include <palette.h>
 #include <vec.h>
 #include <utilities.h>
+#include <Chunk/FloodLightPositions.h>
+#include <Chunk/LightRemeshJob.h>
 #include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 #include <Graphics/Textures/texture.h>
 #include <Graphics/Shaders/shader.h>
@@ -42,6 +45,7 @@
 #include <Graphics/Vertex/vertex.h>
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
 #include <Registry/RegistryInsOrdered/registryInsOrdered.h>
+#include <Utilities/BlockViewDir/blockViewDir.hpp>
 
 #if GRAPHICS_API == OPENGL
 
@@ -68,12 +72,12 @@ namespace VoxelEng {
 	/**
 	* @brief The different stages that a chunk has during its lifetime.
 	*/
-	enum class chunkStatus { NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2, MESHED = 3};
+	enum class chunkStatus { NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2, LIGHTREMESHPENDING = 3, MESHED = 4};
 
 	/**
 	* @brief Definition of the multiples types of jobs related to chunk management.
 	*/
-	enum class chunkJobType { NONE = 0, LOAD = 1, ONLYREMESH = 2, UNLOADANDSAVE = 3, PRIORITYREMESH = 4};
+	enum class chunkJobType { NONE = 0, LOAD = 1, ONLYREMESH = 2, UNLOADANDSAVE = 3, PRIORITYREMESH = 4, LIGHT_REMESH = 5};
 
 	/**
 	* @brief Definition of the operations allowed in the chunk vertex buffer object.
@@ -92,7 +96,6 @@ namespace VoxelEng {
 
 		vec3 globalChunkPos = vec3Zero;
 
-		// LOD 1.
 		model vertices;
 		model translucentVertices;
 
@@ -386,7 +389,7 @@ namespace VoxelEng {
 		* 'modification' tells if the call to this method is NOT part of the
 		* chunk's generation process or otherwise. For world generators that use this method, it must be set to false.
 		*/
-		void setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification = true, unsigned int LOD = 1);
+		void setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification = true);
 
 		/**
 		* @brief Set the chunk's chunk position.
@@ -440,8 +443,14 @@ namespace VoxelEng {
 
 		/**
 		* @brief Regenerate the chunk's mesh. Returns true if the mesh contains vertices or false if it is empty.
+		* @param generationRemesh Whether this remesh operation is done after chunk generation, not after chunk loading or
+		* anything else that could trigger a remesh (true) or not (false).
+		* @param neighborProvidedLights Lights to apply in this remesh provided by a neighboring chunk (optional).
+		* @param dirFromNeighborToC The direction to reach the chunk to remesh from the neighboring chunk by moving one space
+		* in chunk-coordinates.
 		*/
-		bool renewMesh();
+		bool renewMesh(bool generationRemesh, 
+			std::deque<floodLightPropInstance>* neighborProvidedLights = nullptr, blockViewDir dirFromNeighborToC = blockViewDir::NONE);
 
 		/**
 		* @brief The chunk's block data will be filled with null blocks, leaving the chunk "empty of blocks".
@@ -533,6 +542,17 @@ namespace VoxelEng {
 		basicVec4 blockLightColor_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
 		char blockLightLevel_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting value in the specific block. Opaque blocks have -1 light and air blocks have 0 light by default.
 		std::unordered_set<vec3> floodPointLightPositions_;
+
+		// This ones are used to pass the lights to the corresponding neighbor.
+		std::deque<floodLightPropInstance>* floodLightPositionsToPlusX_;
+		std::deque<floodLightPropInstance>* floodLightPositionsToMinusX_;
+		std::deque<floodLightPropInstance>* floodLightPositionsToPlusY_;
+		std::deque<floodLightPropInstance>* floodLightPositionsToMinusY_;
+		std::deque<floodLightPropInstance>* floodLightPositionsToPlusZ_;
+		std::deque<floodLightPropInstance>* floodLightPositionsToMinusZ_;
+
+		// This ones are used to store the lights received from the corresponding neighbor.
+		std::unordered_set<floodLightPropInstance> floodLightPositionsFromPlusX_;
 
 		unsigned short neighborBlocksPlusX_[CHUNK_SIZE][CHUNK_SIZE];
 		unsigned short neighborBlocksMinusX_[CHUNK_SIZE][CHUNK_SIZE];
@@ -985,63 +1005,6 @@ namespace VoxelEng {
 	
 	}
 
-
-	// 'loadChunkJob' class.
-
-	/**
-	* @brief Task that loads a chunk either by reading its data from disk
-	* or by generating it using the currently selected world generator.
-	*/
-	class chunkJob : public job {
-	public:
-
-		// Constructors.
-
-		/**
-		* @brief Default class constructor.
-		*/
-		chunkJob();
-
-
-		// Modifiers.
-
-		/**
-		* @brief Change the attributes used in the construction of this object.
-		* WARNING. 'type' most NOT BE chunkJobType::REMESHNEIGBHOR. Method setRemeshNeighborAttributes is specialized
-		* for that job.
-		*/
-		void setAttributes(chunk* c, chunkJobType type, atomicRecyclingPool<chunkJob>* pool, std::condition_variable* priorityNewChunkMeshesCV, atomicRecyclingPool<chunk>* chunkPool);
-
-
-	private:
-
-		/*
-		Methods.
-		*/
-
-		void process();
-
-
-		/*
-		Attributes.
-		*/
-
-		chunk* chunk_;
-		chunkJobType type_;
-		atomicRecyclingPool<chunkJob>* pool_;
-		std::condition_variable* priorityNewChunkMeshesCV_;
-		atomicRecyclingPool<chunk>* chunkPool_;
-	
-	};
-
-	inline chunkJob::chunkJob()
-	: chunk_(nullptr),
-	  type_(chunkJobType::NONE),
-	  pool_(nullptr),
-      priorityNewChunkMeshesCV_(nullptr),
-	  chunkPool_(nullptr)
-	{}
-
 	
 	// 'chunkManager' class.
 	
@@ -1191,30 +1154,6 @@ namespace VoxelEng {
 		* false otherwise.
 		*/
 		static bool chunkInRenderDistance(int chunkPosX, int chunkPosY, int chunkPosZ);
-
-		/**
-		* @brief Returns true if the specified chunk position is inside the specified player's LOD level distance or
-		* false otherwise.
-		* The last three parameters are output parameters and describe, respectivelly:
-		* - Whether the chunk position is at the border of LOD 'LODlevel' and LOD 'LODlevel' + 1.
-		* - For each axis, if the position is at a positive or negative distance from the player's camera 
-		*   (based on fixed axes-directions not on the player camera's) or if the distance in said axis is 0.
-		*   For example, if 'chunkPos' is (1,-1,0) and the player is at (0,0,0), it will return, for the following axes:
-		*   blockViewDir::PlusX, blockViewDir::MinusY, and blockViewDir::NONE.
-		*/
-		static bool chunkInLODDistance(const vec3& chunkPos, unsigned int LODlevel, bool& inBorder, blockViewDir& dirX, blockViewDir& dirY, blockViewDir& dirZ);
-
-		/**
-		* @brief Returns true if the specified chunk position is inside the specified player's LOD level distance or
-		* false otherwise.
-		* The last three parameters are output parameters and describe, respectivelly:
-		* - Whether the chunk position is at the border of LOD 'LODlevel' and LOD 'LODlevel' + 1.
-		* - For each axis, if the position is at a positive or negative distance from the player's camera
-		*   (based on fixed axes-directions not on the player camera's) or if the distance in said axis is 0.
-		*   For example, if 'chunkPos' is (1,-1,0) and the player is at (0,0,0), it will return, for the following axes:
-		*   blockViewDir::PlusX, blockViewDir::MinusY, and blockViewDir::NONE.
-		*/
-		static bool chunkInLODDistance(int chunkPosX, int chunkPosY, int chunkPosZ, unsigned int LODlevel, bool& inBorder, blockViewDir& dirX, blockViewDir& dirY, blockViewDir& dirZ);
 
 		/**
 		* @brief Returns distance between the player and the specified chunk position in the three axes in chunk coordinates.
@@ -1471,6 +1410,13 @@ namespace VoxelEng {
 		static bool ensureChunkIfVisible(int x, int y, int z);
 
 		/**
+		* @brief Pass the corresponding lighting values from the chunk at 'chunkPos' to the neighbor specified by the given direction.
+		* @param chunkPos The position of the chunk with the lighting values to propagate to the neighbor.
+		* @param neighborDir Direction of the neighboring chunk relative from the chunk in 'chunkPos'.
+		*/
+		static void passLighting(const vec3& chunkPos, blockViewDir neighborDir);
+
+		/**
 		* @brief Serialize the chunk's data in order to save it into auxiliary memory.
 		*/
 		static std::string serializeChunk(chunk* c);
@@ -1492,11 +1438,11 @@ namespace VoxelEng {
 		static chunk* loadChunk(const vec3& chunkPos);
 
 		/**
-		* @brief Issue a job that will consists of rengerating the mesh of the specified chunk.
+		* @brief Issue a job related to chunk processing.
 		* The job will be executed on another thread and will lock the chunk's mutexes that
 		* are required.
 		*/
-		static void issueChunkMeshJob(chunk* c, chunkJobType type);
+		static void issueChunkMeshJob(chunkJobType type, void* data);
 
 		/** 
 		* @brief Used on chunkManager::onUnloadAsFrontier to update the neighbor
@@ -1513,12 +1459,23 @@ namespace VoxelEng {
 		* @brief Renews the mesh of the specified chunk and marks it if it is ready to be drawn.
 		* Sets the chunk's status to MESHED.
 		*/
-		static void renewMesh(chunk* chunk, bool isPriorityUpdate);
+		static void remesh(chunk* c, bool isPriorityUpdate, bool remeshPostGeneration);
+
+		/**
+		* @brief Remesh the chunk 'c' with the lights provided from the neighbor chunk 'nc'.
+		* This operation can also trigger other light remeshes. For example, if chunk 'c' has a neighbor in direction
+		* X+ that has a light that can reach both this neighbor, 'c', and the neighbor of 'c' in the Z+ direction, then first
+		* the light will be propagated to 'c' and then to the neighbor in Z+.
+		* @param c The chunk to remesh.
+		* @param neighborProvidedLights The lights provided by the neighbor.
+		* @param dirFromNeighborToC The direction needed to reach chunk 'c' from chunk 'nc' by moving one space in chunk-coordinates.
+		*/
+		static void lightRemesh(chunk* c, std::deque<floodLightPropInstance>* neighborProvidedLights, blockViewDir dirFromNeighborToC);
 
 		/**
 		* @brief Renews the mesh of the specified chunk and marks it if it is ready to be drawn.
 		*/
-		static void renewMesh(const vec3& chunkPos, bool isPriorityUpdate);
+		static void renewMesh(const vec3& chunkPos, bool isPriorityUpdate, bool remeshPostGeneration);
 
 		/**
 		* @brief Returns the onChunkLoad chunkEvent associated with the chunk management system.
@@ -1529,6 +1486,28 @@ namespace VoxelEng {
 		* @brief Returns the onChunkUnload chunkEvent associated with the chunk management system.
 		*/
 		static chunkEvent& onChunkUnload();
+
+		/**
+		* @brief Add a pending light remesh job to the chunk manager's intenal queue so that the chunk management thread
+		* can process it when the specified chunk becomes available for processing.
+		* @param job. The pending light remesh job to add.
+		*/
+		static void addPendingLightRemeshJob(LightRemeshJob* job);
+
+		/**
+		* @brief Lock the pending light remesh job list's mutex that guarantees its mutual exclusion. 
+		*/
+		static void lockPendingLightRemeshJobMutex();
+
+		/**
+		* @brief Unlock the pending light remesh job list's mutex that guarantees its mutual exclusion.
+		*/
+		static void unlockPendingLightRemeshJobMutex();
+
+		/**
+		* @brief Get a free LightRemeshJob object from the Chunk Manager's internal pool.
+		*/
+		static LightRemeshJob& getLightRemeshJob();
 
 
 		// Clean Up.
@@ -1628,6 +1607,9 @@ namespace VoxelEng {
 													// ASI, SI SE PIDE UN CHUNK POR UN METODO GENÉRICO, SI NO SE ENCUENTRA ESE CHUNK EN CLIENT CHUNKS, SE CARGA COMO SIMULATED CHUNK.
 		static std::unordered_map<vec3, chunk*> simulatedChunks_; 
 
+		static std::mutex pendingLightRemeshJobsMutex_;
+		static std::list<LightRemeshJob*> pendingLightRemeshJobs_;
+
 		static std::unordered_map<vec3, chunkRenderingData>* chunkMeshesUpdated_; // Chunk meshes generated by renewMesh()
 		static std::unordered_map<vec3, chunkRenderingData>* chunkMeshesWrite_; // Chunk meshes to be passed to the rendering thread on next synchronization between this one and the chunk meshing threads.
 		static std::unordered_map<vec3, chunkRenderingData>* chunkMeshesRead_; // Chunk meshes being used by the rendering thread ONLY.
@@ -1669,8 +1651,9 @@ namespace VoxelEng {
 		static threadPool* chunkTasks_;
 		static threadPool* priorityChunkTasks_;
 
-		static atomicRecyclingPool<chunkJob>* loadChunkJobs_;
+		static atomicRecyclingPool<job>* loadChunkJobs_;
 		static atomicRecyclingPool<chunk> chunksPool_;
+		static atomicRecyclingPool<LightRemeshJob> lightRemeshJobs_;
 
 		static chunkEvent onChunkLoad_;
 		static chunkEvent onChunkUnload_;
@@ -1684,6 +1667,21 @@ namespace VoxelEng {
 		*/
 
 		static const block& getBlockOGWorld_(int posX, int posY, int posZ);
+
+		static void pushNewChunkMesh(bool isPriorityUpdate, chunk* c, std::size_t meshSize);
+
+		/*
+		Job methods.
+		*/
+		static void loadChunkJob(void* data);
+
+		static void remeshChunkJob(void* data);
+
+		static void unloadAndSaveChunkJob(void* data);
+
+		static void priorityRemeshChunkJob(void* data);
+
+		static void lightRemeshChunkJob(void* data);
 
 	};
 
@@ -1772,12 +1770,6 @@ namespace VoxelEng {
 
 		return openedTerrainFileName_;
 		
-	}
-
-	inline bool chunkManager::chunkInLODDistance(int chunkPosX, int chunkPosY, int chunkPosZ, unsigned int LODlevel, bool& inBorder, blockViewDir& dirX, blockViewDir& dirY, blockViewDir& dirZ) {
-	
-		return chunkInLODDistance(vec3{ chunkPosX, chunkPosY, chunkPosZ }, LODlevel, inBorder, dirX, dirY, dirZ);
-	
 	}
 
 	inline const chunkEvent& chunkManager::onChunkLoadC() {
@@ -1887,6 +1879,31 @@ namespace VoxelEng {
 		clearChunksFlag_ = true;
 
 	}
+
+	inline void chunkManager::addPendingLightRemeshJob(LightRemeshJob* job) {
+
+		pendingLightRemeshJobs_.push_back(job);
+
+	}
+
+	inline void chunkManager::lockPendingLightRemeshJobMutex() {
+
+		pendingLightRemeshJobsMutex_.lock();
+
+	}
+
+	inline void chunkManager::unlockPendingLightRemeshJobMutex() {
+
+		pendingLightRemeshJobsMutex_.unlock();
+
+	}
+
+	inline LightRemeshJob& chunkManager::getLightRemeshJob() {
+	
+		return lightRemeshJobs_.get();
+	
+	}
+
 
 }
 
