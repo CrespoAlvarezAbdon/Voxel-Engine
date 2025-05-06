@@ -2,15 +2,13 @@
 #include <string>
 #include <filesystem>
 
-#include "AI/AIGameEx1.h"
-
-#include "chunk.h"
 #include "player.h"
 #include "gui.h"
-#include "world.h"
-#include "worldGen.h"
+#include <Chunk/chunk.h>
 #include <Graphics/graphics.h>
 #include <Utilities/Logger/logger.h>
+#include <World/world.h>
+#include <World/WorldGen/worldGen.h>
 
 namespace VoxelEng {
 
@@ -125,11 +123,11 @@ namespace VoxelEng {
 				world::loadMainData();
 
 				// TODO. ADD PROPER WORLDGENERATOR SELECTION.
-				if (!worldGen::isGenRegistered("miningWorldGen"))
-					worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
-				if (!worldGen::isGenSelected("miningWorldGen")) {
+				if (!worldGen::isGenRegistered("WorldGen3DNoise"))
+					worldGen::registerGen("WorldGen3DNoise", "WorldGen3DNoise");
+				if (!worldGen::isGenSelected("WorldGen3DNoise")) {
 								
-					worldGen::selectGen("miningWorldGen");
+					worldGen::selectGen("WorldGen3DNoise");
 					worldGen::prepareGen();
 				
 				}
@@ -161,11 +159,11 @@ namespace VoxelEng {
 
 			// TODO. ADD PROPER WORLDGENERATOR SELECTION.
 			worldGen::setSeed();
-			if (!worldGen::isGenRegistered("miningWorldGen"))
-				worldGen::registerGen<AIExample::miningWorldGen>("miningWorldGen");
-			if (!worldGen::isGenSelected("miningWorldGen")) {
+			if (!worldGen::isGenRegistered("WorldGen3DNoise"))
+				worldGen::registerGen("WorldGen3DNoise", "WorldGen3DNoise");
+			if (!worldGen::isGenSelected("WorldGen3DNoise")) {
 
-				worldGen::selectGen("miningWorldGen");
+				worldGen::selectGen("WorldGen3DNoise");
 				worldGen::prepareGen();
 
 			}
@@ -186,7 +184,7 @@ namespace VoxelEng {
 		
 			switch (game::selectedEngineMode()) {
 			
-				case VoxelEng::engineMode::AIMENULOOP:
+				case VoxelEng::engineMode::MENULOOP:
 
 					game::setLoopSelection(VoxelEng::engineMode::EXIT);
 
@@ -194,7 +192,7 @@ namespace VoxelEng {
 
 				case VoxelEng::engineMode::GRAPHICALMENU:
 
-					game::setLoopSelection(VoxelEng::engineMode::AIMENULOOP);
+					game::setLoopSelection(VoxelEng::engineMode::MENULOOP);
 
 					break;
 
@@ -205,13 +203,6 @@ namespace VoxelEng {
 
 					game::setLoopSelection(VoxelEng::engineMode::EXITLEVEL);
 					game::setLoopSelection(VoxelEng::engineMode::GRAPHICALMENU);
-
-					break;
-
-				case VoxelEng::engineMode::PLAYINGRECORD:
-
-					game::setLoopSelection(VoxelEng::engineMode::EXITRECORD);
-					game::setLoopSelection(VoxelEng::engineMode::AIMENULOOP);
 
 					break;
 			

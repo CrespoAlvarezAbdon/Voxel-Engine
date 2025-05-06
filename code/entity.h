@@ -20,7 +20,7 @@
 #include <mutex>
 #include <batch.h>
 #include <camera.h>
-#include <chunk.h>
+#include <Chunk/chunk.h>
 #include <definitions.h>
 #include <vec.h>
 #include <Graphics/transform.h>

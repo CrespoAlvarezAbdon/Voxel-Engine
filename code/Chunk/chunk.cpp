@@ -12,7 +12,6 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <AIAPI.h>
 #include <camera.h>
 #include <player.h>
 #include <input.h>
@@ -28,8 +27,7 @@
 #include <Registry/registries.h>
 #include <Utilities/Logger/logger.h>
 #include <Utilities/Var/var.h>
-
-#include <AI/AIGameEx1.h>
+#include <World/WorldGen/worldGen.h>
 
 
 namespace VoxelEng {
@@ -500,27 +498,11 @@ namespace VoxelEng {
                                     floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
 
                                 }
-                                else if (generationRemesh && pos.x == CHUNK_SIZE_LIMIT && lightProviderDirection != blockViewDir::PLUSX) {
-
-                                    if (!floodLightPositionsToPlusX_)
-                                        floodLightPositionsToPlusX_ = new std::deque<floodLightPropInstance>();
-
-                                    floodLightPositionsToPlusX_->emplace_back(basicVec3{ 0, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                                }
 
                                 //-x
                                 if (pos.x > 0 && blocksLocalIDs_[(int)pos.x - 1][(int)pos.y][(int)pos.z] == 0) {
 
                                     floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                                }
-                                else if (generationRemesh && pos.x == 0 && lightProviderDirection != blockViewDir::NEGX) {
-
-                                    if (!floodLightPositionsToMinusX_)
-                                        floodLightPositionsToMinusX_ = new std::deque<floodLightPropInstance>();
-
-                                    floodLightPositionsToMinusX_->emplace_back(basicVec3{ CHUNK_SIZE_LIMIT, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
 
                                 }
 
@@ -530,27 +512,11 @@ namespace VoxelEng {
                                     floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
 
                                 }
-                                else if (generationRemesh && pos.y == CHUNK_SIZE_LIMIT && lightProviderDirection != blockViewDir::PLUSY) {
-
-                                    if (!floodLightPositionsToPlusY_)
-                                        floodLightPositionsToPlusY_ = new std::deque<floodLightPropInstance>();
-
-                                    floodLightPositionsToPlusY_->emplace_back(basicVec3{ pos.x, 0, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                                }
 
                                 //-y
                                 if (pos.y > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y - 1][(int)pos.z] == 0 ) {
 
                                     floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                                }
-                                else if (generationRemesh && pos.y == 0 && lightProviderDirection != blockViewDir::NEGY) {
-
-                                    if (!floodLightPositionsToMinusY_)
-                                        floodLightPositionsToMinusY_ = new std::deque<floodLightPropInstance>();
-
-                                    floodLightPositionsToMinusY_->emplace_back(basicVec3{ pos.x, CHUNK_SIZE_LIMIT, pos.z }, floodLight.intensity - 1, floodLight.color);
 
                                 }
 
@@ -560,27 +526,11 @@ namespace VoxelEng {
                                     floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
 
                                 }
-                                else if (generationRemesh && pos.z == CHUNK_SIZE_LIMIT && lightProviderDirection != blockViewDir::PLUSZ) {
-
-                                    if (!floodLightPositionsToPlusZ_)
-                                        floodLightPositionsToPlusZ_ = new std::deque<floodLightPropInstance>();
-
-                                    floodLightPositionsToPlusZ_->emplace_back(basicVec3{ pos.x, pos.y, 0 }, floodLight.intensity - 1, floodLight.color);
-
-                                }
 
                                 //-z
                                 if (pos.z > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z - 1] == 0 ) {
 
                                     floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
-
-                                }
-                                else if (generationRemesh && pos.z == 0 && lightProviderDirection != blockViewDir::NEGZ) {
-
-                                    if (!floodLightPositionsToMinusZ_)
-                                        floodLightPositionsToMinusZ_ = new std::deque<floodLightPropInstance>();
-
-                                    floodLightPositionsToMinusZ_->emplace_back(basicVec3{ pos.x, pos.y, CHUNK_SIZE_LIMIT }, floodLight.intensity - 1, floodLight.color);
 
                                 }
 
@@ -605,196 +555,6 @@ namespace VoxelEng {
 
                 }
 
-            }
-
-            // Update block light render information from blocks within the chunk.
-            if (neighborProvidedLights) {
-            
-                for (auto it = neighborProvidedLights->cbegin(); it != neighborProvidedLights->cend(); it++) {
-
-                    x = it->pos.x;
-                    y = it->pos.y;
-                    z = it->pos.z;
-
-                    // Add block's light.
-                    // Assuming point light only for now.
-
-                    // Search for blocks affected by this light. TODO. FACTORIZE THIS INTO A FUNCTION.
-                    std::memset(blockLightChecked, 0, nBlocksChunk * sizeof(bool));
-                    floodLightsInstances.clear();
-                    floodLightsInstances.emplace_back(basicVec3{ static_cast<char>(x), static_cast<char>(y), static_cast<char>(z) },
-                        it->intensity, it->color);
-
-                    while (floodLightsInstances.size() > 0) {
-
-                        floodLightPropInstance& floodLight = floodLightsInstances.front();
-                        basicVec3& pos = floodLight.pos;
-
-                        if (floodLight.intensity > 0 && !blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z]) {
-
-                            float lightLevelScale = floodLight.intensity / 8.0f; // 8 is the maximum allowed light level.
-                            blockLightColor_[(int)pos.x][(int)pos.y][(int)pos.z] += floodLight.color * lightLevelScale;
-                            blockLightLevel_[(int)pos.x][(int)pos.y][(int)pos.z] = floodLight.intensity;
-
-                            blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z] = true;
-
-                            //+x
-                            if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x + 1][(int)pos.y][(int)pos.z] == 0) {
-
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                            }
-
-                            //-x
-                            if (pos.x > 0 && blocksLocalIDs_[(int)pos.x - 1][(int)pos.y][(int)pos.z] == 0) {
-
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                            }
-  
-                            // MAÑANA, LO DE QUE SE BORREN LAS LUCES
-
-                            //+y
-                            if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y + 1][(int)pos.z] == 0) {
-
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                            }
-
-                            //-y
-                            if (pos.y > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y - 1][(int)pos.z] == 0) {
-
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                            }
-
-                            //+z
-                            if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z + 1] == 0) {
-
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
-
-                            }
-
-                            //-z
-                            if (pos.z > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z - 1] == 0) {
-
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
-
-                            }
-
-                        }
-
-                        floodLightsInstances.pop_front();
-
-                    }
-
-                }
-
-                // This was created in the neighbor chunk's remesh and it is destroyed here.
-                delete neighborProvidedLights;
-                neighborProvidedLights = nullptr;
-
-            }
-            
-            if (generationRemesh) {
-
-                // If any of the lights reached beyond the chunk's borders, add pendind remesh jobs for its corresponding neighbor blocks.
-                if (floodLightPositionsToPlusX_) { // These deques are only created if at least flood light was added to them.
-
-                    LightRemeshJob& job = chunkManager::getLightRemeshJob();
-                    job.chunkPos = chunkPos_;
-                    job.floodLightPositions = floodLightPositionsToPlusX_;
-                    job.originChunkDir = blockViewDir::PLUSX;
-                    chunkManager::lockPendingLightRemeshJobMutex();
-                    chunkManager::addPendingLightRemeshJob(&job);
-                    chunkManager::unlockPendingLightRemeshJobMutex();
-
-                    // Since this deque will be handled by the chunk that has light propagated to it,
-                    // this chunk no longer needs this deque.
-                    floodLightPositionsToPlusX_ = nullptr;
-
-                }
-
-                if (floodLightPositionsToMinusX_) { // These deques are only created if at least flood light was added to them.
-
-                    LightRemeshJob& job = chunkManager::getLightRemeshJob();
-                    job.chunkPos = chunkPos_;
-                    job.floodLightPositions = floodLightPositionsToMinusX_;
-                    job.originChunkDir = blockViewDir::NEGX;
-                    chunkManager::lockPendingLightRemeshJobMutex();
-                    chunkManager::addPendingLightRemeshJob(&job);
-                    chunkManager::unlockPendingLightRemeshJobMutex();
-
-                    // Since this deque will be handled by the chunk that has light propagated to it,
-                    // this chunk no longer needs this deque.
-                    floodLightPositionsToMinusX_ = nullptr;
-
-                }
-
-                if (floodLightPositionsToPlusY_) { // These deques are only created if at least flood light was added to them.
-
-                    LightRemeshJob& job = chunkManager::getLightRemeshJob();
-                    job.chunkPos = chunkPos_;
-                    job.floodLightPositions = floodLightPositionsToPlusY_;
-                    job.originChunkDir = blockViewDir::PLUSY;
-                    chunkManager::lockPendingLightRemeshJobMutex();
-                    chunkManager::addPendingLightRemeshJob(&job);
-                    chunkManager::unlockPendingLightRemeshJobMutex();
-
-                    // Since this deque will be handled by the chunk that has light propagated to it,
-                    // this chunk no longer needs this deque.
-                    floodLightPositionsToPlusY_ = nullptr;
-
-                }
-
-                if (floodLightPositionsToMinusY_) { // These deques are only created if at least flood light was added to them.
-
-                    LightRemeshJob& job = chunkManager::getLightRemeshJob();
-                    job.chunkPos = chunkPos_;
-                    job.floodLightPositions = floodLightPositionsToMinusY_;
-                    job.originChunkDir = blockViewDir::NEGY;
-                    chunkManager::lockPendingLightRemeshJobMutex();
-                    chunkManager::addPendingLightRemeshJob(&job);
-                    chunkManager::unlockPendingLightRemeshJobMutex();
-
-                    // Since this deque will be handled by the chunk that has light propagated to it,
-                    // this chunk no longer needs this deque.
-                    floodLightPositionsToMinusY_ = nullptr;
-
-                }
-
-                if (floodLightPositionsToPlusZ_) { // These deques are only created if at least flood light was added to them.
-
-                    LightRemeshJob& job = chunkManager::getLightRemeshJob();
-                    job.chunkPos = chunkPos_;
-                    job.floodLightPositions = floodLightPositionsToPlusZ_;
-                    job.originChunkDir = blockViewDir::PLUSZ;
-                    chunkManager::lockPendingLightRemeshJobMutex();
-                    chunkManager::addPendingLightRemeshJob(&job);
-                    chunkManager::unlockPendingLightRemeshJobMutex();
-
-                    // Since this deque will be handled by the chunk that has light propagated to it,
-                    // this chunk no longer needs this deque.
-                    floodLightPositionsToPlusZ_ = nullptr;
-
-                }
-
-                if (floodLightPositionsToMinusZ_) { // These deques are only created if at least flood light was added to them.
-
-                    LightRemeshJob& job = chunkManager::getLightRemeshJob();
-                    job.chunkPos = chunkPos_;
-                    job.floodLightPositions = floodLightPositionsToMinusZ_;
-                    job.originChunkDir = blockViewDir::NEGZ;
-                    chunkManager::lockPendingLightRemeshJobMutex();
-                    chunkManager::addPendingLightRemeshJob(&job);
-                    chunkManager::unlockPendingLightRemeshJobMutex();
-
-                    // Since this deque will be handled by the chunk that has light propagated to it,
-                    // this chunk no longer needs this deque.
-                    floodLightPositionsToMinusZ_ = nullptr;
-
-                }
-            
             }
 
             // Render faces that do not require data from neighbor chunks.
@@ -1690,26 +1450,7 @@ namespace VoxelEng {
         const block* selectedBlock;
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-
-        if (game::AImodeON()) {
-
-            if (originalWorldAccess_ || AIagentChunks_.find(selectedAIWorld_) == AIagentChunks_.cend())
-                selectedBlock = &getBlockOGWorld_(posX, posY, posZ);
-            else {
-
-                std::unordered_map<vec3, chunk*>& AgentChunk = AIagentChunks_[selectedAIWorld_];
-                vec3 chunkPos = getChunkCoords(posX, posY, posZ);
-
-                if (AgentChunk.find(chunkPos) == AgentChunk.cend() || !AIChunkAvailable_[selectedAIWorld_][chunkPos])
-                    selectedBlock = &getBlockOGWorld_(posX, posY, posZ);
-                else
-                    selectedBlock = &AgentChunk[chunkPos]->getBlock(floorMod(posX, CHUNK_SIZE), floorMod(posY, CHUNK_SIZE), floorMod(posZ, CHUNK_SIZE));
-
-            }
-
-        }
-        else
-            selectedBlock = &getBlockOGWorld_(posX, posY, posZ);
+        selectedBlock = &getBlockOGWorld_(posX, posY, posZ);
 
         return *selectedBlock;
 
@@ -1757,25 +1498,7 @@ namespace VoxelEng {
         const block* selectedBlock;
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
         
-        if (game::AImodeON()) {
-
-            if (originalWorldAccess_ || AIagentChunks_.find(selectedAIWorld_) == AIagentChunks_.cend())
-                selectedBlock = &getBlockOGWorld_(posX, posY, posZ);
-            else {
-
-                std::unordered_map<vec3, chunk*>& AgentChunk = AIagentChunks_[selectedAIWorld_];
-                vec3 chunkPos = getChunkCoords(posX, posY, posZ);
-
-                if (AgentChunk.find(chunkPos) == AgentChunk.cend() || !AIChunkAvailable_[selectedAIWorld_][chunkPos])
-                    selectedBlock = &getBlockOGWorld_(posX, posY, posZ);
-                else
-                    selectedBlock = &AgentChunk[chunkPos]->getBlock(floorMod(posX, CHUNK_SIZE), floorMod(posY, CHUNK_SIZE), floorMod(posZ, CHUNK_SIZE));
-
-            }
-
-        }
-        else
-            selectedBlock = &getBlockOGWorld_(posX, posY, posZ);
+        selectedBlock = &getBlockOGWorld_(posX, posY, posZ);
 
         return selectedBlock->isEmptyBlock();
 
@@ -1827,7 +1550,7 @@ namespace VoxelEng {
     void chunkManager::setNChunksToCompute(unsigned int nChunksToCompute) {
 
         engineMode mode = game::selectedEngineMode();
-        if (mode == engineMode::INITLEVEL || mode == engineMode::EDITLEVEL || mode == engineMode::INITRECORD)
+        if (mode == engineMode::INITLEVEL || mode == engineMode::EDITLEVEL)
             nChunksToCompute_ = nChunksToCompute;
         else
             logger::errorLog("Cannot change the number of chunks to compute in the current engine mode " + std::to_string((unsigned int)mode));
@@ -1838,45 +1561,15 @@ namespace VoxelEng {
 
         vec3 chunkPos = getChunkCoords(x, y, z);
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-        if (game::AImodeON()) {
         
-            if (AIagentChunks_.find(selectedAIWorld_) == AIagentChunks_.cend()) {
-            
-                AIagentChunks_[selectedAIWorld_] = std::unordered_map<vec3, chunk*>(); // Store here differences between the original level and the agent's copy.
-                AIChunkAvailable_[selectedAIWorld_] = std::unordered_map<vec3, bool>(); // Store if the agent's copy chunk can be accessed.
-            
-            }
-               
-            std::unordered_map<vec3, chunk*>& agentWorld = AIagentChunks_[selectedAIWorld_];
-            if (agentWorld.find(chunkPos) == agentWorld.cend()) {
-            
-                if (clientChunks_.find(chunkPos) == clientChunks_.cend())
-                    logger::errorLog("There is no chunk " + std::to_string(chunkPos.x) + '|' + std::to_string(chunkPos.y) + '|' + std::to_string(chunkPos.z) +
-                                     "for AI agent " + std::to_string(selectedAIWorld_));
-                else {
-                    
-                    agentWorld[chunkPos] = new chunk(*clientChunks_[chunkPos]);
-                    AIChunkAvailable_[selectedAIWorld_][chunkPos] = true;
-                
-                }
-                
-            }
-            
-            return agentWorld[chunkPos]->setBlock(getChunkRelCoords(x, y, z), blockID); // Chunks are not rendered in AI mode.
-        
-        }
+        if (clientChunks_.find(chunkPos) == clientChunks_.cend())
+            logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
         else {
-        
-            if (clientChunks_.find(chunkPos) == clientChunks_.cend())
-                logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
-            else {
             
-                block removedBlock = clientChunks_[chunkPos]->setBlock(getChunkRelCoords(x, y, z), blockID);
+            block removedBlock = clientChunks_[chunkPos]->setBlock(getChunkRelCoords(x, y, z), blockID);
 
-                return removedBlock;
+            return removedBlock;
             
-            }
-                 
         }
 
     }
@@ -2118,50 +1811,12 @@ namespace VoxelEng {
 
                 continueCreatingChunks = false;
                 
+                playerChunkPosCopy_ = getChunkCoords(worldGen::playerSpawnPos());
                 ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
 
                 do {
 
                     maxIterations = chunkTasks_->size() < 10000 ? defaultMaxIterations : 1;
-
-                    // Process pending light remesh jobs.
-                    pendingLightRemeshJobsMutex_.lock();
-                    chunksMutex_.lock();
-                    logger::log(std::to_string(pendingLightRemeshJobs_.size()));
-                    nIterations = 0;
-                    for (auto it = pendingLightRemeshJobs_.begin(); it != pendingLightRemeshJobs_.end() && nIterations < 128;) {
-                    
-                        LightRemeshJob* job = *it;
-                        chunkPos = job->chunkPos + job->originChunkDir;
-
-                        if (chunkInRenderDistance(chunkPos)) 
-                        {
-                            if (clientChunks_.contains(chunkPos)) {
-
-                                chunk* c = clientChunks_[chunkPos];
-                                job->chunkToRemesh = c;
-                                if (c->status() == chunkStatus::MESHED) 
-                                {
-                                    c->status(chunkStatus::LIGHTREMESHPENDING);
-                                    issueChunkMeshJob(chunkJobType::LIGHT_REMESH, job);
-                                    it = pendingLightRemeshJobs_.erase(it);
-                                }
-                                else
-                                    it++;
-                            }
-                            else
-                                it++;
-                        }
-                        else {
-                        
-                            it = pendingLightRemeshJobs_.erase(it);
-                            lightRemeshJobs_.free(*job);
-                        
-                        }
-                            
-                    }
-                    chunksMutex_.unlock();
-                    pendingLightRemeshJobsMutex_.unlock();
 
                     // Load new chunks that are inside render distance if necessary.
                     // Mark frontier chunks that are no longer frontier.
@@ -2282,77 +1937,6 @@ namespace VoxelEng {
 
         }
 
-    }
-
-    // TODO. CORREGIR
-    void chunkManager::generateAIWorld(const std::string& path) {
-
-        if (game::AImodeON()) {
-
-            chunk* selectedChunk = nullptr;
-            vec3 chunkPos;
-
-            timer t;
-            t.start();
-            if (path.empty()) {
-
-                worldGen::prepareGen();
-
-                for (chunkPos.y = -yChunksRange; chunkPos.y < yChunksRange; chunkPos.y++)
-                    for (chunkPos.x = -nChunksToCompute_; chunkPos.x < nChunksToCompute_; chunkPos.x++)
-                        for (chunkPos.z = -nChunksToCompute_; chunkPos.z < nChunksToCompute_; chunkPos.z++) {
-
-
-                            //selectedChunk = chunkManager::createChunk(false, chunkPos);
-                            clientChunks_.insert_or_assign(chunkPos, selectedChunk);
-
-                        }
-
-            }
-
-            t.finish();
-            logger::debugLog("Generated AI world on " + std::to_string(t.getDurationMs()) + "ms");
-
-        }
-        else
-            logger::errorLog("Chunk manager's AI mode must be turned on when generating a world for AI testing/training.");
-
-    }
-
-    void chunkManager::selectAIworld(unsigned int individualID) {
-
-        if (game::AImodeON()) {
-
-            originalWorldAccess_ = false;
-            selectedAIWorld_ = individualID;
-
-        }
-        else
-            logger::errorLog("AI mode needs to be enabled to select an AI agent world");
-
-    }
-
-    void chunkManager::selectOriginalWorld() {
-
-        if (game::AImodeON())
-            originalWorldAccess_ = true;
-        else
-            logger::errorLog("AI mode needs to be enabled to select an AI agent world");
-
-    }
-
-    void chunkManager::resetAIChunks() {
-    
-        timer t;
-
-        t.start();
-        for (auto it = AIChunkAvailable_.begin(); it != AIChunkAvailable_.end(); it++)
-            for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++)
-                it2->second = false;
-        t.finish();
-
-        logger::debugLog("AI chunks copy reset done in " + std::to_string(t.getDurationMs()));
-    
     }
 
     void chunkManager::openedTerrainFileName(const std::string& newFilename) {

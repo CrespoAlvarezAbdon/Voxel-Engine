@@ -6,8 +6,8 @@
 #include "player.h"
 #include "game.h"
 #include "utilities.h"
-#include "worldGen.h"
 #include <Utilities/Logger/logger.h>
+#include <World/WorldGen/worldGen.h>
 
 namespace VoxelEng {
 

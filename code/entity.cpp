@@ -5,9 +5,9 @@
 #include "camera.h"
 #include "game.h"
 #include "utilities.h"
-#include "worldGen.h"
 #include <Graphics/graphics.h>
 #include <Utilities/Logger/logger.h>
+#include <World/WorldGen/worldGen.h>
 
 namespace VoxelEng {
 
@@ -164,14 +164,10 @@ namespace VoxelEng {
         
             firstManagementIteration_ = true;
 
-            if (!game::AImodeON()) {
-            
-                if (!renderingDataWrite_)
-                    renderingDataWrite_ = new std::vector<model>();
-                if (!renderingDataRead_)
-                    renderingDataRead_ = new std::vector<model>();
-            
-            }
+            if (!renderingDataWrite_)
+                renderingDataWrite_ = new std::vector<model>();
+            if (!renderingDataRead_)
+                renderingDataRead_ = new std::vector<model>();
             
             ticksPerFrame_ = 30;
 
@@ -402,16 +398,12 @@ namespace VoxelEng {
         // Remove entity from its corresponding batch and
         // mark batch as free if no more entities are related to it.
         // Also reflect changes in said batch.
-        if (!game::AImodeON()) {
-        
-            std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
-            unsigned int batchID = entityBatch_[entityID];
-            if (batches_[batchID].deleteEntity(entityID))
-                deleteBatch_(batchID);
+        std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
+        unsigned int batchID = entityBatch_[entityID];
+        if (batches_[batchID].deleteEntity(entityID))
+            deleteBatch_(batchID);
 
-            entityBatch_.erase(entityID);
-        
-        }
+        entityBatch_.erase(entityID);
 
         // Delete the entity.
         delete entities_[entityID];
@@ -437,8 +429,7 @@ namespace VoxelEng {
             pos.y += y;
             pos.z += z;
 
-            if (!game::AImodeON())
-                batches_[entityBatch_[entityID]].isDirty() = true;
+            batches_[entityBatch_[entityID]].isDirty() = true;
 
         }
         else
@@ -453,8 +444,7 @@ namespace VoxelEng {
             entity& theEntity = entityManager::getEntity(ID);
             theEntity.getTransform() = newTransform;
 
-            if (!game::AImodeON())
-                batches_[entityBatch_[ID]].isDirty() = true;
+            batches_[entityBatch_[ID]].isDirty() = true;
 
         }
         else
@@ -641,67 +631,66 @@ namespace VoxelEng {
         if (entityToInsert->hasTickFunction())
             tickingEntityID_.push_back(ID);
 
-        if (!game::AImodeON()) { // Register the new entity inside a batch only if AI mode is disabled.
+         // Register the new entity inside a batch.
 
-            std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
+        std::unique_lock<std::recursive_mutex> lockBatches(batchesMutex_);
+        if (batches_.empty()) { // If no batch is registered.
 
-            if (batches_.empty()) { // If no batch is registered.
+            batchID = registerBatch_();
 
-                batchID = registerBatch_();
+            if (!batches_[batches_.size() - 1].addEntity(ID))
+                logger::errorLog("Entity with ID: " + std::to_string(ID) + " has a model too big for a batch!");
 
-                if (!batches_[batches_.size() - 1].addEntity(ID))
-                    logger::errorLog("Entity with ID: " + std::to_string(ID) + " has a model too big for a batch!");
+        }
+        else {
+
+            if (freeBatchID_.empty()) {
+
+                if (!batches_[batches_.size() - 1].addEntity(ID)) { // If last created batch cannot store the entity's model, then create another batch.
+
+                    batchID = registerBatch_();
+
+                    if (!batches_[batches_.size() - 1].addEntity(ID))
+                        logger::errorLog("Entity with ID " + std::to_string(ID) + " has a model with too many vertices for a batch.");
+
+                }
+                else
+                    batchID = batches_.size() - 1;
 
             }
             else {
 
-                if (freeBatchID_.empty()) {
+                bool found = false;
+                auto it = freeBatchID_.cbegin();
+                for (it; it != freeBatchID_.cend() && !found;) // Check if new entity's model fits into one of the already created batches.
+                    if (!(found = batches_[*it].addEntity(ID)))
+                        it++;
 
-                    if (!batches_[batches_.size() - 1].addEntity(ID)) { // If last created batch cannot store the entity's model, then create another batch.
+                if (found) {
 
-                        batchID = registerBatch_();
+                    if (batches_[*it].size() == BATCH_MAX_VERTEX_COUNT)
+                        freeBatchID_.erase(*it);
 
-                        if (!batches_[batches_.size() - 1].addEntity(ID))
-                            logger::errorLog("Entity with ID " + std::to_string(ID) + " has a model with too many vertices for a batch.");
-
-                    }
-                    else
-                        batchID = batches_.size() - 1;
+                    batchID = *it;
 
                 }
                 else {
 
-                    bool found = false;
-                    auto it = freeBatchID_.cbegin();
-                    for (it; it != freeBatchID_.cend() && !found;) // Check if new entity's model fits into one of the already created batches.
-                        if (!(found = batches_[*it].addEntity(ID)))
-                            it++;
+                    batchID = registerBatch_();
 
-                    if (found) {
-
-                        if (batches_[*it].size() == BATCH_MAX_VERTEX_COUNT)
-                            freeBatchID_.erase(*it);
-
-                        batchID = *it;
-
-                    }
-                    else {
-
-                        batchID = registerBatch_();
-
-                        if (!batches_[batches_.size() - 1].addEntity(ID))
-                            logger::errorLog("Entity with ID: " + std::to_string(ID) + " has a model too big for a batch!");
-
-                    }
+                    if (!batches_[batches_.size() - 1].addEntity(ID))
+                        logger::errorLog("Entity with ID: " + std::to_string(ID) + " has a model too big for a batch!");
 
                 }
 
             }
 
-            // Associate entity and corresponding batch.
-            entityBatch_[ID] = batchID;
-
         }
+
+        // Associate entity and corresponding batch.
+        entityBatch_[ID] = batchID;
+
+        
 
         return ID;
     

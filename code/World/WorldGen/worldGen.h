@@ -15,8 +15,7 @@
 #include <atomic>
 #include <random>
 #include <limits>
-
-#include <chunk.h>
+#include <Chunk/chunk.h>
 #include <definitions.h>
 #include <Utilities/Logger/logger.h>
 
@@ -34,11 +33,8 @@ namespace VoxelEng {
 	* @brief Provides a basic API for defining custom world generator to create new levels.
 	* In order to create one, create a class derived from this one or from another that
 	* ultimately has this class as a super class.
-	* WARNING. Calling worldGen's constructor or the constructor of any class that derives
-	* from worldGen results in undefined behaviour. Use worldGen::registerGen to create
-	* a new world generator object from any derived class.
 	* The 'worldGen' class auto registers itself into the world generator system, providing
-	* a default world generator for performance-testing purposes.
+	* a default world generator.
 	*/
 	class worldGen {
 
@@ -101,16 +97,12 @@ namespace VoxelEng {
 		* to use it when generating new chunks in levels.
 		* 'T' is the class that either is 'worldGen' or a class that derives from 'worldGen'.
 		*/
-		template <class T>
-		requires std::derived_from<T, worldGen>
-		static void registerGenAt(const std::string& genName);
+		static void registerGenAt(const std::string& genName, const std::string genClassName);
 
 		/**
 		* @brief Same as worldGen::registerGenAt() but makes no boundary checks.
 		*/
-		template <class T>
-		requires std::derived_from<T, worldGen>
-		static void registerGen(const std::string& genName);
+		static void registerGen(const std::string& genName, const std::string genClassName);
 
 		/**
 		* @brief Sets the specified world generator as current loaded and selected world generator.
@@ -191,6 +183,7 @@ namespace VoxelEng {
 		
 		/*
 		Any preparations before generating a new level are made here.
+		WARNING. The level's seed must be properly set using world::setSeed() before the call to this method is made.
 		*/
 		virtual void prepareGen_() = 0;
 
@@ -214,6 +207,10 @@ namespace VoxelEng {
 		static const std::string* selectedGenName_;
 		
 	};
+
+	// MAÑANA. 
+	// 1º. CREAR EL PROPIO WORLDGEN DE MONTAÑAS PERLIN Y QUITAR YA LA PARTE DE LA IA.
+	// 2º. EMPEZAR A DIVIDIR LA GENERACIÓN DE CHUNKS EN CAPAS. DE MOMENTO TRES CAPAS: NOISE, SURFACE Y LIGHTS.
 
 	inline const worldGen& worldGen::cSelectedGen() {
 
@@ -257,29 +254,7 @@ namespace VoxelEng {
 
 	}
 
-	template <class T>
-	requires std::derived_from<T, worldGen>
-		void worldGen::registerGenAt(const std::string& genName) {
-
-		if (generators_.find(genName) == generators_.cend())
-			registerGen<T>(genName);
-		else
-			logger::errorLog("Another world generator named " + genName + " is already registered");
-
-	}
-
-	template <class T>
-	requires std::derived_from<T, worldGen>
-	inline void worldGen::registerGen(const std::string& genName) {
-
-		// TODO. EACH GENERATOR SHOULD HAVE ITS OWN PARAMETERS. THIS IS TEMPORARY.
-		generators_.insert({ genName, new T(
-			block::getBlockC("starminer::coalOre"), block::getBlockC("starminer::ironOre"), 
-			block::getBlockC("starminer::goldOre") , block::getBlockC("starminer::diamondOre"),
-			block::getBlockC("starminer::grass"), block::getBlockC("starminer::dirt"),
-			block::getBlockC("starminer::stone"), block::emptyBlock()) });
-
-	}
+	
 
 	inline void worldGen::selectGen(const std::string& genName) {
 

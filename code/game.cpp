@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "AIAPI.h"
 #include "batch.h"
 #include "block.h"
 #include "camera.h"
@@ -24,7 +23,6 @@
 #include "inputFunctions.h"
 #include "renderer.h"
 #include "utilities.h"
-#include "worldGen.h"
 #include <Entities/plane.h>
 #include <Registry/registries.h> // This header also includes the classes that derive from 'registeredElement'.
 #include <Registry/registry.h>
@@ -39,6 +37,7 @@
 #include <Graphics/Vertex/ChunkVertexBuffer/chunkVertexBuffer.h>
 #include <Time/Timer/timer.h>
 #include <Utilities/Var/var.h>
+#include <World/WorldGen/worldGen.h>
 
 #if GRAPHICS_API == OPENGL
 
@@ -60,7 +59,6 @@ namespace VoxelEng {
 
     bool game::initialised_ = false,
          game::graphicalModeInitialised_ = false,
-         game::AImodeON_ = false,
          game::useComplexLighting_ = false;
 
     window* game::mainWindow_ = nullptr;
@@ -71,7 +69,7 @@ namespace VoxelEng {
                * game::tickManagementThread_ = nullptr;
 
     std::atomic<bool> game::threadsExecute[3] = {false, false, false};
-    std::atomic<engineMode> game::loopSelection_ = engineMode::AIMENULOOP;
+    std::atomic<engineMode> game::loopSelection_ = engineMode::MENULOOP;
     std::atomic<double> game::timeStep_ = 0.0f;
 
     skybox game::defaultSkybox_{ 140, 170, 255, 1.0f };
@@ -169,9 +167,8 @@ namespace VoxelEng {
             std::filesystem::create_directory("saves/recordingWorlds");
 
             // General variables.
-            loopSelection_ = engineMode::AIMENULOOP;
+            loopSelection_ = engineMode::MENULOOP;
             timeStep_ = 0.0f;
-            AImodeON_ = false;
 
             // Registrable elements initialisation.
             registryElement::init("registryElement");
@@ -281,8 +278,6 @@ namespace VoxelEng {
     
         if (graphicalModeInitialised_)
             logger::errorLog("Engine's graphical mode already initialised");
-        else if (AImodeON_)
-            logger::errorLog("Graphical mode is not allowed with AI mode turned ON.");
         else {
 
             mainWindow_ = new window(800, 800, "VoxelEng");
@@ -455,9 +450,9 @@ namespace VoxelEng {
 
             switch (loopSelection_) {
 
-            case engineMode::AIMENULOOP:  // AI game menu.
+            case engineMode::MENULOOP:  // AI game menu.
 
-                aiMenuLoop();
+                MenuLoop();
 
                 break;
 
@@ -482,45 +477,35 @@ namespace VoxelEng {
     
     }
 
-    void game::aiMenuLoop() {
+    void game::MenuLoop() {
     
-        if (loopSelection_ == engineMode::AIMENULOOP) {
+        if (loopSelection_ == engineMode::MENULOOP) {
         
-            unsigned int nGames = 0,
-                         chosenOption = 0;
+            unsigned int chosenOption = 0;
 
-            logger::say("AI menu. Please select one of the following options.");
-            nGames = AIAPI::aiGame::listAIGames();
-            logger::say(std::to_string(nGames + 1) + "). Enter level editor mode");
-            logger::say(std::to_string(nGames + 2) + "). Exit");
+            logger::say("Welcome to Deep Dive Engine! Please select one of the following options.");
+            logger::say("1). Enter level editor mode");
+            logger::say("2). Exit");
 
             do {
 
-                while (!validatedCinInput<unsigned int>(chosenOption) || chosenOption == 0 || chosenOption > nGames + 2)
+                while (!validatedCinInput<unsigned int>(chosenOption))
                     logger::say("Invalid option. Please try again");
 
-                if (chosenOption <= nGames) {
-
-                    AIAPI::aiGame::selectGame(chosenOption - 1);
-                    AIAPI::aiGame::startGame();
-
-                    // Once back from the selected game, display options again.
-                    logger::say("AI menu. Please select one of the following options.");
-                    nGames = AIAPI::aiGame::listAIGames();
-                    logger::say(std::to_string(nGames + 1) + "). Enter level editor mode");
-                    logger::say(std::to_string(nGames + 2) + "). Exit");
-
-                }
-                else {
-
-                    if (chosenOption == nGames + 1)
-                        setLoopSelection(engineMode::GRAPHICALMENU);
-                    else
-                        setLoopSelection(engineMode::EXIT);
-
+                switch (chosenOption) 
+                {
+                case 1:
+                    setLoopSelection(engineMode::GRAPHICALMENU);
+                    break;
+                case 2:
+                    setLoopSelection(engineMode::EXIT);
+                    break;
+                default:
+                    logger::say("Invalid option. Please try again");
+                    break;
                 }
 
-            } while (loopSelection_ == engineMode::AIMENULOOP);
+            } while (loopSelection_ == engineMode::MENULOOP);
 
         }
 
@@ -607,54 +592,29 @@ namespace VoxelEng {
         chunkManagementThread_ = new std::thread(&chunkManager::manageChunks);
         priorityChunkUpdatesThread_ = new std::thread(&chunkManager::manageChunkPriorityUpdates);
 
-        if (loopSelection_ == engineMode::INITRECORD) {
+        if (!GUImanager::isLevelGUIElementRegistered("blockPreview")) {
 
-            if (!GUImanager::isLevelGUIElementRegistered("pauseIcon")) {
-
-                GUImanager::addGUIBox("pauseIcon", 0.15, 0.85, 0.1, 0.1, 1021);
-                input::setControlAction(controlCode::rightArrow, inputFunctions::recordForward, false);
-                input::setControlAction(controlCode::downArrow, inputFunctions::recordPause, false);
-                input::setControlAction(controlCode::leftArrow, inputFunctions::recordBackwards, false);
-                input::setControlAction(controlCode::x, inputFunctions::exitRecord, false);
-
-                world::addGlobalTickFunction("playRecordTick", TickFunctions::playRecordTick);
-
-            }
-
-            // Things to apply when the terrain is loaded.
-            chunkManager::waitInitialTerrainLoaded();
-
-            setLoopSelection(engineMode::PLAYINGRECORD);
+            GUImanager::addGUIBox("blockPreview", 0.15, 0.85, 0.1, 0.1, 1);
+            input::setControlAction(controlCode::alpha1, inputFunctions::selectBlockSlot1, false);
+            input::setControlAction(controlCode::alpha2, inputFunctions::selectBlockSlot2, false);
+            input::setControlAction(controlCode::alpha3, inputFunctions::selectBlockSlot3, false);
+            input::setControlAction(controlCode::alpha4, inputFunctions::selectBlockSlot4, false);
+            input::setControlAction(controlCode::alpha5, inputFunctions::selectBlockSlot5, false);
+            input::setControlAction(controlCode::alpha6, inputFunctions::selectBlockSlot6, false);
+            input::setControlAction(controlCode::alpha7, inputFunctions::selectBlockSlot7, false);
+            input::setControlAction(controlCode::alpha8, inputFunctions::selectBlockSlot8, false);
+            input::setControlAction(controlCode::alpha9, inputFunctions::selectBlockSlot9, false);
+            input::setControlAction(controlCode::p, inputFunctions::intentionalCrash, false);
 
         }
-        else {
 
-            if (!GUImanager::isLevelGUIElementRegistered("blockPreview")) {
+        // Things to apply when the terrain is loaded.
+        chunkManager::waitInitialTerrainLoaded();
 
-                GUImanager::addGUIBox("blockPreview", 0.15, 0.85, 0.1, 0.1, 1);
-                input::setControlAction(controlCode::alpha1, inputFunctions::selectBlockSlot1, false);
-                input::setControlAction(controlCode::alpha2, inputFunctions::selectBlockSlot2, false);
-                input::setControlAction(controlCode::alpha3, inputFunctions::selectBlockSlot3, false);
-                input::setControlAction(controlCode::alpha4, inputFunctions::selectBlockSlot4, false);
-                input::setControlAction(controlCode::alpha5, inputFunctions::selectBlockSlot5, false);
-                input::setControlAction(controlCode::alpha6, inputFunctions::selectBlockSlot6, false);
-                input::setControlAction(controlCode::alpha7, inputFunctions::selectBlockSlot7, false);
-                input::setControlAction(controlCode::alpha8, inputFunctions::selectBlockSlot8, false);
-                input::setControlAction(controlCode::alpha9, inputFunctions::selectBlockSlot9, false);
-                input::setControlAction(controlCode::p, inputFunctions::intentionalCrash, false);
-
-            }
-
-            // Things to apply when the terrain is loaded.
-            chunkManager::waitInitialTerrainLoaded();
-
-            setLoopSelection(engineMode::EDITLEVEL);
-
-        }
+        setLoopSelection(engineMode::EDITLEVEL);
 
         // Start threads that require the world to be loaded first.
-        if (!AIAPI::aiGame::playingRecord())
-            playerInputThread_ = new std::thread(&player::processSelectionRaycast);
+        playerInputThread_ = new std::thread(&player::processSelectionRaycast);
         tickManagementThread_ = new std::thread(&world::processWorldTicks);
 
         /*
@@ -956,11 +916,11 @@ namespace VoxelEng {
 
     void game::gameLoop() {
         
-        if (loopSelection_ == engineMode::INITLEVEL || loopSelection_ == engineMode::INITRECORD) {
+        if (loopSelection_ == engineMode::INITLEVEL) {
 
             setupGameLoop();
 
-            while (loopSelection_ == engineMode::EDITLEVEL || loopSelection_ == engineMode::PLAYINGRECORD) {
+            while (loopSelection_ == engineMode::EDITLEVEL) {
 
                 preRenderingSetup();
 
@@ -1047,7 +1007,7 @@ namespace VoxelEng {
     
         switch (loopSelection_) {
 
-            case engineMode::AIMENULOOP:
+            case engineMode::MENULOOP:
 
                 switch (mode) {
             
@@ -1061,29 +1021,14 @@ namespace VoxelEng {
 
                         break;
 
-                    case engineMode::AIMENULOOP:
+                    case engineMode::MENULOOP:
                         break;
 
                     case engineMode::GRAPHICALMENU:
 
-                        setAImode(false);
-
                         initGraphicalMode();
 
                         loopSelection_ = engineMode::GRAPHICALMENU;
-
-                        break;
-
-                    case engineMode::INITRECORD:
-
-                        setAImode(false);
-
-                        initGraphicalMode();
-
-                        loopSelection_ = engineMode::INITRECORD;
-                        threadsExecute[0] = true;
-                        threadsExecute[1] = true;
-                        threadsExecute[2] = true;
 
                         break;
 
@@ -1100,20 +1045,19 @@ namespace VoxelEng {
 
                     case engineMode::EXIT:
 
-                        setLoopSelection(engineMode::AIMENULOOP);
+                        setLoopSelection(engineMode::MENULOOP);
                         setLoopSelection(engineMode::EXIT);
 
                         break;
 
-                    case engineMode::AIMENULOOP:
+                    case engineMode::MENULOOP:
 
                         resetGraphicalMode();
-                        setAImode(true);
 
                         if (!chunkManager::openedTerrainFileName().empty())
                             chunkManager::openedTerrainFileName("");
 
-                        loopSelection_ = VoxelEng::engineMode::AIMENULOOP;
+                        loopSelection_ = VoxelEng::engineMode::MENULOOP;
 
                         break;
 
@@ -1144,7 +1088,7 @@ namespace VoxelEng {
 
                         setLoopSelection(engineMode::GRAPHICALMENU);
                         setLoopSelection(engineMode::EXITLEVEL);
-                        setLoopSelection(engineMode::AIMENULOOP);
+                        setLoopSelection(engineMode::MENULOOP);
                         setLoopSelection(engineMode::EXIT);
 
                         break;
@@ -1180,7 +1124,7 @@ namespace VoxelEng {
 
                         setLoopSelection(engineMode::EXITLEVEL);
                         setLoopSelection(engineMode::GRAPHICALMENU);
-                        setLoopSelection(engineMode::AIMENULOOP);
+                        setLoopSelection(engineMode::MENULOOP);
                         setLoopSelection(engineMode::EXIT);
 
                         break;
@@ -1231,107 +1175,6 @@ namespace VoxelEng {
 
                 break;
 
-            case engineMode::INITRECORD:
-
-                switch (mode) {
-
-                    case engineMode::EXIT:
-
-                        setLoopSelection(engineMode::EXITRECORD);
-                        setLoopSelection(engineMode::AIMENULOOP);
-                        setLoopSelection(engineMode::EXIT);
-
-                        break;
-
-                    case engineMode::AIMENULOOP:
-
-                        resetLevel();
-                        resetGraphicalMode();
-                        setAImode(true);
-
-                        if (!chunkManager::openedTerrainFileName().empty())
-                            chunkManager::openedTerrainFileName("");
-
-                        loopSelection_ = engineMode::AIMENULOOP;
-
-                        break;
-
-                    case engineMode::INITRECORD:
-                        break;
-
-                    case engineMode::PLAYINGRECORD:
-
-                        loopSelection_ = engineMode::PLAYINGRECORD;
-
-                        break;
-
-                    case engineMode::EXITRECORD:
-
-                        game::stopAuxiliaryThreads();
-                        loopSelection_ = engineMode::EXITRECORD;
-
-                        break;
-
-                    default:
-                        logger::errorLog("Unsupported engine mode transition");
-
-                }
-
-                break;
-
-            case engineMode::PLAYINGRECORD:
-
-                switch (mode) {
-
-                    case engineMode::EXIT:
-
-                        setLoopSelection(engineMode::EXITRECORD);
-                        setLoopSelection(engineMode::AIMENULOOP);
-                        setLoopSelection(engineMode::EXIT);
-
-                        break;
-
-                    case engineMode::PLAYINGRECORD:
-                        break;
-
-                    case engineMode::EXITRECORD:
-
-                        game::stopAuxiliaryThreads();
-                        loopSelection_ = engineMode::EXITRECORD;
-
-                        break;
-
-                    default:
-                        logger::errorLog("Unsupported engine mode transition");
-
-                }
-
-                break;
-
-            case engineMode::EXITRECORD:
-
-                switch (mode) {
-
-                    case engineMode::AIMENULOOP:
-
-                        resetLevel();
-                        resetGraphicalMode();
-                        setAImode(true);
-
-                        if (!chunkManager::openedTerrainFileName().empty())
-                            chunkManager::openedTerrainFileName("");
-
-                        loopSelection_ = engineMode::AIMENULOOP;
-
-                        break;
-                
-                    default:
-                        logger::errorLog("Unsupported engine mode transition");
-                
-                }
-
-                break;
-
             default:
                 logger::errorLog("Unspecified current engine mode selected");
         
@@ -1343,20 +1186,6 @@ namespace VoxelEng {
 
         opaqueShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
         useComplexLighting_ = !useComplexLighting_;
-
-    }
-
-    void game::setAImode(bool ON) {
-
-        engineMode mode = game::selectedEngineMode();
-        if (mode == engineMode::EDITLEVEL)
-            logger::errorLog("Cannot change chunkManager's AI mode while in a level");
-        else if (mode == engineMode::PLAYINGRECORD)
-            logger::errorLog("Cannot change chunkManager's AI mode while playing a record");
-        else
-            AImodeON_ = ON;
-
-        entityManager::setAImode(AImodeON_);
 
     }
 

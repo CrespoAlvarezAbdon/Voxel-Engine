@@ -48,7 +48,7 @@ namespace VoxelEng {
             logger::errorLog("Player system is already initialised");
         else {
 
-            if (game::selectedEngineMode() == engineMode::AIMENULOOP) {
+            if (game::selectedEngineMode() == engineMode::MENULOOP) {
 
                 moveUp_ = false;
                 moveDown_ = false;

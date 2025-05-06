@@ -1,6 +1,6 @@
 #include "LightRemeshJob.h"
 
-#include <chunk.h>
+#include <Chunk/chunk.h>
 
 namespace VoxelEng {
 

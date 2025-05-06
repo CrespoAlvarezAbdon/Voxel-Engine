@@ -53,12 +53,11 @@ namespace VoxelEng {
 
 		bool shouldProcess;
 		engineMode loop = game::selectedEngineMode();
-		if (loop == engineMode::EDITLEVEL || loop == engineMode::PLAYINGRECORD) {
+		if (loop == engineMode::EDITLEVEL) {
 
 			// Handle user inputs related to player controls.
 			bool activationEventReceived;
-			for (auto it = controlActions_.cbegin(); (loop == engineMode::EDITLEVEL ||
-				 loop == engineMode::PLAYINGRECORD) && it != controlActions_.cend(); it++) {
+			for (auto it = controlActions_.cbegin(); loop == engineMode::EDITLEVEL && it != controlActions_.cend(); it++) {
 			
 				activationEventReceived = isControlCodePressed(it->first);
 				shouldProcess = input::shouldProcessInputs();
@@ -88,7 +87,7 @@ namespace VoxelEng {
 			}
 				
 			// Handle user inputs related to interaction with GUI elements.
-			if (loop == engineMode::EDITLEVEL || loop == engineMode::PLAYINGRECORD) 
+			if (loop == engineMode::EDITLEVEL) 
 				GUImanager::processLevelGUIInputs();
 
 		}

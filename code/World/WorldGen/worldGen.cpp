@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include "game.h"
 
+// Temporal includes of custom world generators.
+#include <World/WorldGen/WorldGen3DNoise/WorldGen3DNoise.h>
 
 namespace VoxelEng {
 
@@ -44,6 +46,33 @@ namespace VoxelEng {
 
 		}
 	
+	}
+
+	void worldGen::registerGenAt(const std::string& genName, const std::string genClassName) {
+
+		if (generators_.find(genName) == generators_.cend())
+			registerGen(genName, genClassName);
+		else
+			logger::errorLog("Another world generator named " + genName + " is already registered");
+
+	}
+
+	void worldGen::registerGen(const std::string& genName, const std::string genClassName) {
+
+		// TODO. EACH GENERATOR SHOULD HAVE ITS OWN PARAMETERS AD. THIS IS TEMPORARY.
+
+		if (genClassName == "WorldGen3DNoise") {
+
+			generators_.insert({ genName, new WorldGen3DNoise(
+				block::getBlockC("starminer::coalOre"), block::getBlockC("starminer::ironOre"),
+				block::getBlockC("starminer::goldOre") , block::getBlockC("starminer::diamondOre"),
+				block::getBlockC("starminer::grass"), block::getBlockC("starminer::dirt"),
+				block::getBlockC("starminer::stone"), block::emptyBlock()) });
+
+		}
+		else
+			logger::errorLog("Unregistered world generator class named " + genClassName);
+		
 	}
 
 	void worldGen::selectGenAt(const std::string& genName) {
@@ -97,11 +126,8 @@ namespace VoxelEng {
 
 	void worldGen::clear() {
 
-		if (selectedGen_) {
-		
+		if (selectedGen_)
 			selectedGen_->clear_();
-		
-		}
 
 	}
 

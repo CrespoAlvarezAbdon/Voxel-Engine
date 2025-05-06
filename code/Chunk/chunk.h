@@ -1206,6 +1206,8 @@ namespace VoxelEng {
 		*/
 		static const std::condition_variable& priorityNewChunkMeshesCV_C();
 
+		static chunk* getChunk(const vec3& chunkPos);
+
 
 		// Modifiers.
 
@@ -1352,43 +1354,6 @@ namespace VoxelEng {
 		* @brief Similar to chunkManager::manageChunks() but only for priority chunk updates.
 		*/
 		static void manageChunkPriorityUpdates();
-
-		/**
-		* @brief Generates only block data without the 3D graphics side.
-		* Intended to be used when testing or training AI agents
-		* without displaying the matches in the engine's graphical mode
-		* to save CPU and GPU processing power.
-		* This generated world is the original copy. Copies for each
-		* AI agent will be generated in chunks as they are needed by
-		* their respective agents.
-		* If 'path' is equal to "" then a randomly generated world will
-		* be created. Otherwise it will load de .terrain file
-		* located at 'path' + ".terrain".
-		*/
-		static void generateAIWorld(const std::string& path = "");
-
-		/**
-		* @brief Get block and set block operations in the chunk manager system will now
-		* be performed on the AI world/level of AI agent with ID 'individualID'.
-		* AI mode must be turned on in the chunk manager system.
-		* WARNING. This method is not thread safe.
-		*/
-		static void selectAIworld(unsigned int individualID);
-
-		/**
-		* @brief ONLY get block operations in the chunk manager system will now
-		* be performed on the original copy of the level that is being used for the AI game.
-		* AI mode must be turned on in the chunk manager system.
-		* Set block operations will use the latest AI world selected (the one corresponding to
-		* the AI agent with ID 0 by default).
-		* WARNING. This method is not thread safe.
-		*/
-		static void selectOriginalWorld();
-
-		/**
-		* @brief Sets all copies of chunks owned by AI agents as they never existed (AIChunksAvailable[Any AI World copy][Any chunkCoord] will return false after this).
-		*/
-		static void resetAIChunks();
 
 		/**
 		* @brief Set 'newName' to "" to clear the opened terrain file name.
@@ -1806,6 +1771,13 @@ namespace VoxelEng {
 	
 		return priorityNewChunkMeshesCV_;
 	
+	}
+
+	inline chunk* chunkManager::getChunk(const vec3& chunkPos) {
+	
+		std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+		return clientChunks_.contains(chunkPos) ? clientChunks_[chunkPos] : nullptr;
+
 	}
 
 	inline chunk* chunkManager::selectChunk(int x, int y, int z) {

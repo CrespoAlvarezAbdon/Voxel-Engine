@@ -9,7 +9,7 @@
 #include <sstream>
 #include <string>
 #include <filesystem>
-#include <chunk.h>
+#include <Chunk/chunk.h>
 #include <utilities.h>
 #include <Graphics/Textures/texture.h>
 #include <Utilities/Logger/logger.h>

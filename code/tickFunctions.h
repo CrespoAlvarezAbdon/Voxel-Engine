@@ -9,7 +9,6 @@
 #ifndef _VOXELENG_TICKFUNC_
 #define _VOXELENG_TICKFUNC_
 
-#include "AIAPI.h"
 #include "entity.h"
 
 
@@ -21,16 +20,7 @@ namespace VoxelEng {
 
 	namespace TickFunctions {
 	
-		/**
-		* @brief This function allows the engine to execute the AI actions stored
-		* in the currently opened record file a determined number of times
-		* per tick.
-		*/
-		inline void playRecordTick() {
 
-			AIAPI::aiGame::selectedGame()->playRecordTick();
-
-		}
 	
 	}
 

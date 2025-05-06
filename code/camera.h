@@ -9,7 +9,7 @@
 #ifndef _VOXELENG_CAMERA_
 #define _VOXELENG_CAMERA_
 
-#include <chunk.h>
+#include <Chunk/chunk.h>
 #include <definitions.h>
 #include <gameWindow.h>
 #include <quaternion.h>

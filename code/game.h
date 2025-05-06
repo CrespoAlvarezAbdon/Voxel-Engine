@@ -17,12 +17,11 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <chunk.h>
+#include <Chunk/chunk.h>
 #include <definitions.h>
 #include <gameWindow.h>
 #include <indexBuffer.h>
 #include <vec.h>
-#include <world.h>
 #include <Graphics/Textures/texture.h>
 #include <Graphics/framebuffer.h>
 #include <Graphics/SSBO/SSBO.h>
@@ -31,6 +30,7 @@
 #include <Graphics/Vertex/VertexBuffer/vertexBuffer.h>
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
 #include <Utilities/Logger/logger.h>
+#include <World/world.h>
 
 namespace VoxelEng {
 
@@ -48,7 +48,7 @@ namespace VoxelEng {
     /**
     * @brief The execution modes of the engine.
     */
-    enum class engineMode {EXIT, AIMENULOOP, GRAPHICALMENU, INITLEVEL, EDITLEVEL, EXITLEVEL, INITRECORD, PLAYINGRECORD, EXITRECORD};
+    enum class engineMode {EXIT, MENULOOP, GRAPHICALMENU, INITLEVEL, EDITLEVEL, EXITLEVEL};
 
     /**
     * @brief Game engine API responsible for all the basic engines operations (startup, menu/level/AI mode loops, access to save slots...).
@@ -105,12 +105,6 @@ namespace VoxelEng {
         */
         static engineMode selectedEngineMode();
 
-        /**
-        * @brief Returns whether the engine is in AI mode (training, testing AIs, generating a record of an AI game match...
-        * without the need for the graphical capabilities of the engine to save resources) or not.
-        */
-        static bool AImodeON();
-
 		// Modifiers.
 
         /**
@@ -121,7 +115,7 @@ namespace VoxelEng {
         /**
         * @brief The engine's AI menu loop.
         */
-        static void aiMenuLoop();
+        static void MenuLoop();
 
         /**
         * @brief The engine's graphical main menu loop.
@@ -215,11 +209,6 @@ namespace VoxelEng {
         static void switchComplexLighting();
 
         /**
-        * @brief Set the engine's AI mode.
-        */
-        static void setAImode(bool ON);
-
-        /**
         * @brief Safely stop all auxiliary threads used for world generation, rendering, tick/player input processing, etc...
         */
         static void stopAuxiliaryThreads();
@@ -250,7 +239,6 @@ namespace VoxelEng {
 
         static bool initialised_,
                     graphicalModeInitialised_,
-                    AImodeON_,
                     useComplexLighting_;
         
 		static window* mainWindow_;
@@ -340,12 +328,6 @@ namespace VoxelEng {
     
         return loopSelection_;
     
-    }
-
-    inline bool game::AImodeON() {
-
-        return AImodeON_;
-
     }
 
     inline void game::setSaveSlot(unsigned int slot) {

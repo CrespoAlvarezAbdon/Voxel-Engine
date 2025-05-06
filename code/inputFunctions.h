@@ -10,7 +10,6 @@
 #ifndef _VOXELENG_INPUTFUNCTIONS_
 #define _VOXELENG_INPUTFUNCTIONS_
 
-#include "AIAPI.h"
 #include "block.h"
 #include "game.h"
 #include "player.h"
@@ -158,6 +157,8 @@ namespace VoxelEng {
 		*/
 		static void intentionalCrash();
 
+		static void getCurrentChunk();
+
 		
 		// Clean up.
 
@@ -226,30 +227,6 @@ namespace VoxelEng {
 	
 	}
 
-	inline void inputFunctions::recordForward() {
-
-		AIAPI::aiGame::changeRecordPlayMode(AIAPI::recordPlayMode::FORWARD);
-
-	}
-
-	inline void inputFunctions::recordPause() {
-
-		AIAPI::aiGame::changeRecordPlayMode(AIAPI::recordPlayMode::PAUSE);
-
-	}
-
-	inline void inputFunctions::recordBackwards() {
-
-		AIAPI::aiGame::changeRecordPlayMode(AIAPI::recordPlayMode::BACKWARDS);
-
-	}
-
-	inline void inputFunctions::exitRecord() {
-	
-		AIAPI::aiGame::stopPlayingRecord();
-	
-	}
-
 	inline void inputFunctions::selectBlockSlot1() {
 	
 		// TODO. CHANGE WHEN PROPER INVENTORY SYSTEM IS ADDED.
@@ -308,6 +285,13 @@ namespace VoxelEng {
 	inline void inputFunctions::intentionalCrash() {
 	
 		logger::errorLog("This is an intentional error caused to test the engine's error management capabilities.");
+	
+	}
+
+	inline void inputFunctions::getCurrentChunk() {
+	
+		chunk* c = chunkManager::getChunk(player::chunkPos());
+		c->status();
 	
 	}
 
