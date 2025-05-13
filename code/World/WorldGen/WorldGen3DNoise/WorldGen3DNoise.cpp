@@ -35,138 +35,289 @@ namespace VoxelEng {
 		AISpawnPos_.y = 120;
 		AISpawnPos_.z = 0;
 
-		VoxelEng::chunkManager::onChunkLoad().attach(chunkLoadListener_);
-		VoxelEng::chunkManager::onChunkUnload().attach(chunkUnloadListener_);
+		chunkManager::onChunkLoad().attach(chunkLoadListener_);
+		chunkManager::onChunkUnload().attach(chunkUnloadListener_);
 
 		noise_gen_.SetSeed(seed_);
 		noise_gen_.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-		noise_gen_.SetFrequency(0.01f);
+		noise_gen_.SetFrequency(0.028f);
 	
 	}
 
-	void WorldGen3DNoise::generate_(VoxelEng::chunk& chunk) {
+	void WorldGen3DNoise::generate_(chunk& chunk) {
 
-		VoxelEng::vec3 chunkPos = chunk.chunkPos(),
-					   blockPos;
-		int x, y, z;
-		const float threshold = 0.0f;
-		const float waterLevel = 64;
-		const float perc = 0.002f;
+		noiseLayer(chunk);
 
-		for (x = 0; x < VoxelEng::CHUNK_SIZE; x++)
-			for (z = 0; z < VoxelEng::CHUNK_SIZE; z++)
-				for (y = 0; y < VoxelEng::CHUNK_SIZE; y++) {
-
-					blockPos = VoxelEng::getGlobalPos(chunkPos, x, y, z);
-
-					float noise = noise_gen_.GetNoise(blockPos.x, blockPos.y, blockPos.z);
-					float density = noise - ((float)blockPos.y - waterLevel) * perc;
-					if (density > threshold)
-						chunk.setBlock(x, y, z, layer2_, false);
-
-					//std::cout << density << " for " << blockPos.y << std::endl;
-				}
-
-		// Set neighbor blocks. TODO. OPTIMIZE THIS.
-		// X+
-		for (y = 0; y < VoxelEng::CHUNK_SIZE; y++)
-			for (z = 0; z < VoxelEng::CHUNK_SIZE; z++) {
-
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x+1, chunkPos.y, chunkPos.z, 0, y, z);
-
-				float noise = noise_gen_.GetNoise(blockPos.x, blockPos.y, blockPos.z);
-				float density = noise - ((float)blockPos.y - waterLevel) * perc;
-				if (density > threshold)
-					chunk.setBlockNeighbor(y, z, blockViewDir::PLUSX, layer2_, false);
-
-			}
-
-		// X-
-		for (y = 0; y < VoxelEng::CHUNK_SIZE; y++)
-			for (z = 0; z < VoxelEng::CHUNK_SIZE; z++) {
-
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x-1, chunkPos.y, chunkPos.z, VoxelEng::CHUNK_SIZE_LIMIT, y, z);
-				
-				float noise = noise_gen_.GetNoise(blockPos.x, blockPos.y, blockPos.z);
-				float density = noise - ((float)blockPos.y - waterLevel) * perc;
-				if (density > threshold)
-					chunk.setBlockNeighbor(y, z, blockViewDir::NEGX, layer2_, false);
-
-			}
-
-		// Y+
-		for (x = 0; x < VoxelEng::CHUNK_SIZE; x++)
-			for (z = 0; z < VoxelEng::CHUNK_SIZE; z++) {
-
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y+1, chunkPos.z, x, 0, z);
-				
-				float noise = noise_gen_.GetNoise(blockPos.x, blockPos.y, blockPos.z);
-				float density = noise - ((float)blockPos.y - waterLevel) * perc;
-				if (density > threshold)
-					chunk.setBlockNeighbor(x, z, blockViewDir::PLUSY, layer2_, false);
-
-			}
-
-		// Y-
-		for (x = 0; x < VoxelEng::CHUNK_SIZE; x++)
-			for (z = 0; z < VoxelEng::CHUNK_SIZE; z++) {
-
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y-1, chunkPos.z, x, VoxelEng::CHUNK_SIZE_LIMIT, z);
-				
-				float noise = noise_gen_.GetNoise(blockPos.x, blockPos.y, blockPos.z);
-				float density = noise - ((float)blockPos.y - waterLevel) * perc;
-				if (density > threshold)
-					chunk.setBlockNeighbor(x, z, blockViewDir::NEGY, layer2_, false);
-
-			}
-
-		// Z+
-		for (x = 0; x < VoxelEng::CHUNK_SIZE; x++)
-			for (y = 0; y < VoxelEng::CHUNK_SIZE; y++) {
-
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z+1, x, y, 0);
-				
-				float noise = noise_gen_.GetNoise(blockPos.x, blockPos.y, blockPos.z);
-				float density = noise - ((float)blockPos.y - waterLevel) * perc;
-				if (density > threshold)
-					chunk.setBlockNeighbor(x, y, blockViewDir::PLUSZ, layer2_, false);
-
-			}
-
-		// Z-
-		for (x = 0; x < VoxelEng::CHUNK_SIZE; x++)
-			for (y = 0; y < VoxelEng::CHUNK_SIZE; y++) {
-
-				blockPos = VoxelEng::getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z-1, x, y, VoxelEng::CHUNK_SIZE_LIMIT);
-				
-				float noise = noise_gen_.GetNoise(blockPos.x, blockPos.y, blockPos.z);
-				float density = noise - ((float)blockPos.y - waterLevel) * perc;
-				if (density > threshold)
-					chunk.setBlockNeighbor(x, y, blockViewDir::NEGZ, layer2_, false);
-
-			}
+		surfaceLayer(chunk);
 
 	}
 
 	void WorldGen3DNoise::clear_() {
 	
-		VoxelEng::chunkManager::onChunkLoad().detachIfExists(chunkLoadListener_);
-		VoxelEng::chunkManager::onChunkUnload().detachIfExists(chunkUnloadListener_);
+		chunkManager::onChunkLoad().detachIfExists(chunkLoadListener_);
+		chunkManager::onChunkUnload().detachIfExists(chunkUnloadListener_);
 	
 	}
 
+	void WorldGen3DNoise::noiseLayer(chunk& chunk) {
+	
+		vec3 chunkPos = chunk.chunkPos(),
+			 blockPos;
+		int x, y, z;
+
+		for (x = 0; x < CHUNK_SIZE; x++)
+			for (z = 0; z < CHUNK_SIZE; z++)
+				for (y = 0; y < CHUNK_SIZE; y++) {
+
+					blockPos = getGlobalPos(chunkPos, x, y, z);
+
+					if (noiseMakesBlockAt(blockPos.x, blockPos.y, blockPos.z))
+						chunk.setBlock(x, y, z, layer2_, false);
+					
+				}
+
+		// Set neighbor blocks. TODO. OPTIMIZE THIS.
+		// X+
+		for (y = 0; y < CHUNK_SIZE; y++)
+			for (z = 0; z < CHUNK_SIZE; z++) {
+
+				blockPos = getGlobalPos(chunkPos.x + 1, chunkPos.y, chunkPos.z, 0, y, z);
+
+				if (noiseMakesBlockAt(blockPos.x, blockPos.y, blockPos.z))
+					chunk.setBlockNeighbor(y, z, blockViewDir::PLUSX, layer2_, false);
+
+			}
+
+		// X-
+		for (y = 0; y < CHUNK_SIZE; y++)
+			for (z = 0; z < CHUNK_SIZE; z++) {
+
+				blockPos = getGlobalPos(chunkPos.x - 1, chunkPos.y, chunkPos.z, CHUNK_SIZE_LIMIT, y, z);
+
+				if (noiseMakesBlockAt(blockPos.x, blockPos.y, blockPos.z))
+					chunk.setBlockNeighbor(y, z, blockViewDir::NEGX, layer2_, false);
+
+			}
+
+		// Y+
+		for (x = 0; x < CHUNK_SIZE; x++)
+			for (z = 0; z < CHUNK_SIZE; z++) {
+
+				blockPos = getGlobalPos(chunkPos.x, chunkPos.y + 1, chunkPos.z, x, 0, z);
+
+				if (noiseMakesBlockAt(blockPos.x, blockPos.y, blockPos.z))
+					chunk.setBlockNeighbor(x, z, blockViewDir::PLUSY, layer2_, false);
+
+			}
+
+		// Y-
+		for (x = 0; x < CHUNK_SIZE; x++)
+			for (z = 0; z < CHUNK_SIZE; z++) {
+
+				blockPos = getGlobalPos(chunkPos.x, chunkPos.y - 1, chunkPos.z, x, CHUNK_SIZE_LIMIT, z);
+
+				if (noiseMakesBlockAt(blockPos.x, blockPos.y, blockPos.z))
+					chunk.setBlockNeighbor(x, z, blockViewDir::NEGY, layer2_, false);
+
+			}
+
+		// Z+
+		for (x = 0; x < CHUNK_SIZE; x++)
+			for (y = 0; y < CHUNK_SIZE; y++) {
+
+				blockPos = getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z + 1, x, y, 0);
+
+				if (noiseMakesBlockAt(blockPos.x, blockPos.y, blockPos.z))
+					chunk.setBlockNeighbor(x, y, blockViewDir::PLUSZ, layer2_, false);
+
+			}
+
+		// Z-
+		for (x = 0; x < CHUNK_SIZE; x++)
+			for (y = 0; y < CHUNK_SIZE; y++) {
+
+				blockPos = getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z - 1, x, y, CHUNK_SIZE_LIMIT);
+
+				if (noiseMakesBlockAt(blockPos.x, blockPos.y, blockPos.z))
+					chunk.setBlockNeighbor(x, y, blockViewDir::NEGZ, layer2_, false);
+
+			}
+	
+	}
+
+	void WorldGen3DNoise::surfaceLayer(chunk& chunk) {
+
+		vec3 chunkPos = chunk.chunkPos(),
+			 blockPos;
+		int x, y, z;
+		bool isAboveWaterLevel = false;
+		bool isBlockEmpty = false;
+
+		for (x = 0; x < CHUNK_SIZE; x++)
+			for (z = 0; z < CHUNK_SIZE; z++)
+				for (y = 0; y < CHUNK_SIZE; y++) {
+
+					blockPos = getGlobalPos(chunkPos, x, y, z);
+					isAboveWaterLevel = blockPos.y > waterLevel_;
+					isBlockEmpty = chunk.isEmptyBlock(x, y, z);
+					if (isAboveWaterLevel && !isBlockEmpty) {
+					
+						if(!noiseMakesBlockAt(blockPos.x, blockPos.y+1, blockPos.z))
+							chunk.setBlock(x, y, z, layer0_, false);
+						else if(!noiseMakesBlockAt(blockPos.x, blockPos.y+2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y+3, blockPos.z))
+							chunk.setBlock(x, y, z, layer1_, false);
+
+					}
+					else if (!isAboveWaterLevel)
+						chunk.setBlock(x, y, z, isBlockEmpty ? waterBlock_ : beachBlock_, false);
+					
+
+				}
+
+		// Set neighbor blocks. TODO. VAMOS A TENER QUE AÑADIR EL CASO DE LAS ESQUINAS/DIAGONALES DE LOS BLOCKNEIGHBORS.
+		// // TODO. METER ARENA.
+		// // TODO. METER QUE NBLOCKS DE LOS NEIGHBORS SEA SOLO PARA BLOQUES OPACOS Y CAMBIARLE EL NOMBRE A NOCCLUDINGNEIGHBORBLOCKS.
+		// // TODO. HACER FUNCIÓN PARA COGER RUIDO Y VER SI HAY BLOQUE O NO.
+		// X+
+		for (y = 0; y < CHUNK_SIZE; y++)
+			for (z = 0; z < CHUNK_SIZE; z++) {
+
+				blockPos = getGlobalPos(chunkPos.x + 1, chunkPos.y, chunkPos.z, 0, y, z);
+				isAboveWaterLevel = blockPos.y > waterLevel_;
+				isBlockEmpty = chunk.isEmptyNeighborBlock(y, z, blockViewDir::PLUSX);
+
+				if (isAboveWaterLevel && !isBlockEmpty) {
+
+					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
+						chunk.setBlockNeighbor(y, z, blockViewDir::PLUSX, layer0_, false);
+					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
+						chunk.setBlockNeighbor(y, z, blockViewDir::PLUSX, layer1_, false);
+
+				}
+				else if (!isAboveWaterLevel)
+					chunk.setBlockNeighbor(y, z, blockViewDir::PLUSX, isBlockEmpty ? waterBlock_ : beachBlock_, false);
+			}
+
+		// X-
+		for (y = 0; y < CHUNK_SIZE; y++)
+			for (z = 0; z < CHUNK_SIZE; z++) {
+
+				blockPos = getGlobalPos(chunkPos.x - 1, chunkPos.y, chunkPos.z, CHUNK_SIZE_LIMIT, y, z);
+				isAboveWaterLevel = blockPos.y > waterLevel_;
+				isBlockEmpty = chunk.isEmptyNeighborBlock(y, z, blockViewDir::NEGX);
+
+				if (isAboveWaterLevel && !isBlockEmpty) {
+
+					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
+						chunk.setBlockNeighbor(y, z, blockViewDir::NEGX, layer0_, false);
+					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
+						chunk.setBlockNeighbor(y, z, blockViewDir::NEGX, layer1_, false);
+
+				}
+				else if (!isAboveWaterLevel)
+					chunk.setBlockNeighbor(y, z, blockViewDir::NEGX, isBlockEmpty ? waterBlock_ : beachBlock_, false);
+
+			}
+
+		// Y+
+		for (x = 0; x < CHUNK_SIZE; x++)
+			for (z = 0; z < CHUNK_SIZE; z++) {
+
+				blockPos = getGlobalPos(chunkPos.x, chunkPos.y + 1, chunkPos.z, x, 0, z);
+				isAboveWaterLevel = blockPos.y > waterLevel_;
+				isBlockEmpty = chunk.isEmptyNeighborBlock(x, z, blockViewDir::PLUSY);
+
+				if (isAboveWaterLevel && !isBlockEmpty) {
+
+					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
+						chunk.setBlockNeighbor(x, z, blockViewDir::PLUSY, layer0_, false);
+					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
+						chunk.setBlockNeighbor(x, z, blockViewDir::PLUSY, layer1_, false);
+
+				}
+				else if (!isAboveWaterLevel)
+					chunk.setBlockNeighbor(x, z, blockViewDir::PLUSY, isBlockEmpty ? waterBlock_ : beachBlock_, false);
+
+			}
+
+		
+
+		// Y-
+		for (x = 0; x < CHUNK_SIZE; x++)
+			for (z = 0; z < CHUNK_SIZE; z++) {
+
+				blockPos = getGlobalPos(chunkPos.x, chunkPos.y - 1, chunkPos.z, x, CHUNK_SIZE_LIMIT, z);
+				isAboveWaterLevel = blockPos.y > waterLevel_;
+				isBlockEmpty = chunk.isEmptyNeighborBlock(x, z, blockViewDir::NEGY);
+
+				if (isAboveWaterLevel && !isBlockEmpty) {
+
+					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
+						chunk.setBlockNeighbor(x, z, blockViewDir::NEGY, layer0_, false);
+					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
+						chunk.setBlockNeighbor(x, z, blockViewDir::NEGY, layer1_, false);
+
+				}
+				else if (!isAboveWaterLevel)
+					chunk.setBlockNeighbor(x, z, blockViewDir::NEGY, isBlockEmpty ? waterBlock_ : beachBlock_, false);
+
+			}
+
+		// Z+
+		for (x = 0; x < CHUNK_SIZE; x++)
+			for (y = 0; y < CHUNK_SIZE; y++) {
+
+				blockPos = getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z + 1, x, y, 0);
+				isAboveWaterLevel = blockPos.y > waterLevel_;
+				isBlockEmpty = chunk.isEmptyNeighborBlock(x, y, blockViewDir::PLUSZ);
+
+				if (isAboveWaterLevel && !isBlockEmpty) {
+
+					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
+						chunk.setBlockNeighbor(x, y, blockViewDir::PLUSZ, layer0_, false);
+					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
+						chunk.setBlockNeighbor(x, y, blockViewDir::PLUSZ, layer1_, false);
+
+				}
+				else if (!isAboveWaterLevel)
+					chunk.setBlockNeighbor(x, y, blockViewDir::PLUSZ, isBlockEmpty ? waterBlock_ : beachBlock_, false);
+
+			}
+
+		// Z-
+		for (x = 0; x < CHUNK_SIZE; x++)
+			for (y = 0; y < CHUNK_SIZE; y++) {
+
+				blockPos = getGlobalPos(chunkPos.x, chunkPos.y, chunkPos.z - 1, x, y, CHUNK_SIZE_LIMIT);
+				isAboveWaterLevel = blockPos.y > waterLevel_;
+				isBlockEmpty = chunk.isEmptyNeighborBlock(x, y, blockViewDir::NEGZ);
+
+				if (isAboveWaterLevel && !isBlockEmpty) {
+
+					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
+						chunk.setBlockNeighbor(x, y, blockViewDir::NEGZ, layer0_, false);
+					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
+						chunk.setBlockNeighbor(x, y, blockViewDir::NEGZ, layer1_, false);
+
+				}
+				else if (!isAboveWaterLevel)
+					chunk.setBlockNeighbor(x, y, blockViewDir::NEGZ, isBlockEmpty ? waterBlock_ : beachBlock_, false);
+
+			}
+
+	}
 
 	// 'chunkLoadListener' class.
 	
-	void chunkLoadListener::onEvent(VoxelEng::event* e) {
+	void chunkLoadListener::onEvent(event* e) {
 
 		if (e == nullptr)
-			VoxelEng::logger::errorLog("The provided event is null");
+			logger::errorLog("The provided event is null");
 		else {
 
-			VoxelEng::chunkEvent* aChunkEvent = dynamic_cast<VoxelEng::chunkEvent*>(e);
-			if (std::is_polymorphic<VoxelEng::event>() && aChunkEvent == nullptr)
-				VoxelEng::logger::errorLog("The chunkLoadListener is attached to the event '" + e->name() + "', which is not a chunkEvent object");
+			chunkEvent* aChunkEvent = dynamic_cast<chunkEvent*>(e);
+			if (std::is_polymorphic<event>() && aChunkEvent == nullptr)
+				logger::errorLog("The chunkLoadListener is attached to the event '" + e->name() + "', which is not a chunkEvent object");
 			else {
 			
 				chunkColHeightMutex_.lock();
@@ -183,19 +334,19 @@ namespace VoxelEng {
 
 	// 'chunkUnloadListener' class.
 
-	void chunkUnloadListener::onEvent(VoxelEng::event* e) {
+	void chunkUnloadListener::onEvent(event* e) {
 	
 		if (e == nullptr)
-			VoxelEng::logger::errorLog("The provided event is null");
+			logger::errorLog("The provided event is null");
 		else {
 
-			VoxelEng::chunkEvent* aChunkEvent = dynamic_cast<VoxelEng::chunkEvent*>(e);
+			chunkEvent* aChunkEvent = dynamic_cast<chunkEvent*>(e);
 			if (aChunkEvent == nullptr)
-				VoxelEng::logger::errorLog("The chunkLoadListener is attached to the event " + e->name() + " , which is not a chunkEvent");
+				logger::errorLog("The chunkLoadListener is attached to the event " + e->name() + " , which is not a chunkEvent");
 			else
 			{
 
-				const VoxelEng::vec2& chunkPosXZ = aChunkEvent->chunkPosXZ();
+				const vec2& chunkPosXZ = aChunkEvent->chunkPosXZ();
 				chunkColHeightMutex_.lock();
 				if (--chunkColHeightUses_.at(chunkPosXZ) == 0) {
 

@@ -17,11 +17,11 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <Chunk/chunk.h>
 #include <definitions.h>
 #include <gameWindow.h>
 #include <indexBuffer.h>
 #include <vec.h>
+#include <Chunk/chunk.h>
 #include <Graphics/Textures/texture.h>
 #include <Graphics/framebuffer.h>
 #include <Graphics/SSBO/SSBO.h>
@@ -29,6 +29,7 @@
 #include <Graphics/Vertex/VertexArray/vertexArray.h>
 #include <Graphics/Vertex/VertexBuffer/vertexBuffer.h>
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
+#include <Settings/Settings.hpp>
 #include <Utilities/Logger/logger.h>
 #include <World/world.h>
 
@@ -104,6 +105,13 @@ namespace VoxelEng {
         * @brief Get the currently selected engine mode.
         */
         static engineMode selectedEngineMode();
+
+        /**
+        * @brief Get the game's settings.
+        * @returns The game's settings.
+        */
+        static settings getSettings();
+
 
 		// Modifiers.
 
@@ -248,6 +256,7 @@ namespace VoxelEng {
                           * playerInputThread_,
                           * tickManagementThread_;
 
+        static std::unique_ptr<settings> settings_;
         static std::atomic<engineMode> loopSelection_;
 		static std::atomic<double> timeStep_; // How much time has passed since the last frame was drawn. Use this to move entities without caring about FPS.
 
@@ -327,6 +336,12 @@ namespace VoxelEng {
     inline engineMode game::selectedEngineMode() {
     
         return loopSelection_;
+    
+    }
+
+    inline settings game::getSettings() {
+    
+        return *settings_;
     
     }
 

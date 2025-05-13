@@ -11,7 +11,7 @@
 int main() {
 
     try {
-
+       
         // Start engine.
         VoxelEng::game::init();
 

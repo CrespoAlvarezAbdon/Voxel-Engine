@@ -68,7 +68,8 @@ namespace VoxelEng {
     }
 
     chunk::chunk()
-    : modified_(false),
+    : blocksLocalIDs_(16, 16, 16, 1, 0),
+      modified_(false),
       needsRemesh_(false),
       nBlocks_(0),
       floodLightPositionsToPlusX_(nullptr),
@@ -87,22 +88,14 @@ namespace VoxelEng {
       loadLevel_(chunkStatus::NOTLOADED),
       chunkPos_(vec3Zero) {
 
-        std::memset(blocksLocalIDs_, 0, nBlocksChunk * sizeof(unsigned short));
-
         std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basicVec4));
         std::memset(blockLightLevel_, -1, nBlocksChunk * sizeof(char));
-
-        std::memset(neighborBlocksPlusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksPlusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksPlusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
     
     }
    
     chunk::chunk(bool empty, const vec3& chunkPos)
-    : modified_(false),
+    : blocksLocalIDs_(16, 16, 16, 1, 0),
+      modified_(false),
       needsRemesh_(false),
       nBlocks_(0),
       floodLightPositionsToPlusX_(nullptr),
@@ -121,25 +114,17 @@ namespace VoxelEng {
       loadLevel_(chunkStatus::NOTLOADED),
       chunkPos_(vec3Zero) {
 
-        std::memset(blocksLocalIDs_, 0, nBlocksChunk * sizeof(unsigned short));
-
         std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basicVec4));
         std::memset(blockLightLevel_, -1, nBlocksChunk * sizeof(char));
-
-        std::memset(neighborBlocksPlusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksPlusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksPlusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
         
         if (!empty)
             worldGen::generate(*this); // This can only call to setBlock to modify the chunk and that method already takes care of 'blocksMutex_'.
         
     }
 
-    chunk::chunk(const chunk& c)
-    : modified_(c.modified_),
+    chunk::chunk(chunk& c)
+    : blocksLocalIDs_(c.blocksLocalIDs_),
+      modified_(c.modified_),
       needsRemesh_(c.needsRemesh_.load()),
       nBlocks_(c.nBlocks_.load()),
       floodLightPositionsToPlusX_(nullptr),
@@ -158,7 +143,7 @@ namespace VoxelEng {
       loadLevel_(c.loadLevel_.load()),
       chunkPos_(c.chunkPos_) {
 
-        std::unique_lock<std::shared_mutex> lock(blocksMutex_);
+        c.blocksMutex_.lock_shared();
 
         renderingData_.globalChunkPos = c.renderingData_.globalChunkPos;
 
@@ -166,30 +151,95 @@ namespace VoxelEng {
         paletteCount_ = c.paletteCount_;
         freeLocalIDs_ = c.freeLocalIDs_;
 
-        std::memcpy(blocksLocalIDs_, c.blocksLocalIDs_, nBlocksChunk * sizeof(unsigned short));
-
         std::memcpy(blockLightColor_, c.blockLightColor_, nBlocksChunk * sizeof(basicVec4));
         std::memcpy(blockLightLevel_, c.blockLightLevel_, nBlocksChunk * sizeof(char));
 
-        std::memcpy(neighborBlocksPlusX_, c.neighborBlocksPlusX_, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memcpy(neighborBlocksMinusX_, c.neighborBlocksMinusX_, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memcpy(neighborBlocksPlusY_, c.neighborBlocksPlusY_, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memcpy(neighborBlocksMinusY_, c.neighborBlocksMinusY_, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memcpy(neighborBlocksPlusZ_, c.neighborBlocksPlusZ_, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memcpy(neighborBlocksMinusZ_, c.neighborBlocksMinusZ_, nBlocksChunkEdge * sizeof(unsigned short));
-
         renderingData_.vertices = c.renderingData_.vertices;
+
+        c.blocksMutex_.unlock_shared();
 
     }
 
-    const block& chunk::getBlock(GLbyte x, GLbyte y, GLbyte z) {
+    const block& chunk::getBlock(GLbyte x, GLbyte y, GLbyte z, bool lock) {
 
-        std::shared_lock<std::shared_mutex> lock(blocksMutex_);
+        //if(lock)
+            //blocksMutex_.lock_shared();
 
         unsigned int localID = blocksLocalIDs_[x][y][z];
 
         return localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
+        //if (lock)
+            //blocksMutex_.unlock_shared();
+
+    }
+
+    const block& chunk::getNeighborBlock(GLbyte firstIndex, GLbyte secondIndex, blockViewDir neighbor) {
+    
+        unsigned int localID = 0;
+
+        switch (neighbor) {
+
+        case blockViewDir::PLUSX:
+            localID = blocksLocalIDs_[CHUNK_SIZE][firstIndex][secondIndex];
+            break;
+
+        case blockViewDir::NEGX:
+            localID = blocksLocalIDs_[-1][firstIndex][secondIndex];
+            break;
+
+        case blockViewDir::PLUSY:
+            localID = blocksLocalIDs_[firstIndex][CHUNK_SIZE][secondIndex];
+            break;
+
+        case blockViewDir::NEGY:
+            localID = blocksLocalIDs_[firstIndex][-1][secondIndex];
+            break;
+
+        case blockViewDir::PLUSZ:
+            localID = blocksLocalIDs_[firstIndex][secondIndex][CHUNK_SIZE];
+            break;
+
+        case blockViewDir::NEGZ:
+            localID = blocksLocalIDs_[firstIndex][secondIndex][-1];
+            break;
+
+        }
+
+        return localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+    
+    }
+
+    bool chunk::isEmptyNeighborBlock(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor) {
+
+        switch (neighbor) {
+        
+            case blockViewDir::PLUSX:
+                return blocksLocalIDs_[CHUNK_SIZE][firstIndex][secondIndex] == 0;
+                break;
+
+            case blockViewDir::NEGX:
+                return blocksLocalIDs_[-1][firstIndex][secondIndex] == 0;
+                break;
+
+            case blockViewDir::PLUSY:
+                return blocksLocalIDs_[firstIndex][CHUNK_SIZE][secondIndex] == 0;
+                break;
+
+            case blockViewDir::NEGY:
+                return blocksLocalIDs_[firstIndex][-1][secondIndex] == 0;
+                break;
+
+            case blockViewDir::PLUSZ:
+                return blocksLocalIDs_[firstIndex][secondIndex][CHUNK_SIZE] == 0;
+                break;
+
+            case blockViewDir::NEGZ:
+                return blocksLocalIDs_[firstIndex][secondIndex][-1] == 0;
+                break;
+        
+        }
+    
     }
 
     const block& chunk::setBlock(GLbyte x, GLbyte y, GLbyte z, const block& b, bool modification) {
@@ -249,8 +299,6 @@ namespace VoxelEng {
                 throw std::runtime_error("Unknown light type for block specified (varType number is " + std::to_string((int)emittedLight.getVarType()) + ")");
 
         }
-
-        // TODO. VER SI ALSO MOVER TODA LA LOGICA DE NEIGHBOR BLOCKS AQUÍ.
 
         return oldB;
 
@@ -318,13 +366,12 @@ namespace VoxelEng {
 
         unsigned short oldLocalID = 0;
         bool blockWasModified = false;
-        unsigned short(*neighborBlocks)[CHUNK_SIZE][CHUNK_SIZE] = nullptr;
         
         if (neighbor == blockViewDir::NONE)
             logger::errorLog("No block view direction was specified");
         else if (neighbor == blockViewDir::PLUSX) {
 
-            unsigned short& actualLocalID = neighborBlocksPlusX_[firstIndex][secondIndex];
+            unsigned short& actualLocalID = blocksLocalIDs_[CHUNK_SIZE][firstIndex][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
@@ -337,9 +384,7 @@ namespace VoxelEng {
         }
         else if (neighbor == blockViewDir::NEGX) {
 
-            neighborBlocks = &neighborBlocksMinusX_;
-
-            unsigned short& actualLocalID = (*neighborBlocks)[firstIndex][secondIndex];
+            unsigned short& actualLocalID = blocksLocalIDs_[-1][firstIndex][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
@@ -352,7 +397,7 @@ namespace VoxelEng {
         }
         else if (neighbor == blockViewDir::PLUSY) {
 
-            unsigned short& actualLocalID = neighborBlocksPlusY_[firstIndex][secondIndex];
+            unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][CHUNK_SIZE][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
@@ -365,9 +410,7 @@ namespace VoxelEng {
         }
         else if (neighbor == blockViewDir::NEGY) {
 
-            neighborBlocks = &neighborBlocksMinusY_;
-
-            unsigned short& actualLocalID = (*neighborBlocks)[firstIndex][secondIndex];
+            unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][-1][secondIndex];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
@@ -380,7 +423,7 @@ namespace VoxelEng {
         }
         else if (neighbor == blockViewDir::PLUSZ) {
 
-            unsigned short& actualLocalID = neighborBlocksPlusZ_[firstIndex][secondIndex];
+            unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][secondIndex][CHUNK_SIZE];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
@@ -393,9 +436,7 @@ namespace VoxelEng {
         }
         else if (neighbor == blockViewDir::NEGZ) {
 
-            neighborBlocks = &neighborBlocksMinusZ_;
-
-            unsigned short& actualLocalID = (*neighborBlocks)[firstIndex][secondIndex];
+            unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][secondIndex][-1];
             oldLocalID = actualLocalID;
             placeNewBlock(actualLocalID, block);
             blockWasModified = oldLocalID != actualLocalID;
@@ -926,7 +967,7 @@ namespace VoxelEng {
                         localID = blocksLocalIDs_[x][y][CHUNK_SIZE_LIMIT];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksPlusZ_[x][y])) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[x][y][CHUNK_SIZE])) {
 
                             // Front face vertices with culling of non-visible faces. z-
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
@@ -966,7 +1007,7 @@ namespace VoxelEng {
                         localID = blocksLocalIDs_[x][y][0];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksMinusZ_[x][y])) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[x][y][-1])) {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -1005,7 +1046,7 @@ namespace VoxelEng {
                         localID = blocksLocalIDs_[x][CHUNK_SIZE_LIMIT][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksPlusY_[x][z])) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[x][CHUNK_SIZE][z])) {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -1035,7 +1076,7 @@ namespace VoxelEng {
                     }
 
             }
-
+            
             if (nBlocksMinusY_) {
 
                 for (x = 0; x < CHUNK_SIZE; x++)
@@ -1044,7 +1085,7 @@ namespace VoxelEng {
                         localID = blocksLocalIDs_[x][0][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksMinusY_[x][z])) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[x][-1][z])) {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -1083,7 +1124,7 @@ namespace VoxelEng {
                         localID = blocksLocalIDs_[CHUNK_SIZE_LIMIT][y][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksPlusX_[y][z])) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[CHUNK_SIZE][y][z])) {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -1122,7 +1163,7 @@ namespace VoxelEng {
                         localID = blocksLocalIDs_[0][y][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = neighborBlocksMinusX_[y][z]))  {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[-1][y][z]))  {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -1168,7 +1209,7 @@ namespace VoxelEng {
 
     void chunk::makeEmpty() {
     
-        std::unique_lock<std::shared_mutex> lock(blocksMutex_);
+        blocksMutex_.lock();
 
         needsRemesh_ = true;
         nBlocks_ = 0;
@@ -1179,19 +1220,14 @@ namespace VoxelEng {
         nBlocksPlusZ_ = 0;
         nBlocksMinusZ_ = 0;
 
-        std::memset(blocksLocalIDs_, 0, nBlocksChunk * sizeof(unsigned short));
+        blocksLocalIDs_.fill(0);
 
         floodPointLightPositions_.clear();
 
-        std::memset(neighborBlocksPlusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusX_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksPlusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusY_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksPlusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-        std::memset(neighborBlocksMinusZ_, 0, nBlocksChunkEdge * sizeof(unsigned short));
-
         palette_.clear();
         paletteCount_.clear();
+
+        blocksMutex_.unlock();
 
     }
 
@@ -1321,9 +1357,9 @@ namespace VoxelEng {
             chunkVBOoperationsWrite_ = new std::unordered_map<vec3, chunkVBOoperation>;
             chunkVBOoperationsRead_ = new std::unordered_map<vec3, chunkVBOoperation>;
 
-            chunkTasks_ = new threadPool(MAX_N_CHUNK_SIMULT_TASKS);
-            priorityChunkTasks_ = new threadPool(MAX_N_CHUNK_SIMULT_TASKS);
-            loadChunkJobs_ = new atomicRecyclingPool<job>(MAX_N_CHUNK_SIMULT_TASKS);
+            chunkTasks_ = new threadPool(game::getSettings().maxChunkhreads());
+            priorityChunkTasks_ = new threadPool(2);
+            loadChunkJobs_ = new atomicRecyclingPool<job>(game::getSettings().maxChunkhreads());
             loadChunkJobs_->setAllFreeOnClear(true);
             chunksPool_.setAllFreeOnClear(false);
             vbo_ = static_cast<chunkVertexBuffer*>(graphics::pVbo("chunks"));
@@ -1802,6 +1838,7 @@ namespace VoxelEng {
                                          priorityUpdatesLock(priorityUpdatesRemainingMutex_);
 
             // First of all, load the chunk where the player is in.
+            bool once = true;
             bool continueCreatingChunks = false;
             vec3 chunkPos = vec3Zero;
             unsigned int nIterations = 0;
@@ -1812,7 +1849,13 @@ namespace VoxelEng {
                 continueCreatingChunks = false;
                 
                 playerChunkPosCopy_ = getChunkCoords(worldGen::playerSpawnPos());
-                ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
+
+                if (once) {
+                    
+                    ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
+                    once = false;
+                    
+                }
 
                 do {
 
@@ -1844,7 +1887,7 @@ namespace VoxelEng {
                         else { 
 
                             chunksMutex_.lock();
-                            chunk* c = clientChunks_[*frontierIt_];
+                            chunk* c = clientChunks_.at(*frontierIt_);
                             chunksMutex_.unlock();
 
                             bool cIsMeshed = c->status() == chunkStatus::MESHED;
@@ -1940,7 +1983,7 @@ namespace VoxelEng {
     }
 
     void chunkManager::openedTerrainFileName(const std::string& newFilename) {
-
+          
         if (game::selectedEngineMode() == VoxelEng::engineMode::EDITLEVEL)
             logger::errorLog("Cannot change the opened terrain file name while in a level");
         else
@@ -1978,25 +2021,9 @@ namespace VoxelEng {
         c->blockDataMutex().lock_shared();
 
         // Save local ID data (including duplicated data about neighbors).
-        std::string data((const char*)c->blocks(), sizeof(unsigned short) * nBlocksChunk);
-
-        data += '@';
-        data.append((const char*)c->neighborBlocksPlusX(), sizeof(unsigned short) * nBlocksChunkEdge);
-
-        data += '@';
-        data.append((const char*)c->neighborBlocksMinusX(), sizeof(unsigned short) * nBlocksChunkEdge);
-
-        data += '@';
-        data.append((const char*)c->neighborBlocksPlusY(), sizeof(unsigned short) * nBlocksChunkEdge);
-
-        data += '@';
-        data.append((const char*)c->neighborBlocksMinusY(), sizeof(unsigned short) * nBlocksChunkEdge);
-
-        data += '@';
-        data.append((const char*)c->neighborBlocksPlusZ(), sizeof(unsigned short) * nBlocksChunkEdge);
-
-        data += '@';
-        data.append((const char*)c->neighborBlocksMinusZ(), sizeof(unsigned short) * nBlocksChunkEdge);
+        const Padded3DArray<unsigned short>& blocks = c->blocks();
+        std::string data(c->blocks().size() * sizeof(unsigned short), 0);
+        std::memcpy(data.data(), c->blocks().data(), c->blocks().size() * sizeof(unsigned short));
 
         data += '@';
 
@@ -2051,26 +2078,11 @@ namespace VoxelEng {
         unsigned int z = 0;
 
         chunk->blockDataMutex().lock();
-        std::memcpy(chunk->blocks(), dataBegin, sizeof(unsigned short) * nBlocksChunk);
-        index += sizeof(unsigned short) * nBlocksChunk + 1;
 
-        std::memcpy(chunk->neighborBlocksPlusX(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
+        Padded3DArray<unsigned short>& blocks = chunk->blocks();
 
-        std::memcpy(chunk->neighborBlocksMinusX(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
-
-        std::memcpy(chunk->neighborBlocksPlusY(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
-
-        std::memcpy(chunk->neighborBlocksMinusY(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
-
-        std::memcpy(chunk->neighborBlocksPlusZ(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
-
-        std::memcpy(chunk->neighborBlocksMinusZ(), &data[index], sizeof(unsigned short) * nBlocksChunkEdge);
-        index += sizeof(unsigned short) * nBlocksChunkEdge + 1;
+        std::memcpy(blocks.data(), dataBegin, blocks.size() * sizeof(unsigned short));
+        index += blocks.size() * sizeof(unsigned short) + 1; // +1 to skip the '@' delimiter character.
 
         palette<unsigned short, unsigned int>& chunkPalette = chunk->getPalette();
         c = data[index];
@@ -2460,7 +2472,7 @@ namespace VoxelEng {
         if (clientChunks_.find(chunkPos) == clientChunks_.end())
             logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
         else
-            return clientChunks_[chunkPos]->getBlock(floorMod(posX, CHUNK_SIZE), floorMod(posY, CHUNK_SIZE), floorMod(posZ, CHUNK_SIZE));
+            return clientChunks_[chunkPos]->getBlock(floorMod(posX, CHUNK_SIZE), floorMod(posY, CHUNK_SIZE), floorMod(posZ, CHUNK_SIZE), true);
     
     }
 

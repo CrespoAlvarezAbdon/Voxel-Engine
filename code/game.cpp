@@ -57,6 +57,8 @@ namespace VoxelEng {
 
     // 'game' class.
 
+    std::atomic<bool> game::threadsExecute[3] = { false, false, false };
+
     bool game::initialised_ = false,
          game::graphicalModeInitialised_ = false,
          game::useComplexLighting_ = false;
@@ -68,7 +70,7 @@ namespace VoxelEng {
                * game::playerInputThread_ = nullptr,
                * game::tickManagementThread_ = nullptr;
 
-    std::atomic<bool> game::threadsExecute[3] = {false, false, false};
+    std::unique_ptr<settings> game::settings_;
     std::atomic<engineMode> game::loopSelection_ = engineMode::MENULOOP;
     std::atomic<double> game::timeStep_ = 0.0f;
 
@@ -165,6 +167,9 @@ namespace VoxelEng {
             std::filesystem::create_directory("saves/slot5");
             std::filesystem::create_directory("saves/recordings");
             std::filesystem::create_directory("saves/recordingWorlds");
+
+            // Settings.
+            settings_ = std::make_unique<settings>("settings/settings.json");
 
             // General variables.
             loopSelection_ = engineMode::MENULOOP;
@@ -264,6 +269,7 @@ namespace VoxelEng {
             block::registerBlock("starminer::glassRed", blockOpacity::TRANSLUCENTBLOCK, { {"all", 14} });
             block::registerBlock("starminer::glassBlue", blockOpacity::TRANSLUCENTBLOCK, { {"all", 15} });
             block::registerBlock("starminer::marbleBlock2", blockOpacity::OPAQUEBLOCK, { {"all", 16} }, "OmegaRed", "PointLight:RedPointLight");
+            block::registerBlock("starminer::water", blockOpacity::TRANSLUCENTBLOCK, { {"all", 17 } });
 
             // Worldgen initialisation.
             worldGen::init();
@@ -578,7 +584,7 @@ namespace VoxelEng {
         if (!graphicalModeInitialised_)
             initGraphicalMode();
 
-        chunkManager::setNChunksToCompute(DEF_N_CHUNKS_TO_COMPUTE);
+        chunkManager::setNChunksToCompute(game::getSettings().chunkXZRenderDistance());
 
         /*
         Level loading.

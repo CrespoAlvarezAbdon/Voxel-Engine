@@ -182,6 +182,8 @@ namespace VoxelEng {
 		const block& layer2_;
 		const block& air_;
 		const block& lightBlock_;
+		const block& waterBlock_;
+		const block& beachBlock_;
 
 		bool spawnSet_;
 		float minHeight_,
@@ -194,10 +196,28 @@ namespace VoxelEng {
 																ore2SpreadRange_,
 																ore3SpreadRange_,
 																ore4SpreadRange_;
+		const float threshold_;
+		const float waterLevel_;
+		const float perc_;
 		chunkLoadListener chunkLoadListener_;
 		chunkUnloadListener chunkUnloadListener_;
 
 		FastNoiseLite noise_gen_;
+
+		/*
+		Methods.
+		*/
+
+		// Generation steps functions.
+
+		void noiseLayer(chunk& chunk);
+
+		void surfaceLayer(chunk& chunk);
+
+
+		// Utilities.
+
+		bool noiseMakesBlockAt(float x, float y, float z);
 
 	};
 
@@ -205,10 +225,15 @@ namespace VoxelEng {
 		const block& layer0, const block& layer1, const block& layer2, const block& air)
 		: spawnSet_(false), minHeight_(0), maxHeight_(0), AISpawnPos_(vec3Zero), ore1_(ore1), ore2_(ore2), ore3_(ore3), ore4_(ore4),
 		layer0_(layer0), layer1_(layer1), layer2_(layer2), air_(air), lightBlock_(block::getBlockC("starminer::marbleBlock2")),
+		waterBlock_(block::getBlockC("starminer::water")),
+		beachBlock_(block::getBlockC("starminer::sand")),
 		ore1SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 8)),
 		ore2SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 7)),
 		ore3SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 5)),
 		ore4SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 3)),
+		threshold_(0.0f),
+	    waterLevel_(64),
+	    perc_(0.03f),
 		chunkLoadListener_(chunkColHeight_, chunkColHeightUses_, chunkColHeightMutex_),
 		chunkUnloadListener_(chunkColHeight_, chunkColHeightUses_, chunkColHeightMutex_)
 	{}
@@ -217,6 +242,12 @@ namespace VoxelEng {
 	
 		return AISpawnPos_;
 	
+	}
+
+	inline bool WorldGen3DNoise::noiseMakesBlockAt(float x, float y, float z) {
+
+		return noise_gen_.GetNoise(x, y, z) - (y - waterLevel_) * perc_ > threshold_;
+
 	}
 
 }

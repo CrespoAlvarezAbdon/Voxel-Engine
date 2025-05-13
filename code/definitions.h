@@ -52,8 +52,6 @@ namespace VoxelEng {
 	*/
 	enum class graphicsAPI { OPENGL };
 
-	
-
 
 	//////////////
 	//Constants.//
@@ -116,24 +114,9 @@ namespace VoxelEng {
 	const unsigned int DEF_HEIGHT = 600;
 
 	/**
-	* @brief Default maximum distance in chunk coordinates for chunks to be computed in the X and Z axes.
-	*/
-	const unsigned int DEF_N_CHUNKS_TO_COMPUTE = 20;
-
-	/**
-	* @brief Total number of blocks to compute taking into account the total amount of chunks to compute and the size of a chunk in blocks.
-	*/
-	const unsigned int totalNBlocksToCompute = DEF_N_CHUNKS_TO_COMPUTE*2 * DEF_N_CHUNKS_TO_COMPUTE*2 * totalYChunks * nBlocksChunk;
-
-	/**
 	* @brief Number of GUIelement layers in which to organize the graphical user interface.
 	*/
 	const unsigned int N_GUI_LAYERS = 3;
-
-	/**
-	* @brief Maximum number of chunk generation/meshing simultaneous jobs being executed.
-	*/
-	const unsigned int MAX_N_CHUNK_SIMULT_TASKS = 8;
 
 	/**
 	* @brief Approximation of pi divided by 180.

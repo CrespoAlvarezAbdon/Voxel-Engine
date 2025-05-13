@@ -46,6 +46,7 @@
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
 #include <Registry/RegistryInsOrdered/registryInsOrdered.h>
 #include <Utilities/BlockViewDir/blockViewDir.hpp>
+#include <Utilities/Padded3DArray/Padded3DArray.hpp>
 
 #if GRAPHICS_API == OPENGL
 
@@ -147,7 +148,7 @@ namespace VoxelEng {
 		/**
 		* @brief Copy constructor.
 		*/
-		chunk(const chunk& source);
+		chunk(chunk& source);
 
 
 		// Observers.
@@ -161,17 +162,25 @@ namespace VoxelEng {
 		/**
 		* @brief Returns the pointer to the first element of the chunk's block array.
 		*/
-		const void* blocks() const;
+		const Padded3DArray<unsigned short>& blocks() const;
 
 		/**
 		* @brief Get the block at the specified chunk-local coordinates.
 		*/
-		const block& getBlock(GLbyte x, GLbyte y, GLbyte z);
+		const block& getBlock(GLbyte x, GLbyte y, GLbyte z, bool lock);
 
 		/**
 		* @brief Get the block at the specified chunk-local coordinates.
 		*/
-		const block& getBlock(const vec3& inChunkPos);
+		const block& getBlock(const vec3& inChunkPos, bool lock);
+
+		/**
+		* @brief Get the block at the specified chunk-local coordinates.
+		* @param firstIndex First dimension coordinate.
+		* @param secondIndex Second dimension coordinate.
+		* @param neighbor Direction to follow to reach the neighbor chunk.
+		*/
+		const block& getNeighborBlock(GLbyte firstIndex, GLbyte secondIndex, blockViewDir neighbor);
 
 		/**
 		* @brief Get chunk's x axis coordinate (chunk-grid coordinate system).
@@ -269,6 +278,15 @@ namespace VoxelEng {
 		bool isEmptyBlock(const vec3& inChunkPos) const;
 
 		/**
+		* @brief Returns true if the specified block in in-chunk coordinates is
+		* the empty block or false otherwise.
+		* @param firstIndex. First dimension coordinate of the block.
+		* @param secondIndex. Second dimension coordinate of the block.
+		* @param neighbor. The direction to follow to reach the neighbor.
+		*/
+		bool isEmptyNeighborBlock(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor);
+
+		/**
 		* @brief Returns the number of neighbors that this chunk has.
 		*/
 		unsigned int nNeighbors() const;
@@ -297,42 +315,14 @@ namespace VoxelEng {
 		const std::unordered_set<vec3>& getFloodPointLightPositions() const;
 
 
+
+
 		// Modifiers.
 
 		/**
 		* @brief Returns the pointer to the first element of the chunk's block array.
 		*/
-		void* blocks();
-
-		/**
-		* @brief Returns the pointer to the first element of the x+ neighbor chunk's block array.
-		*/
-		void* neighborBlocksPlusX();
-
-		/**
-		* @brief Returns the pointer to the first element of the x- neighbor chunk's block array.
-		*/
-		void* neighborBlocksMinusX();
-
-		/**
-		* @brief Returns the pointer to the first element of the y+ neighbor chunk's block array.
-		*/
-		void* neighborBlocksPlusY();
-
-		/**
-		* @brief Returns the pointer to the first element of the y- neighbor chunk's block array.
-		*/
-		void* neighborBlocksMinusY();
-
-		/**
-		* @brief Returns the pointer to the first element of the z+ neighbor chunk's block array.
-		*/
-		void* neighborBlocksPlusZ();
-
-		/**
-		* @brief Returns the pointer to the first element of the z- neighbor chunk's block array.
-		*/
-		void* neighborBlocksMinusZ();
+		Padded3DArray<unsigned short>& blocks();
 
 		/**
 		* @brief Returns the chunk's palette that maps the local block IDs with the global block IDs.
@@ -537,7 +527,7 @@ namespace VoxelEng {
 		palette<unsigned short, unsigned int> palette_;
 		std::unordered_map<unsigned short, unsigned short> paletteCount_;
 		std::unordered_set<unsigned short> freeLocalIDs_;
-		unsigned short blocksLocalIDs_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+		Padded3DArray<unsigned short> blocksLocalIDs_;
 
 		basicVec4 blockLightColor_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
 		char blockLightLevel_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting value in the specific block. Opaque blocks have -1 light and air blocks have 0 light by default.
@@ -550,16 +540,6 @@ namespace VoxelEng {
 		std::deque<floodLightPropInstance>* floodLightPositionsToMinusY_;
 		std::deque<floodLightPropInstance>* floodLightPositionsToPlusZ_;
 		std::deque<floodLightPropInstance>* floodLightPositionsToMinusZ_;
-
-		// This ones are used to store the lights received from the corresponding neighbor.
-		std::unordered_set<floodLightPropInstance> floodLightPositionsFromPlusX_;
-
-		unsigned short neighborBlocksPlusX_[CHUNK_SIZE][CHUNK_SIZE];
-		unsigned short neighborBlocksMinusX_[CHUNK_SIZE][CHUNK_SIZE];
-		unsigned short neighborBlocksPlusY_[CHUNK_SIZE][CHUNK_SIZE];
-		unsigned short neighborBlocksMinusY_[CHUNK_SIZE][CHUNK_SIZE];
-		unsigned short neighborBlocksPlusZ_[CHUNK_SIZE][CHUNK_SIZE];
-		unsigned short neighborBlocksMinusZ_[CHUNK_SIZE][CHUNK_SIZE];
 
 		bool modified_;
 		
@@ -598,7 +578,7 @@ namespace VoxelEng {
 
 	};
 
-	inline const void* chunk::blocks() const {
+	inline const Padded3DArray<unsigned short>& chunk::blocks() const {
 
 		return blocksLocalIDs_;
 
@@ -610,9 +590,9 @@ namespace VoxelEng {
 	
 	}
 
-	inline const block& chunk::getBlock(const vec3& inChunkPos) {
+	inline const block& chunk::getBlock(const vec3& inChunkPos, bool lock) {
 
-		return getBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z);
+		return getBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, lock);
 
 	}
 
@@ -714,7 +694,7 @@ namespace VoxelEng {
 
 	inline bool chunk::isEmptyBlock(GLbyte x, GLbyte y, GLbyte z) const {
 	
-		return blocksLocalIDs_[x][y][z] == 0;
+		return blocksLocalIDs_.at(x,y,z) == 0;
 	
 	}
 
@@ -754,46 +734,10 @@ namespace VoxelEng {
 	
 	}
 
-	inline void* chunk::blocks() {
+	inline Padded3DArray<unsigned short>& chunk::blocks() {
 	
 		return blocksLocalIDs_;
 	
-	}
-
-	inline void* chunk::neighborBlocksPlusX() {
-
-		return neighborBlocksPlusX_;
-
-	}
-
-	inline void* chunk::neighborBlocksMinusX() {
-
-		return neighborBlocksMinusX_;
-
-	}
-
-	inline void* chunk::neighborBlocksPlusY() {
-
-		return neighborBlocksPlusY_;
-
-	}
-
-	inline void* chunk::neighborBlocksMinusY() {
-
-		return neighborBlocksMinusY_;
-
-	}
-
-	inline void* chunk::neighborBlocksPlusZ() {
-
-		return neighborBlocksPlusZ_;
-
-	}
-
-	inline void* chunk::neighborBlocksMinusZ() {
-
-		return neighborBlocksMinusZ_;
-
 	}
 
 	inline palette<unsigned short, unsigned int>& chunk::getPalette() {
