@@ -38,7 +38,7 @@ namespace VoxelEng {
 	* @brief A block is the minimal (for now) unit of terrain in the engine. This class is the base
 	* for the representation of any type of blocks registered and supported by this engine.
 	*/
-	class block { // NEXT. METER EL REGISTRO DE IDS NUMERICAS
+	class block {
 
 	public:
 
@@ -151,6 +151,8 @@ namespace VoxelEng {
 		* @return The UBO index of the light emitted by this block.
 		*/
 		unsigned int emittedLightIndex() const;
+
+		unsigned int nRegisteredBlocks();
 
 
 		// Modifiers.

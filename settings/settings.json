@@ -1,4 +1,6 @@
 {
   "maxChunkThreads": 8,
-  "chunkXZRenderDistance": 20
+  "chunkXZRenderDistance": 20,
+  "windowWidth": 1920,
+  "windowHeight": 1080
 }

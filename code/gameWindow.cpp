@@ -113,6 +113,8 @@ namespace VoxelEng {
 
 	void window::resizeHeavyProcessing() {
 
+		return; // TODO. MAKE A FUNCTION TO RECREATE THE GL TEXTURES THAT ARE ATTACHED TO THE FRAMBUFFERS SO THAT WINDOW RESIZE CAN BE IMPLEMENTED.
+
 		#if GRAPHICS_API == OPENGL
 
 			glViewport(0, 0, width_, height_);

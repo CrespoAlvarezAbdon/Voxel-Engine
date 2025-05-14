@@ -247,6 +247,7 @@ namespace VoxelEng {
         unsigned short& actualLocalID = blocksLocalIDs_[x][y][z];
         unsigned short oldLocalID = actualLocalID;
         unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
+        const block& oldB = block::getBlockC(oldGlobalID);
  
         placeNewBlock(actualLocalID, b);
 
@@ -262,7 +263,7 @@ namespace VoxelEng {
             nBlocks_--;
 
         // Update block light information.
-        const block& oldB = block::getBlockC(oldGlobalID);
+       
         const varRef& oldEmittedLight = oldB.emittedLight();
         const varRef& emittedLight = b.emittedLight();
 

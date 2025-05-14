@@ -16,6 +16,8 @@ namespace VoxelEng {
 			nlohmann::json settingsJSON = nlohmann::json::parse(file);
 			maxChunkThreads_ = settingsJSON["maxChunkThreads"];
 			chunkXZRenderDistance_ = settingsJSON["chunkXZRenderDistance"];
+			windowWidth_ = settingsJSON["windowWidth"];
+			windowHeight_ = settingsJSON["windowHeight"];
 		
 		}
 		else

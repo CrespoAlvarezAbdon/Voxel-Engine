@@ -61,7 +61,7 @@ namespace VoxelEng {
 		const vec3& Yaxis = camera_.Yaxis();
 		const vec3& Zaxis = camera_.Zaxis();
 
-		const float halfVSide = zFar * 0.7f;
+		const float halfVSide = zFar * 0.7f * (1/(aspect*aspect));
 		const float halfHSide = halfVSide * aspect;
 		const vec3 frontMultFar = zFar * viewDirection;
 		const vec3 frustumPos = globalPos - 16.0f * viewDirection;

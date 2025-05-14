@@ -33,10 +33,22 @@ namespace VoxelEng {
 		//const unsigned int DEF_N_CHUNKS_TO_COMPUTE = 20;
 		unsigned int chunkXZRenderDistance() const;
 
+		/**
+		* @brief Get the window's width.
+		*/
+		unsigned int windowWidth() const;
+
+		/**
+		* @brief Get the window's height.
+		*/
+		unsigned int windowHeight() const;
+
 	private:
 
 		unsigned int maxChunkThreads_;
 		unsigned int chunkXZRenderDistance_;
+		unsigned int windowWidth_;
+		unsigned int windowHeight_;
 
 	};
 
@@ -49,6 +61,18 @@ namespace VoxelEng {
 	inline unsigned int settings::chunkXZRenderDistance() const {
 	
 		return chunkXZRenderDistance_;
+	
+	}
+
+	inline unsigned int settings::windowWidth() const {
+	
+		return windowWidth_;
+	
+	}
+
+	inline unsigned int settings::windowHeight() const {
+	
+		return windowHeight_;
 	
 	}
 

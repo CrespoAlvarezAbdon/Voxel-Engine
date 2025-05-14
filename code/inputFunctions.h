@@ -88,26 +88,6 @@ namespace VoxelEng {
 		static void switchComplexLighting();
 
 		/**
-		* @brief Change the recording's play mode to play forward.
-		*/
-		static void recordForward();
-
-		/**
-		* @brief Change the recording's play mode to pause.
-	    */
-		static void recordPause();
-
-		/**
-		* @brief Change the recording's play mode to play backwards.
-		*/
-		static void recordBackwards();
-
-		/**
-		* @brief Exit the current record being played.
-		*/
-		static void exitRecord();
-
-		/**
 		* @brief Select the block 1 as the block the player will place in the level.
 		*/
 		static void selectBlockSlot1();

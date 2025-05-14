@@ -286,7 +286,7 @@ namespace VoxelEng {
             logger::errorLog("Engine's graphical mode already initialised");
         else {
 
-            mainWindow_ = new window(800, 800, "VoxelEng");
+            mainWindow_ = new window(settings_->windowWidth(), settings_->windowHeight(), "VoxelEng");
 
             saveSlot_ = 0;
             blockReachRange_ = 5;
@@ -611,6 +611,7 @@ namespace VoxelEng {
             input::setControlAction(controlCode::alpha8, inputFunctions::selectBlockSlot8, false);
             input::setControlAction(controlCode::alpha9, inputFunctions::selectBlockSlot9, false);
             input::setControlAction(controlCode::p, inputFunctions::intentionalCrash, false);
+            input::setControlAction(controlCode::q, inputFunctions::getCurrentChunk, false);
 
         }
 

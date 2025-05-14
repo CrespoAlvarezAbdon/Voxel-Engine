@@ -183,6 +183,8 @@ namespace VoxelEng {
 
 				registries_->erase("UBOs");
 
+				registries_->erase("SSBOs");
+
 				graphicalModeInitialised_ = false;
 
 			}
