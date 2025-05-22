@@ -149,7 +149,7 @@ namespace VoxelEng {
 
                 selectedChunk->setBlock(chunkRelPos, block::emptyBlock());
 
-                chunkManager::issueChunkMeshJob(chunkJobType::PRIORITYREMESH, selectedChunk);
+                chunkManager::issueChunkMeshJob(chunkJobType::PRIORITYREMESH, selectedChunk, false);
                 return;
 
                 if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos))) {

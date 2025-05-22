@@ -207,4 +207,10 @@ namespace VoxelEng {
 
 	}
 
+	void defaultWorldGen::genPass2_(chunk& chunk) {
+	
+	
+	
+	}
+
 }

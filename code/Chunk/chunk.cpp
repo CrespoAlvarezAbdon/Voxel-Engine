@@ -1771,7 +1771,7 @@ namespace VoxelEng {
             onChunkUnload_.notify(chunkPos.x, chunkPos.z + 1);
             onChunkUnload_.notify(chunkPos.x, chunkPos.z - 1);
 
-            issueChunkMeshJob(chunkJobType::UNLOADANDSAVE, unloadedChunk);
+            issueChunkMeshJob(chunkJobType::UNLOADANDSAVE, unloadedChunk, true);
 
         }
         
@@ -1885,38 +1885,80 @@ namespace VoxelEng {
                             chunkVBOoperationsMutex_.unlock();
 
                         }
-                        else { 
+                        else {
 
                             chunksMutex_.lock();
                             chunk* c = clientChunks_.at(*frontierIt_);
+                            chunkStatus cStatus = c->status();
                             chunksMutex_.unlock();
 
-                            bool cIsMeshed = c->status() == chunkStatus::MESHED;
+                            chunk* cPlusX = ensureChunkIfVisible(chunkPos + blockViewDir::PLUSX);
+                            chunk* cMinusX = ensureChunkIfVisible(chunkPos + blockViewDir::NEGX);
+                            chunk* cPlusY = ensureChunkIfVisible(chunkPos + blockViewDir::PLUSY);
+                            chunk* cMinusY = ensureChunkIfVisible(chunkPos + blockViewDir::NEGY);
+                            chunk* cPlusZ = ensureChunkIfVisible(chunkPos + blockViewDir::PLUSZ);
+                            chunk* cMinusZ = ensureChunkIfVisible(chunkPos + blockViewDir::NEGZ);
 
-                            if (ensureChunkIfVisible(chunkPos + blockViewDir::PLUSX) +
-                                ensureChunkIfVisible(chunkPos + blockViewDir::NEGX) +
-                                ensureChunkIfVisible(chunkPos + blockViewDir::PLUSY) +
-                                ensureChunkIfVisible(chunkPos + blockViewDir::NEGY) +
-                                ensureChunkIfVisible(chunkPos + blockViewDir::PLUSZ) +
-                                ensureChunkIfVisible(chunkPos + blockViewDir::NEGZ) == 6) {
+                            bool surrondedByNeighbors = cPlusX && cMinusX && cPlusY && cMinusY && cPlusZ && cMinusZ;
 
-                                if (cIsMeshed) {
+                            if (surrondedByNeighbors) {
+                            
+                                continueCreatingChunks = ++nIterations < maxIterations;
+                            
+                            }
 
-                                    newChunkMeshesMutex_.lock();
-                                    newChunkMeshes_.push_back(c);
-                                    newChunkMeshesMutex_.unlock();
+                            switch (cStatus) {
+                            
+                                case chunkStatus::BASICTERRAIN: {
+
+                                    if (surrondedByNeighbors && cPlusX->status() >= chunkStatus::BASICTERRAIN &&
+                                        cMinusX->status() >= chunkStatus::BASICTERRAIN &&
+                                        cPlusY->status() >= chunkStatus::BASICTERRAIN &&
+                                        cMinusY->status() >= chunkStatus::BASICTERRAIN &&
+                                        cPlusZ->status() >= chunkStatus::BASICTERRAIN &&
+                                        cMinusZ->status() >= chunkStatus::BASICTERRAIN) {
+
+                                        c->status(chunkStatus::LOADPASS2);
+                                        issueChunkMeshJob(chunkJobType::LOAD2, c, false);
+
+                                    }
+
+                                    frontierIt_++;
+                            
+                                }
+                                break;
+
+                                case chunkStatus::NOTLOADED:
+                                case chunkStatus::LOADPASS2:
+                                case chunkStatus::DECORATED: {
+
+                                    frontierIt_++;
 
                                 }
+                                break;
 
-                                continueCreatingChunks = ++nIterations < maxIterations;
+                                case chunkStatus::MESHED: {
 
-                                frontierChunksSet_.erase(*frontierIt_);
-                                frontierIt_ = frontierChunks_.erase(frontierIt_);
+                                    if (surrondedByNeighbors) {
+                                    
+                                        newChunkMeshesMutex_.lock();
+                                        newChunkMeshes_.push_back(c);
+                                        newChunkMeshesMutex_.unlock();
 
+                                        frontierChunksSet_.erase(*frontierIt_);
+                                        frontierIt_ = frontierChunks_.erase(frontierIt_);
+                                    
+                                    }
+                                    else
+                                        frontierIt_++;
+
+                                }
+                                break;
+                            
                             }
-                            else
-                                frontierIt_++;
+
                         }
+
                     }
 
                 } while (continueCreatingChunks);
@@ -1992,25 +2034,18 @@ namespace VoxelEng {
 
     }
 
-    // TODO. PUT THE CONTAINS INTO A VARIABLE TO REMOVE THE UGLY THREE UNLOCKS.
-    bool chunkManager::ensureChunkIfVisible(const vec3& chunkPos) {
+    chunk* chunkManager::ensureChunkIfVisible(const vec3& chunkPos) {
        
         bool chunkInDistance = chunkInRenderDistance(chunkPos);
 
         chunksMutex_.lock();
-        bool chunkExists = clientChunks_.contains(chunkPos);
+        chunk* c = clientChunks_.contains(chunkPos) ? clientChunks_[chunkPos] : nullptr;
         chunksMutex_.unlock();
 
-        if (chunkInDistance) { 
-
-            if (chunkExists)
-                return true;
-            else
-                return loadChunk(chunkPos) != nullptr;
-
-        }
+        if (chunkInDistance)
+            return c ? c : loadChunk(chunkPos);
         else
-            return false;
+            return nullptr;
         
     }
 
@@ -2279,13 +2314,13 @@ namespace VoxelEng {
         onChunkLoad_.notify(chunkPos.x, chunkPos.z - 1);
 
         // Submit async task to load the chunk either from disk or by generating it.
-        issueChunkMeshJob(chunkJobType::LOAD, c);
+        issueChunkMeshJob(chunkJobType::LOAD, c, true);
 
         return c;
 
     }
 
-    void chunkManager::issueChunkMeshJob(chunkJobType type, void* data) {
+    void chunkManager::issueChunkMeshJob(chunkJobType type, void* data, bool pushJobBack) {
     
         job* aJob = &loadChunkJobs_->get();
 
@@ -2298,6 +2333,9 @@ namespace VoxelEng {
             case chunkJobType::LOAD:
                 aJob->setTask(loadChunkJob, data, loadChunkJobs_);
                 break;
+            case chunkJobType::LOAD2:
+                aJob->setTask(loadChunkJobPass2, data, loadChunkJobs_);
+                break;
             case chunkJobType::ONLYREMESH:
                 aJob->setTask(remeshChunkJob, data, loadChunkJobs_);
                 break;
@@ -2306,9 +2344,6 @@ namespace VoxelEng {
                 break;
             case chunkJobType::PRIORITYREMESH:
                 aJob->setTask(priorityRemeshChunkJob, data, loadChunkJobs_);
-                break;
-            case chunkJobType::LIGHT_REMESH:
-                aJob->setTask(lightRemeshChunkJob, data, loadChunkJobs_);
                 break;
             default:
                 logger::errorLog("Unsupported chunkJobType type " + std::to_string(static_cast<int>(type)));
@@ -2325,13 +2360,13 @@ namespace VoxelEng {
                 break;
             
             case chunkJobType::PRIORITYREMESH:
-                priorityChunkTasks_->submitJob(aJob);
+                priorityChunkTasks_->submitJob(aJob, pushJobBack);
                 break;
             case chunkJobType::LOAD:
+            case chunkJobType::LOAD2:
             case chunkJobType::ONLYREMESH:
             case chunkJobType::UNLOADANDSAVE:
-            case chunkJobType::LIGHT_REMESH:
-                chunkTasks_->submitJob(aJob);
+                chunkTasks_->submitJob(aJob, pushJobBack);
                 break;
             default:
                 logger::errorLog("Unsupported chunkJobType type " + std::to_string(static_cast<int>(type)));
@@ -2501,10 +2536,30 @@ namespace VoxelEng {
         chunk* c = static_cast<chunk*>(data);
 
         c->makeEmpty();
-        if (world::isSaved(c->chunkPos())) // Load previously saved chunk.
+        if (world::isSaved(c->chunkPos())) {  // Load previously saved chunk. Skips remaining loading passes.
+        
             deserializeChunk(c, world::loadChunk(c->chunkPos()));
-        else // Generate new chunk.
+
+            c->status(chunkStatus::DECORATED);
+
+            remesh(c, false, true);
+        
+        }   
+        else { // Generate new chunk.
+        
             worldGen::generate(*c);
+
+            c->status(chunkStatus::BASICTERRAIN);
+        
+        }
+
+    }
+
+    void chunkManager::loadChunkJobPass2(void* data) {
+
+        chunk* c = static_cast<chunk*>(data);
+
+        worldGen::genPass2(*c);
 
         c->status(chunkStatus::DECORATED);
 
@@ -2547,18 +2602,6 @@ namespace VoxelEng {
 
         priorityNewChunkMeshesCV_.notify_all();
 
-    }
-
-    void chunkManager::lightRemeshChunkJob(void* data) {
-    
-        LightRemeshJob& job = *static_cast<LightRemeshJob*>(data);
-
-        lightRemesh(job.chunkToRemesh, job.floodLightPositions, job.originChunkDir);
-
-        priorityNewChunkMeshesCV_.notify_all();
-
-        lightRemeshJobs_.free(job);
-    
     }
 
 }

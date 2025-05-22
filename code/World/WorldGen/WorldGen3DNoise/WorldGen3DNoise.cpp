@@ -52,6 +52,12 @@ namespace VoxelEng {
 
 	}
 
+	void WorldGen3DNoise::genPass2_(chunk& chunk) {
+
+		lightingLayer(chunk);
+
+	}
+
 	void WorldGen3DNoise::clear_() {
 	
 		chunkManager::onChunkLoad().detachIfExists(chunkLoadListener_);
@@ -174,10 +180,8 @@ namespace VoxelEng {
 
 				}
 
-		// Set neighbor blocks. TODO. VAMOS A TENER QUE AÑADIR EL CASO DE LAS ESQUINAS/DIAGONALES DE LOS BLOCKNEIGHBORS.
-		// // TODO. METER ARENA.
+		// Set neighbor blocks.
 		// // TODO. METER QUE NBLOCKS DE LOS NEIGHBORS SEA SOLO PARA BLOQUES OPACOS Y CAMBIARLE EL NOMBRE A NOCCLUDINGNEIGHBORBLOCKS.
-		// // TODO. HACER FUNCIÓN PARA COGER RUIDO Y VER SI HAY BLOQUE O NO.
 		// X+
 		for (y = 0; y < CHUNK_SIZE; y++)
 			for (z = 0; z < CHUNK_SIZE; z++) {
@@ -305,6 +309,12 @@ namespace VoxelEng {
 
 			}
 
+	}
+
+	void WorldGen3DNoise::lightingLayer(chunk& chunk) {
+	
+	
+	
 	}
 
 	// 'chunkLoadListener' class.

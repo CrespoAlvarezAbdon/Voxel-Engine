@@ -161,6 +161,8 @@ namespace VoxelEng {
 
 		void generate_(chunk& chunk);
 
+		void genPass2_(chunk& chunk);
+
 		void clear_();
 
 	private:
@@ -213,6 +215,8 @@ namespace VoxelEng {
 		void noiseLayer(chunk& chunk);
 
 		void surfaceLayer(chunk& chunk);
+
+		void lightingLayer(chunk& chunk);
 
 
 		// Utilities.

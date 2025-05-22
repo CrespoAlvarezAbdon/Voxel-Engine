@@ -73,12 +73,14 @@ namespace VoxelEng {
 	/**
 	* @brief The different stages that a chunk has during its lifetime.
 	*/
-	enum class chunkStatus { NOTLOADED = 0, BASICTERRAIN = 1, DECORATED = 2, LIGHTREMESHPENDING = 3, MESHED = 4};
+	enum class chunkStatus { NOTLOADED = 0, BASICTERRAIN = 1, LOADPASS2 = 2, DECORATED = 3, MESHED = 4};
 
 	/**
 	* @brief Definition of the multiples types of jobs related to chunk management.
 	*/
-	enum class chunkJobType { NONE = 0, LOAD = 1, ONLYREMESH = 2, UNLOADANDSAVE = 3, PRIORITYREMESH = 4, LIGHT_REMESH = 5};
+	enum class chunkJobType { NONE = 0, LOAD = 1, LOAD2 = 2, ONLYREMESH = 3, UNLOADANDSAVE = 4, PRIORITYREMESH = 5};
+
+	// LOAD2 WILL BE USED FOR LIGHTING LAYER.
 
 	/**
 	* @brief Definition of the operations allowed in the chunk vertex buffer object.
@@ -1309,14 +1311,14 @@ namespace VoxelEng {
 		* Returns true if the chunk could was visible, loaded and meshed or false
 		* otherwise.
 		*/
-		static bool ensureChunkIfVisible(const vec3& chunkPos);
+		static chunk* ensureChunkIfVisible(const vec3& chunkPos);
 
 		/**
 		* @brief Load and mesh the chunk in the specified chunk coordinates if visible.
 		* Returns true if the chunk could was visible, loaded and meshed or false
 		* otherwise.
 		*/
-		static bool ensureChunkIfVisible(int x, int y, int z);
+		static chunk* ensureChunkIfVisible(int x, int y, int z);
 
 		/**
 		* @brief Pass the corresponding lighting values from the chunk at 'chunkPos' to the neighbor specified by the given direction.
@@ -1350,8 +1352,9 @@ namespace VoxelEng {
 		* @brief Issue a job related to chunk processing.
 		* The job will be executed on another thread and will lock the chunk's mutexes that
 		* are required.
+		* @param pushJobBack. Whether to insert the job at the back of the queue (true) or at the beginning (false).
 		*/
-		static void issueChunkMeshJob(chunkJobType type, void* data);
+		static void issueChunkMeshJob(chunkJobType type, void* data, bool pushJobBack = true);
 
 		/** 
 		* @brief Used on chunkManager::onUnloadAsFrontier to update the neighbor
@@ -1584,13 +1587,13 @@ namespace VoxelEng {
 		*/
 		static void loadChunkJob(void* data);
 
+		static void loadChunkJobPass2(void* data);
+
 		static void remeshChunkJob(void* data);
 
 		static void unloadAndSaveChunkJob(void* data);
 
 		static void priorityRemeshChunkJob(void* data);
-
-		static void lightRemeshChunkJob(void* data);
 
 	};
 
@@ -1772,7 +1775,7 @@ namespace VoxelEng {
 	
 	}
 
-	inline bool chunkManager::ensureChunkIfVisible(int chunkPosX, int chunkPosY, int chunkPosZ) {
+	inline chunk* chunkManager::ensureChunkIfVisible(int chunkPosX, int chunkPosY, int chunkPosZ) {
 
 		return ensureChunkIfVisible(vec3{ chunkPosX, chunkPosY, chunkPosZ });
 

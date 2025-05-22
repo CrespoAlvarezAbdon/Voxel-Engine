@@ -60,7 +60,7 @@ namespace VoxelEng {
 
 	}
 
-	void threadPool::submitJob(job* job) {
+	void threadPool::submitJob(job* job, bool pushJobBack) {
 
 		if (shutdown_)
 			VoxelEng::logger::errorLog("Cannot submit new jobs to a thread pool if shutdown() was called previously for that pool");
@@ -68,7 +68,11 @@ namespace VoxelEng {
 		{
 
 			std::unique_lock<std::mutex> lock(jobsMutex_);
-			jobs_.push_back(job);
+			if (pushJobBack) 
+				jobs_.push_back(job);
+			else 
+				jobs_.push_front(job);
+			
 			//logger::debugLog("Job size is " + std::to_string(jobs_.size()));
 
 		}

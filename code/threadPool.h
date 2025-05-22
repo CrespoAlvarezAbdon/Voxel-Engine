@@ -118,8 +118,9 @@ namespace VoxelEng {
 		/**
 		* @brief Submit a previously existing job to complete to the thread pool.
 		* WARNING. Be sure to properly manage the heap memory assigned to the 'job' objects.
+		* @param pushJobBack. Whether to insert the job at the back of the queue (true) or at the beginning (false).
 		*/
-		void submitJob(job* job);
+		void submitJob(job* job, bool pushJobBack);
 
 		/**
 		* @brief The thread pool will no longer accept submitted jobs.

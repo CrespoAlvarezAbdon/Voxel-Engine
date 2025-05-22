@@ -142,9 +142,14 @@ namespace VoxelEng {
 		static void prepareGen();
 
 		/**
-		* @brief Fill a chunk's block data according to the selected world generator.
+		* @brief Fill a chunk's block data according to the selected world generator. Pass 1 chunk generation.
 		*/
 		static void generate(chunk& chunk);
+
+		/**
+		* @brief Fill a chunk's block data according to the selected world generator. Pass 2 chunk generation.
+		*/
+		static void genPass2(chunk& chunk);
 
 
 		// Clean up.
@@ -188,9 +193,14 @@ namespace VoxelEng {
 		virtual void prepareGen_() = 0;
 
 		/*
-		Chunk generation is done here.
+		Chunk generation pass 1 is done here.
 		*/
 		virtual void generate_(chunk& chunk) = 0;
+
+		/*
+		Chunk generation pass 2 is done here.
+		*/
+		virtual void genPass2_(chunk& chunk) = 0;
 
 		/*
 		Method for deallocating and deinitialising anything related to the world generator.
@@ -276,6 +286,14 @@ namespace VoxelEng {
 	
 	}
 
+	inline void worldGen::genPass2(chunk& chunk) {
+
+		chunk.blockDataMutex().lock();
+		selectedGen_->genPass2_(chunk);
+		chunk.blockDataMutex().unlock();
+
+	}
+
 	
 	// 'defaultWorldGen' class.
 
@@ -295,6 +313,8 @@ namespace VoxelEng {
 		void prepareGen_();
 
 		void generate_(chunk& chunk);
+
+		void genPass2_(chunk& chunk);
 
 		void clear_();
 
