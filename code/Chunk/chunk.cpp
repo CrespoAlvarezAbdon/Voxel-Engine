@@ -72,12 +72,6 @@ namespace VoxelEng {
       modified_(false),
       needsRemesh_(false),
       nBlocks_(0),
-      floodLightPositionsToPlusX_(nullptr),
-      floodLightPositionsToMinusX_(nullptr),
-      floodLightPositionsToPlusY_(nullptr),
-      floodLightPositionsToMinusY_(nullptr),
-      floodLightPositionsToPlusZ_(nullptr),
-      floodLightPositionsToMinusZ_(nullptr),
       nBlocksPlusX_(0),
       nBlocksMinusX_(0),
       nBlocksPlusY_(0),
@@ -98,12 +92,6 @@ namespace VoxelEng {
       modified_(false),
       needsRemesh_(false),
       nBlocks_(0),
-      floodLightPositionsToPlusX_(nullptr),
-      floodLightPositionsToMinusX_(nullptr),
-      floodLightPositionsToPlusY_(nullptr),
-      floodLightPositionsToMinusY_(nullptr),
-      floodLightPositionsToPlusZ_(nullptr),
-      floodLightPositionsToMinusZ_(nullptr),
       nBlocksPlusX_(0),
       nBlocksMinusX_(0),
       nBlocksPlusY_(0),
@@ -127,12 +115,6 @@ namespace VoxelEng {
       modified_(c.modified_),
       needsRemesh_(c.needsRemesh_.load()),
       nBlocks_(c.nBlocks_.load()),
-      floodLightPositionsToPlusX_(nullptr),
-      floodLightPositionsToMinusX_(nullptr),
-      floodLightPositionsToPlusY_(nullptr),
-      floodLightPositionsToMinusY_(nullptr),
-      floodLightPositionsToPlusZ_(nullptr),
-      floodLightPositionsToMinusZ_(nullptr),
       nBlocksPlusX_(c.nBlocksPlusX_.load()),
       nBlocksMinusX_(c.nBlocksMinusX_.load()),
       nBlocksPlusY_(c.nBlocksPlusY_.load()),
@@ -464,7 +446,7 @@ namespace VoxelEng {
 
     }
 
-    bool chunk::renewMesh(bool generationRemesh, std::deque<floodLightPropInstance>* neighborProvidedLights, blockViewDir lightProviderDirection) {
+    bool chunk::renewMesh(bool generationRemesh) {
 
         std::unique_lock<std::shared_mutex> lock(renderingDataMutex_);
 
@@ -497,7 +479,7 @@ namespace VoxelEng {
             unsigned short localID = 0;
 
             // Update block light render information from blocks within the chunk.
-            std::deque<floodLightPropInstance> floodLightsInstances;
+            std::deque<blockLightMod> floodLightsInstances;
             for (auto it = floodPointLightPositions_.cbegin(); it != floodPointLightPositions_.cend(); it++) {
 
                 x = it->x;
@@ -523,7 +505,7 @@ namespace VoxelEng {
                        
                         while (floodLightsInstances.size() > 0) {
 
-                            floodLightPropInstance& floodLight = floodLightsInstances.front();
+                            blockLightMod& floodLight = floodLightsInstances.front();
                             basicVec3& pos = floodLight.pos;
 
                             if (floodLight.intensity > 0 && !blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z]) {
@@ -1282,9 +1264,6 @@ namespace VoxelEng {
 
     std::unordered_map<vec3, chunk*> chunkManager::simulatedChunks_;
 
-    std::mutex chunkManager::pendingLightRemeshJobsMutex_;
-    std::list<LightRemeshJob*> chunkManager::pendingLightRemeshJobs_;
-
     std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesUpdated_ = nullptr;
     std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesWrite_ = nullptr;
     std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesRead_ = nullptr;
@@ -1326,7 +1305,6 @@ namespace VoxelEng {
 
     atomicRecyclingPool<job>* chunkManager::loadChunkJobs_;
     atomicRecyclingPool<chunk> chunkManager::chunksPool_;
-    atomicRecyclingPool<LightRemeshJob> chunkManager::lightRemeshJobs_;
 
     chunkEvent chunkManager::onChunkLoad_("On chunk load");
     chunkEvent chunkManager::onChunkUnload_("On chunk unload");
@@ -1797,14 +1775,6 @@ namespace VoxelEng {
         unsigned int meshSize = c->renewMesh(remeshPostGeneration);
         pushNewChunkMesh(isPriorityUpdate, c, meshSize);
 
-    }
-
-    void chunkManager::lightRemesh(chunk* c, std::deque<floodLightPropInstance>* neighborProvidedLights, blockViewDir dirFromNeighborToC) {
-    
-        c->needsRemesh(true);
-        unsigned int meshSize = c->renewMesh(true, neighborProvidedLights, inverseDirection(dirFromNeighborToC));
-        pushNewChunkMesh(true, c, meshSize);
-    
     }
 
     void chunkManager::renewMesh(const vec3& chunkPos, bool isPriorityUpdate, bool remeshPostGeneration) {

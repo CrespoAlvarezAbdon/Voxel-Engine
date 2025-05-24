@@ -1,5 +1,5 @@
-#ifndef _VOXELENG_FLOOD_LIGHT_POSITIONS_
-#define _VOXELENG_FLOOD_LIGHT_POSITIONS_
+#ifndef _VOXELENG_BLOCK_LIGHT_MODIFICATION_
+#define _VOXELENG_BLOCK_LIGHT_MODIFICATION_
 
 #include <type_traits>
 #include <vec.h>
@@ -25,7 +25,7 @@ namespace VoxelEng {
 	* the world using a flood-fill algorithm. This only represents the propagation of a certain
 	* light source.
 	*/
-	struct floodLightPropInstance {
+	struct blockLightMod {
 
 		/**
 		* @brief Position the light is being propagated to.
@@ -49,9 +49,9 @@ namespace VoxelEng {
 namespace std {
 	
 	template<>
-	struct hash<VoxelEng::floodLightPropInstance> {
+	struct hash<VoxelEng::blockLightMod> {
 
-		size_t operator()(const VoxelEng::floodLightPropInstance& t) const {
+		size_t operator()(const VoxelEng::blockLightMod& t) const {
 		
 			glm::vec3 v;
 			v.x = t.pos.x;
