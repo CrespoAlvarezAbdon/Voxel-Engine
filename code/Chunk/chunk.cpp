@@ -78,7 +78,6 @@ namespace VoxelEng {
       nBlocksMinusY_(0),
       nBlocksPlusZ_(0),
       nBlocksMinusZ_(0),
-      nNeighbors_(0),
       loadLevel_(chunkStatus::NOTLOADED),
       chunkPos_(vec3Zero) {
 
@@ -98,7 +97,6 @@ namespace VoxelEng {
       nBlocksMinusY_(0),
       nBlocksPlusZ_(0),
       nBlocksMinusZ_(0),
-      nNeighbors_(0),
       loadLevel_(chunkStatus::NOTLOADED),
       chunkPos_(vec3Zero) {
 
@@ -121,7 +119,6 @@ namespace VoxelEng {
       nBlocksMinusY_(c.nBlocksMinusY_.load()),
       nBlocksPlusZ_(c.nBlocksPlusZ_.load()),
       nBlocksMinusZ_(c.nBlocksMinusZ_.load()),
-      nNeighbors_(c.nNeighbors_),
       loadLevel_(c.loadLevel_.load()),
       chunkPos_(c.chunkPos_) {
 
@@ -1309,6 +1306,9 @@ namespace VoxelEng {
     chunkEvent chunkManager::onChunkLoad_("On chunk load");
     chunkEvent chunkManager::onChunkUnload_("On chunk unload");
 
+    std::mutex chunkManager::chunkNeighborsInfoMutex_;
+    std::unordered_map<vec3, neighborsInfo> chunkManager::chunkNeighborsInfo_;
+
     chunkVertexBuffer* chunkManager::vbo_ = nullptr;
 
     std::string chunkManager::openedTerrainFileName_;
@@ -1504,7 +1504,7 @@ namespace VoxelEng {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-        return (clientChunks_.find(chunkPos) != clientChunks_.cend()) ? clientChunks_[chunkPos]->status() : chunkStatus::NOTLOADED;
+        return (clientChunks_.find(chunkPos) != clientChunks_.cend()) ? clientChunks_.at(chunkPos)->status() : chunkStatus::NOTLOADED;
 
     }
 
@@ -1581,7 +1581,7 @@ namespace VoxelEng {
             logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
         else {
             
-            block removedBlock = clientChunks_[chunkPos]->setBlock(getChunkRelCoords(x, y, z), blockID);
+            block removedBlock = clientChunks_.at(chunkPos)->setBlock(getChunkRelCoords(x, y, z), blockID);
 
             return removedBlock;
             
@@ -1806,10 +1806,9 @@ namespace VoxelEng {
             // NEXT. LOS JOBS DE NEIGHBOR QUE SE TIENE QUE ACTUALIZAR CON PRIORITY DEBEN IR EN UN MISMO JOB SINO DA PROBLEMAS.
 
             std::unique_lock<std::mutex> lock(managerThreadMutex_),
-                                         priorityUpdatesLock(priorityUpdatesRemainingMutex_);
+                priorityUpdatesLock(priorityUpdatesRemainingMutex_);
 
             // First of all, load the chunk where the player is in.
-            bool once = true;
             bool continueCreatingChunks = false;
             vec3 chunkPos = vec3Zero;
             unsigned int nIterations = 0;
@@ -1818,15 +1817,8 @@ namespace VoxelEng {
             while (game::threadsExecute[2]) {
 
                 continueCreatingChunks = false;
-                
-                playerChunkPosCopy_ = getChunkCoords(worldGen::playerSpawnPos());
 
-                if (once) {
-                    
-                    ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
-                    once = false;
-                    
-                }
+                ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
 
                 do {
 
@@ -1857,78 +1849,24 @@ namespace VoxelEng {
                         }
                         else {
 
-                            chunksMutex_.lock();
-                            chunk* c = clientChunks_.at(*frontierIt_);
-                            chunkStatus cStatus = c->status();
-                            chunksMutex_.unlock();
+                            chunk* c = getChunk(chunkPos);
 
-                            chunk* cPlusX = ensureChunkIfVisible(chunkPos + blockViewDir::PLUSX);
-                            chunk* cMinusX = ensureChunkIfVisible(chunkPos + blockViewDir::NEGX);
-                            chunk* cPlusY = ensureChunkIfVisible(chunkPos + blockViewDir::PLUSY);
-                            chunk* cMinusY = ensureChunkIfVisible(chunkPos + blockViewDir::NEGY);
-                            chunk* cPlusZ = ensureChunkIfVisible(chunkPos + blockViewDir::PLUSZ);
-                            chunk* cMinusZ = ensureChunkIfVisible(chunkPos + blockViewDir::NEGZ);
+                            if (ensureChunkIfVisible(chunkPos + blockViewDir::PLUSX) +
+                                ensureChunkIfVisible(chunkPos + blockViewDir::NEGX) +
+                                ensureChunkIfVisible(chunkPos + blockViewDir::PLUSY) +
+                                ensureChunkIfVisible(chunkPos + blockViewDir::NEGY) +
+                                ensureChunkIfVisible(chunkPos + blockViewDir::PLUSZ) +
+                                ensureChunkIfVisible(chunkPos + blockViewDir::NEGZ) == 6) {
 
-                            bool surrondedByNeighbors = cPlusX && cMinusX && cPlusY && cMinusY && cPlusZ && cMinusZ;
-
-                            if (surrondedByNeighbors) {
-                            
                                 continueCreatingChunks = ++nIterations < maxIterations;
-                            
+
+                                frontierChunksSet_.erase(*frontierIt_);
+                                frontierIt_ = frontierChunks_.erase(frontierIt_);
+
                             }
-
-                            switch (cStatus) {
-                            
-                                case chunkStatus::BASICTERRAIN: {
-
-                                    if (surrondedByNeighbors && cPlusX->status() >= chunkStatus::BASICTERRAIN &&
-                                        cMinusX->status() >= chunkStatus::BASICTERRAIN &&
-                                        cPlusY->status() >= chunkStatus::BASICTERRAIN &&
-                                        cMinusY->status() >= chunkStatus::BASICTERRAIN &&
-                                        cPlusZ->status() >= chunkStatus::BASICTERRAIN &&
-                                        cMinusZ->status() >= chunkStatus::BASICTERRAIN) {
-
-                                        c->status(chunkStatus::LOADPASS2);
-                                        issueChunkMeshJob(chunkJobType::LOAD2, c, false);
-
-                                    }
-
-                                    frontierIt_++;
-                            
-                                }
-                                break;
-
-                                case chunkStatus::NOTLOADED:
-                                case chunkStatus::LOADPASS2:
-                                case chunkStatus::DECORATED: {
-
-                                    frontierIt_++;
-
-                                }
-                                break;
-
-                                case chunkStatus::MESHED: {
-
-                                    if (surrondedByNeighbors) {
-                                    
-                                        newChunkMeshesMutex_.lock();
-                                        newChunkMeshes_.push_back(c);
-                                        newChunkMeshesMutex_.unlock();
-
-                                        frontierChunksSet_.erase(*frontierIt_);
-                                        frontierIt_ = frontierChunks_.erase(frontierIt_);
-                                    
-                                    }
-                                    else
-                                        frontierIt_++;
-
-                                }
-                                break;
-                            
-                            }
-
+                            else
+                                frontierIt_++;
                         }
-
                     }
 
                 } while (continueCreatingChunks);
@@ -1936,10 +1874,10 @@ namespace VoxelEng {
                 // Do not attempt to synchronize with the rendering thread if the initial
                 // preparations for loading a level are not completed yet.
                 if (waitInitialTerrainLoaded_) {
-                
+
                     waitInitialTerrainLoaded_ = false;
                     loadingTerrainCV_.notify_one();
-                
+
                 }
 
                 // Sync with the rendering thread in order to pass it the most updated
@@ -1948,10 +1886,10 @@ namespace VoxelEng {
                 managerThreadCV_.wait(lock);
 
                 {
-                
+
                     using namespace std::chrono_literals;
                     std::this_thread::sleep_for(1ms);
-                
+
                 }
 
             }
@@ -2004,18 +1942,18 @@ namespace VoxelEng {
 
     }
 
-    chunk* chunkManager::ensureChunkIfVisible(const vec3& chunkPos) {
+    bool chunkManager::ensureChunkIfVisible(const vec3& chunkPos) {
        
         bool chunkInDistance = chunkInRenderDistance(chunkPos);
 
         chunksMutex_.lock();
-        chunk* c = clientChunks_.contains(chunkPos) ? clientChunks_[chunkPos] : nullptr;
+        bool cExists = clientChunks_.contains(chunkPos);
         chunksMutex_.unlock();
 
         if (chunkInDistance)
-            return c ? c : loadChunk(chunkPos);
+            return cExists ? true : loadChunk(chunkPos) != nullptr;
         else
-            return nullptr;
+            return false;
         
     }
 
@@ -2267,26 +2205,37 @@ namespace VoxelEng {
 
     chunk* chunkManager::loadChunk(const vec3& chunkPos) {
 
-        chunk* c = &chunksPool_.get();
-
-        c->chunkPos(chunkPos);
-
         chunksMutex_.lock();
-        clientChunks_[chunkPos] = c;
+        auto cIt = clientChunks_.find(chunkPos);
         chunksMutex_.unlock();
 
-        addFrontier(c);
+        if (cIt == clientChunks_.cend()) {
+        
+            chunk* c = &chunksPool_.get();
 
-        onChunkLoad_.notify(chunkPos.x, chunkPos.z);
-        onChunkLoad_.notify(chunkPos.x + 1, chunkPos.z);
-        onChunkLoad_.notify(chunkPos.x - 1, chunkPos.z);
-        onChunkLoad_.notify(chunkPos.x, chunkPos.z + 1);
-        onChunkLoad_.notify(chunkPos.x, chunkPos.z - 1);
+            // TODO. DO A CHUNK.RESET() NON-STATIC METHOD.
+            c->chunkPos(chunkPos);
 
-        // Submit async task to load the chunk either from disk or by generating it.
-        issueChunkMeshJob(chunkJobType::LOAD, c, true);
+            chunksMutex_.lock();
+            clientChunks_[chunkPos] = c;
+            chunksMutex_.unlock();
 
-        return c;
+            addFrontier(c);
+
+            onChunkLoad_.notify(chunkPos.x, chunkPos.z);
+            onChunkLoad_.notify(chunkPos.x + 1, chunkPos.z);
+            onChunkLoad_.notify(chunkPos.x - 1, chunkPos.z);
+            onChunkLoad_.notify(chunkPos.x, chunkPos.z + 1);
+            onChunkLoad_.notify(chunkPos.x, chunkPos.z - 1);
+
+            // Submit async task to load the chunk either from disk or by generating it.
+            issueChunkMeshJob(chunkJobType::LOAD, c, true);
+
+            return c;
+        
+        }
+        else
+            return cIt->second;
 
     }
 
@@ -2395,6 +2344,8 @@ namespace VoxelEng {
                 delete itChunks->second;
         AIagentChunks_.clear();
 
+        chunkNeighborsInfo_.clear();
+
     }
 
     void chunkManager::reset() {
@@ -2478,7 +2429,7 @@ namespace VoxelEng {
         if (clientChunks_.find(chunkPos) == clientChunks_.end())
             logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
         else
-            return clientChunks_[chunkPos]->getBlock(floorMod(posX, CHUNK_SIZE), floorMod(posY, CHUNK_SIZE), floorMod(posZ, CHUNK_SIZE), true);
+            return clientChunks_.at(chunkPos)->getBlock(floorMod(posX, CHUNK_SIZE), floorMod(posY, CHUNK_SIZE), floorMod(posZ, CHUNK_SIZE), true);
     
     }
 
@@ -2520,8 +2471,56 @@ namespace VoxelEng {
             worldGen::generate(*c);
 
             c->status(chunkStatus::BASICTERRAIN);
-        
+
+            onLoadChunkJobFinish(c);
+            
         }
+
+    }
+
+    void chunkManager::onLoadChunkJobFinish(chunk* c) {
+    
+        const vec3& chunkPos = c->chunkPos();
+        vec3 chunkPosPlusX = chunkPos + blockViewDir::PLUSX;
+        vec3 chunkPosNegX = chunkPos + blockViewDir::NEGX;
+        vec3 chunkPosPlusY = chunkPos + blockViewDir::PLUSY;
+        vec3 chunkPosNegY = chunkPos + blockViewDir::NEGY;
+        vec3 chunkPosPlusZ = chunkPos + blockViewDir::PLUSZ;
+        vec3 chunkPosNegZ = chunkPos + blockViewDir::NEGZ;
+
+        chunkNeighborsInfoMutex_.lock();
+        neighborsInfo& info = chunkNeighborsInfo_[chunkPos];
+        neighborsInfo& infoPlusX = chunkNeighborsInfo_[chunkPosPlusX];
+        neighborsInfo& infoNegX = chunkNeighborsInfo_[chunkPosNegX];
+        neighborsInfo& infoPlusY = chunkNeighborsInfo_[chunkPosPlusY];
+        neighborsInfo& infoNegY = chunkNeighborsInfo_[chunkPosNegY];
+        neighborsInfo& infoPlusZ = chunkNeighborsInfo_[chunkPosPlusZ];
+        neighborsInfo& infoNegZ = chunkNeighborsInfo_[chunkPosNegZ];
+        chunkNeighborsInfoMutex_.unlock();
+
+        chunksMutex_.lock();
+        chunk* cPlusX = clientChunks_.contains(chunkPosPlusX) ? clientChunks_[chunkPosPlusX] : nullptr;
+        chunk* cNegX = clientChunks_.contains(chunkPosNegX) ? clientChunks_[chunkPosNegX] : nullptr;
+        chunk* cPlusY = clientChunks_.contains(chunkPosPlusY) ? clientChunks_[chunkPosPlusY] : nullptr;
+        chunk* cNegY = clientChunks_.contains(chunkPosNegY) ? clientChunks_[chunkPosNegY] : nullptr;
+        chunk* cPlusZ = clientChunks_.contains(chunkPosPlusZ) ? clientChunks_[chunkPosPlusZ] : nullptr;
+        chunk* cNegZ = clientChunks_.contains(chunkPosNegZ) ? clientChunks_[chunkPosNegZ] : nullptr;
+        chunksMutex_.unlock();
+
+        if (++info.neighborsGenPass1Completed_ >= 7)
+            issueChunkMeshJob(chunkJobType::LOAD2, c);
+        if (++infoPlusX.neighborsGenPass1Completed_ >= 7 && cPlusX)
+            issueChunkMeshJob(chunkJobType::LOAD2, cPlusX);
+        if (++infoNegX.neighborsGenPass1Completed_ >= 7 && cNegX)
+            issueChunkMeshJob(chunkJobType::LOAD2, cNegX);
+        if (++infoPlusY.neighborsGenPass1Completed_ >= 7 && cPlusY)
+            issueChunkMeshJob(chunkJobType::LOAD2, cPlusY);
+        if (++infoNegY.neighborsGenPass1Completed_ >= 7 && cNegY)
+            issueChunkMeshJob(chunkJobType::LOAD2, cNegY);
+        if (++infoPlusZ.neighborsGenPass1Completed_ >= 7 && cPlusZ)
+            issueChunkMeshJob(chunkJobType::LOAD2, cPlusZ);
+        if (++infoNegZ.neighborsGenPass1Completed_ >= 7 && cNegZ)
+            issueChunkMeshJob(chunkJobType::LOAD2, cNegZ);
 
     }
 

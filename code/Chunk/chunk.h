@@ -37,6 +37,7 @@
 #include <vec.h>
 #include <utilities.h>
 #include <Chunk/blockLightMod.h>
+#include <Chunk/neighborsInfo.h>
 #include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 #include <Graphics/Textures/texture.h>
 #include <Graphics/Shaders/shader.h>
@@ -288,11 +289,6 @@ namespace VoxelEng {
 		bool isEmptyNeighborBlock(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor);
 
 		/**
-		* @brief Returns the number of neighbors that this chunk has.
-		*/
-		unsigned int nNeighbors() const;
-
-		/**
 		* @brief Returns the chunk's palette that maps the local block IDs with the global block IDs.
 		*/
 		const palette<unsigned short, unsigned int>& getPalette() const;
@@ -494,11 +490,6 @@ namespace VoxelEng {
 		*/
 		void onUnloadAsFrontier();
 
-		/**
-		* @brief Set the number of neighbors that this chunk has.
-		*/
-		unsigned int& nNeighbors();
-
 
 		// Destructors.
 
@@ -551,8 +542,6 @@ namespace VoxelEng {
 						   nBlocksPlusZ_,
 						   nBlocksMinusZ_;
 		std::atomic<bool> needsRemesh_;
-
-		unsigned int nNeighbors_;
 
 		std::atomic<chunkStatus> loadLevel_;
 
@@ -701,12 +690,6 @@ namespace VoxelEng {
 	inline bool chunk::isEmptyBlock(const vec3& inChunkPos) const {
 	
 		return isEmptyBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z);
-	
-	}
-
-	inline unsigned int chunk::nNeighbors() const {
-	
-		return nNeighbors_;
 	
 	}
 
@@ -870,12 +853,6 @@ namespace VoxelEng {
 
 		nBlocksMinusZ_ = newValue;
 
-	}
-
-	inline unsigned int& chunk::nNeighbors() {
-	
-		return nNeighbors_;
-	
 	}
 
 	//inline short chunk::setInternalBlockID(unsigned int linearIndex, short newID) {
@@ -1309,21 +1286,14 @@ namespace VoxelEng {
 		* Returns true if the chunk could was visible, loaded and meshed or false
 		* otherwise.
 		*/
-		static chunk* ensureChunkIfVisible(const vec3& chunkPos);
+		static bool ensureChunkIfVisible(const vec3& chunkPos);
 
 		/**
 		* @brief Load and mesh the chunk in the specified chunk coordinates if visible.
 		* Returns true if the chunk could was visible, loaded and meshed or false
 		* otherwise.
 		*/
-		static chunk* ensureChunkIfVisible(int x, int y, int z);
-
-		/**
-		* @brief Pass the corresponding lighting values from the chunk at 'chunkPos' to the neighbor specified by the given direction.
-		* @param chunkPos The position of the chunk with the lighting values to propagate to the neighbor.
-		* @param neighborDir Direction of the neighboring chunk relative from the chunk in 'chunkPos'.
-		*/
-		static void passLighting(const vec3& chunkPos, blockViewDir neighborDir);
+		static bool ensureChunkIfVisible(int x, int y, int z);
 
 		/**
 		* @brief Serialize the chunk's data in order to save it into auxiliary memory.
@@ -1338,8 +1308,8 @@ namespace VoxelEng {
 		static void deserializeChunk(chunk* c, const std::string& data);
 
 		/**
-		* @brief Load chunk at specified chunk coordinates.
-		* Returns a pointer to the loaded chunk.
+		* @brief Load chunk at specified chunk coordinates and return a pointer to its corresponding object.
+		* If it is already loaded, it only returns its corresponding object.
 		* NOTE. If it founds serialized data corresponding to this chunk, it will fill the chunk
 		* with said data instead of using the world generator.
 		* WARNING. DOES NOT CHECK IF THERE IS ALREADY A CHUNK AT THE SPECIFIED POSITION.
@@ -1531,6 +1501,9 @@ namespace VoxelEng {
 		static chunkEvent onChunkLoad_;
 		static chunkEvent onChunkUnload_;
 
+		static std::mutex chunkNeighborsInfoMutex_;
+		static std::unordered_map<vec3, neighborsInfo> chunkNeighborsInfo_;
+
 		static chunkVertexBuffer* vbo_;
 
 		static std::string openedTerrainFileName_; // TODO. DEPRECEATED. REPLACE WITH THE WORLD SYSTEM EQUIVALENT NAMED 'currentWorldPath_'.
@@ -1547,6 +1520,8 @@ namespace VoxelEng {
 		Job methods.
 		*/
 		static void loadChunkJob(void* data);
+
+		static void onLoadChunkJobFinish(chunk* c);
 
 		static void loadChunkJobPass2(void* data);
 
@@ -1736,7 +1711,7 @@ namespace VoxelEng {
 	
 	}
 
-	inline chunk* chunkManager::ensureChunkIfVisible(int chunkPosX, int chunkPosY, int chunkPosZ) {
+	inline bool chunkManager::ensureChunkIfVisible(int chunkPosX, int chunkPosY, int chunkPosZ) {
 
 		return ensureChunkIfVisible(vec3{ chunkPosX, chunkPosY, chunkPosZ });
 
