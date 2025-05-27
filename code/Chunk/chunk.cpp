@@ -17,6 +17,7 @@
 #include <input.h>
 #include <gui.h>
 #include <game.h>
+#include <Chunk/chunkDefinitions.h>
 #include <Time/Timer/timer.h>
 #include <Graphics/graphics.h>
 #include <Graphics/Lighting/Lights/light.h>
@@ -2481,46 +2482,27 @@ namespace VoxelEng {
     void chunkManager::onLoadChunkJobFinish(chunk* c) {
     
         const vec3& chunkPos = c->chunkPos();
-        vec3 chunkPosPlusX = chunkPos + blockViewDir::PLUSX;
-        vec3 chunkPosNegX = chunkPos + blockViewDir::NEGX;
-        vec3 chunkPosPlusY = chunkPos + blockViewDir::PLUSY;
-        vec3 chunkPosNegY = chunkPos + blockViewDir::NEGY;
-        vec3 chunkPosPlusZ = chunkPos + blockViewDir::PLUSZ;
-        vec3 chunkPosNegZ = chunkPos + blockViewDir::NEGZ;
-
         chunkNeighborsInfoMutex_.lock();
         neighborsInfo& info = chunkNeighborsInfo_[chunkPos];
-        neighborsInfo& infoPlusX = chunkNeighborsInfo_[chunkPosPlusX];
-        neighborsInfo& infoNegX = chunkNeighborsInfo_[chunkPosNegX];
-        neighborsInfo& infoPlusY = chunkNeighborsInfo_[chunkPosPlusY];
-        neighborsInfo& infoNegY = chunkNeighborsInfo_[chunkPosNegY];
-        neighborsInfo& infoPlusZ = chunkNeighborsInfo_[chunkPosPlusZ];
-        neighborsInfo& infoNegZ = chunkNeighborsInfo_[chunkPosNegZ];
         chunkNeighborsInfoMutex_.unlock();
-
-        chunksMutex_.lock();
-        chunk* cPlusX = clientChunks_.contains(chunkPosPlusX) ? clientChunks_[chunkPosPlusX] : nullptr;
-        chunk* cNegX = clientChunks_.contains(chunkPosNegX) ? clientChunks_[chunkPosNegX] : nullptr;
-        chunk* cPlusY = clientChunks_.contains(chunkPosPlusY) ? clientChunks_[chunkPosPlusY] : nullptr;
-        chunk* cNegY = clientChunks_.contains(chunkPosNegY) ? clientChunks_[chunkPosNegY] : nullptr;
-        chunk* cPlusZ = clientChunks_.contains(chunkPosPlusZ) ? clientChunks_[chunkPosPlusZ] : nullptr;
-        chunk* cNegZ = clientChunks_.contains(chunkPosNegZ) ? clientChunks_[chunkPosNegZ] : nullptr;
-        chunksMutex_.unlock();
-
         if (++info.neighborsGenPass1Completed_ >= 7)
             issueChunkMeshJob(chunkJobType::LOAD2, c);
-        if (++infoPlusX.neighborsGenPass1Completed_ >= 7 && cPlusX)
-            issueChunkMeshJob(chunkJobType::LOAD2, cPlusX);
-        if (++infoNegX.neighborsGenPass1Completed_ >= 7 && cNegX)
-            issueChunkMeshJob(chunkJobType::LOAD2, cNegX);
-        if (++infoPlusY.neighborsGenPass1Completed_ >= 7 && cPlusY)
-            issueChunkMeshJob(chunkJobType::LOAD2, cPlusY);
-        if (++infoNegY.neighborsGenPass1Completed_ >= 7 && cNegY)
-            issueChunkMeshJob(chunkJobType::LOAD2, cNegY);
-        if (++infoPlusZ.neighborsGenPass1Completed_ >= 7 && cPlusZ)
-            issueChunkMeshJob(chunkJobType::LOAD2, cPlusZ);
-        if (++infoNegZ.neighborsGenPass1Completed_ >= 7 && cNegZ)
-            issueChunkMeshJob(chunkJobType::LOAD2, cNegZ);
+
+        vec3 neighborPos;
+        for (const vec3& offset : neighborsOffsets) {
+        
+            neighborPos = chunkPos + offset;
+            chunkNeighborsInfoMutex_.lock();
+            neighborsInfo& infoNeighbor = chunkNeighborsInfo_[neighborPos];
+            chunkNeighborsInfoMutex_.unlock();
+            chunksMutex_.lock();
+            chunk* neighbor = clientChunks_.contains(neighborPos) ? clientChunks_[neighborPos] : nullptr;
+            chunksMutex_.unlock();
+
+            if (++infoNeighbor.neighborsGenPass1Completed_ >= 27 && neighbor)
+                issueChunkMeshJob(chunkJobType::LOAD2, neighbor);
+        
+        }
 
     }
 

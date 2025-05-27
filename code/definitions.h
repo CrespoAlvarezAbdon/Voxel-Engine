@@ -61,12 +61,6 @@ namespace VoxelEng {
 	* @brief The graphics API currently used by the engine during it's execution.
 	*/
 	const graphicsAPI graphicsAPIUsed = graphicsAPI::OPENGL;
-	
-	/**
-	* @brief Number of chunk neighbors that a certain chunk has. Neighbor chunks
-	* are those that share a border with the chunk.
-	*/
-	const unsigned int CHUNK_NEIGHBORS = 6;
 
 	/**
 	* @brief Minimal block texture size in pixels.
