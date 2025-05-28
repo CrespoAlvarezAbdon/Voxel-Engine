@@ -50,6 +50,8 @@ namespace VoxelEng {
 
 		surfaceLayer(chunk);
 
+		chunk.recalculateLight();
+
 	}
 
 	void WorldGen3DNoise::genPass2_(chunk& chunk) {
@@ -169,7 +171,7 @@ namespace VoxelEng {
 					if (isAboveWaterLevel && !isBlockEmpty) {
 					
 						if(!noiseMakesBlockAt(blockPos.x, blockPos.y+1, blockPos.z))
-							chunk.setBlock(x, y, z, layer0_, false);
+							chunk.setBlock(x, y, z, (x == 0 && z == 0) ? lightBlock_ : layer0_, false);
 						else if(!noiseMakesBlockAt(blockPos.x, blockPos.y+2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y+3, blockPos.z))
 							chunk.setBlock(x, y, z, layer1_, false);
 
@@ -193,7 +195,7 @@ namespace VoxelEng {
 				if (isAboveWaterLevel && !isBlockEmpty) {
 
 					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
-						chunk.setBlockNeighbor(y, z, blockViewDir::PLUSX, layer0_, false);
+						chunk.setBlockNeighbor(y, z, blockViewDir::PLUSX, (x == 0 && z == 0) ? lightBlock_ : layer0_, false);
 					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
 						chunk.setBlockNeighbor(y, z, blockViewDir::PLUSX, layer1_, false);
 
@@ -213,7 +215,7 @@ namespace VoxelEng {
 				if (isAboveWaterLevel && !isBlockEmpty) {
 
 					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
-						chunk.setBlockNeighbor(y, z, blockViewDir::NEGX, layer0_, false);
+						chunk.setBlockNeighbor(y, z, blockViewDir::NEGX, (x == 0 && z == 0) ? lightBlock_ : layer0_, false);
 					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
 						chunk.setBlockNeighbor(y, z, blockViewDir::NEGX, layer1_, false);
 
@@ -234,7 +236,7 @@ namespace VoxelEng {
 				if (isAboveWaterLevel && !isBlockEmpty) {
 
 					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
-						chunk.setBlockNeighbor(x, z, blockViewDir::PLUSY, layer0_, false);
+						chunk.setBlockNeighbor(x, z, blockViewDir::PLUSY, (x == 0 && z == 0) ? lightBlock_ : layer0_, false);
 					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
 						chunk.setBlockNeighbor(x, z, blockViewDir::PLUSY, layer1_, false);
 
@@ -243,8 +245,6 @@ namespace VoxelEng {
 					chunk.setBlockNeighbor(x, z, blockViewDir::PLUSY, isBlockEmpty ? waterBlock_ : beachBlock_, false);
 
 			}
-
-		
 
 		// Y-
 		for (x = 0; x < CHUNK_SIZE; x++)
@@ -257,7 +257,7 @@ namespace VoxelEng {
 				if (isAboveWaterLevel && !isBlockEmpty) {
 
 					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
-						chunk.setBlockNeighbor(x, z, blockViewDir::NEGY, layer0_, false);
+						chunk.setBlockNeighbor(x, z, blockViewDir::NEGY, (x == 0 && z == 0) ? lightBlock_ : layer0_, false);
 					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
 						chunk.setBlockNeighbor(x, z, blockViewDir::NEGY, layer1_, false);
 
@@ -278,7 +278,7 @@ namespace VoxelEng {
 				if (isAboveWaterLevel && !isBlockEmpty) {
 
 					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
-						chunk.setBlockNeighbor(x, y, blockViewDir::PLUSZ, layer0_, false);
+						chunk.setBlockNeighbor(x, y, blockViewDir::PLUSZ, (x == 0 && z == 0) ? lightBlock_ : layer0_, false);
 					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
 						chunk.setBlockNeighbor(x, y, blockViewDir::PLUSZ, layer1_, false);
 
@@ -299,7 +299,7 @@ namespace VoxelEng {
 				if (isAboveWaterLevel && !isBlockEmpty) {
 
 					if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 1, blockPos.z))
-						chunk.setBlockNeighbor(x, y, blockViewDir::NEGZ, layer0_, false);
+						chunk.setBlockNeighbor(x, y, blockViewDir::NEGZ, (x == 0 && z == 0) ? lightBlock_ : layer0_, false);
 					else if (!noiseMakesBlockAt(blockPos.x, blockPos.y + 2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y + 3, blockPos.z))
 						chunk.setBlockNeighbor(x, y, blockViewDir::NEGZ, layer1_, false);
 

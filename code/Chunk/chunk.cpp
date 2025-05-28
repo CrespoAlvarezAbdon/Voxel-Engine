@@ -459,11 +459,6 @@ namespace VoxelEng {
             renderingData_.pointLights = std::vector<lightInstance>();
             renderingData_.spotLights = std::vector<lightInstance>();
 
-            std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basicVec4));
-            std::memset(blockLightLevel_, -1, nBlocksChunk * sizeof(char));
-
-            bool blockLightChecked[16][16][16];
-
             // Read chunk data section starts.
             blocksMutex_.lock_shared();
 
@@ -475,109 +470,6 @@ namespace VoxelEng {
                 y = 0,
                 z = 0;
             unsigned short localID = 0;
-
-            // Update block light render information from blocks within the chunk.
-            std::deque<blockLightMod> floodLightsInstances;
-            for (auto it = floodPointLightPositions_.cbegin(); it != floodPointLightPositions_.cend(); it++) {
-
-                x = it->x;
-                y = it->y;
-                z = it->z;
-
-                localID = blocksLocalIDs_[x][y][z];
-                block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
-                const varRef& emittedLight = b.emittedLight();
-
-                // Add block's light.
-                if (!emittedLight.isNull()) {
-
-                    if (emittedLight.getVarType() == var::varType::POINTLIGHT) {
-
-                        const pointLight& light = *(emittedLight.pointer<pointLight>());
-
-                        // Search for blocks affected by this light.
-                        std::memset(blockLightChecked, 0, nBlocksChunk * sizeof(bool));
-                        floodLightsInstances.clear();
-                        floodLightsInstances.emplace_back(basicVec3{ static_cast<char>(x), static_cast<char>(y), static_cast<char>(z) },
-                            light.maxDistance(), light.color());
-                       
-                        while (floodLightsInstances.size() > 0) {
-
-                            blockLightMod& floodLight = floodLightsInstances.front();
-                            basicVec3& pos = floodLight.pos;
-
-                            if (floodLight.intensity > 0 && !blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z]) {
-
-                                float lightLevelScale = floodLight.intensity / 8.0f; // 8 is the maximum allowed light level.
-                                blockLightColor_[(int)pos.x][(int)pos.y][(int)pos.z] += floodLight.color * lightLevelScale;
-                                blockLightLevel_[(int)pos.x][(int)pos.y][(int)pos.z] = floodLight.intensity;
-
-                                blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z] = true;
-
-                                //+x
-                                if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x + 1][(int)pos.y][(int)pos.z] == 0 ) {
-
-                                    floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                                }
-
-                                //-x
-                                if (pos.x > 0 && blocksLocalIDs_[(int)pos.x - 1][(int)pos.y][(int)pos.z] == 0) {
-
-                                    floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                                }
-
-                                //+y
-                                if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y + 1][(int)pos.z] == 0 ) {
-
-                                    floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                                }
-
-                                //-y
-                                if (pos.y > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y - 1][(int)pos.z] == 0 ) {
-
-                                    floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                                }
-
-                                //+z
-                                if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z + 1] == 0 ) {
-
-                                    floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
-
-                                }
-
-                                //-z
-                                if (pos.z > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z - 1] == 0 ) {
-
-                                    floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
-
-                                }
-
-                            }
-
-                            floodLightsInstances.pop_front();
-
-                        }
-
-                    }
-                    else if (emittedLight.getVarType() == var::varType::SPOTLIGHT) {
-
-                        lightInstance& instance = renderingData_.spotLights.emplace_back();
-                        instance.pos = getGlobalPos(chunkPos_.x, chunkPos_.y, chunkPos_.z, x, y, z);
-                        instance.lightTypeIndex = b.emittedLightIndex();
-
-                    }
-                    else if (emittedLight.getVarType() == var::varType::DIRECTIONALLIGHT)
-                        throw std::runtime_error("Directional lights cannot be applied by blocks");
-                    else
-                        throw std::runtime_error("Unknown light type for block specified (varType number is " + std::to_string((int)emittedLight.getVarType()) + ")");
-
-                }
-
-            }
 
             // Render faces that do not require data from neighbor chunks.
             bool blockHasLight = false;
@@ -939,7 +831,6 @@ namespace VoxelEng {
 
                         }
 
-            
             if (nBlocksPlusZ_) {
             
                 for (x = 0; x < CHUNK_SIZE; x++)
@@ -1186,6 +1077,111 @@ namespace VoxelEng {
 
         return renderingData_.totalSize;
 
+    }
+
+    void chunk::recalculateLight() {
+    
+        std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basicVec4));
+        std::memset(blockLightLevel_, -1, nBlocksChunk * sizeof(char));
+
+        bool blockLightChecked[16][16][16];
+
+        // Update block light render information from blocks within the chunk.
+        int x = 0,
+            y = 0,
+            z = 0;
+        unsigned short localID = 0;
+        std::deque<blockLightMod> floodLightsInstances;
+        for (auto it = floodPointLightPositions_.cbegin(); it != floodPointLightPositions_.cend(); it++) {
+
+            x = it->x;
+            y = it->y;
+            z = it->z;
+
+            localID = blocksLocalIDs_[x][y][z];
+            block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+            const varRef& emittedLight = b.emittedLight();
+
+            // Add block's light.
+            if (!emittedLight.isNull()) {
+
+                if (emittedLight.getVarType() == var::varType::POINTLIGHT) {
+
+                    const pointLight& light = *(emittedLight.pointer<pointLight>());
+
+                    // Search for blocks affected by this light.
+                    std::memset(blockLightChecked, 0, nBlocksChunk * sizeof(bool));
+                    floodLightsInstances.clear();
+                    floodLightsInstances.emplace_back(basicVec3{ static_cast<char>(x), static_cast<char>(y), static_cast<char>(z) },
+                        light.maxDistance(), light.color());
+
+                    while (floodLightsInstances.size() > 0) {
+
+                        blockLightMod& floodLight = floodLightsInstances.front();
+                        basicVec3& pos = floodLight.pos;
+
+                        if (floodLight.intensity > 0 && !blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z]) {
+
+                            float lightLevelScale = floodLight.intensity / 8.0f; // 8 is the maximum allowed light level.
+                            blockLightColor_[(int)pos.x][(int)pos.y][(int)pos.z] += floodLight.color * lightLevelScale;
+                            blockLightLevel_[(int)pos.x][(int)pos.y][(int)pos.z] = floodLight.intensity;
+
+                            blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z] = true;
+
+                            //+x
+                            if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x + 1][(int)pos.y][(int)pos.z] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+
+                            //-x
+                            if (pos.x > 0 && blocksLocalIDs_[(int)pos.x - 1][(int)pos.y][(int)pos.z] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+
+                            //+y
+                            if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y + 1][(int)pos.z] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+
+                            //-y
+                            if (pos.y > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y - 1][(int)pos.z] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+
+                            //+z
+                            if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z + 1] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+
+                            //-z
+                            if (pos.z > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z - 1] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+
+                        }
+
+                        floodLightsInstances.pop_front();
+
+                    }
+
+                }
+
+            }
+
+        }
+    
     }
 
     void chunk::makeEmpty() {

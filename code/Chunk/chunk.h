@@ -438,6 +438,8 @@ namespace VoxelEng {
 		*/
 		bool renewMesh(bool generationRemesh);
 
+		void recalculateLight();
+
 		/**
 		* @brief The chunk's block data will be filled with null blocks, leaving the chunk "empty of blocks".
 		*/
