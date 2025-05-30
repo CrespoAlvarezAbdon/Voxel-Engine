@@ -438,6 +438,9 @@ namespace VoxelEng {
 		*/
 		bool renewMesh(bool generationRemesh);
 
+		/**
+		* @brief Recalculate all the block lighting applied to the chunk.
+		*/
 		void recalculateLight();
 
 		/**
@@ -525,14 +528,6 @@ namespace VoxelEng {
 		basicVec4 blockLightColor_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
 		char blockLightLevel_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting value in the specific block. Opaque blocks have -1 light and air blocks have 0 light by default.
 		std::unordered_set<vec3> floodPointLightPositions_;
-
-		// This ones are used to pass the lights to the corresponding neighbor.
-		std::deque<blockLightMod> blockLightModsFromPlusX;
-		std::deque<blockLightMod> blockLightModsFromMinusX;
-		std::deque<blockLightMod> blockLightModsFromPlusY;
-		std::deque<blockLightMod> blockLightModsFromMinusY;
-		std::deque<blockLightMod> blockLightModsFromPlusZ;
-		std::deque<blockLightMod> blockLightModsFromMinusZ;
 
 		bool modified_;
 		

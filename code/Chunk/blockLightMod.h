@@ -17,9 +17,7 @@ namespace VoxelEng {
 	////////////
 	//Structs.//
 	////////////
-	
-	// MAÑANA. LA PROPAGACIÓN DE LUZ DENTRO DE UN CHUNK DEBE CAMBIAR SI POR EJEMPLO LA LUZ PASA POR UN BLOQUE TRANSLUCIDO AZUL ASI QUE TOCA
-	// TENER TODO EL TEMA DE FLOODLIGHTS REUNIDO EN ESTA STRUCT.
+
 	/**
 	* @brief Definition of an instance of a block light that propagates through
 	* the world using a flood-fill algorithm. This only represents the propagation of a certain

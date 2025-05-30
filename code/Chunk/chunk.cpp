@@ -2478,19 +2478,23 @@ namespace VoxelEng {
     void chunkManager::onLoadChunkJobFinish(chunk* c) {
     
         const vec3& chunkPos = c->chunkPos();
+
         chunkNeighborsInfoMutex_.lock();
         neighborsInfo& info = chunkNeighborsInfo_[chunkPos];
         chunkNeighborsInfoMutex_.unlock();
-        if (++info.neighborsGenPass1Completed_ >= 7)
+
+        if (++info.neighborsGenPass1Completed_ >= 27)
             issueChunkMeshJob(chunkJobType::LOAD2, c);
 
         vec3 neighborPos;
         for (const vec3& offset : neighborsOffsets) {
         
             neighborPos = chunkPos + offset;
+
             chunkNeighborsInfoMutex_.lock();
             neighborsInfo& infoNeighbor = chunkNeighborsInfo_[neighborPos];
             chunkNeighborsInfoMutex_.unlock();
+
             chunksMutex_.lock();
             chunk* neighbor = clientChunks_.contains(neighborPos) ? clientChunks_[neighborPos] : nullptr;
             chunksMutex_.unlock();
