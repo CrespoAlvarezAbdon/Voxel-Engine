@@ -34,19 +34,19 @@ namespace VoxelEng {
 
 	// Type definitions.
 
-	#if GRAPHICS_API == OPENGL
+#if GRAPHICS_API == OPENGL
 
-		typedef glm::vec2 vec2;
-		typedef glm::vec3 vec3;
-		typedef glm::vec4 vec4;
+	typedef glm::vec2 vec2;
+	typedef glm::vec3 vec3;
+	typedef glm::vec4 vec4;
 
-	#else
+#else
 
 
 
-	#endif
+#endif
 
-	// Other operators.
+// Other operators.
 
 	vec3 operator+(const vec3& v, blockViewDir viewDir);
 
@@ -72,15 +72,23 @@ namespace VoxelEng {
 		* @param z Third component.
 		*/
 		basicVec3(char x, char y, char z);
+
+		bool operator==(const basicVec3& v) const;
 	};
 
 	inline basicVec3::basicVec3()
-	: x(0), y(0), z(0)
+		: x(0), y(0), z(0)
 	{}
 
 	inline basicVec3::basicVec3(char x, char y, char z)
-	: x(x), y(y), z(z)
+		: x(x), y(y), z(z)
 	{}
+
+	inline bool basicVec3::operator==(const basicVec3& v) const {
+	
+		return x == v.x && y == v.y && z == v.z;
+	
+	}
 
 
 	/**
@@ -215,7 +223,36 @@ namespace VoxelEng {
 	const vec4 vec4Ones(1, 1, 1, 1);
 
 	/**
-	* @brief 
+	* @brief vec3 constant of the zero vector.
+	*/
+	const basicVec3 basicVec3Zero(0, 0, 0);
+	/**
+	* @brief vec3 constant poiting to the fixed up direction.
+	*/
+	const basicVec3 basicVec3FixedUp(0, 1, 0);
+	/**
+	* @brief vec3 constant poiting to the fixed down direction.
+	*/
+	const basicVec3 basicVec3FixedDown(0, -1, 0);
+	/**
+	* @brief vec3 constant poiting to the fixed north direction.
+	*/
+	const basicVec3 basicVec3FixedNorth(1, 0, 0);
+	/**
+	* @brief vec3 constant poiting to the fixed south direction.
+	*/
+	const basicVec3 basicVec3FixedSouth(-1, 0, 0);
+	/**
+	* @brief vec3 constant poiting to the fixed east direction.
+	*/
+	const basicVec3 basicVec3FixedEast(0, 0, 1);
+	/**
+	* @brief vec3 constant poiting to the fixed west direction.
+	*/
+	const basicVec3 basicVec3FixedWest(0, 0, -1);
+
+	/**
+	* @brief basicVec4 constant of the ones vector.
 	*/
 	const basicVec4 basicVec4Zeroes(0, 0, 0, 0);
 
@@ -244,6 +281,17 @@ namespace std {
 		return std::to_string(v.x) + ',' + std::to_string(v.y) + ',' + std::to_string(v.z);
 	
 	}
+
+	template <>
+	class hash<VoxelEng::basicVec3> {
+	public:
+
+		std::size_t operator()(const VoxelEng::basicVec3& v) const
+		{
+			return std::hash<glm::vec3>()(glm::vec3{v.x, v.y, v.z});
+		}
+
+	};
 
 }
 

@@ -1079,19 +1079,32 @@ namespace VoxelEng {
 
     }
 
-    void chunk::recalculateLight() {
+    void chunk::clearBlockLight() {
     
         std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basicVec4));
         std::memset(blockLightLevel_, -1, nBlocksChunk * sizeof(char));
+    
+    }
 
-        bool blockLightChecked[16][16][16];
+    void chunk::recalculateBlockLight() {
+
+        // Get neighbor info of all the chunk's neighbors.
+        std::unordered_map<vec3, neighborsInfo*> cacheNeighborsInfo;
+        chunkManager::chunkNeighborsInfoMutex().lock();
+        for (const vec3& offset : neighborsOffsets) 
+            cacheNeighborsInfo[offset] = &chunkManager::chunkNeighborsInfo()[chunkPos_ + offset];
+        chunkManager::chunkNeighborsInfoMutex().unlock();
 
         // Update block light render information from blocks within the chunk.
         int x = 0,
             y = 0,
             z = 0;
         unsigned short localID = 0;
+        vec3 neighborOffset;
         std::deque<blockLightMod> floodLightsInstances;
+        neighborsInfo* neighborsInfoPtr = nullptr;
+        bool blockLightChecked[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+
         for (auto it = floodPointLightPositions_.cbegin(); it != floodPointLightPositions_.cend(); it++) {
 
             x = it->x;
@@ -1117,54 +1130,102 @@ namespace VoxelEng {
 
                     while (floodLightsInstances.size() > 0) {
 
+                        // Get next light and reset some variables.
                         blockLightMod& floodLight = floodLightsInstances.front();
                         basicVec3& pos = floodLight.pos;
+                        neighborOffset.x = pos.x >= CHUNK_SIZE_LIMIT ? 1 : pos.x <= 0 ? -1 : 0;
+                        neighborOffset.y = pos.y >= CHUNK_SIZE_LIMIT ? 1 : pos.y <= 0 ? -1 : 0;
+                        neighborOffset.z = pos.z >= CHUNK_SIZE_LIMIT ? 1 : pos.z <= 0 ? -1 : 0;
 
-                        if (floodLight.intensity > 0 && !blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z]) {
+                        if (floodLight.intensity > 0 && !blockLightChecked[pos.x][pos.y][pos.z]) {
 
                             float lightLevelScale = floodLight.intensity / 8.0f; // 8 is the maximum allowed light level.
-                            blockLightColor_[(int)pos.x][(int)pos.y][(int)pos.z] += floodLight.color * lightLevelScale;
-                            blockLightLevel_[(int)pos.x][(int)pos.y][(int)pos.z] = floodLight.intensity;
+                            blockLightColor_[pos.x][pos.y][pos.z] += floodLight.color * lightLevelScale;
+                            blockLightLevel_[pos.x][pos.y][pos.z] = floodLight.intensity;
 
-                            blockLightChecked[(int)pos.x][(int)pos.y][(int)pos.z] = true;
+                            blockLightChecked[pos.x][pos.y][pos.z] = true;
 
                             //+x
-                            if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x + 1][(int)pos.y][(int)pos.z] == 0) {
+                            if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x + 1][pos.y][pos.z] == 0) {
 
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
 
                             }
+                            else if (neighborOffset.x == 1) {
+                            
+                                // Push light to neighbor +1 0 0
+                                neighborsInfoPtr = cacheNeighborsInfo[vec3FixedNorth]; // Get the neighbor.
+                                neighborsInfoPtr->blockLightsFromNeighbor.lock();
+                                threadsafe<std::list<blockLightMod>>& list = 
+                                    neighborsInfoPtr->blockLightsFromNeighbor.get()[basicVec3FixedSouth]; // And pass it the data from this chunk.
+                                neighborsInfoPtr->blockLightsFromNeighbor.unlock();
+
+                                list.lock();
+                                blockLightMod& mod = list.get().emplace_back();
+                                mod.color = floodLight.color;
+                                mod.intensity = floodLight.intensity - 1;
+                                mod.pos.x = 0;
+                                mod.pos.y = pos.y;
+                                mod.pos.z = pos.z;
+                                list.unlock();
+
+                            }
+                            // MAÑANA
+                            // DO. IF IT SURPASSES +X, PUSH LIGHT TO NEIGHBOR +X 0 0
+                            // IF IT ALSO SURPASSES +Y, PUSH LIGHT TO +X +Y 0
+                            // IF IT ALSO SURPASSES -Y, PUSH LIGHT TO +X +Y 0
+                            // IF IT ALSO SURPASSES +Z, PUSH LIGHT TO +X 0 -Z
+                            // IF IT ALSO SURPASSES -Z, PUSH LIGHT TO +X 0 -Z
 
                             //-x
-                            if (pos.x > 0 && blocksLocalIDs_[(int)pos.x - 1][(int)pos.y][(int)pos.z] == 0) {
+                            if (pos.x > 0 && blocksLocalIDs_[pos.x - 1][pos.y][pos.z] == 0) {
 
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
 
                             }
+                            else if (neighborOffset.x == -1) {
+
+                                // Push light to neighbor -1 0 0
+                                neighborsInfoPtr = cacheNeighborsInfo[vec3FixedSouth]; // Get the neighbor.
+                                neighborsInfoPtr->blockLightsFromNeighbor.lock();
+                                threadsafe<std::list<blockLightMod>>& list =
+                                    neighborsInfoPtr->blockLightsFromNeighbor.get()[basicVec3FixedNorth]; // And pass it the data from this chunk.
+                                neighborsInfoPtr->blockLightsFromNeighbor.unlock();
+
+                                list.lock();
+                                blockLightMod& mod = list.get().emplace_back();
+                                mod.color = floodLight.color;
+                                mod.intensity = floodLight.intensity - 1;
+                                mod.pos.x = CHUNK_SIZE_LIMIT;
+                                mod.pos.y = pos.y;
+                                mod.pos.z = pos.z;
+                                list.unlock();
+
+                            }
 
                             //+y
-                            if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y + 1][(int)pos.z] == 0) {
+                            if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y + 1][pos.z] == 0) {
 
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
 
                             }
 
                             //-y
-                            if (pos.y > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y - 1][(int)pos.z] == 0) {
+                            if (pos.y > 0 && blocksLocalIDs_[pos.x][pos.y - 1][pos.z] == 0) {
 
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
 
                             }
 
                             //+z
-                            if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z + 1] == 0) {
+                            if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y][pos.z + 1] == 0) {
 
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
 
                             }
 
                             //-z
-                            if (pos.z > 0 && blocksLocalIDs_[(int)pos.x][(int)pos.y][(int)pos.z - 1] == 0) {
+                            if (pos.z > 0 && blocksLocalIDs_[pos.x][pos.y][pos.z - 1] == 0) {
 
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
 
@@ -1181,7 +1242,118 @@ namespace VoxelEng {
             }
 
         }
-    
+    }
+
+    void chunk::recalculateNeighborBlockLight() {
+
+        // Update block light render information from blocks within the chunk.
+        unsigned short localID = 0;
+        vec3 neighborOffset;
+        std::deque<blockLightMod> floodLightsInstances;
+
+        bool blockLightChecked[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+
+        chunkManager::chunkNeighborsInfoMutex().lock();
+        neighborsInfo& neighborsInfoPtr = chunkManager::chunkNeighborsInfo()[chunkPos_];
+        chunkManager::chunkNeighborsInfoMutex().unlock();
+
+        neighborsInfoPtr.blockLightsFromNeighbor.lock();
+        blockLightsByNeighbor& blockLightsByNeighborPtr = neighborsInfoPtr.blockLightsFromNeighbor.get();
+        neighborsInfoPtr.blockLightsFromNeighbor.unlock();
+        // basicVec3, threadsafe<std::list<blockLightMod>>
+        for (auto it = blockLightsByNeighborPtr.begin(); it != blockLightsByNeighborPtr.end(); it++) {
+
+            it->second.lock();
+            const std::list<blockLightMod>& blockLightMods = it->second.get();
+
+            for (auto itLight = blockLightMods.cbegin(); itLight != blockLightMods.cend(); itLight++) {
+          
+                const basicVec3& blockLightPos = itLight->pos;
+
+                localID = blocksLocalIDs_[blockLightPos.x][blockLightPos.y][blockLightPos.z];
+                block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+
+                // Add block's light.
+                if (b.opacity() < blockOpacity::OPAQUEBLOCK) {
+
+                    // Search for blocks affected by this light.
+                    std::memset(blockLightChecked, 0, nBlocksChunk * sizeof(bool));
+                    floodLightsInstances.clear();
+                    floodLightsInstances.push_back(*itLight);
+
+                    while (floodLightsInstances.size() > 0) {
+
+                        // Get next light and reset some variables.
+                        blockLightMod& floodLight = floodLightsInstances.front();
+                        basicVec3& pos = floodLight.pos;
+                        neighborOffset.x = pos.x >= CHUNK_SIZE_LIMIT ? 1 : pos.x <= 0 ? -1 : 0;
+                        neighborOffset.y = pos.y >= CHUNK_SIZE_LIMIT ? 1 : pos.y <= 0 ? -1 : 0;
+                        neighborOffset.z = pos.z >= CHUNK_SIZE_LIMIT ? 1 : pos.z <= 0 ? -1 : 0;
+
+                        if (floodLight.intensity > 0 && !blockLightChecked[pos.x][pos.y][pos.z]) {
+
+                            float lightLevelScale = floodLight.intensity / 8.0f; // 8 is the maximum allowed light level.
+                            blockLightColor_[pos.x][pos.y][pos.z] += floodLight.color * lightLevelScale;
+                            blockLightLevel_[pos.x][pos.y][pos.z] = floodLight.intensity;
+
+                            blockLightChecked[pos.x][pos.y][pos.z] = true;
+
+                            //+x
+                            if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x + 1][pos.y][pos.z] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+ 
+                            //-x
+                            if (pos.x > 0 && blocksLocalIDs_[pos.x - 1][pos.y][pos.z] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+
+                            //+y
+                            if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y + 1][pos.z] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+
+                            //-y
+                            if (pos.y > 0 && blocksLocalIDs_[pos.x][pos.y - 1][pos.z] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+
+                            //+z
+                            if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y][pos.z + 1] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+
+                            //-z
+                            if (pos.z > 0 && blocksLocalIDs_[pos.x][pos.y][pos.z - 1] == 0) {
+
+                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+
+                        }
+
+                        floodLightsInstances.pop_front();
+
+                    }
+
+                }
+            
+            }
+
+            it->second.unlock();
+
+        }
+        
     }
 
     void chunk::makeEmpty() {

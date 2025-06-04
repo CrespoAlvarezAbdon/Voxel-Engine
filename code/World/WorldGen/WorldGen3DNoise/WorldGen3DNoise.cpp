@@ -50,7 +50,9 @@ namespace VoxelEng {
 
 		surfaceLayer(chunk);
 
-		chunk.recalculateLight();
+		chunk.clearBlockLight();
+
+		chunk.recalculateBlockLight();
 
 	}
 
@@ -313,7 +315,7 @@ namespace VoxelEng {
 
 	void WorldGen3DNoise::lightingLayer(chunk& chunk) {
 	
-	
+		chunk.recalculateNeighborBlockLight();
 	
 	}
 

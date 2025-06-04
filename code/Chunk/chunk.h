@@ -439,9 +439,19 @@ namespace VoxelEng {
 		bool renewMesh(bool generationRemesh);
 
 		/**
+		* @brief Clear all data related to block light in the chunk.
+		*/
+		void clearBlockLight();
+
+		/**
 		* @brief Recalculate all the block lighting applied to the chunk.
 		*/
-		void recalculateLight();
+		void recalculateBlockLight();
+
+		/**
+		* @brief Recalculate all the block lighting applied to the chunk by its neighbors' block lights.
+		*/
+		void recalculateNeighborBlockLight();
 
 		/**
 		* @brief The chunk's block data will be filled with null blocks, leaving the chunk "empty of blocks".
@@ -1124,7 +1134,18 @@ namespace VoxelEng {
 		*/
 		static const std::condition_variable& priorityNewChunkMeshesCV_C();
 
-		static chunk* getChunk(const vec3& chunkPos);
+		/**
+		* @brief Get the chunk specified at the given chunk-grid coordinates.
+		* @param chunkPos The given chunk-grid coordinates.
+		* @return The specified chunk.
+		*/
+		static const chunk* getChunkC(const vec3& chunkPos);
+
+		/**
+		* @brief @brief Get the dictionary of chunk's neighborInfo objects, indexed by the chunk's chunk-grid coordinates.
+		* @returns The dictionary of chunk's neighborInfo objects.
+		*/
+		static const std::unordered_map<vec3, neighborsInfo>& chunkNeighborsInfoC();
 
 
 		// Modifiers.
@@ -1352,6 +1373,25 @@ namespace VoxelEng {
 		* @brief Returns the onChunkUnload chunkEvent associated with the chunk management system.
 		*/
 		static chunkEvent& onChunkUnload();
+
+		/**
+		* @brief Get the chunk specified at the given chunk-grid coordinates.
+		* @param chunkPos The given chunk-grid coordinates.
+		* @return The specified chunk.
+		*/
+		static chunk* getChunk(const vec3& chunkPos);
+
+		/**
+		* @brief Get the mutex that provides mutual exclusion for the dictionary of chunk's neighborInfo objects.
+		* @return The mutex that provides mutual exclusion for the dictionary of chunk's neighborInfo objects.
+		*/
+		static std::mutex& chunkNeighborsInfoMutex();
+
+		/**
+		* @brief @brief Get the dictionary of chunk's neighborInfo objects, indexed by the chunk's chunk-grid coordinates.
+		* @returns The dictionary of chunk's neighborInfo objects.
+ 		*/
+		static std::unordered_map<vec3, neighborsInfo>& chunkNeighborsInfo();
 
 
 		// Clean Up.
@@ -1653,11 +1693,17 @@ namespace VoxelEng {
 	
 	}
 
-	inline chunk* chunkManager::getChunk(const vec3& chunkPos) {
+	inline const chunk* chunkManager::getChunkC(const vec3& chunkPos) {
 	
 		std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 		return clientChunks_.contains(chunkPos) ? clientChunks_[chunkPos] : nullptr;
 
+	}
+
+	inline const std::unordered_map<vec3, neighborsInfo>& chunkManager::chunkNeighborsInfoC() {
+	
+		return chunkNeighborsInfo_;
+	
 	}
 
 	inline chunk* chunkManager::selectChunk(int x, int y, int z) {
@@ -1723,6 +1769,25 @@ namespace VoxelEng {
 	inline chunkEvent& chunkManager::onChunkUnload() {
 
 		return onChunkUnload_;
+
+	}
+
+	inline chunk* chunkManager::getChunk(const vec3& chunkPos) {
+
+		std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+		return clientChunks_.contains(chunkPos) ? clientChunks_[chunkPos] : nullptr;
+
+	}
+
+	inline std::mutex& chunkManager::chunkNeighborsInfoMutex() {
+	
+		return chunkNeighborsInfoMutex_;
+	
+	}
+
+	inline std::unordered_map<vec3, neighborsInfo>& chunkManager::chunkNeighborsInfo() {
+
+		return chunkNeighborsInfo_;
 
 	}
 

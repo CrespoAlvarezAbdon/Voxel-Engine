@@ -3,22 +3,21 @@
 
 #include <atomic>
 #include <list>
+#include <unordered_map>
 
+#include <vec.h>
 #include <Chunk/blockLightMod.h>
 #include <Utilities/Thread/threadsafe.hpp>
 
 namespace VoxelEng {
 
+	typedef std::unordered_map<basicVec3, threadsafe<std::list<blockLightMod>>> blockLightsByNeighbor;
+
 	struct neighborsInfo {
 	
 		std::atomic<unsigned char> neighborsGenPass1Completed_;
 
-		threadsafe<std::list<blockLightMod>> blockLightModsFromPlusX;
-		threadsafe<std::list<blockLightMod>> blockLightModsFromMinusX;
-		threadsafe<std::list<blockLightMod>> blockLightModsFromPlusY;
-		threadsafe<std::list<blockLightMod>> blockLightModsFromMinusY;
-		threadsafe<std::list<blockLightMod>> blockLightModsFromPlusZ;
-		threadsafe<std::list<blockLightMod>> blockLightModsFromMinusZ;
+		threadsafe<blockLightsByNeighbor> blockLightsFromNeighbor;
 	
 	};
 
