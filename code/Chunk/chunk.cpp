@@ -285,64 +285,6 @@ namespace VoxelEng {
 
     }
 
-    // TODO. MOVER AL FINAL DEL FICHERO.
-    void chunk::placeNewBlock(unsigned short& actualLocalID, const block& newBlock) {
-
-        unsigned int newGlobalID = newBlock.intID(),
-                     oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
-        needsRemesh_ = needsRemesh_ || oldGlobalID != newGlobalID;
-
-        int a = -1;
-        if (actualLocalID)
-            a = palette_.getT2(actualLocalID);
-
-        if (actualLocalID) {
-
-            if (paletteCount_.at(actualLocalID) == 1) { // The old local ID is no longer used at (x,y,z).
-
-                palette_.eraseT1(actualLocalID);
-                paletteCount_.erase(actualLocalID);
-                freeLocalIDs_.insert(actualLocalID);
-
-            }
-            else
-                paletteCount_.at(actualLocalID)--;
-
-        }
-
-        if (newGlobalID == 0) // The new block is an empty block.
-            actualLocalID = 0;
-        else {
-
-            if (palette_.containsT2(newGlobalID)) { // The new block already has a relation in the palette.
-
-                actualLocalID = palette_.getT1(newGlobalID); 
-                paletteCount_.at(actualLocalID)++;
-
-            }
-            else { // The new block does not have an associated local ID in the palette.
-
-                if (freeLocalIDs_.empty()) { 
-
-                    actualLocalID = palette_.size() + 1;
-
-                }
-                else {
-
-                    actualLocalID = *freeLocalIDs_.begin();
-                    freeLocalIDs_.erase(actualLocalID);
-
-                }
-
-                palette_.insert(actualLocalID, newGlobalID);
-                paletteCount_[actualLocalID] = 1;
-
-            }
-
-        }
-
-    }
-
     void chunk::setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification) {
 
         unsigned short oldLocalID = 0;
@@ -1102,8 +1044,10 @@ namespace VoxelEng {
         unsigned short localID = 0;
         vec3 neighborOffset;
         std::deque<blockLightMod> floodLightsInstances;
-        neighborsInfo* neighborsInfoPtr = nullptr;
         bool blockLightChecked[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+        neighborsInfo* neighborsInfoPtr = nullptr;
+        threadsafe<std::list<blockLightMod>>* list = nullptr;
+        blockLightMod* mod = nullptr;
 
         for (auto it = floodPointLightPositions_.cbegin(); it != floodPointLightPositions_.cend(); it++) {
 
@@ -1153,29 +1097,56 @@ namespace VoxelEng {
                             }
                             else if (neighborOffset.x == 1) {
                             
-                                // Push light to neighbor +1 0 0
-                                neighborsInfoPtr = cacheNeighborsInfo[vec3FixedNorth]; // Get the neighbor.
-                                neighborsInfoPtr->blockLightsFromNeighbor.lock();
-                                threadsafe<std::list<blockLightMod>>& list = 
-                                    neighborsInfoPtr->blockLightsFromNeighbor.get()[basicVec3FixedSouth]; // And pass it the data from this chunk.
-                                neighborsInfoPtr->blockLightsFromNeighbor.unlock();
+                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, {1, 0, 0});
 
-                                list.lock();
-                                blockLightMod& mod = list.get().emplace_back();
-                                mod.color = floodLight.color;
-                                mod.intensity = floodLight.intensity - 1;
-                                mod.pos.x = 0;
-                                mod.pos.y = pos.y;
-                                mod.pos.z = pos.z;
-                                list.unlock();
+                                if (neighborOffset.y == 1) {
+                                
+                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 1, 0 });
+
+                                    if (neighborOffset.z == 1) {
+                                    
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 1, 1 });
+                                    
+                                    }
+                                    else if (neighborOffset.z == -1) {
+                                    
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 1, -1 });
+                                    
+                                    }
+                                
+                                }
+                                else if (neighborOffset.y == -1) {
+                                
+                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, -1, 0 });
+
+                                    if (neighborOffset.z == 1) {
+
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, -1, 1 });
+
+                                    }
+                                    else if (neighborOffset.z == -1) {
+
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, -1, -1 });
+
+                                    }
+                                
+                                }
+                                else {
+                                
+                                    if (neighborOffset.z == 1) {
+
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 0, 1 });
+
+                                    }
+                                    else if (neighborOffset.z == -1) {
+
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 0, -1 });
+
+                                    }
+                                
+                                }
 
                             }
-                            // MAÑANA
-                            // DO. IF IT SURPASSES +X, PUSH LIGHT TO NEIGHBOR +X 0 0
-                            // IF IT ALSO SURPASSES +Y, PUSH LIGHT TO +X +Y 0
-                            // IF IT ALSO SURPASSES -Y, PUSH LIGHT TO +X +Y 0
-                            // IF IT ALSO SURPASSES +Z, PUSH LIGHT TO +X 0 -Z
-                            // IF IT ALSO SURPASSES -Z, PUSH LIGHT TO +X 0 -Z
 
                             //-x
                             if (pos.x > 0 && blocksLocalIDs_[pos.x - 1][pos.y][pos.z] == 0) {
@@ -1185,21 +1156,54 @@ namespace VoxelEng {
                             }
                             else if (neighborOffset.x == -1) {
 
-                                // Push light to neighbor -1 0 0
-                                neighborsInfoPtr = cacheNeighborsInfo[vec3FixedSouth]; // Get the neighbor.
-                                neighborsInfoPtr->blockLightsFromNeighbor.lock();
-                                threadsafe<std::list<blockLightMod>>& list =
-                                    neighborsInfoPtr->blockLightsFromNeighbor.get()[basicVec3FixedNorth]; // And pass it the data from this chunk.
-                                neighborsInfoPtr->blockLightsFromNeighbor.unlock();
+                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 0, 0 });
 
-                                list.lock();
-                                blockLightMod& mod = list.get().emplace_back();
-                                mod.color = floodLight.color;
-                                mod.intensity = floodLight.intensity - 1;
-                                mod.pos.x = CHUNK_SIZE_LIMIT;
-                                mod.pos.y = pos.y;
-                                mod.pos.z = pos.z;
-                                list.unlock();
+                                if (neighborOffset.y == 1) {
+                                
+                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 1, 0 });
+
+                                    if (neighborOffset.z == 1) {
+                                    
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 1, 1 });
+                                    
+                                    }
+                                    else if (neighborOffset.z == -1) {
+                                    
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 1, -1 });
+                                    
+                                    }
+                                
+                                }
+                                else if (neighborOffset.y == -1) {
+                                
+                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, -1, 0 });
+
+                                    if (neighborOffset.z == 1) {
+
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, -1, 1 });
+
+                                    }
+                                    else if (neighborOffset.z == -1) {
+
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, -1, -1 });
+
+                                    }
+                                
+                                }
+                                else {
+                                
+                                    if (neighborOffset.z == 1) {
+
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 0, 1 });
+
+                                    }
+                                    else if (neighborOffset.z == -1) {
+
+                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 0, -1 });
+
+                                    }
+                                
+                                }
 
                             }
 
@@ -1209,11 +1213,43 @@ namespace VoxelEng {
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
 
                             }
+                            else if (neighborOffset.y == 1) {
+
+                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 1, 0 });
+
+                                if (neighborOffset.z == 1) {
+
+                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 1, 1 });
+
+                                }
+                                else if (neighborOffset.z == -1) {
+
+                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 1, -1 });
+
+                                }
+
+                            }
 
                             //-y
                             if (pos.y > 0 && blocksLocalIDs_[pos.x][pos.y - 1][pos.z] == 0) {
 
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+                            else if (neighborOffset.y == -1) {
+
+                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, -1, 0 });
+
+                                if (neighborOffset.z == 1) {
+
+                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, -1, 1 });
+
+                                }
+                                else if (neighborOffset.z == -1) {
+
+                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, -1, -1 });
+
+                                }
 
                             }
 
@@ -1223,11 +1259,21 @@ namespace VoxelEng {
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
 
                             }
+                            else if (neighborOffset.z == 1) {
+
+                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 0, 1 });
+
+                            }
 
                             //-z
                             if (pos.z > 0 && blocksLocalIDs_[pos.x][pos.y][pos.z - 1] == 0) {
 
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
+
+                            }
+                            else if (neighborOffset.z == -1) {
+
+                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 0, -1 });
 
                             }
 
@@ -1401,6 +1447,83 @@ namespace VoxelEng {
         blockNormals_ = nullptr;
 
         initialised_ = false;
+    
+    }
+
+    void chunk::placeNewBlock(unsigned short& actualLocalID, const block& newBlock) {
+
+        unsigned int newGlobalID = newBlock.intID(),
+            oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
+        needsRemesh_ = needsRemesh_ || oldGlobalID != newGlobalID;
+
+        int a = -1;
+        if (actualLocalID)
+            a = palette_.getT2(actualLocalID);
+
+        if (actualLocalID) {
+
+            if (paletteCount_.at(actualLocalID) == 1) { // The old local ID is no longer used at (x,y,z).
+
+                palette_.eraseT1(actualLocalID);
+                paletteCount_.erase(actualLocalID);
+                freeLocalIDs_.insert(actualLocalID);
+
+            }
+            else
+                paletteCount_.at(actualLocalID)--;
+
+        }
+
+        if (newGlobalID == 0) // The new block is an empty block.
+            actualLocalID = 0;
+        else {
+
+            if (palette_.containsT2(newGlobalID)) { // The new block already has a relation in the palette.
+
+                actualLocalID = palette_.getT1(newGlobalID);
+                paletteCount_.at(actualLocalID)++;
+
+            }
+            else { // The new block does not have an associated local ID in the palette.
+
+                if (freeLocalIDs_.empty()) {
+
+                    actualLocalID = palette_.size() + 1;
+
+                }
+                else {
+
+                    actualLocalID = *freeLocalIDs_.begin();
+                    freeLocalIDs_.erase(actualLocalID);
+
+                }
+
+                palette_.insert(actualLocalID, newGlobalID);
+                paletteCount_[actualLocalID] = 1;
+
+            }
+
+        }
+
+    }
+
+    void chunk::passLightToNeighbor(std::unordered_map<vec3, neighborsInfo*>& cacheNeighborsInfo, blockLightMod& floodLight, basicVec3& pos,
+        const vec3& neighborOffset) {
+    
+        neighborsInfo* neighborsInfoPtr = cacheNeighborsInfo[neighborOffset]; // Get the neighbor.
+        neighborsInfoPtr->blockLightsFromNeighbor.lock();
+        threadsafe<std::list<blockLightMod>>* list =
+            &neighborsInfoPtr->blockLightsFromNeighbor.get()[basicVec3{ (char)-neighborOffset.x, (char)-neighborOffset.y, (char)-neighborOffset.z }]; // And pass it the data from this chunk.
+        neighborsInfoPtr->blockLightsFromNeighbor.unlock();
+
+        list->lock();
+        blockLightMod* mod = &list->get().emplace_back();
+        mod->color = floodLight.color;
+        mod->intensity = floodLight.intensity - 1;
+        mod->pos.x = neighborOffset.x == 1 ? 0 : neighborOffset.x == -1 ? CHUNK_SIZE_LIMIT : pos.x;
+        mod->pos.y = neighborOffset.y == 1 ? 0 : neighborOffset.y == -1 ? CHUNK_SIZE_LIMIT : pos.y;
+        mod->pos.z = neighborOffset.z == 1 ? 0 : neighborOffset.z == -1 ? CHUNK_SIZE_LIMIT : pos.z;
+        list->unlock();
     
     }
 

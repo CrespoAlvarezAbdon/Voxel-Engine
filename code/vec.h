@@ -223,31 +223,31 @@ namespace VoxelEng {
 	const vec4 vec4Ones(1, 1, 1, 1);
 
 	/**
-	* @brief vec3 constant of the zero vector.
+	* @brief basicVec3 constant of the zero vector.
 	*/
 	const basicVec3 basicVec3Zero(0, 0, 0);
 	/**
-	* @brief vec3 constant poiting to the fixed up direction.
+	* @brief basicVec3 constant poiting to the fixed up direction.
 	*/
 	const basicVec3 basicVec3FixedUp(0, 1, 0);
 	/**
-	* @brief vec3 constant poiting to the fixed down direction.
+	* @brief basicVec3 constant poiting to the fixed down direction.
 	*/
 	const basicVec3 basicVec3FixedDown(0, -1, 0);
 	/**
-	* @brief vec3 constant poiting to the fixed north direction.
+	* @brief basicVec3 constant poiting to the fixed north direction.
 	*/
 	const basicVec3 basicVec3FixedNorth(1, 0, 0);
 	/**
-	* @brief vec3 constant poiting to the fixed south direction.
+	* @brief basicVec3 constant poiting to the fixed south direction.
 	*/
 	const basicVec3 basicVec3FixedSouth(-1, 0, 0);
 	/**
-	* @brief vec3 constant poiting to the fixed east direction.
+	* @brief basicVec3 constant poiting to the fixed east direction.
 	*/
 	const basicVec3 basicVec3FixedEast(0, 0, 1);
 	/**
-	* @brief vec3 constant poiting to the fixed west direction.
+	* @brief basicVec3 constant poiting to the fixed west direction.
 	*/
 	const basicVec3 basicVec3FixedWest(0, 0, -1);
 

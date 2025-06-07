@@ -572,6 +572,9 @@ namespace VoxelEng {
 		
 		void placeNewBlock(unsigned short& oldLocalID, const block& newBlock);
 
+		void passLightToNeighbor(std::unordered_map<vec3, neighborsInfo*>& cacheNeighborsInfo, blockLightMod& floodLight, basicVec3& pos,
+			const vec3& neighborOffset);
+
 	};
 
 	inline const Padded3DArray<unsigned short>& chunk::blocks() const {
