@@ -233,39 +233,74 @@ namespace VoxelEng {
 		chunkStatus status() const;
 
 		/**
-		* @brief Get the number of non-null blocks (blocks with ID != 0) that exist in the chunk.
+		* @brief Get the number of non-null opaque blocks (blocks with ID != 0) that exist in the chunk.
 		*/
-		unsigned short nBlocks() const;
+		unsigned short nOpaqueBlocks() const;
 
 		/**
-		* @brief Returns the number of non-null blocks in the chunk's +X edge.
+		* @brief Returns the number of non-null opaque blocks in the chunk's +X edge.
 		*/
-		unsigned short nBlocksPlusX() const;
+		unsigned short nOpaqueBlocksPlusX() const;
 
 		/**
-		* @brief Returns the number of non-null blocks in the chunk's -X edge.
+		* @brief Returns the number of non-null opaque blocks in the chunk's -X edge.
 		*/
-		unsigned short nBlocksMinusX() const;
+		unsigned short nOpaqueBlocksMinusX() const;
 
 		/**
-		* @brief Returns the number of non-null blocks in the chunk's +Y edge.
+		* @brief Returns the number of non-null opaque blocks in the chunk's +Y edge.
 		*/
-		unsigned short nBlocksPlusY() const;
+		unsigned short nOpaqueBlocksPlusY() const;
 
 		/**
-		* @brief Returns the number of non-null blocks in the chunk's -Y edge.
+		* @brief Returns the number of non-null opaque blocks in the chunk's -Y edge.
 		*/
-		unsigned short nBlocksMinusY() const;
+		unsigned short nOpaqueBlocksMinusY() const;
 
 		/**
-		* @brief Returns the number of non-null blocks in the chunk's +Z edge.
+		* @brief Returns the number of non-null opaque blocks in the chunk's +Z edge.
 		*/
-		unsigned short nBlocksPlusZ() const;
+		unsigned short nOpaqueBlocksPlusZ() const;
 
 		/**
-		* @brief Returns the number of non-null blocks in the chunk's -Z edge.
+		* @brief Returns the number of non-null opaque blocks in the chunk's -Z edge.
 		*/
-		unsigned short nBlocksMinusZ() const;
+		unsigned short nOpaqueBlocksMinusZ() const;
+
+		/**
+		* @brief Get the total number of non-null blocks (blocks with ID != 0) that exist in the chunk.
+		*/
+		unsigned short nTotalBlocks() const;
+
+		/**
+		* @brief Returns the total number of non-null blocks in the chunk's +X edge.
+		*/
+		unsigned short nTotalBlocksPlusX() const;
+
+		/**
+		* @brief Returns the total number of non-null blocks in the chunk's -X edge.
+		*/
+		unsigned short nTotalBlocksMinusX() const;
+
+		/**
+		* @brief Returns the total number of non-null blocks in the chunk's +Y edge.
+		*/
+		unsigned short nTotalBlocksPlusY() const;
+
+		/**
+		* @brief Returns the total number of non-null blocks in the chunk's -Y edge.
+		*/
+		unsigned short nTotalBlocksMinusY() const;
+
+		/**
+		* @brief Returns the total number of non-null blocks in the chunk's +Z edge.
+		*/
+		unsigned short nTotalBlocksPlusZ() const;
+
+		/**
+		* @brief Returns the total number of non-null blocks in the chunk's -Z edge.
+		*/
+		unsigned short nTotalBlocksMinusZ() const;
 
 		/**
 		* @brief Returns true if the specified block in in-chunk coordinates is
@@ -464,39 +499,74 @@ namespace VoxelEng {
 		void status(chunkStatus level);
 
 		/**
-		* @brief Set the number of non-null blocks (blocks with ID != 0) that exist in the chunk.
+		* @brief Set the number of non-null opaque blocks (blocks with ID != 0) that exist in the chunk.
 		*/
-		void nBlocks(unsigned short newValue);
+		void nOpaqueBlocks(unsigned short newValue);
 
 		/**
-		* @brief Set the number of non-null blocks in the chunk's +X edge.
+		* @brief Set the number of non-null opaque blocks in the chunk's +X edge.
 		*/
-		void nBlocksPlusX(unsigned short newValue);
+		void nOpaqueBlocksPlusX(unsigned short newValue);
 
 		/**
-		* @brief Set the number of non-null blocks in the chunk's -X edge.
+		* @brief Set the number of non-null opaque blocks in the chunk's -X edge.
 		*/
-		void nBlocksMinusX(unsigned short newValue);
+		void nOpaqueBlocksMinusX(unsigned short newValue);
 
 		/**
-		* @brief Set the number of non-null blocks in the chunk's +Y edge.
+		* @brief Set the number of non-null opaque blocks in the chunk's +Y edge.
 		*/
-		void nBlocksPlusY(unsigned short newValue);
+		void nOpaqueBlocksPlusY(unsigned short newValue);
 
 		/**
-		* @brief Set the number of non-null blocks in the chunk's -Y edge.
+		* @brief Set the number of non-null opaque blocks in the chunk's -Y edge.
 		*/
-		void nBlocksMinusY(unsigned short newValue);
+		void nOpaqueBlocksMinusY(unsigned short newValue);
 
 		/**
-		* @brief Set the number of non-null blocks in the chunk's +Z edge.
+		* @brief Set the number of non-null opaque blocks in the chunk's +Z edge.
 		*/
-		void nBlocksPlusZ(unsigned short newValue);
+		void nOpaqueBlocksPlusZ(unsigned short newValue);
 
 		/**
-		* @brief Set the number of non-null blocks in the chunk's -Z edge.
+		* @brief Set the number of non-null opaque blocks in the chunk's -Z edge.
 		*/
-		void nBlocksMinusZ(unsigned short newValue);
+		void nOpaqueBlocksMinusZ(unsigned short newValue);
+
+		/**
+		* @brief Set the total number of non-null blocks (blocks with ID != 0) that exist in the chunk.
+		*/
+		void nTotalBlocks(unsigned short newValue);
+
+		/**
+		* @brief Set the total number of non-null blocks in the chunk's +X edge.
+		*/
+		void nTotalBlocksPlusX(unsigned short newValue);
+
+		/**
+		* @brief Set the total number of non-null blocks in the chunk's -X edge.
+		*/
+		void nTotalBlocksMinusX(unsigned short newValue);
+
+		/**
+		* @brief Set the total number of non-null blocks in the chunk's +Y edge.
+		*/
+		void nTotalBlocksPlusY(unsigned short newValue);
+
+		/**
+		* @brief Set the total number of non-null blocks in the chunk's -Y edge.
+		*/
+		void nTotalBlocksMinusY(unsigned short newValue);
+
+		/**
+		* @brief Set the total number of non-null blocks in the chunk's +Z edge.
+		*/
+		void nTotalBlocksPlusZ(unsigned short newValue);
+
+		/**
+		* @brief Set the total number of non-null blocks in the chunk's -Z edge.
+		*/
+		void nTotalBlocksMinusZ(unsigned short newValue);
 
 		/**
 		* @brief Executed when the frontier chunk is unloaded.
@@ -541,13 +611,20 @@ namespace VoxelEng {
 
 		bool modified_;
 		
-		std::atomic<short> nBlocks_,
-						   nBlocksPlusX_,
-						   nBlocksMinusX_,
-						   nBlocksPlusY_,
-						   nBlocksMinusY_,
-						   nBlocksPlusZ_,
-						   nBlocksMinusZ_;
+		std::atomic<short> nOpaqueBlocks_;
+		std::atomic<short> nOpaqueBlocksPlusX_;
+		std::atomic<short> nOpaqueBlocksMinusX_;
+		std::atomic<short> nOpaqueBlocksPlusY_;
+		std::atomic<short> nOpaqueBlocksMinusY_;
+		std::atomic<short> nOpaqueBlocksPlusZ_;
+		std::atomic<short> nOpaqueBlocksMinusZ_;
+		std::atomic<short> nTotalBlocks_;
+		std::atomic<short> nTotalBlocksPlusX_;
+		std::atomic<short> nTotalBlocksMinusX_;
+		std::atomic<short> nTotalBlocksPlusY_;
+		std::atomic<short> nTotalBlocksMinusY_;
+		std::atomic<short> nTotalBlocksPlusZ_;
+		std::atomic<short> nTotalBlocksMinusZ_;
 		std::atomic<bool> needsRemesh_;
 
 		std::atomic<chunkStatus> loadLevel_;
@@ -649,45 +726,87 @@ namespace VoxelEng {
 
 	}
 
-	inline unsigned short chunk::nBlocks() const {
+	inline unsigned short chunk::nOpaqueBlocks() const {
 
-		return nBlocks_;
+		return nOpaqueBlocks_;
 
 	}
 
-	inline unsigned short chunk::nBlocksPlusX() const {
+	inline unsigned short chunk::nOpaqueBlocksPlusX() const {
 	
-		return nBlocksPlusX_;
+		return nOpaqueBlocksPlusX_;
 	
 	}
 
-	inline unsigned short chunk::nBlocksMinusX() const {
+	inline unsigned short chunk::nOpaqueBlocksMinusX() const {
 
-		return nBlocksMinusX_;
-
-	}
-
-	inline unsigned short chunk::nBlocksPlusY() const {
-
-		return nBlocksPlusY_;
+		return nOpaqueBlocksMinusX_;
 
 	}
 
-	inline unsigned short chunk::nBlocksMinusY() const {
+	inline unsigned short chunk::nOpaqueBlocksPlusY() const {
 
-		return nBlocksMinusY_;
-
-	}
-
-	inline unsigned short chunk::nBlocksPlusZ() const {
-
-		return nBlocksPlusZ_;
+		return nOpaqueBlocksPlusY_;
 
 	}
 
-	inline unsigned short chunk::nBlocksMinusZ() const {
+	inline unsigned short chunk::nOpaqueBlocksMinusY() const {
 
-		return nBlocksMinusZ_;
+		return nOpaqueBlocksMinusY_;
+
+	}
+
+	inline unsigned short chunk::nOpaqueBlocksPlusZ() const {
+
+		return nOpaqueBlocksPlusZ_;
+
+	}
+
+	inline unsigned short chunk::nOpaqueBlocksMinusZ() const {
+
+		return nOpaqueBlocksMinusZ_;
+
+	}
+
+	inline unsigned short chunk::nTotalBlocks() const {
+
+		return nTotalBlocks_;
+
+	}
+
+	inline unsigned short chunk::nTotalBlocksPlusX() const {
+
+		return nTotalBlocksPlusX_;
+
+	}
+
+	inline unsigned short chunk::nTotalBlocksMinusX() const {
+
+		return nTotalBlocksMinusX_;
+
+	}
+
+	inline unsigned short chunk::nTotalBlocksPlusY() const {
+
+		return nTotalBlocksPlusY_;
+
+	}
+
+	inline unsigned short chunk::nTotalBlocksMinusY() const {
+
+		return nTotalBlocksMinusY_;
+
+	}
+
+	inline unsigned short chunk::nTotalBlocksPlusZ() const {
+
+		return nTotalBlocksPlusZ_;
+
+	}
+
+	inline unsigned short chunk::nTotalBlocksMinusZ() const {
+
+		return nTotalBlocksMinusZ_;
 
 	}
 
@@ -823,45 +942,87 @@ namespace VoxelEng {
 
 	}
 
-	inline void chunk::nBlocks(unsigned short newValue) {
+	inline void chunk::nOpaqueBlocks(unsigned short newValue) {
 
-		nBlocks_ = newValue;
-
-	}
-
-	inline void chunk::nBlocksPlusX(unsigned short newValue) {
-
-		nBlocksPlusX_ = newValue;
+		nOpaqueBlocks_ = newValue;
 
 	}
 
-	inline void chunk::nBlocksMinusX(unsigned short newValue) {
+	inline void chunk::nOpaqueBlocksPlusX(unsigned short newValue) {
 
-		nBlocksMinusX_ = newValue;
-
-	}
-
-	inline void chunk::nBlocksPlusY(unsigned short newValue) {
-
-		nBlocksPlusY_ = newValue;
+		nOpaqueBlocksPlusX_ = newValue;
 
 	}
 
-	inline void chunk::nBlocksMinusY(unsigned short newValue) {
+	inline void chunk::nOpaqueBlocksMinusX(unsigned short newValue) {
 
-		nBlocksMinusY_ = newValue;
-
-	}
-
-	inline void chunk::nBlocksPlusZ(unsigned short newValue) {
-
-		nBlocksPlusZ_ = newValue;
+		nOpaqueBlocksMinusX_ = newValue;
 
 	}
 
-	inline void chunk::nBlocksMinusZ(unsigned short newValue) {
+	inline void chunk::nOpaqueBlocksPlusY(unsigned short newValue) {
 
-		nBlocksMinusZ_ = newValue;
+		nOpaqueBlocksPlusY_ = newValue;
+
+	}
+
+	inline void chunk::nOpaqueBlocksMinusY(unsigned short newValue) {
+
+		nOpaqueBlocksMinusY_ = newValue;
+
+	}
+
+	inline void chunk::nOpaqueBlocksPlusZ(unsigned short newValue) {
+
+		nOpaqueBlocksPlusZ_ = newValue;
+
+	}
+
+	inline void chunk::nOpaqueBlocksMinusZ(unsigned short newValue) {
+
+		nOpaqueBlocksMinusZ_ = newValue;
+
+	}
+
+	inline void chunk::nTotalBlocks(unsigned short newValue) {
+
+		nTotalBlocks_ = newValue;
+
+	}
+
+	inline void chunk::nTotalBlocksPlusX(unsigned short newValue) {
+
+		nTotalBlocksPlusX_ = newValue;
+
+	}
+
+	inline void chunk::nTotalBlocksMinusX(unsigned short newValue) {
+
+		nTotalBlocksMinusX_ = newValue;
+
+	}
+
+	inline void chunk::nTotalBlocksPlusY(unsigned short newValue) {
+
+		nTotalBlocksPlusY_ = newValue;
+
+	}
+
+	inline void chunk::nTotalBlocksMinusY(unsigned short newValue) {
+
+		nTotalBlocksMinusY_ = newValue;
+
+	}
+
+	inline void chunk::nTotalBlocksPlusZ(unsigned short newValue) {
+
+		nTotalBlocksPlusZ_ = newValue;
+
+	}
+
+	inline void chunk::nTotalBlocksMinusZ(unsigned short newValue) {
+
+		nTotalBlocksMinusZ_ = newValue;
 
 	}
 
@@ -1561,7 +1722,7 @@ namespace VoxelEng {
 		*/
 		static void loadChunkJob(void* data);
 
-		static void onLoadChunkJobFinish(chunk* c);
+		static void onLoadChunkJobFinish(chunk* c, bool loadedFromDisk);
 
 		static void loadChunkJobPass2(void* data);
 

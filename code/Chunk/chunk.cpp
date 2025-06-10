@@ -72,13 +72,20 @@ namespace VoxelEng {
     : blocksLocalIDs_(16, 16, 16, 1, 0),
       modified_(false),
       needsRemesh_(false),
-      nBlocks_(0),
-      nBlocksPlusX_(0),
-      nBlocksMinusX_(0),
-      nBlocksPlusY_(0),
-      nBlocksMinusY_(0),
-      nBlocksPlusZ_(0),
-      nBlocksMinusZ_(0),
+      nOpaqueBlocks_(0),
+      nOpaqueBlocksPlusX_(0),
+      nOpaqueBlocksMinusX_(0),
+      nOpaqueBlocksPlusY_(0),
+      nOpaqueBlocksMinusY_(0),
+      nOpaqueBlocksPlusZ_(0),
+      nOpaqueBlocksMinusZ_(0),
+      nTotalBlocks_(0),
+      nTotalBlocksPlusX_(0),
+      nTotalBlocksMinusX_(0),
+      nTotalBlocksPlusY_(0),
+      nTotalBlocksMinusY_(0),
+      nTotalBlocksPlusZ_(0),
+      nTotalBlocksMinusZ_(0),
       loadLevel_(chunkStatus::NOTLOADED),
       chunkPos_(vec3Zero) {
 
@@ -91,13 +98,20 @@ namespace VoxelEng {
     : blocksLocalIDs_(16, 16, 16, 1, 0),
       modified_(false),
       needsRemesh_(false),
-      nBlocks_(0),
-      nBlocksPlusX_(0),
-      nBlocksMinusX_(0),
-      nBlocksPlusY_(0),
-      nBlocksMinusY_(0),
-      nBlocksPlusZ_(0),
-      nBlocksMinusZ_(0),
+      nOpaqueBlocks_(0),
+      nOpaqueBlocksPlusX_(0),
+      nOpaqueBlocksMinusX_(0),
+      nOpaqueBlocksPlusY_(0),
+      nOpaqueBlocksMinusY_(0),
+      nOpaqueBlocksPlusZ_(0),
+      nOpaqueBlocksMinusZ_(0),
+      nTotalBlocks_(0),
+      nTotalBlocksPlusX_(0),
+      nTotalBlocksMinusX_(0),
+      nTotalBlocksPlusY_(0),
+      nTotalBlocksMinusY_(0),
+      nTotalBlocksPlusZ_(0),
+      nTotalBlocksMinusZ_(0),
       loadLevel_(chunkStatus::NOTLOADED),
       chunkPos_(vec3Zero) {
 
@@ -113,13 +127,20 @@ namespace VoxelEng {
     : blocksLocalIDs_(c.blocksLocalIDs_),
       modified_(c.modified_),
       needsRemesh_(c.needsRemesh_.load()),
-      nBlocks_(c.nBlocks_.load()),
-      nBlocksPlusX_(c.nBlocksPlusX_.load()),
-      nBlocksMinusX_(c.nBlocksMinusX_.load()),
-      nBlocksPlusY_(c.nBlocksPlusY_.load()),
-      nBlocksMinusY_(c.nBlocksMinusY_.load()),
-      nBlocksPlusZ_(c.nBlocksPlusZ_.load()),
-      nBlocksMinusZ_(c.nBlocksMinusZ_.load()),
+      nOpaqueBlocks_(c.nOpaqueBlocks_.load()),
+      nOpaqueBlocksPlusX_(c.nOpaqueBlocksPlusX_.load()),
+      nOpaqueBlocksMinusX_(c.nOpaqueBlocksMinusX_.load()),
+      nOpaqueBlocksPlusY_(c.nOpaqueBlocksPlusY_.load()),
+      nOpaqueBlocksMinusY_(c.nOpaqueBlocksMinusY_.load()),
+      nOpaqueBlocksPlusZ_(c.nOpaqueBlocksPlusZ_.load()),
+      nOpaqueBlocksMinusZ_(c.nOpaqueBlocksMinusZ_.load()),
+      nTotalBlocks_(c.nTotalBlocks_.load()),
+      nTotalBlocksPlusX_(c.nTotalBlocksPlusX_.load()),
+      nTotalBlocksMinusX_(c.nTotalBlocksMinusX_.load()),
+      nTotalBlocksPlusY_(c.nTotalBlocksPlusY_.load()),
+      nTotalBlocksMinusY_(c.nTotalBlocksMinusY_.load()),
+      nTotalBlocksPlusZ_(c.nTotalBlocksPlusZ_.load()),
+      nTotalBlocksMinusZ_(c.nTotalBlocksMinusZ_.load()),
       loadLevel_(c.loadLevel_.load()),
       chunkPos_(c.chunkPos_) {
 
@@ -238,9 +259,10 @@ namespace VoxelEng {
         modified_ = modified_ || (blockWasModified && modification);
 
         if (!oldLocalID && actualLocalID)
-            nBlocks_++;
+            nTotalBlocks_++;
         else if (oldLocalID && !actualLocalID)
-            nBlocks_--;
+            nTotalBlocks_--;
+        nOpaqueBlocks_ += (b.opacity() == blockOpacity::OPAQUEBLOCK) - (oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
         // Update block light information.
        
@@ -285,7 +307,7 @@ namespace VoxelEng {
 
     }
 
-    void chunk::setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification) {
+    void chunk::setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& b, bool modification) {
 
         unsigned short oldLocalID = 0;
         bool blockWasModified = false;
@@ -294,80 +316,105 @@ namespace VoxelEng {
             logger::errorLog("No block view direction was specified");
         else if (neighbor == blockViewDir::PLUSX) {
 
+            // TODO. REFACTOR THIS INTO A METHOD.
             unsigned short& actualLocalID = blocksLocalIDs_[CHUNK_SIZE][firstIndex][secondIndex];
             oldLocalID = actualLocalID;
-            placeNewBlock(actualLocalID, block);
+            unsigned short oldLocalID = actualLocalID;
+            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
+            const block& oldB = block::getBlockC(oldGlobalID);
+            placeNewBlock(actualLocalID, b);
             blockWasModified = oldLocalID != actualLocalID;
             needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[CHUNK_SIZE_LIMIT][firstIndex][secondIndex];
             if (!oldLocalID && actualLocalID)
-                nBlocksPlusX_++;
+                nTotalBlocksPlusX_++;
             else if (oldLocalID && !actualLocalID)
-                nBlocksPlusX_--;
+                nTotalBlocksPlusX_--;
+            nOpaqueBlocksPlusX_ += (b.opacity() == blockOpacity::OPAQUEBLOCK) - (oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
         }
         else if (neighbor == blockViewDir::NEGX) {
 
             unsigned short& actualLocalID = blocksLocalIDs_[-1][firstIndex][secondIndex];
             oldLocalID = actualLocalID;
-            placeNewBlock(actualLocalID, block);
+            unsigned short oldLocalID = actualLocalID;
+            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
+            const block& oldB = block::getBlockC(oldGlobalID);
+            placeNewBlock(actualLocalID, b);
             blockWasModified = oldLocalID != actualLocalID;
             needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[0][firstIndex][secondIndex];
             if (!oldLocalID && actualLocalID)
-                nBlocksMinusX_++;
+                nTotalBlocksMinusX_++;
             else if (oldLocalID && !actualLocalID)
-                nBlocksMinusX_--;
+                nTotalBlocksMinusX_--;
+            nOpaqueBlocksMinusX_ += (b.opacity() == blockOpacity::OPAQUEBLOCK) - (oldB.opacity() == blockOpacity::OPAQUEBLOCK);
             
         }
         else if (neighbor == blockViewDir::PLUSY) {
 
             unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][CHUNK_SIZE][secondIndex];
             oldLocalID = actualLocalID;
-            placeNewBlock(actualLocalID, block);
+            unsigned short oldLocalID = actualLocalID;
+            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
+            const block& oldB = block::getBlockC(oldGlobalID);
+            placeNewBlock(actualLocalID, b);
             blockWasModified = oldLocalID != actualLocalID;
             needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[firstIndex][CHUNK_SIZE_LIMIT][secondIndex];
             if (!oldLocalID && actualLocalID)
-                nBlocksPlusY_++;
+                nTotalBlocksPlusY_++;
             else if (oldLocalID && !actualLocalID)
-                nBlocksPlusY_--;
+                nTotalBlocksPlusY_--;
+            nOpaqueBlocksPlusY_ += (b.opacity() == blockOpacity::OPAQUEBLOCK) - (oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
         }
         else if (neighbor == blockViewDir::NEGY) {
 
             unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][-1][secondIndex];
             oldLocalID = actualLocalID;
-            placeNewBlock(actualLocalID, block);
+            unsigned short oldLocalID = actualLocalID;
+            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
+            const block& oldB = block::getBlockC(oldGlobalID);
+            placeNewBlock(actualLocalID, b);
             blockWasModified = oldLocalID != actualLocalID;
             needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[firstIndex][0][secondIndex];
             if (!oldLocalID && actualLocalID)
-                nBlocksMinusY_++;
+                nTotalBlocksMinusY_++;
             else if (oldLocalID && !actualLocalID)
-                nBlocksMinusY_--;
+                nTotalBlocksMinusY_--;
+            nOpaqueBlocksMinusY_ += (b.opacity() == blockOpacity::OPAQUEBLOCK) - (oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
         }
         else if (neighbor == blockViewDir::PLUSZ) {
 
             unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][secondIndex][CHUNK_SIZE];
             oldLocalID = actualLocalID;
-            placeNewBlock(actualLocalID, block);
+            unsigned short oldLocalID = actualLocalID;
+            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
+            const block& oldB = block::getBlockC(oldGlobalID);
+            placeNewBlock(actualLocalID, b);
             blockWasModified = oldLocalID != actualLocalID;
             needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[firstIndex][secondIndex][CHUNK_SIZE_LIMIT];
             if (!oldLocalID && actualLocalID)
-                nBlocksPlusZ_++;
+                nTotalBlocksPlusZ_++;
             else if (oldLocalID && !actualLocalID)
-                nBlocksPlusZ_--;
+                nTotalBlocksPlusZ_--;
+            nOpaqueBlocksPlusZ_ += (b.opacity() == blockOpacity::OPAQUEBLOCK) - (oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
         }
         else if (neighbor == blockViewDir::NEGZ) {
 
             unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][secondIndex][-1];
             oldLocalID = actualLocalID;
-            placeNewBlock(actualLocalID, block);
+            unsigned short oldLocalID = actualLocalID;
+            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
+            const block& oldB = block::getBlockC(oldGlobalID);
+            placeNewBlock(actualLocalID, b);
             blockWasModified = oldLocalID != actualLocalID;
             needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[firstIndex][secondIndex][0];
             if (!oldLocalID && actualLocalID)
-                nBlocksMinusZ_++;
+                nTotalBlocksMinusZ_++;
             else if (oldLocalID && !actualLocalID)
-                nBlocksMinusZ_--;
+                nTotalBlocksMinusZ_--;
+            nOpaqueBlocksMinusZ_ += (b.opacity() == blockOpacity::OPAQUEBLOCK) - (oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
         }
         else
@@ -424,7 +471,7 @@ namespace VoxelEng {
             vertex aux;
             const block* bNeighbor = nullptr;
             unsigned short neighborLocalID = 0;
-            if (nBlocks_ && nBlocks_ < nBlocksChunk)
+            if (nTotalBlocks_ && nOpaqueBlocks_ < nBlocksChunk)
                 for (x = 0; x < CHUNK_SIZE; x++)
                     for (y = 0; y < CHUNK_SIZE; y++)
                         for (z = 0; z < CHUNK_SIZE; z++) {
@@ -773,7 +820,7 @@ namespace VoxelEng {
 
                         }
 
-            if (nBlocksPlusZ_) {
+            if (nTotalBlocksPlusZ_) {
             
                 for (x = 0; x < CHUNK_SIZE; x++)
                     for (y = 0; y < CHUNK_SIZE; y++) {
@@ -813,7 +860,7 @@ namespace VoxelEng {
             
             }
 
-            if (nBlocksMinusZ_) {
+            if (nTotalBlocksMinusZ_) {
 
                 for (x = 0; x < CHUNK_SIZE; x++)
                     for (y = 0; y < CHUNK_SIZE; y++) {
@@ -852,7 +899,7 @@ namespace VoxelEng {
 
             }
 
-            if (nBlocksPlusY_) {
+            if (nTotalBlocksPlusY_) {
 
                 for (x = 0; x < CHUNK_SIZE; x++)
                     for (z = 0; z < CHUNK_SIZE; z++) {
@@ -891,7 +938,7 @@ namespace VoxelEng {
 
             }
             
-            if (nBlocksMinusY_) {
+            if (nTotalBlocksMinusY_) {
 
                 for (x = 0; x < CHUNK_SIZE; x++)
                     for (z = 0; z < CHUNK_SIZE; z++) {
@@ -930,7 +977,7 @@ namespace VoxelEng {
 
             }
 
-            if (nBlocksPlusX_) {
+            if (nTotalBlocksPlusX_) {
 
                 for (y = 0; y < CHUNK_SIZE; y++)
                     for (z = 0; z < CHUNK_SIZE; z++) {
@@ -969,7 +1016,7 @@ namespace VoxelEng {
 
             }
 
-            if (nBlocksMinusX_) {
+            if (nTotalBlocksMinusX_) {
 
                 for (y = 0; y < CHUNK_SIZE; y++)
                     for (z = 0; z < CHUNK_SIZE; z++) {
@@ -1407,13 +1454,20 @@ namespace VoxelEng {
         blocksMutex_.lock();
 
         needsRemesh_ = true;
-        nBlocks_ = 0;
-        nBlocksPlusX_ = 0;
-        nBlocksMinusX_ = 0;
-        nBlocksPlusY_ = 0;
-        nBlocksMinusY_ = 0;
-        nBlocksPlusZ_ = 0;
-        nBlocksMinusZ_ = 0;
+        nOpaqueBlocks_ = 0;
+        nOpaqueBlocksPlusX_ = 0;
+        nOpaqueBlocksMinusX_ = 0;
+        nOpaqueBlocksPlusY_ = 0;
+        nOpaqueBlocksMinusY_ = 0;
+        nOpaqueBlocksPlusZ_ = 0;
+        nOpaqueBlocksMinusZ_ = 0;
+        nTotalBlocks_ = 0;
+        nTotalBlocksPlusX_ = 0;
+        nTotalBlocksMinusX_ = 0;
+        nTotalBlocksPlusY_ = 0;
+        nTotalBlocksMinusY_ = 0;
+        nTotalBlocksPlusZ_ = 0;
+        nTotalBlocksMinusZ_ = 0;
 
         blocksLocalIDs_.fill(0);
 
@@ -2282,13 +2336,18 @@ namespace VoxelEng {
 
         data += '@';
 
+        // MAÑANA. HAY QUE GUARDAR LAS LUCES DE LOS CHUNKS VECINOS.
         const std::unordered_set<vec3>& floodPointLightPositions = c->getFloodPointLightPositions();
         for (auto it = floodPointLightPositions.cbegin(); it != floodPointLightPositions.cend(); it++)
             data += std::to_string((int)it->x) + '|' + std::to_string((int)it->y) + '|' + std::to_string((int)it->z) + '|';
 
         data += '@';
 
-        data += std::to_string(c->nBlocks()) + '|' + std::to_string(c->nBlocksPlusX()) + '|' + std::to_string(c->nBlocksMinusX()) + '|' + std::to_string(c->nBlocksPlusY()) + '|' + std::to_string(c->nBlocksMinusY()) + '|' + std::to_string(c->nBlocksPlusZ()) + '|' + std::to_string(c->nBlocksMinusZ()) + '|';
+        data += std::to_string(c->nOpaqueBlocks()) + '|' + std::to_string(c->nOpaqueBlocksPlusX()) + '|' + std::to_string(c->nOpaqueBlocksMinusX()) + '|' + std::to_string(c->nOpaqueBlocksPlusY()) + '|' + std::to_string(c->nOpaqueBlocksMinusY()) + '|' + std::to_string(c->nOpaqueBlocksPlusZ()) + '|' + std::to_string(c->nOpaqueBlocksMinusZ()) + '|';
+        
+        data += '@';
+        
+        data += std::to_string(c->nTotalBlocks()) + '|' + std::to_string(c->nTotalBlocksPlusX()) + '|' + std::to_string(c->nTotalBlocksMinusX()) + '|' + std::to_string(c->nTotalBlocksPlusY()) + '|' + std::to_string(c->nTotalBlocksMinusY()) + '|' + std::to_string(c->nTotalBlocksPlusZ()) + '|' + std::to_string(c->nTotalBlocksMinusZ()) + '|';
 
         c->blockDataMutex().unlock_shared();
 
@@ -2449,6 +2508,50 @@ namespace VoxelEng {
 
         c = data[++index]; // Skip the '@' delimiter character.
         unsigned int state = 0;
+        while (c != '@') {
+
+            while (c != '|') {
+
+                word += c;
+
+                c = data[++index];
+
+            }
+
+            switch (state) {
+
+            case 0:
+                chunk->nOpaqueBlocks(sto<unsigned short>(word));
+                break;
+            case 1:
+                chunk->nOpaqueBlocksPlusX(sto<unsigned short>(word));
+                break;
+            case 2:
+                chunk->nOpaqueBlocksMinusX(sto<unsigned short>(word));
+                break;
+            case 3:
+                chunk->nOpaqueBlocksPlusY(sto<unsigned short>(word));
+                break;
+            case 4:
+                chunk->nOpaqueBlocksMinusY(sto<unsigned short>(word));
+                break;
+            case 5:
+                chunk->nOpaqueBlocksPlusZ(sto<unsigned short>(word));
+                break;
+            case 6:
+                chunk->nOpaqueBlocksMinusZ(sto<unsigned short>(word));
+                break;
+
+            }
+
+            word.clear();
+            c = data[++index];
+            state++;
+
+        }
+
+        c = data[++index]; // Skip the '@' delimiter character.
+        state = 0;
         while (index < nBytes) {
 
             while (c != '|') {
@@ -2462,25 +2565,25 @@ namespace VoxelEng {
             switch (state) {
 
             case 0:
-                chunk->nBlocks(sto<unsigned short>(word));
+                chunk->nTotalBlocks(sto<unsigned short>(word));
                 break;
             case 1:
-                chunk->nBlocksPlusX(sto<unsigned short>(word));
+                chunk->nTotalBlocksPlusX(sto<unsigned short>(word));
                 break;
             case 2:
-                chunk->nBlocksMinusX(sto<unsigned short>(word));
+                chunk->nTotalBlocksMinusX(sto<unsigned short>(word));
                 break;
             case 3:
-                chunk->nBlocksPlusY(sto<unsigned short>(word));
+                chunk->nTotalBlocksPlusY(sto<unsigned short>(word));
                 break;
             case 4:
-                chunk->nBlocksMinusY(sto<unsigned short>(word));
+                chunk->nTotalBlocksMinusY(sto<unsigned short>(word));
                 break;
             case 5:
-                chunk->nBlocksPlusZ(sto<unsigned short>(word));
+                chunk->nTotalBlocksPlusZ(sto<unsigned short>(word));
                 break;
             case 6:
-                chunk->nBlocksMinusZ(sto<unsigned short>(word));
+                chunk->nTotalBlocksMinusZ(sto<unsigned short>(word));
                 break;
 
             }
@@ -2756,6 +2859,8 @@ namespace VoxelEng {
             c->status(chunkStatus::DECORATED);
 
             remesh(c, false, true);
+
+            onLoadChunkJobFinish(c, true);
         
         }   
         else { // Generate new chunk.
@@ -2764,13 +2869,13 @@ namespace VoxelEng {
 
             c->status(chunkStatus::BASICTERRAIN);
 
-            onLoadChunkJobFinish(c);
+            onLoadChunkJobFinish(c, false);
             
         }
 
     }
 
-    void chunkManager::onLoadChunkJobFinish(chunk* c) {
+    void chunkManager::onLoadChunkJobFinish(chunk* c, bool loadedFromDisk) {
     
         const vec3& chunkPos = c->chunkPos();
 
@@ -2778,7 +2883,7 @@ namespace VoxelEng {
         neighborsInfo& info = chunkNeighborsInfo_[chunkPos];
         chunkNeighborsInfoMutex_.unlock();
 
-        if (++info.neighborsGenPass1Completed_ >= 27)
+        if (!loadedFromDisk && ++info.neighborsGenPass1Completed_ >= 27)
             issueChunkMeshJob(chunkJobType::LOAD2, c);
 
         vec3 neighborPos;
