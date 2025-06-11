@@ -222,10 +222,16 @@ namespace VoxelEng {
 		bool modified() const;
 
 		/**
-		* @brief Returns true if this chunk's mesh needs
-		* to be regenerated or false otherwise.
+		* @brief Get whether this chunk's mesh needs to be regenerated or not.
+		* @return Whether this chunk's mesh needs to be regenerated (true) or not (false).
 		*/
 		bool needsRemesh() const;
+
+		/**
+		* @brief Get whether this chunk was loaded from disk or not.
+		* @return Whether this chunk was loaded from disk (true) or not (false).
+		*/
+		bool loadedFromDisk() const;
 
 		/**
 		* @brief Returns the chunk's status.
@@ -451,10 +457,16 @@ namespace VoxelEng {
 		void unlockRenderingDataMutex();
 
 		/**
-		* @brief Set if this chunk's terrain has been modified and it's mesh needs
-		* to be regenerated.
+		* @brief Set wheter this chunk's terrain has been modified and it's mesh needs to be regenerated (true) or not (false).
+		* @param newValue Value to set to this flag.
 		*/
 		void needsRemesh(bool newValue);
+		
+		/**
+		* @brief Set whether this chunk has been loaded from disk (true) or has been generated (false).
+		* @param newValue Value to set to this flag.
+		*/
+		void loadedFromDisk(bool newValue);
 
 		/**
 		* @brief Returns true if this chunk has been modified
@@ -626,6 +638,7 @@ namespace VoxelEng {
 		std::atomic<short> nTotalBlocksPlusZ_;
 		std::atomic<short> nTotalBlocksMinusZ_;
 		std::atomic<bool> needsRemesh_;
+		std::atomic<bool> loadedFromDisk_;
 
 		std::atomic<chunkStatus> loadLevel_;
 
@@ -718,6 +731,12 @@ namespace VoxelEng {
 
 		return needsRemesh_;
 
+	}
+
+	inline bool  chunk::loadedFromDisk() const {
+	
+		return loadedFromDisk_;
+	
 	}
 
 	inline chunkStatus chunk::status() const {
@@ -928,6 +947,12 @@ namespace VoxelEng {
 
 		needsRemesh_ = newValue;
 
+	}
+
+	inline void chunk::loadedFromDisk(bool newValue) {
+	
+		loadedFromDisk_ = newValue;
+	
 	}
 
 	inline void chunk::modified(bool newValue) {
@@ -1722,7 +1747,7 @@ namespace VoxelEng {
 		*/
 		static void loadChunkJob(void* data);
 
-		static void onLoadChunkJobFinish(chunk* c, bool loadedFromDisk);
+		static void onLoadChunkJobFinish(chunk* c);
 
 		static void loadChunkJobPass2(void* data);
 

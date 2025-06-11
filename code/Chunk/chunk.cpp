@@ -71,7 +71,6 @@ namespace VoxelEng {
     chunk::chunk()
     : blocksLocalIDs_(16, 16, 16, 1, 0),
       modified_(false),
-      needsRemesh_(false),
       nOpaqueBlocks_(0),
       nOpaqueBlocksPlusX_(0),
       nOpaqueBlocksMinusX_(0),
@@ -86,6 +85,8 @@ namespace VoxelEng {
       nTotalBlocksMinusY_(0),
       nTotalBlocksPlusZ_(0),
       nTotalBlocksMinusZ_(0),
+      needsRemesh_(false), 
+      loadedFromDisk_(false),
       loadLevel_(chunkStatus::NOTLOADED),
       chunkPos_(vec3Zero) {
 
@@ -97,7 +98,6 @@ namespace VoxelEng {
     chunk::chunk(bool empty, const vec3& chunkPos)
     : blocksLocalIDs_(16, 16, 16, 1, 0),
       modified_(false),
-      needsRemesh_(false),
       nOpaqueBlocks_(0),
       nOpaqueBlocksPlusX_(0),
       nOpaqueBlocksMinusX_(0),
@@ -113,6 +113,8 @@ namespace VoxelEng {
       nTotalBlocksPlusZ_(0),
       nTotalBlocksMinusZ_(0),
       loadLevel_(chunkStatus::NOTLOADED),
+      needsRemesh_(false),
+      loadedFromDisk_(false),
       chunkPos_(vec3Zero) {
 
         std::memset(blockLightColor_, 0, nBlocksChunk * sizeof(basicVec4));
@@ -126,7 +128,6 @@ namespace VoxelEng {
     chunk::chunk(chunk& c)
     : blocksLocalIDs_(c.blocksLocalIDs_),
       modified_(c.modified_),
-      needsRemesh_(c.needsRemesh_.load()),
       nOpaqueBlocks_(c.nOpaqueBlocks_.load()),
       nOpaqueBlocksPlusX_(c.nOpaqueBlocksPlusX_.load()),
       nOpaqueBlocksMinusX_(c.nOpaqueBlocksMinusX_.load()),
@@ -142,6 +143,8 @@ namespace VoxelEng {
       nTotalBlocksPlusZ_(c.nTotalBlocksPlusZ_.load()),
       nTotalBlocksMinusZ_(c.nTotalBlocksMinusZ_.load()),
       loadLevel_(c.loadLevel_.load()),
+      needsRemesh_(c.needsRemesh_.load()),
+      loadedFromDisk_(c.loadedFromDisk_.load()),
       chunkPos_(c.chunkPos_) {
 
         c.blocksMutex_.lock_shared();
@@ -1353,7 +1356,6 @@ namespace VoxelEng {
         neighborsInfoPtr.blockLightsFromNeighbor.lock();
         blockLightsByNeighbor& blockLightsByNeighborPtr = neighborsInfoPtr.blockLightsFromNeighbor.get();
         neighborsInfoPtr.blockLightsFromNeighbor.unlock();
-        // basicVec3, threadsafe<std::list<blockLightMod>>
         for (auto it = blockLightsByNeighborPtr.begin(); it != blockLightsByNeighborPtr.end(); it++) {
 
             it->second.lock();
@@ -2336,7 +2338,6 @@ namespace VoxelEng {
 
         data += '@';
 
-        // MAÑANA. HAY QUE GUARDAR LAS LUCES DE LOS CHUNKS VECINOS.
         const std::unordered_set<vec3>& floodPointLightPositions = c->getFloodPointLightPositions();
         for (auto it = floodPointLightPositions.cbegin(); it != floodPointLightPositions.cend(); it++)
             data += std::to_string((int)it->x) + '|' + std::to_string((int)it->y) + '|' + std::to_string((int)it->z) + '|';
@@ -2593,6 +2594,12 @@ namespace VoxelEng {
             state++;
 
         }
+
+        chunk->loadedFromDisk(true);
+
+        chunk->clearBlockLight();
+
+        chunk->recalculateBlockLight();
 
         chunk->needsRemesh(true); // TODO. EL BUG ES QUE SI MODIFICO UN BLOCK EN UN BORDE, TAMBIEN HAY QUE GUARDAR EL CHUNK VECINO QUE LE HACE FRONTERA.
     
@@ -2856,34 +2863,28 @@ namespace VoxelEng {
         
             deserializeChunk(c, world::loadChunk(c->chunkPos()));
 
-            c->status(chunkStatus::DECORATED);
-
-            remesh(c, false, true);
-
-            onLoadChunkJobFinish(c, true);
-        
         }   
         else { // Generate new chunk.
         
             worldGen::generate(*c);
-
-            c->status(chunkStatus::BASICTERRAIN);
-
-            onLoadChunkJobFinish(c, false);
             
         }
 
+        c->status(chunkStatus::BASICTERRAIN);
+
+        onLoadChunkJobFinish(c);
+
     }
 
-    void chunkManager::onLoadChunkJobFinish(chunk* c, bool loadedFromDisk) {
+    void chunkManager::onLoadChunkJobFinish(chunk* c) {
     
         const vec3& chunkPos = c->chunkPos();
 
         chunkNeighborsInfoMutex_.lock();
-        neighborsInfo& info = chunkNeighborsInfo_[chunkPos];
+        neighborsInfo& info = chunkNeighborsInfo_[chunkPos]; // TODO. LOS NEIGHBORINFO DEBEN DESAPARECER CUANDO UN CHUNK SE DESCARGA.
         chunkNeighborsInfoMutex_.unlock();
 
-        if (!loadedFromDisk && ++info.neighborsGenPass1Completed_ >= 27)
+        if (++info.neighborsGenPass1Completed_ >= 27)
             issueChunkMeshJob(chunkJobType::LOAD2, c);
 
         vec3 neighborPos;

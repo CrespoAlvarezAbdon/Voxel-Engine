@@ -280,6 +280,8 @@ namespace VoxelEng {
 
 	inline void worldGen::generate(chunk& chunk) {
 		
+		chunk.loadedFromDisk(false);
+
 		chunk.blockDataMutex().lock();
 		selectedGen_->generate_(chunk);
 		chunk.blockDataMutex().unlock();

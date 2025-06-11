@@ -16,7 +16,6 @@ namespace VoxelEng {
 	struct neighborsInfo {
 	
 		std::atomic<unsigned char> neighborsGenPass1Completed_;
-
 		threadsafe<blockLightsByNeighbor> blockLightsFromNeighbor;
 	
 	};
