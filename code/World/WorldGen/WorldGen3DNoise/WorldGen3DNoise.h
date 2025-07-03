@@ -216,9 +216,6 @@ namespace VoxelEng {
 
 		void surfaceLayer(chunk& chunk);
 
-		void lightingLayer(chunk& chunk);
-
-
 		// Utilities.
 
 		bool noiseMakesBlockAt(float x, float y, float z);

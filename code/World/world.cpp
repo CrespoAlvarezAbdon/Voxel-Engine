@@ -222,7 +222,7 @@ namespace VoxelEng {
 					auxVec3[fillingVec3Pos] = sto<float>(word);
 					fillingVec3Pos = 0;
 
-					player::globalPos(auxVec3);
+					player::globalPos(auxVec3, true);
 					break;
 
 				case 1:

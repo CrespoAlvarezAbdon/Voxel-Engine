@@ -73,7 +73,7 @@ namespace VoxelEng {
 	/**
 	* @brief The different stages that a chunk has during its lifetime.
 	*/
-	enum class chunkStatus { NOTLOADED = 0, BASICTERRAIN = 1, LOADPASS2 = 2, DECORATED = 3, MESHED = 4};
+	enum class chunkStatus { NOTLOADED = 0, BASICTERRAIN = 1, BASICTERRAINFROMDISK = 2, DECORATED = 3, MESHED = 4};
 
 	/**
 	* @brief Definition of the multiples types of jobs related to chunk management.
@@ -477,13 +477,8 @@ namespace VoxelEng {
 
 		/**
 		* @brief Regenerate the chunk's mesh. Returns true if the mesh contains vertices or false if it is empty.
-		* @param generationRemesh Whether this remesh operation is done after chunk generation, not after chunk loading or
-		* anything else that could trigger a remesh (true) or not (false).
-		* @param neighborProvidedLights Lights to apply in this remesh provided by a neighboring chunk (optional).
-		* @param dirFromNeighborToC The direction to reach the chunk to remesh from the neighboring chunk by moving one space
-		* in chunk-coordinates.
 		*/
-		bool renewMesh(bool generationRemesh);
+		bool renewMesh();
 
 		/**
 		* @brief Clear all data related to block light in the chunk.
@@ -586,6 +581,11 @@ namespace VoxelEng {
 		* after this one stops being loaded.
 		*/
 		void onUnloadAsFrontier();
+
+		/**
+		* @brief Things to execute just after finishing generation/loading from disk go here.
+		*/
+		void postGenPass();
 
 
 		// Destructors.
@@ -1469,6 +1469,8 @@ namespace VoxelEng {
 		*/
 		static void unloadFrontierChunk(const vec3& chunkPos);
 
+		static void undoNeighborInfo(chunk& c);
+
 		/**
 		* @brief Method called by the chunk management thread to use with infinite world types.
 		* It coordinates all meshing threads and manages the chunk unloading process
@@ -1546,12 +1548,12 @@ namespace VoxelEng {
 		* @brief Renews the mesh of the specified chunk and marks it if it is ready to be drawn.
 		* Sets the chunk's status to MESHED.
 		*/
-		static void remesh(chunk* c, bool isPriorityUpdate, bool remeshPostGeneration);
+		static void remesh(chunk* c, bool isPriorityUpdate);
 
 		/**
 		* @brief Renews the mesh of the specified chunk and marks it if it is ready to be drawn.
 		*/
-		static void renewMesh(const vec3& chunkPos, bool isPriorityUpdate, bool remeshPostGeneration);
+		static void renewMesh(const vec3& chunkPos, bool isPriorityUpdate);
 
 		/**
 		* @brief Returns the onChunkLoad chunkEvent associated with the chunk management system.
@@ -1720,6 +1722,8 @@ namespace VoxelEng {
 
 		static threadPool* chunkTasks_;
 		static threadPool* priorityChunkTasks_;
+
+		static std::unordered_map<vec3, unsigned int> currentJobsPerChunk_;
 
 		static atomicRecyclingPool<job>* loadChunkJobs_;
 		static atomicRecyclingPool<chunk> chunksPool_;

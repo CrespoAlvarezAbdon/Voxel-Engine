@@ -168,7 +168,7 @@ namespace VoxelEng {
 
 			}
 			
-			player::globalPos(worldGen::playerSpawnPos());
+			player::globalPos(worldGen::playerSpawnPos(), true);
 
 			game::setSaveSlot(slot);
 

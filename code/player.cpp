@@ -399,9 +399,9 @@ namespace VoxelEng {
         }
 
         // Update chunk-relative coordinates.
-        playerTransform_.chunkPosition.x = trunc(playerTransform_.position.x / CHUNK_SIZE);
-        playerTransform_.chunkPosition.y = trunc(playerTransform_.position.y / CHUNK_SIZE);
-        playerTransform_.chunkPosition.z = trunc(playerTransform_.position.z / CHUNK_SIZE);
+        playerTransform_.chunkPosition.x = std::floor(playerTransform_.position.x / CHUNK_SIZE);
+        playerTransform_.chunkPosition.y = std::floor(playerTransform_.position.y / CHUNK_SIZE);
+        playerTransform_.chunkPosition.z = std::floor(playerTransform_.position.z / CHUNK_SIZE);
 
         // Get and process mouse input.
         oldMouseX_ = mouseX_;

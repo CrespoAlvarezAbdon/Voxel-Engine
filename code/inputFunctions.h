@@ -272,6 +272,10 @@ namespace VoxelEng {
 	
 		chunk* c = chunkManager::getChunk(player::chunkPos());
 		c->status();
+
+		chunkManager::chunkNeighborsInfoMutex().lock();
+		neighborsInfo& info = chunkManager::chunkNeighborsInfo().at(c->chunkPos());
+		chunkManager::chunkNeighborsInfoMutex().unlock();
 	
 	}
 

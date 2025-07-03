@@ -58,7 +58,7 @@ namespace VoxelEng {
 
 	void WorldGen3DNoise::genPass2_(chunk& chunk) {
 
-		lightingLayer(chunk);
+		// PLACEHOLDER FOR STRUCTURE GENERATION
 
 	}
 
@@ -311,12 +311,6 @@ namespace VoxelEng {
 
 			}
 
-	}
-
-	void WorldGen3DNoise::lightingLayer(chunk& chunk) {
-	
-		chunk.recalculateNeighborBlockLight();
-	
 	}
 
 	// 'chunkLoadListener' class.

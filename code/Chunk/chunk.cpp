@@ -436,7 +436,7 @@ namespace VoxelEng {
 
     }
 
-    bool chunk::renewMesh(bool generationRemesh) {
+    bool chunk::renewMesh() {
 
         std::unique_lock<std::shared_mutex> lock(renderingDataMutex_);
 
@@ -1494,6 +1494,12 @@ namespace VoxelEng {
     
     }
 
+    void chunk::postGenPass() {
+    
+        recalculateNeighborBlockLight();
+    
+    }
+
     chunk::~chunk() {}
 
     void chunk::reset() {
@@ -1563,6 +1569,7 @@ namespace VoxelEng {
 
     }
 
+    // MAÑANA. QUITAR EL UNDO NEIGHBORINFO, CUANDO SE DESCARGA UN CHUNK SE QUITA SU NEIGHBORSINFO PORQUE REALMENTE AHI YA NO QUEDA MÁS INFO QUE USAR
     void chunk::passLightToNeighbor(std::unordered_map<vec3, neighborsInfo*>& cacheNeighborsInfo, blockLightMod& floodLight, basicVec3& pos,
         const vec3& neighborOffset) {
     
@@ -2083,6 +2090,8 @@ namespace VoxelEng {
 
             chunk* unloadedChunk = it->second;
 
+            undoNeighborInfo(*unloadedChunk);
+
             // Check if the chunk's neighbors become frontier chunks after it is unloaded.
             unloadedChunk->onUnloadAsFrontier();
 
@@ -2103,6 +2112,81 @@ namespace VoxelEng {
         
     }
 
+    void chunkManager::undoNeighborInfo(chunk& c) {
+    
+        // Remove neighborInfo data originating from this chunk.
+        const vec3& chunkPos = c.chunkPos();
+        chunkNeighborsInfoMutex_.lock();
+        auto info = chunkNeighborsInfo_.find(chunkPos);
+        bool thereIsInfo = info != chunkNeighborsInfo_.cend();
+        chunkNeighborsInfoMutex_.unlock();
+
+        if (thereIsInfo) {
+
+            neighborsInfo& n = info->second;
+            n.neighborsGenPass1Completed_.lock();
+            n.neighborsGenPass1Completed_.get()--;
+            
+            if (n.neighborsGenPass1Completed_.get() == 0) {
+
+                n.neighborsGenPass1Completed_.unlock();
+
+                chunkNeighborsInfoMutex_.lock();
+                chunkNeighborsInfo_.erase(chunkPos); // TODO. REUSABLE NEIGHBORINFO OBJECTS???
+                chunkNeighborsInfoMutex_.unlock();
+
+            }
+            else {
+
+                n.neighborsGenPass1Completed_.unlock();
+
+                vec3 neighborPos;
+                for (const vec3& offset : neighborsOffsets) {
+
+                    neighborPos = chunkPos + offset;
+
+                    chunkNeighborsInfoMutex_.lock();
+                    info = chunkNeighborsInfo_.find(neighborPos);
+                    thereIsInfo = info != chunkNeighborsInfo_.cend();
+                    chunkNeighborsInfoMutex_.unlock();
+
+                    if (thereIsInfo)
+                    {
+                        neighborsInfo& neighborInfo = info->second;
+
+                        neighborInfo.neighborsGenPass1Completed_.lock();
+                        neighborInfo.neighborsGenPass1Completed_.get()--;
+
+                        if (neighborInfo.neighborsGenPass1Completed_.get() == 0) {
+
+                            neighborInfo.neighborsGenPass1Completed_.unlock();
+
+                            chunkNeighborsInfoMutex_.lock();
+                            chunkNeighborsInfo_.erase(chunkPos); // TODO. REUSABLE NEIGHBORINFO OBJECTS???
+                            chunkNeighborsInfoMutex_.unlock();
+
+                        }
+                        else {
+
+                            neighborInfo.neighborsGenPass1Completed_.unlock();
+
+                            neighborInfo.blockLightsFromNeighbor.lock();
+                            if (!neighborInfo.blockLightsFromNeighbor.get().empty())
+                                neighborInfo.blockLightsFromNeighbor.get().erase({ (char)-offset.x, (char)-offset.y, (char)-offset.z });
+                            neighborInfo.blockLightsFromNeighbor.unlock();
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+    
+    }
+
     void chunkManager::onUnloadAsFrontier(const vec3& chunkPos) {
 
         if (!frontierChunksSet_.contains(chunkPos) && clientChunks_.contains(chunkPos))
@@ -2118,14 +2202,14 @@ namespace VoxelEng {
     
     }
 
-    void chunkManager::remesh(chunk* c, bool isPriorityUpdate, bool remeshPostGeneration) {
+    void chunkManager::remesh(chunk* c, bool isPriorityUpdate) {
     
-        unsigned int meshSize = c->renewMesh(remeshPostGeneration);
+        unsigned int meshSize = c->renewMesh();
         pushNewChunkMesh(isPriorityUpdate, c, meshSize);
 
     }
 
-    void chunkManager::renewMesh(const vec3& chunkPos, bool isPriorityUpdate, bool remeshPostGeneration) {
+    void chunkManager::renewMesh(const vec3& chunkPos, bool isPriorityUpdate) {
     
         chunksMutex_.lock();
 
@@ -2142,7 +2226,7 @@ namespace VoxelEng {
             
             chunksMutex_.unlock();
 
-            remesh(it->second, isPriorityUpdate, remeshPostGeneration);
+            remesh(it->second, isPriorityUpdate);
 
         }
             
@@ -2162,11 +2246,17 @@ namespace VoxelEng {
             unsigned int nIterations = 0;
             const unsigned int defaultMaxIterations = 128;
             unsigned int maxIterations = defaultMaxIterations;
+
+            if (game::threadsExecute[2]) {
+            
+                playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
+                ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
+            
+            }
+
             while (game::threadsExecute[2]) {
 
                 continueCreatingChunks = false;
-
-                ensureChunkIfVisible(playerChunkPosCopy_.x, playerChunkPosCopy_.y, playerChunkPosCopy_.z); // NEXT. ASEGURARSE DE QUE ESTE CHUNK SEA EL DEL JUGADOR YA POSICIONADO BIEN TRAS CARGA DE MUNDO.
 
                 do {
 
@@ -2189,7 +2279,7 @@ namespace VoxelEng {
 
                             frontierIt_++;
                             unloadFrontierChunk(chunkPos);
-
+                            // TODO. HAY QUE AÑADIR UN MIENTRAS HAYA UNA TAREA ASOCIADA A ESTE FRONTIER NO BORRARLO.
                             chunkVBOoperationsMutex_.lock();
                             chunkVBOoperationsWrite_->operator[](chunkPos) = chunkVBOoperation::FREE;
                             chunkVBOoperationsMutex_.unlock();
@@ -2624,6 +2714,14 @@ namespace VoxelEng {
 
             addFrontier(c);
 
+            // TODO. USAR ESTE SISTEMA PARA LOS NEIGHBORINFO???
+            /*vec3 neighborPos;
+            for (const vec3& offset : neighborsOffsets) {
+
+                neighborPos = chunkPos + offset;
+                onChunkLoad_.notify(neighborPos.x, neighborPos.y, neighborPos.z);
+
+            }*/
             onChunkLoad_.notify(chunkPos.x, chunkPos.z);
             onChunkLoad_.notify(chunkPos.x + 1, chunkPos.z);
             onChunkLoad_.notify(chunkPos.x - 1, chunkPos.z);
@@ -2669,11 +2767,9 @@ namespace VoxelEng {
             default:
                 logger::errorLog("Unsupported chunkJobType type " + std::to_string(static_cast<int>(type)));
                 break;
-
         }
 
         // Send the job to its corresponding queue.
-
         switch (type) {
 
             case chunkJobType::NONE:
@@ -2857,21 +2953,19 @@ namespace VoxelEng {
     void chunkManager::loadChunkJob(void* data) {
 
         chunk* c = static_cast<chunk*>(data);
-
         c->makeEmpty();
         if (world::isSaved(c->chunkPos())) {  // Load previously saved chunk. Skips remaining loading passes.
         
             deserializeChunk(c, world::loadChunk(c->chunkPos()));
+            c->status(chunkStatus::BASICTERRAINFROMDISK);
 
         }   
         else { // Generate new chunk.
         
             worldGen::generate(*c);
+            c->status(chunkStatus::BASICTERRAIN);
             
         }
-
-        c->status(chunkStatus::BASICTERRAIN);
-
         onLoadChunkJobFinish(c);
 
     }
@@ -2881,11 +2975,17 @@ namespace VoxelEng {
         const vec3& chunkPos = c->chunkPos();
 
         chunkNeighborsInfoMutex_.lock();
-        neighborsInfo& info = chunkNeighborsInfo_[chunkPos]; // TODO. LOS NEIGHBORINFO DEBEN DESAPARECER CUANDO UN CHUNK SE DESCARGA.
+        neighborsInfo& info = chunkNeighborsInfo_[chunkPos];
         chunkNeighborsInfoMutex_.unlock();
 
-        if (++info.neighborsGenPass1Completed_ >= 27)
+        info.neighborsGenPass1Completed_.lock();
+        info.neighborsGenPass1Completed_.get()++;
+        if (info.neighborsGenPass1Completed_.get() == 27)
             issueChunkMeshJob(chunkJobType::LOAD2, c);
+        else if (info.neighborsGenPass1Completed_.get() > 27)
+            info.neighborsGenPass1Completed_.get() = 27;
+
+        info.neighborsGenPass1Completed_.unlock();
 
         vec3 neighborPos;
         for (const vec3& offset : neighborsOffsets) {
@@ -2900,9 +3000,15 @@ namespace VoxelEng {
             chunk* neighbor = clientChunks_.contains(neighborPos) ? clientChunks_[neighborPos] : nullptr;
             chunksMutex_.unlock();
 
-            if (++infoNeighbor.neighborsGenPass1Completed_ >= 27 && neighbor)
+            infoNeighbor.neighborsGenPass1Completed_.lock();
+            infoNeighbor.neighborsGenPass1Completed_.get()++;
+            if (infoNeighbor.neighborsGenPass1Completed_.get() == 27 && neighbor)
                 issueChunkMeshJob(chunkJobType::LOAD2, neighbor);
-        
+            else if (infoNeighbor.neighborsGenPass1Completed_.get() > 27)
+                infoNeighbor.neighborsGenPass1Completed_.get() = 27;
+
+            infoNeighbor.neighborsGenPass1Completed_.unlock();
+
         }
 
     }
@@ -2911,11 +3017,17 @@ namespace VoxelEng {
 
         chunk* c = static_cast<chunk*>(data);
 
-        worldGen::genPass2(*c);
+        if (c->status() == chunkStatus::BASICTERRAIN) {
+        
+            worldGen::genPass2(*c);
 
-        c->status(chunkStatus::DECORATED);
+            c->status(chunkStatus::DECORATED);
+        
+        }
+        
+        c->postGenPass();
 
-        remesh(c, false, true);
+        remesh(c, false);
 
     }
 
@@ -2923,7 +3035,7 @@ namespace VoxelEng {
 
         chunk* c = static_cast<chunk*>(data);
 
-        remesh(c, false, false);
+        remesh(c, false);
 
     }
 
@@ -2950,7 +3062,7 @@ namespace VoxelEng {
 
         c->needsRemesh(true);
 
-        remesh(c, true, false);
+        remesh(c, true);
 
         priorityNewChunkMeshesCV_.notify_all();
 

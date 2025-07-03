@@ -107,7 +107,7 @@ namespace VoxelEng {
 		/**
 		* @brief Change user position.
 		*/
-		static void globalPos(const vec3& newPos);
+		static void globalPos(const vec3& newPos, bool updateCamera);
 
 		/**
 		* @brief Sets the player camera's pitch angle.
@@ -256,9 +256,16 @@ namespace VoxelEng {
 
 	}
 
-	inline void player::globalPos(const vec3& newPos) {
+	inline void player::globalPos(const vec3& newPos, bool updateCamera) {
 	
 		playerTransform_.position = newPos;
+		playerTransform_.chunkPosition = getChunkCoords(playerTransform_.position);
+
+		if (updateCamera) {
+		
+			camera_->updateTransform(playerTransform_);
+		
+		}
 	
 	}
 
