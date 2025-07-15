@@ -74,6 +74,8 @@ namespace VoxelEng {
 		basicVec3(char x, char y, char z);
 
 		bool operator==(const basicVec3& v) const;
+
+		~basicVec3();
 	};
 
 	inline basicVec3::basicVec3()
@@ -88,6 +90,11 @@ namespace VoxelEng {
 	
 		return x == v.x && y == v.y && z == v.z;
 	
+	}
+
+	inline basicVec3::~basicVec3() 
+	{
+		int a = 3 + 2;
 	}
 
 

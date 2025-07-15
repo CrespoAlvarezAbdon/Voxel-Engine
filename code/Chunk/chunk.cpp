@@ -1064,9 +1064,7 @@ namespace VoxelEng {
         }
 
         status(chunkStatus::MESHED);
-
         renderingData_.totalSize = renderingData_.vertices.size() + renderingData_.translucentVertices.size();
-
         return renderingData_.totalSize;
 
     }
@@ -1136,201 +1134,118 @@ namespace VoxelEng {
                             float lightLevelScale = floodLight.intensity / 8.0f; // 8 is the maximum allowed light level.
                             blockLightColor_[pos.x][pos.y][pos.z] += floodLight.color * lightLevelScale;
                             blockLightLevel_[pos.x][pos.y][pos.z] = floodLight.intensity;
-
                             blockLightChecked[pos.x][pos.y][pos.z] = true;
 
                             //+x
-                            if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x + 1][pos.y][pos.z] == 0) {
-
+                            if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x + 1][pos.y][pos.z] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                            }
                             else if (neighborOffset.x == 1) {
                             
                                 passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, {1, 0, 0});
-
                                 if (neighborOffset.y == 1) {
                                 
                                     passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 1, 0 });
-
-                                    if (neighborOffset.z == 1) {
-                                    
+                                    if (neighborOffset.z == 1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 1, 1 });
-                                    
-                                    }
-                                    else if (neighborOffset.z == -1) {
-                                    
+                                    else if (neighborOffset.z == -1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 1, -1 });
-                                    
-                                    }
                                 
                                 }
                                 else if (neighborOffset.y == -1) {
                                 
                                     passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, -1, 0 });
-
-                                    if (neighborOffset.z == 1) {
-
+                                    if (neighborOffset.z == 1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, -1, 1 });
-
-                                    }
-                                    else if (neighborOffset.z == -1) {
-
+                                    else if (neighborOffset.z == -1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, -1, -1 });
-
-                                    }
                                 
                                 }
                                 else {
                                 
-                                    if (neighborOffset.z == 1) {
-
+                                    if (neighborOffset.z == 1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 0, 1 });
-
-                                    }
-                                    else if (neighborOffset.z == -1) {
-
+                                    else if (neighborOffset.z == -1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 0, -1 });
-
-                                    }
                                 
                                 }
 
                             }
 
                             //-x
-                            if (pos.x > 0 && blocksLocalIDs_[pos.x - 1][pos.y][pos.z] == 0) {
-
+                            if (pos.x > 0 && blocksLocalIDs_[pos.x - 1][pos.y][pos.z] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                            }
                             else if (neighborOffset.x == -1) {
 
                                 passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 0, 0 });
-
                                 if (neighborOffset.y == 1) {
                                 
                                     passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 1, 0 });
-
-                                    if (neighborOffset.z == 1) {
-                                    
+                                    if (neighborOffset.z == 1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 1, 1 });
-                                    
-                                    }
-                                    else if (neighborOffset.z == -1) {
-                                    
+                                    else if (neighborOffset.z == -1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 1, -1 });
-                                    
-                                    }
                                 
                                 }
                                 else if (neighborOffset.y == -1) {
                                 
                                     passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, -1, 0 });
-
-                                    if (neighborOffset.z == 1) {
-
+                                    if (neighborOffset.z == 1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, -1, 1 });
-
-                                    }
-                                    else if (neighborOffset.z == -1) {
-
+                                    else if (neighborOffset.z == -1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, -1, -1 });
-
-                                    }
                                 
                                 }
                                 else {
                                 
-                                    if (neighborOffset.z == 1) {
-
+                                    if (neighborOffset.z == 1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 0, 1 });
-
-                                    }
-                                    else if (neighborOffset.z == -1) {
-
+                                    else if (neighborOffset.z == -1)
                                         passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 0, -1 });
-
-                                    }
                                 
                                 }
 
                             }
 
                             //+y
-                            if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y + 1][pos.z] == 0) {
-
+                            if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y + 1][pos.z] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                            }
                             else if (neighborOffset.y == 1) {
 
                                 passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 1, 0 });
-
-                                if (neighborOffset.z == 1) {
-
+                                if (neighborOffset.z == 1)
                                     passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 1, 1 });
-
-                                }
-                                else if (neighborOffset.z == -1) {
-
+                                else if (neighborOffset.z == -1)
                                     passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 1, -1 });
-
-                                }
 
                             }
 
                             //-y
-                            if (pos.y > 0 && blocksLocalIDs_[pos.x][pos.y - 1][pos.z] == 0) {
-
+                            if (pos.y > 0 && blocksLocalIDs_[pos.x][pos.y - 1][pos.z] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                            }
                             else if (neighborOffset.y == -1) {
 
                                 passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, -1, 0 });
-
-                                if (neighborOffset.z == 1) {
-
+                                if (neighborOffset.z == 1)
                                     passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, -1, 1 });
-
-                                }
-                                else if (neighborOffset.z == -1) {
-
+                                else if (neighborOffset.z == -1)
                                     passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, -1, -1 });
-
-                                }
 
                             }
 
                             //+z
-                            if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y][pos.z + 1] == 0) {
-
+                            if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y][pos.z + 1] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
-
-                            }
-                            else if (neighborOffset.z == 1) {
-
+                            else if (neighborOffset.z == 1)
                                 passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 0, 1 });
 
-                            }
-
                             //-z
-                            if (pos.z > 0 && blocksLocalIDs_[pos.x][pos.y][pos.z - 1] == 0) {
-
+                            if (pos.z > 0 && blocksLocalIDs_[pos.x][pos.y][pos.z - 1] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
-
-                            }
-                            else if (neighborOffset.z == -1) {
-
+                            else if (neighborOffset.z == -1)
                                 passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 0, -1 });
 
-                            }
-
                         }
-
                         floodLightsInstances.pop_front();
-
                     }
 
                 }
@@ -1364,7 +1279,6 @@ namespace VoxelEng {
             for (auto itLight = blockLightMods.cbegin(); itLight != blockLightMods.cend(); itLight++) {
           
                 const basicVec3& blockLightPos = itLight->pos;
-
                 localID = blocksLocalIDs_[blockLightPos.x][blockLightPos.y][blockLightPos.z];
                 block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
@@ -1390,63 +1304,40 @@ namespace VoxelEng {
                             float lightLevelScale = floodLight.intensity / 8.0f; // 8 is the maximum allowed light level.
                             blockLightColor_[pos.x][pos.y][pos.z] += floodLight.color * lightLevelScale;
                             blockLightLevel_[pos.x][pos.y][pos.z] = floodLight.intensity;
-
                             blockLightChecked[pos.x][pos.y][pos.z] = true;
 
                             //+x
-                            if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x + 1][pos.y][pos.z] == 0) {
-
+                            if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x + 1][pos.y][pos.z] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
-
-                            }
  
                             //-x
-                            if (pos.x > 0 && blocksLocalIDs_[pos.x - 1][pos.y][pos.z] == 0) {
-
+                            if (pos.x > 0 && blocksLocalIDs_[pos.x - 1][pos.y][pos.z] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
 
-                            }
-
                             //+y
-                            if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y + 1][pos.z] == 0) {
-
+                            if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y + 1][pos.z] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
 
-                            }
-
                             //-y
-                            if (pos.y > 0 && blocksLocalIDs_[pos.x][pos.y - 1][pos.z] == 0) {
-
+                            if (pos.y > 0 && blocksLocalIDs_[pos.x][pos.y - 1][pos.z] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
 
-                            }
-
                             //+z
-                            if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y][pos.z + 1] == 0) {
-
+                            if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y][pos.z + 1] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
 
-                            }
-
                             //-z
-                            if (pos.z > 0 && blocksLocalIDs_[pos.x][pos.y][pos.z - 1] == 0) {
-
+                            if (pos.z > 0 && blocksLocalIDs_[pos.x][pos.y][pos.z - 1] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
 
-                            }
-
                         }
-
                         floodLightsInstances.pop_front();
-
                     }
 
                 }
             
             }
-
             it->second.unlock();
-
         }
         
     }
@@ -1569,7 +1460,6 @@ namespace VoxelEng {
 
     }
 
-    // MAÑANA. QUITAR EL UNDO NEIGHBORINFO, CUANDO SE DESCARGA UN CHUNK SE QUITA SU NEIGHBORSINFO PORQUE REALMENTE AHI YA NO QUEDA MÁS INFO QUE USAR
     void chunk::passLightToNeighbor(std::unordered_map<vec3, neighborsInfo*>& cacheNeighborsInfo, blockLightMod& floodLight, basicVec3& pos,
         const vec3& neighborOffset) {
     
@@ -2124,6 +2014,7 @@ namespace VoxelEng {
         if (thereIsInfo) {
 
             neighborsInfo& n = info->second;
+
             n.neighborsGenPass1Completed_.lock();
             n.neighborsGenPass1Completed_.get()--;
             
@@ -2162,7 +2053,7 @@ namespace VoxelEng {
                             neighborInfo.neighborsGenPass1Completed_.unlock();
 
                             chunkNeighborsInfoMutex_.lock();
-                            chunkNeighborsInfo_.erase(chunkPos); // TODO. REUSABLE NEIGHBORINFO OBJECTS???
+                            chunkNeighborsInfo_.erase(neighborPos); // TODO. REUSABLE NEIGHBORINFO OBJECTS???
                             chunkNeighborsInfoMutex_.unlock();
 
                         }
@@ -2984,7 +2875,6 @@ namespace VoxelEng {
             issueChunkMeshJob(chunkJobType::LOAD2, c);
         else if (info.neighborsGenPass1Completed_.get() > 27)
             info.neighborsGenPass1Completed_.get() = 27;
-
         info.neighborsGenPass1Completed_.unlock();
 
         vec3 neighborPos;
@@ -3006,7 +2896,6 @@ namespace VoxelEng {
                 issueChunkMeshJob(chunkJobType::LOAD2, neighbor);
             else if (infoNeighbor.neighborsGenPass1Completed_.get() > 27)
                 infoNeighbor.neighborsGenPass1Completed_.get() = 27;
-
             infoNeighbor.neighborsGenPass1Completed_.unlock();
 
         }
