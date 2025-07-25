@@ -662,8 +662,7 @@ namespace VoxelEng {
 		
 		void placeNewBlock(unsigned short& oldLocalID, const block& newBlock);
 
-		void passLightToNeighbor(std::unordered_map<vec3, neighborsInfo*>& cacheNeighborsInfo, blockLightMod& floodLight, basicVec3& pos,
-			const vec3& neighborOffset);
+		
 
 	};
 
@@ -1330,11 +1329,7 @@ namespace VoxelEng {
 		*/
 		static const chunk* getChunkC(const vec3& chunkPos);
 
-		/**
-		* @brief @brief Get the dictionary of chunk's neighborInfo objects, indexed by the chunk's chunk-grid coordinates.
-		* @returns The dictionary of chunk's neighborInfo objects.
-		*/
-		static const std::unordered_map<vec3, neighborsInfo>& chunkNeighborsInfoC();
+		static neighborsInfo* getChunkNeighborInfo(const vec3& chunkPos);
 
 
 		// Modifiers.
@@ -1578,11 +1573,9 @@ namespace VoxelEng {
 		*/
 		static std::mutex& chunkNeighborsInfoMutex();
 
-		/**
-		* @brief @brief Get the dictionary of chunk's neighborInfo objects, indexed by the chunk's chunk-grid coordinates.
-		* @returns The dictionary of chunk's neighborInfo objects.
- 		*/
-		static std::unordered_map<vec3, neighborsInfo>& chunkNeighborsInfo();
+		static void passLightToNeighbor(blockLightMod& floodLight, basicVec3& pos, const vec3& neighborOffset, const vec3& chunkPos);
+
+		static std::shared_ptr<neighborsInfo> getOrCreateChunkNeighborInfo(const vec3& chunkPos);
 
 
 		// Clean Up.
@@ -1732,7 +1725,7 @@ namespace VoxelEng {
 		static chunkEvent onChunkUnload_;
 
 		static std::mutex chunkNeighborsInfoMutex_;
-		static std::unordered_map<vec3, neighborsInfo> chunkNeighborsInfo_;
+		static std::unordered_map<vec3, std::shared_ptr<neighborsInfo>> chunkNeighborsInfo_;
 
 		static chunkVertexBuffer* vbo_;
 
@@ -1745,6 +1738,8 @@ namespace VoxelEng {
 		static const block& getBlockOGWorld_(int posX, int posY, int posZ);
 
 		static void pushNewChunkMesh(bool isPriorityUpdate, chunk* c, std::size_t meshSize);
+
+		
 
 		/*
 		Job methods.
@@ -1893,12 +1888,6 @@ namespace VoxelEng {
 
 	}
 
-	inline const std::unordered_map<vec3, neighborsInfo>& chunkManager::chunkNeighborsInfoC() {
-	
-		return chunkNeighborsInfo_;
-	
-	}
-
 	inline chunk* chunkManager::selectChunk(int x, int y, int z) {
 
 		return selectChunk(vec3{ x, y, z });
@@ -1976,12 +1965,6 @@ namespace VoxelEng {
 	
 		return chunkNeighborsInfoMutex_;
 	
-	}
-
-	inline std::unordered_map<vec3, neighborsInfo>& chunkManager::chunkNeighborsInfo() {
-
-		return chunkNeighborsInfo_;
-
 	}
 
 	inline void chunkManager::clearChunks() {

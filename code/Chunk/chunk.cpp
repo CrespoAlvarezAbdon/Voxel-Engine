@@ -1078,13 +1078,6 @@ namespace VoxelEng {
 
     void chunk::recalculateBlockLight() {
 
-        // Get neighbor info of all the chunk's neighbors.
-        std::unordered_map<vec3, neighborsInfo*> cacheNeighborsInfo;
-        chunkManager::chunkNeighborsInfoMutex().lock();
-        for (const vec3& offset : neighborsOffsets) 
-            cacheNeighborsInfo[offset] = &chunkManager::chunkNeighborsInfo()[chunkPos_ + offset];
-        chunkManager::chunkNeighborsInfoMutex().unlock();
-
         // Update block light render information from blocks within the chunk.
         int x = 0,
             y = 0,
@@ -1141,31 +1134,31 @@ namespace VoxelEng {
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
                             else if (neighborOffset.x == 1) {
                             
-                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, {1, 0, 0});
+                                chunkManager::passLightToNeighbor(floodLight, pos, {1, 0, 0}, chunkPos_);
                                 if (neighborOffset.y == 1) {
                                 
-                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 1, 0 });
+                                    chunkManager::passLightToNeighbor(floodLight, pos, { 1, 1, 0 }, chunkPos_);
                                     if (neighborOffset.z == 1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 1, 1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, 1, 1 }, chunkPos_);
                                     else if (neighborOffset.z == -1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 1, -1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, 1, -1 }, chunkPos_);
                                 
                                 }
                                 else if (neighborOffset.y == -1) {
                                 
-                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, -1, 0 });
+                                    chunkManager::passLightToNeighbor(floodLight, pos, { 1, -1, 0 }, chunkPos_);
                                     if (neighborOffset.z == 1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, -1, 1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, -1, 1 }, chunkPos_);
                                     else if (neighborOffset.z == -1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, -1, -1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, -1, -1 }, chunkPos_);
                                 
                                 }
                                 else {
                                 
                                     if (neighborOffset.z == 1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 0, 1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, 0, 1 }, chunkPos_);
                                     else if (neighborOffset.z == -1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 1, 0, -1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, 0, -1 }, chunkPos_);
                                 
                                 }
 
@@ -1176,31 +1169,31 @@ namespace VoxelEng {
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
                             else if (neighborOffset.x == -1) {
 
-                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 0, 0 });
+                                chunkManager::passLightToNeighbor(floodLight, pos, { -1, 0, 0 }, chunkPos_);
                                 if (neighborOffset.y == 1) {
                                 
-                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 1, 0 });
+                                    chunkManager::passLightToNeighbor(floodLight, pos, { -1, 1, 0 }, chunkPos_);
                                     if (neighborOffset.z == 1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 1, 1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, 1, 1 }, chunkPos_);
                                     else if (neighborOffset.z == -1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 1, -1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, 1, -1 }, chunkPos_);
                                 
                                 }
                                 else if (neighborOffset.y == -1) {
                                 
-                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, -1, 0 });
+                                    chunkManager::passLightToNeighbor(floodLight, pos, { -1, -1, 0 }, chunkPos_);
                                     if (neighborOffset.z == 1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, -1, 1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, -1, 1 }, chunkPos_);
                                     else if (neighborOffset.z == -1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, -1, -1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, -1, -1 }, chunkPos_);
                                 
                                 }
                                 else {
                                 
                                     if (neighborOffset.z == 1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 0, 1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, 0, 1 }, chunkPos_);
                                     else if (neighborOffset.z == -1)
-                                        passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { -1, 0, -1 });
+                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, 0, -1 }, chunkPos_);
                                 
                                 }
 
@@ -1211,11 +1204,11 @@ namespace VoxelEng {
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
                             else if (neighborOffset.y == 1) {
 
-                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 1, 0 });
+                                chunkManager::passLightToNeighbor(floodLight, pos, { 0, 1, 0 }, chunkPos_);
                                 if (neighborOffset.z == 1)
-                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 1, 1 });
+                                    chunkManager::passLightToNeighbor(floodLight, pos, { 0, 1, 1 }, chunkPos_);
                                 else if (neighborOffset.z == -1)
-                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 1, -1 });
+                                    chunkManager::passLightToNeighbor(floodLight, pos, { 0, 1, -1 }, chunkPos_);
 
                             }
 
@@ -1224,11 +1217,11 @@ namespace VoxelEng {
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
                             else if (neighborOffset.y == -1) {
 
-                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, -1, 0 });
+                                chunkManager::passLightToNeighbor(floodLight, pos, { 0, -1, 0 }, chunkPos_);
                                 if (neighborOffset.z == 1)
-                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, -1, 1 });
+                                    chunkManager::passLightToNeighbor(floodLight, pos, { 0, -1, 1 }, chunkPos_);
                                 else if (neighborOffset.z == -1)
-                                    passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, -1, -1 });
+                                    chunkManager::passLightToNeighbor(floodLight, pos, { 0, -1, -1 }, chunkPos_);
 
                             }
 
@@ -1236,13 +1229,13 @@ namespace VoxelEng {
                             if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y][pos.z + 1] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
                             else if (neighborOffset.z == 1)
-                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 0, 1 });
+                                chunkManager::passLightToNeighbor(floodLight, pos, { 0, 0, 1 }, chunkPos_);
 
                             //-z
                             if (pos.z > 0 && blocksLocalIDs_[pos.x][pos.y][pos.z - 1] == 0)
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
                             else if (neighborOffset.z == -1)
-                                passLightToNeighbor(cacheNeighborsInfo, floodLight, pos, { 0, 0, -1 });
+                                chunkManager::passLightToNeighbor(floodLight, pos, { 0, 0, -1 }, chunkPos_);
 
                         }
                         floodLightsInstances.pop_front();
@@ -1264,18 +1257,15 @@ namespace VoxelEng {
 
         bool blockLightChecked[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
-        chunkManager::chunkNeighborsInfoMutex().lock();
-        neighborsInfo& neighborsInfoPtr = chunkManager::chunkNeighborsInfo()[chunkPos_];
-        chunkManager::chunkNeighborsInfoMutex().unlock();
+        std::shared_ptr<neighborsInfo> neighborsInfoPtr = chunkManager::getOrCreateChunkNeighborInfo(chunkPos_);
 
-        neighborsInfoPtr.blockLightsFromNeighbor.lock();
-        blockLightsByNeighbor& blockLightsByNeighborPtr = neighborsInfoPtr.blockLightsFromNeighbor.get();
-        neighborsInfoPtr.blockLightsFromNeighbor.unlock();
+        neighborsInfoPtr->blockLightsFromNeighbor.lock();
+        blockLightsByNeighbor& blockLightsByNeighborPtr = neighborsInfoPtr->blockLightsFromNeighbor.get();
+        neighborsInfoPtr->blockLightsFromNeighbor.unlock();
         for (auto it = blockLightsByNeighborPtr.begin(); it != blockLightsByNeighborPtr.end(); it++) {
 
             it->second.lock();
             const std::list<blockLightMod>& blockLightMods = it->second.get();
-
             for (auto itLight = blockLightMods.cbegin(); itLight != blockLightMods.cend(); itLight++) {
           
                 const basicVec3& blockLightPos = itLight->pos;
@@ -1368,6 +1358,7 @@ namespace VoxelEng {
 
         palette_.clear();
         paletteCount_.clear();
+        freeLocalIDs_.clear(); // FALTABA ESTO
 
         blocksMutex_.unlock();
 
@@ -1460,26 +1451,6 @@ namespace VoxelEng {
 
     }
 
-    void chunk::passLightToNeighbor(std::unordered_map<vec3, neighborsInfo*>& cacheNeighborsInfo, blockLightMod& floodLight, basicVec3& pos,
-        const vec3& neighborOffset) {
-    
-        neighborsInfo* neighborsInfoPtr = cacheNeighborsInfo[neighborOffset]; // Get the neighbor.
-        neighborsInfoPtr->blockLightsFromNeighbor.lock();
-        threadsafe<std::list<blockLightMod>>* list =
-            &neighborsInfoPtr->blockLightsFromNeighbor.get()[basicVec3{ (char)-neighborOffset.x, (char)-neighborOffset.y, (char)-neighborOffset.z }]; // And pass it the data from this chunk.
-        neighborsInfoPtr->blockLightsFromNeighbor.unlock();
-
-        list->lock();
-        blockLightMod* mod = &list->get().emplace_back();
-        mod->color = floodLight.color;
-        mod->intensity = floodLight.intensity - 1;
-        mod->pos.x = neighborOffset.x == 1 ? 0 : neighborOffset.x == -1 ? CHUNK_SIZE_LIMIT : pos.x;
-        mod->pos.y = neighborOffset.y == 1 ? 0 : neighborOffset.y == -1 ? CHUNK_SIZE_LIMIT : pos.y;
-        mod->pos.z = neighborOffset.z == 1 ? 0 : neighborOffset.z == -1 ? CHUNK_SIZE_LIMIT : pos.z;
-        list->unlock();
-    
-    }
-
     // 'chunkEvent' class.
 
     void chunkEvent::notify(const vec2& chunkPosXZ) {
@@ -1552,7 +1523,7 @@ namespace VoxelEng {
     chunkEvent chunkManager::onChunkUnload_("On chunk unload");
 
     std::mutex chunkManager::chunkNeighborsInfoMutex_;
-    std::unordered_map<vec3, neighborsInfo> chunkManager::chunkNeighborsInfo_;
+    std::unordered_map<vec3, std::shared_ptr<neighborsInfo>> chunkManager::chunkNeighborsInfo_;
 
     chunkVertexBuffer* chunkManager::vbo_ = nullptr;
 
@@ -1588,7 +1559,7 @@ namespace VoxelEng {
             chunksPool_.setAllFreeOnClear(false);
             vbo_ = static_cast<chunkVertexBuffer*>(graphics::pVbo("chunks"));
             vbo_->bind();
-            vbo_->prepareDynamic(1024 * 1024 * 1024); // 1024 MB = 1GB.
+            vbo_->prepareDynamic(1024LL * 1024 * 1024 * 2); // 1024^3 B = 1GB.
 
             clearChunksFlag_ = false;
             priorityUpdatesRemaining_ = false;
@@ -1807,6 +1778,15 @@ namespace VoxelEng {
     
     }
 
+    neighborsInfo* chunkManager::getChunkNeighborInfo(const vec3& chunkPos) {
+
+        chunkNeighborsInfoMutex_.lock();
+        neighborsInfo* neighborsInfoPtr = chunkNeighborsInfo_[chunkPos].get();
+        chunkNeighborsInfoMutex_.unlock();
+        return neighborsInfoPtr;
+
+    }
+
     void chunkManager::setNChunksToCompute(unsigned int nChunksToCompute) {
 
         engineMode mode = game::selectedEngineMode();
@@ -2013,14 +1993,14 @@ namespace VoxelEng {
 
         if (thereIsInfo) {
 
-            neighborsInfo& n = info->second;
+            std::shared_ptr<neighborsInfo> n = info->second;
 
-            n.neighborsGenPass1Completed_.lock();
-            n.neighborsGenPass1Completed_.get()--;
+            n->neighborsGenPass1Completed_.lock();
+            n->neighborsGenPass1Completed_.get()--;
             
-            if (n.neighborsGenPass1Completed_.get() == 0) {
+            if (n->neighborsGenPass1Completed_.get() == 0) {
 
-                n.neighborsGenPass1Completed_.unlock();
+                n->neighborsGenPass1Completed_.unlock();
 
                 chunkNeighborsInfoMutex_.lock();
                 chunkNeighborsInfo_.erase(chunkPos); // TODO. REUSABLE NEIGHBORINFO OBJECTS???
@@ -2029,7 +2009,7 @@ namespace VoxelEng {
             }
             else {
 
-                n.neighborsGenPass1Completed_.unlock();
+                n->neighborsGenPass1Completed_.unlock();
 
                 vec3 neighborPos;
                 for (const vec3& offset : neighborsOffsets) {
@@ -2043,14 +2023,14 @@ namespace VoxelEng {
 
                     if (thereIsInfo)
                     {
-                        neighborsInfo& neighborInfo = info->second;
+                        std::shared_ptr<neighborsInfo> neighborInfo = info->second;
 
-                        neighborInfo.neighborsGenPass1Completed_.lock();
-                        neighborInfo.neighborsGenPass1Completed_.get()--;
+                        neighborInfo->neighborsGenPass1Completed_.lock();
+                        neighborInfo->neighborsGenPass1Completed_.get()--;
 
-                        if (neighborInfo.neighborsGenPass1Completed_.get() == 0) {
+                        if (neighborInfo->neighborsGenPass1Completed_.get() == 0) {
 
-                            neighborInfo.neighborsGenPass1Completed_.unlock();
+                            neighborInfo->neighborsGenPass1Completed_.unlock();
 
                             chunkNeighborsInfoMutex_.lock();
                             chunkNeighborsInfo_.erase(neighborPos); // TODO. REUSABLE NEIGHBORINFO OBJECTS???
@@ -2059,12 +2039,12 @@ namespace VoxelEng {
                         }
                         else {
 
-                            neighborInfo.neighborsGenPass1Completed_.unlock();
+                            neighborInfo->neighborsGenPass1Completed_.unlock();
 
-                            neighborInfo.blockLightsFromNeighbor.lock();
-                            if (!neighborInfo.blockLightsFromNeighbor.get().empty())
-                                neighborInfo.blockLightsFromNeighbor.get().erase({ (char)-offset.x, (char)-offset.y, (char)-offset.z });
-                            neighborInfo.blockLightsFromNeighbor.unlock();
+                            neighborInfo->blockLightsFromNeighbor.lock();
+                            if (!neighborInfo->blockLightsFromNeighbor.get().empty())
+                                neighborInfo->blockLightsFromNeighbor.get().erase({ (char)-offset.x, (char)-offset.y, (char)-offset.z });
+                            neighborInfo->blockLightsFromNeighbor.unlock();
 
                         }
 
@@ -2123,6 +2103,41 @@ namespace VoxelEng {
             
     }
 
+    void chunkManager::passLightToNeighbor(blockLightMod& floodLight, basicVec3& pos, const vec3& neighborOffset, const vec3& chunkPos) {
+
+        std::shared_ptr<neighborsInfo> neighborsInfoPtr = getOrCreateChunkNeighborInfo(chunkPos + neighborOffset);
+
+        neighborsInfoPtr->blockLightsFromNeighbor.lock();
+        threadsafe<std::list<blockLightMod>>* list =
+            &neighborsInfoPtr->blockLightsFromNeighbor.get()[basicVec3{ (char)-neighborOffset.x, (char)-neighborOffset.y, (char)-neighborOffset.z }]; // And pass it the data from this chunk.
+        neighborsInfoPtr->blockLightsFromNeighbor.unlock();
+
+        list->lock();
+        if (list->get().size() > 0)
+            int a = 3 + 2;
+        blockLightMod* mod = &list->get().emplace_back();
+        mod->color = floodLight.color;
+        mod->intensity = floodLight.intensity - 1;
+        mod->pos.x = neighborOffset.x == 1 ? 0 : neighborOffset.x == -1 ? CHUNK_SIZE_LIMIT : pos.x;
+        mod->pos.y = neighborOffset.y == 1 ? 0 : neighborOffset.y == -1 ? CHUNK_SIZE_LIMIT : pos.y;
+        mod->pos.z = neighborOffset.z == 1 ? 0 : neighborOffset.z == -1 ? CHUNK_SIZE_LIMIT : pos.z;
+        list->unlock();
+
+    }
+
+    std::shared_ptr<neighborsInfo> chunkManager::getOrCreateChunkNeighborInfo(const vec3& chunkPos) {
+    
+        chunkNeighborsInfoMutex_.lock();
+        std::shared_ptr<neighborsInfo>& neighborsInfoPtr = chunkNeighborsInfo_[chunkPos];
+        if (!neighborsInfoPtr)
+            neighborsInfoPtr = std::make_shared<neighborsInfo>();
+        else
+            int a = 3 + 2;
+        chunkNeighborsInfoMutex_.unlock();
+        return neighborsInfoPtr;
+    
+    }
+
     void chunkManager::manageChunks() {
 
         {
@@ -2148,6 +2163,13 @@ namespace VoxelEng {
             while (game::threadsExecute[2]) {
 
                 continueCreatingChunks = false;
+
+                chunkNeighborsInfoMutex_.lock();
+                logger::debugLog("Number of neighborinfo objects: " + std::to_string(chunkNeighborsInfo_.size()));
+                chunkNeighborsInfoMutex_.unlock();
+                chunksMutex_.lock();
+                logger::debugLog("Number of chunk objects: " + std::to_string(clientChunks_.size()));
+                chunksMutex_.unlock();
 
                 do {
 
@@ -2733,7 +2755,9 @@ namespace VoxelEng {
                 delete itChunks->second;
         AIagentChunks_.clear();
 
+        chunkNeighborsInfoMutex_.lock();
         chunkNeighborsInfo_.clear();
+        chunkNeighborsInfoMutex_.unlock();
 
     }
 
@@ -2841,6 +2865,8 @@ namespace VoxelEng {
     
     }
 
+    
+
     void chunkManager::loadChunkJob(void* data) {
 
         chunk* c = static_cast<chunk*>(data);
@@ -2865,38 +2891,34 @@ namespace VoxelEng {
     
         const vec3& chunkPos = c->chunkPos();
 
-        chunkNeighborsInfoMutex_.lock();
-        neighborsInfo& info = chunkNeighborsInfo_[chunkPos];
-        chunkNeighborsInfoMutex_.unlock();
+        std::shared_ptr<neighborsInfo> info = getOrCreateChunkNeighborInfo(chunkPos); // MAÑANA. Add method get or create.
 
-        info.neighborsGenPass1Completed_.lock();
-        info.neighborsGenPass1Completed_.get()++;
-        if (info.neighborsGenPass1Completed_.get() == 27)
+        info->neighborsGenPass1Completed_.lock();
+        info->neighborsGenPass1Completed_.get()++;
+        if (info->neighborsGenPass1Completed_.get() == 27)
             issueChunkMeshJob(chunkJobType::LOAD2, c);
-        else if (info.neighborsGenPass1Completed_.get() > 27)
-            info.neighborsGenPass1Completed_.get() = 27;
-        info.neighborsGenPass1Completed_.unlock();
+        else if (info->neighborsGenPass1Completed_.get() > 27)
+            info->neighborsGenPass1Completed_.get() = 27;
+        info->neighborsGenPass1Completed_.unlock();
 
         vec3 neighborPos;
         for (const vec3& offset : neighborsOffsets) {
         
             neighborPos = chunkPos + offset;
 
-            chunkNeighborsInfoMutex_.lock();
-            neighborsInfo& infoNeighbor = chunkNeighborsInfo_[neighborPos];
-            chunkNeighborsInfoMutex_.unlock();
+            std::shared_ptr<neighborsInfo> infoNeighbor = getOrCreateChunkNeighborInfo(neighborPos);
 
             chunksMutex_.lock();
             chunk* neighbor = clientChunks_.contains(neighborPos) ? clientChunks_[neighborPos] : nullptr;
             chunksMutex_.unlock();
 
-            infoNeighbor.neighborsGenPass1Completed_.lock();
-            infoNeighbor.neighborsGenPass1Completed_.get()++;
-            if (infoNeighbor.neighborsGenPass1Completed_.get() == 27 && neighbor)
+            infoNeighbor->neighborsGenPass1Completed_.lock();
+            infoNeighbor->neighborsGenPass1Completed_.get()++;
+            if (infoNeighbor->neighborsGenPass1Completed_.get() == 27 && neighbor)
                 issueChunkMeshJob(chunkJobType::LOAD2, neighbor);
-            else if (infoNeighbor.neighborsGenPass1Completed_.get() > 27)
-                infoNeighbor.neighborsGenPass1Completed_.get() = 27;
-            infoNeighbor.neighborsGenPass1Completed_.unlock();
+            else if (infoNeighbor->neighborsGenPass1Completed_.get() > 27)
+                infoNeighbor->neighborsGenPass1Completed_.get() = 27;
+            infoNeighbor->neighborsGenPass1Completed_.unlock();
 
         }
 
