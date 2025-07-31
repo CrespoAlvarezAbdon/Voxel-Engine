@@ -11,7 +11,7 @@ namespace VoxelEng {
             isTranslucidGeometry ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
 
         if (bufferZones.contains(chunkPos))
-            return bufferZones.at(chunkPos);
+            return bufferZones[chunkPos];
         else
             throw std::runtime_error("There is no chunk position " + std::to_string(chunkPos)
                 + " with an associated buffer zone for " + (isTranslucidGeometry ? "translucid" : "opaque/transparent") + " geometry");
@@ -30,15 +30,20 @@ namespace VoxelEng {
             isTranslucidGeometry ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
 
         auto itPreexistingZone = bufferZones.find(chunkPos);
-        if (itPreexistingZone == bufferZones.end()) {
+        if (itPreexistingZone == bufferZones.end()) { 
 
-            // Use freed zone if possible.
-            if (freedZonesBySize_.begin() == freedZonesBySize_.end() || size > freedZonesBySize_.begin()->size) {
+            // There is no buffer zone previously assigned to this chunk.
 
-                // There is no freed zone with size greater than or equal to the required by this chunk's vertex data.
+            auto itFit = freedZonesBySize_.lower_bound({ 0, size }); // Find a 'freedzone' with 'freedzone.size' >= 'size'
+            if (itFit == freedZonesBySize_.end()) {
+
+                // Case where there is no freed zone with size greater than or equal to the required by this chunk's vertex data.
+
                 if (lastPushedBytePos_ + size < maxSize_) {
 
                     bufferZones[chunkPos] = { lastPushedBytePos_ , size };
+                    if (bufferZones[chunkPos].startPos == 0)
+                        int a = 3 + 2;
                     glBufferSubData(GL_ARRAY_BUFFER, lastPushedBytePos_, size, data);
                     lastPushedBytePos_ += size;
 
@@ -50,48 +55,41 @@ namespace VoxelEng {
             }
             else {
 
-                if (size == freedZonesBySize_.begin()->size) {
+                // Case where there is a suitable freed zone available.
 
-                    bufferZones[chunkPos] = { freedZonesBySize_.begin()->startPos , size };
-                    glBufferSubData(GL_ARRAY_BUFFER, freedZonesBySize_.begin()->startPos, size, data);
+                if (itFit->size == size) {
 
-                    freedZones_.erase(freedZonesBySize_.begin());
-                    freedZonesBySize_.erase(freedZonesBySize_.begin());
+                    bufferZones[chunkPos] = { itFit->startPos , size };
+                    if (bufferZones[chunkPos].startPos == 0)
+                        int a = 3 + 2;
+                    glBufferSubData(GL_ARRAY_BUFFER, itFit->startPos, size, data);
 
-                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
-                    //if (freedZonesBySize_.size() != freedZones_.size())
-                        //logger::errorLog("Sizes cannot be different!");
+                    freedZones_.erase(itFit);
+                    freedZonesBySize_.erase(itFit);
 
                 }
-                else { // size < freedZonesBySize_.begin()->size
+                else { // itFit->size > size
 
-                    bufferZones[chunkPos] = { freedZonesBySize_.begin()->startPos , size };
-                    glBufferSubData(GL_ARRAY_BUFFER, freedZonesBySize_.begin()->startPos, size, data);
+                    bufferZones[chunkPos] = { itFit->startPos , size };
+                    if (bufferZones[chunkPos].startPos == 0)
+                        int a = 3 + 2;
+                    glBufferSubData(GL_ARRAY_BUFFER, itFit->startPos, size, data);
 
                     freedZonesBySize::iterator itSize = freedZonesBySize_.insert(
-                        { freedZonesBySize_.begin()->startPos + size, freedZonesBySize_.begin()->size - size }).first;
+                        { itFit->startPos + size, itFit->size - size }).first;
                     auto itDebug = freedZones_.insert(itSize);
 
-                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
-                    //if (freedZonesBySize_.size() != freedZones_.size())
-                        //logger::errorLog("Sizes cannot be different!");
-
-                    //if (itDebug.first.operator*().operator*().size < 0)
-                        //throw std::runtime_error("Size cannot be negative");
-
-                    freedZones_.erase(freedZonesBySize_.begin());
-                    freedZonesBySize_.erase(freedZonesBySize_.begin());
-
-                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
-                    //if (freedZonesBySize_.size() != freedZones_.size())
-                        //logger::errorLog("Sizes cannot be different!");
+                    freedZones_.erase(itFit);
+                    freedZonesBySize_.erase(itFit);
 
                 }
 
             }
 
         }
-        else { // There is already an entry of the specified geometry type of the given chunk position.
+        else { 
+
+            // There is already an entry of the specified geometry type of the given chunk position.
 
             chunkVertexBufferZone& preexistingZone = (itPreexistingZone->second);
             if (size < preexistingZone.size) {
@@ -101,28 +99,26 @@ namespace VoxelEng {
                     { preexistingZone.startPos + size, preexistingZone.size - size }).first;
                 auto itDebug = freedZones_.insert(itSize);
 
-                //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
-                //if (freedZonesBySize_.size() != freedZones_.size())
-                    //logger::errorLog("Sizes cannot be different!");
-
-                //if (itDebug.first.operator*().operator*().size < 0)
-                    //throw std::runtime_error("Size cannot be negative");
-
                 // Update buffer zone.
                 preexistingZone.size = size;
-
+                if (preexistingZone.startPos == 0)
+                    int a = 3 + 2;
                 glBufferSubData(GL_ARRAY_BUFFER, preexistingZone.startPos, preexistingZone.size, data);
             
             }
             else if (size == preexistingZone.size) {
             
+                if (preexistingZone.startPos == 0)
+                    int a = 3 + 2;
                 glBufferSubData(GL_ARRAY_BUFFER, preexistingZone.startPos, preexistingZone.size, data);
             
             }
             else if (size > preexistingZone.size) {
             
-                if(preexistingZone.startPos + preexistingZone.size == lastPushedBytePos_) { // If this preexisting zone is the last buffer zone.
+                if(preexistingZone.startPos + preexistingZone.size == lastPushedBytePos_) { 
                 
+                    // If this preexisting zone is the last buffer zone.
+
                     preexistingZone.size = size;
                     if (preexistingZone.startPos + preexistingZone.size < maxSize_)
                         lastPushedBytePos_ = preexistingZone.startPos + preexistingZone.size;
@@ -133,8 +129,10 @@ namespace VoxelEng {
                 }
                 else {
                 
-                    // Use freed zone if possible.
-                    if (freedZonesBySize_.begin() == freedZonesBySize_.end() || size > freedZonesBySize_.begin()->size) {
+                    // If this preexisting zone is NOT the last buffer zone, try to reallocate to a freed zone or allocate a new buffer zone.
+                    
+                    auto itFit = freedZonesBySize_.lower_bound({ 0, size }); // Find a 'freedzone' with 'freedzone.size' >= 'size'
+                    if (itFit == freedZonesBySize_.end()) {
                     
                         // There is no freed zone with size greater than or equal to the required by this chunk's vertex data.
                         preexistingZone.startPos = lastPushedBytePos_;
@@ -147,35 +145,28 @@ namespace VoxelEng {
                     
                     }
                     else {
-                    
-                        if (size == freedZonesBySize_.begin()->size) {
 
-                            preexistingZone.startPos = freedZonesBySize_.begin()->startPos;
+                        // Case where there is a suitable freed zone available.
+                    
+                        if (itFit->size == size) {
+
+                            preexistingZone.startPos = itFit->startPos;
                             preexistingZone.size = size;
 
-                            freedZones_.erase(freedZonesBySize_.begin());
-                            freedZonesBySize_.erase(freedZonesBySize_.begin());
-
-                            //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
+                            freedZones_.erase(itFit);
+                            freedZonesBySize_.erase(itFit);
 
                         }
-                        else { // size < freedZonesBySize_.begin()->size
+                        else { // itFit->size > size 
 
-                            preexistingZone.startPos = freedZonesBySize_.begin()->startPos;
+                            preexistingZone.startPos = itFit->startPos;
                             preexistingZone.size = size;
 
-                            freedZonesBySize::iterator itSize = freedZonesBySize_.insert({ freedZonesBySize_.begin()->startPos + size, freedZonesBySize_.begin()->size - size }).first;
+                            freedZonesBySize::iterator itSize = freedZonesBySize_.insert({ itFit->startPos + size, itFit->size - size }).first;
                             auto itDebug = freedZones_.insert(itSize);
 
-                            //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
-
-                            //if (itDebug.first.operator*().operator*().size < 0)
-                                //throw std::runtime_error("Size cannot be negative");
-
-                            freedZones_.erase(freedZonesBySize_.begin());
-                            freedZonesBySize_.erase(freedZonesBySize_.begin());
-
-                            //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
+                            freedZones_.erase(itFit);
+                            freedZonesBySize_.erase(itFit);
 
                         }
                     
@@ -184,10 +175,13 @@ namespace VoxelEng {
                 }
 
                 glBufferSubData(GL_ARRAY_BUFFER, preexistingZone.startPos, preexistingZone.size, data);
+                if (bufferZones[chunkPos].startPos == 0)
+                    int a = 3 + 2;
             
             }
 
         }
+
     }
 
     void chunkVertexBuffer::freeDynamicData(const vec3& chunkPos, bool isTranslucidGeometry) {
@@ -197,88 +191,49 @@ namespace VoxelEng {
 
         if (bufferZones.contains(chunkPos)) {
 
+            if (bufferZones[chunkPos].startPos == 0)
+                int a = 3 + 2;
+
             freedZonesBySize::iterator itSize = freedZonesBySize_.insert(bufferZones[chunkPos]).first;
             freedZones::iterator it = freedZones_.insert(itSize).first;
-            //if (it.operator*().operator*().size < 0)
-                //throw std::runtime_error("Size cannot be negative");
             bufferZones.erase(chunkPos);
 
-            //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
-            //if (freedZonesBySize_.size() != freedZones_.size())
-                //logger::errorLog("Sizes cannot be different!");
-
-            //logger::debugLog("flag 1");
-
-            // Merge free zones if possible to avoid memory fragmentation.
+            // Merge with previous freed zone if possible to avoid memory fragmentation.
             if (it != freedZones_.begin()) {
 
-                freedZones::iterator itPrevious = --it;
-                it++;
-
+                freedZones::iterator itPrevious = std::prev(it);
                 if (itPrevious->operator->()->startPos + itPrevious->operator->()->size == it->operator->()->startPos) {
 
-                    chunkVertexBufferZone mergedZone = { itPrevious->operator->()->startPos, itPrevious->operator->()->size + it->operator->()->size };
-                    
-                    //if (mergedZone.size < 0)
-                        //throw std::runtime_error("Size cannot be negative");
-                    
+                    chunkVertexBufferZone mergedZone = 
+                        { itPrevious->operator->()->startPos, itPrevious->operator->()->size + it->operator->()->size };
+      
                     freedZonesBySize_.erase(*it);
                     freedZonesBySize_.erase(*itPrevious);
                     freedZones_.erase(it);
                     freedZones_.erase(itPrevious);
 
-                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
-                    //if (freedZonesBySize_.size() != freedZones_.size())
-                        //logger::errorLog("Sizes cannot be different!");
-
                     itSize = freedZonesBySize_.insert(mergedZone).first;
                     it = freedZones_.insert(itSize).first;
-
-                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
-                    //if (freedZonesBySize_.size() != freedZones_.size())
-                        //logger::errorLog("Sizes cannot be different!");
-
-                    //if (it.operator*().operator*().size < 0)
-                        //throw std::runtime_error("Size cannot be negative");
-
-                    //logger::debugLog("flag 2");
 
                 }
 
             }
 
-            freedZones::iterator itNext = ++it;
-            it--;
-
+            // Merge with next freed zone if possible to avoid memory fragmentation.
+            freedZones::iterator itNext = std::next(it);
             if (itNext != freedZones_.end()) {
 
                 if (it->operator->()->startPos + it->operator->()->size == itNext->operator->()->startPos) {
 
                     chunkVertexBufferZone mergedZone = { it->operator->()->startPos, it->operator->()->size + itNext->operator->()->size };
                     
-                    //if (mergedZone.size < 0)
-                        //throw std::runtime_error("Size cannot be negative");
-
-                    //logger::debugLog("flag 3");
-                    
                     freedZonesBySize_.erase(*it);
                     freedZonesBySize_.erase(*itNext);
                     freedZones_.erase(it);
                     freedZones_.erase(itNext);
 
-                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
-                    //if (freedZonesBySize_.size() != freedZones_.size())
-                        //logger::errorLog("Sizes cannot be different!");
-
                     itSize = freedZonesBySize_.insert(mergedZone).first;
                     freedZones_.insert(itSize).first;
-
-                    //logger::debugLog("sizes: " + std::to_string(freedZonesBySize_.size()) + ", " + std::to_string(freedZones_.size()));
-                    //if (freedZonesBySize_.size() != freedZones_.size())
-                        //logger::errorLog("Sizes cannot be different!");
-
-                    //if (it.operator*().operator*().size < 0)
-                        //throw std::runtime_error("Size cannot be negative");
 
                 }
 

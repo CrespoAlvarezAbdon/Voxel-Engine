@@ -88,7 +88,10 @@ namespace VoxelEng {
 
 			bool operator()(const chunkVertexBufferZone& a, const chunkVertexBufferZone& b) const {
 
-				return a.size > b.size && a.startPos > b.startPos;
+				if (a.size != b.size)
+					return a.size < b.size; // ascending by size
+				else
+					return a.startPos < b.startPos;   // tie-breaker
 
 			}
 

@@ -1261,7 +1261,6 @@ namespace VoxelEng {
 
         neighborsInfoPtr->blockLightsFromNeighbor.lock();
         blockLightsByNeighbor& blockLightsByNeighborPtr = neighborsInfoPtr->blockLightsFromNeighbor.get();
-        neighborsInfoPtr->blockLightsFromNeighbor.unlock();
         for (auto it = blockLightsByNeighborPtr.begin(); it != blockLightsByNeighborPtr.end(); it++) {
 
             it->second.lock();
@@ -1329,7 +1328,7 @@ namespace VoxelEng {
             }
             it->second.unlock();
         }
-        
+        neighborsInfoPtr->blockLightsFromNeighbor.unlock();
     }
 
     void chunk::makeEmpty() {
@@ -1559,7 +1558,7 @@ namespace VoxelEng {
             chunksPool_.setAllFreeOnClear(false);
             vbo_ = static_cast<chunkVertexBuffer*>(graphics::pVbo("chunks"));
             vbo_->bind();
-            vbo_->prepareDynamic(1024LL * 1024 * 1024 * 2); // 1024^3 B = 1GB.
+            vbo_->prepareDynamic(1024LL * 1024 * 1024 * 2); // 1024^3 bytes = 1GB.
 
             clearChunksFlag_ = false;
             priorityUpdatesRemaining_ = false;
@@ -2164,12 +2163,12 @@ namespace VoxelEng {
 
                 continueCreatingChunks = false;
 
-                chunkNeighborsInfoMutex_.lock();
+                /*chunkNeighborsInfoMutex_.lock();
                 logger::debugLog("Number of neighborinfo objects: " + std::to_string(chunkNeighborsInfo_.size()));
                 chunkNeighborsInfoMutex_.unlock();
                 chunksMutex_.lock();
                 logger::debugLog("Number of chunk objects: " + std::to_string(clientChunks_.size()));
-                chunksMutex_.unlock();
+                chunksMutex_.unlock();*/
 
                 do {
 
