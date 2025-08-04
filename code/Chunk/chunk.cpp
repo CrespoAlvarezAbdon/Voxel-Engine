@@ -2890,7 +2890,7 @@ namespace VoxelEng {
     
         const vec3& chunkPos = c->chunkPos();
 
-        std::shared_ptr<neighborsInfo> info = getOrCreateChunkNeighborInfo(chunkPos); // MAÑANA. Add method get or create.
+        std::shared_ptr<neighborsInfo> info = getOrCreateChunkNeighborInfo(chunkPos);
 
         info->neighborsGenPass1Completed_.lock();
         info->neighborsGenPass1Completed_.get()++;

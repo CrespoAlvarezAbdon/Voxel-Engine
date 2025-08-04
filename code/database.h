@@ -107,7 +107,7 @@ namespace VoxelEng {
 
 	inline void database::insert(const std::string& key, const std::string& value) {
 
-		// MAÑANA, EL INSERT TIENE QUE SER DE BYTES NO DE CADENAS DE CARÁCTERES.
+		// TODO, EL INSERT TIENE QUE SER DE BYTES NO DE CADENAS DE CARÁCTERES.
 		db_->Put(leveldb::WriteOptions(), key, value);
 
 	}

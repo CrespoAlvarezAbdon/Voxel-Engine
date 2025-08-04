@@ -770,9 +770,10 @@ namespace VoxelEng {
         opaqueFB_->bind();
         opaqueFB_->clearAllTextures();
         opaqueShader_->bind();
+        opaqueShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
+        opaqueShader_->setUniform1i("u_renderMode", 0); // TODO. ENUM FOR RENDER MODE.
         opaqueShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
         opaqueShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
-        opaqueShader_->setUniform1i("u_renderMode", 0); // renderMode = 0 stands for 3D rendering mode.
         shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
         translucentShadowFB_->getTexture(textureType::COLOR, 0)->bind(2);
         translucentShadowFB_->getTexture(textureType::DEPTH, 0)->bind(3);
@@ -785,7 +786,6 @@ namespace VoxelEng {
                 if (playerCamera_->isInsideFrustum(chunk.globalChunkPos)) {
 
                     int nPointLightsChunk = chunk.pointLights.size();
-                    //opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
 
                     // Upload dynamic lights.
                     if (nPointLightsChunk)
@@ -837,9 +837,11 @@ namespace VoxelEng {
         translucidShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
 
         // Terrain rendering.
-        vao_->bind();
+        vao_->bind(); // Restore chunks vao to bound status since opaque pass ended with entities vao bound.
         chunksVbo_->bind();
         shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
+        translucentShadowFB_->getTexture(textureType::COLOR, 0)->bind(2);
+        translucentShadowFB_->getTexture(textureType::DEPTH, 0)->bind(3);
         if (chunksRenderingData_) {
 
             for (vec3 const& chunkPos : translucentChunkGeometryToDraw) {
@@ -849,7 +851,6 @@ namespace VoxelEng {
                 if (playerCamera_->isInsideFrustum(chunk.globalChunkPos)) {
 
                     int nPointLightsChunk = chunk.pointLights.size();
-                    //opaqueShader_->setUniform1i("u_NPointLights", nPointLightsChunk);
 
                     // Upload dynamic lights.
                     if (nPointLightsChunk)

@@ -24,10 +24,8 @@ flat in int v_materialIndex;
 
 // Uniforms.
 uniform vec3 u_viewPos;
-uniform vec3 u_chunkPos;
 uniform int u_renderMode;
 uniform int u_useComplexLighting;
-uniform int u_NPointLights;
 
 // Structs.
 struct Material {
@@ -226,6 +224,8 @@ void main() {
 		if (isTransparent) 
 			discard;        
 
+        color = vec4(0.0);
+
         // Apply shadows.
         ShadowCalculation(v_LightSpacePos, norm, lightInstance);
 
@@ -238,7 +238,7 @@ void main() {
 		// Apply spot lights.
 
 		// Finally apply texture and v_color
-		color = (color + acumPointLights) * textureColor * v_color;
+		color = color * textureColor * v_color + acumPointLights;
 
         if(translucentShadow == 0.0 && hitDirLightModifier > 0.5)
         {

@@ -3,7 +3,10 @@
 layout(location = 0) out vec4 accum;
 layout(location = 1) out float reveal;
 
+layout(binding = 0) uniform sampler2D textureAtlas;
 layout(binding = 1) uniform sampler2D depthMap;
+layout(binding = 2) uniform sampler2D shadowColor;
+layout(binding = 3) uniform sampler2D translucentDepthMap;
 
 #define MAX_MATERIALS 256 // TODO. MAKE THIS DYNAMIC.
 #define MAX_DIRECTIONAL_LIGHTS 256
@@ -15,13 +18,14 @@ in vec2 v_TexCoord;
 in vec3 v_pos;
 in vec4 v_color;
 in vec4 v_LightSpacePos;
+in vec4 v_blockLightColor;
+in vec2 v_baryCoords;
+in vec4 v_mixedVertexColorData;
 flat in int v_materialIndex;
 
 // Uniforms.
 uniform vec3 u_viewPos;
-uniform sampler2D u_textureAtlas;
 uniform int u_useComplexLighting;
-uniform int u_NPointLights;
 
 // Structs.
 struct Material {
@@ -97,34 +101,44 @@ layout(std430, binding = 3) buffer SpotLightsInstances {
 
 // Variables.
 float shadow = 1.0;
+float translucentShadow = 1.0;
+vec4 coloredShadow = vec4(0.0);
 vec4 color;
 
 // Functions
 
-vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material) {
+vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, float shadow, float hitDirLightModifier, Material material) {
 
-    vec3 lightDir = normalize(-lightInstance.dir);
+    // Specular shading calculations.
+    vec3 reflectDir = reflect(lightInstance.dir, n);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x); // Remember that 'shininess' is a vec4 for padding but 'x' is actually the shininess value.
 
-    // diffuse shading
-    float diff = max(dot(n, lightDir), 0.0);
-
-    // specular shading
-    vec3 reflectDir = reflect(-lightDir, n);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x); // Remember that shininess is a vec4 for padding but 'x' is the real shininess value.
-
-    // combine results
     vec4 ambient = light.ambient * material.ambient;
-    vec4 diffuse  = light.diffuse  * diff * material.diffuse;
+    vec4 diffuse  = light.diffuse * hitDirLightModifier * material.diffuse;
     vec4 specular = light.specular * spec * material.specular;
 
     diffuse *= shadow;
-    specular *= (shadow < 0.75) ? 0 : 1;
+    diffuse *= translucentShadow;
+    specular *= (shadow < 0.75 || translucentShadow < 0.75) ? 0 : 1;
 
     return (ambient + diffuse + specular);
 
 }
 
+int floorMod(int a, int b) {
+
+    return a - b * int(floor(double(a) / b));
+
+}
+
+float floorMod(float a, float b) {
+
+    return a - b * floor(a / b);
+
+}
+
 vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material) {
+
     vec3 lightDir = normalize(lightInstance.pos - v_pos);
 
     // diffuse shading
@@ -148,39 +162,66 @@ vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 
     return (ambient + diffuse + specular);
 }
 
-void ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance)
-{
-    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    projCoords = projCoords * 0.5 + 0.5;
+void ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance) {
 
-    float closestDepth = texture(depthMap, projCoords.xy).r; 
-    float currentDepth = projCoords.z;
+    if(u_useComplexLighting == 1) {
 
-    vec3 normal = normalize(n);
-    vec3 lightDir = normalize(lightInstance.pos - v_pos);
+        float bias = 0.001;
+        vec3 displacedPos = fragPosLightSpace.xyz;
+        vec3 projCoords = displacedPos.xyz / fragPosLightSpace.w;
+        projCoords = projCoords * 0.5 + 0.5;
 
-    float bias = 0.001;
-    shadow = currentDepth - bias > closestDepth ? 0.0 : 1.0;
+        float closestDepth = texture(depthMap, projCoords.xy).r; 
+        float closestTranslucentDepth = texture(translucentDepthMap, projCoords.xy).r;
+        float currentDepth = projCoords.z;
 
-    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-    if(projCoords.z > 1.0)
-        shadow = 1.0;
+        vec3 normal = normalize(n);
+        vec3 lightDir = normalize(lightInstance.pos - v_pos);
+        
+        //float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
+        //float bias = 0.001 * (1.0 - dot(normal, lightDir)) + 0.0001;
+        shadow = currentDepth - bias > closestDepth ? 0.0 : 1.0;
+        translucentShadow = currentDepth -bias > closestTranslucentDepth ? 0.0 : 1.0;
+
+        // Keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+        if(projCoords.z > 1.0) {
+
+            shadow = 1.0;
+            translucentShadow = 1.0;
+
+        }
+            
+        // Get shadow's color.
+        if (translucentShadow == 0.0 && shadow == 1.0) {
+
+            coloredShadow = texture(shadowColor, projCoords.xy);
+
+        }
+
+    }
 
 }
 
 // Main.
 void main() {
 
+    /*
+    3D rendering.
+    */
+
 	// Get material.
 	Material material = materials[v_materialIndex];
-
 	LightInstance lightInstance = directionalLightsInstances[0];
 	DirectionalLight light = directionalLights[int(lightInstance.lightTypeIndex)];
 
+    vec4 textureColor = texture(textureAtlas, v_TexCoord);
 	vec3 norm = normalize(cross(dFdx(v_pos), dFdy(v_pos)));
 	vec3 viewDir = normalize(u_viewPos - v_pos);
-	vec4 textureColor = texture(u_textureAtlas, v_TexCoord);
-	if (textureColor.a < 0.1)
+    float hitDirLightModifier = max(dot(norm, normalize(-lightInstance.dir)), 0.0);
+    bool isTransparent = textureColor.a < 0.1;
+	
+    // Discard transparent fragments.
+    if (isTransparent)
 		discard;
 
 	color = vec4(0.0);
@@ -188,22 +229,21 @@ void main() {
     ShadowCalculation(v_LightSpacePos, norm, lightInstance);
 
 	// Apply directional lights.
-	color += CalcDirLight(light, lightInstance, norm, viewDir, material);
+	color = CalcDirLight(light, lightInstance, norm, viewDir, shadow, hitDirLightModifier, material) * u_useComplexLighting;
 
     // Apply point lights.
-    vec4 acumPointLights = vec4(0.0);
-    for(int i = 0; i < u_NPointLights; i++)
-    {
-        LightInstance lightInstance2 = pointLightsInstances[i];
-        PointLight light2 = pointLights[int(lightInstance2.lightTypeIndex)];
-        acumPointLights += CalcPointLight(light2, lightInstance2, norm, viewDir, material);
-    }
+    vec4 acumPointLights = (v_blockLightColor + v_baryCoords.x * v_baryCoords.y * v_mixedVertexColorData) * u_useComplexLighting;
 
 	// Apply spot lights.
 
 	// Final color calculation.
-	color = (color + acumPointLights * u_useComplexLighting) * textureColor * v_color;
+	color = color * textureColor * v_color + acumPointLights;
 	color.a = textureColor.a;
+
+    if(translucentShadow == 0.0 && hitDirLightModifier > 0.5)
+    {
+        color += coloredShadow * u_useComplexLighting;
+    }
 
 	// Weight function
 	//float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
