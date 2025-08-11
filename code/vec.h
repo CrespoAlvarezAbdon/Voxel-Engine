@@ -259,9 +259,14 @@ namespace VoxelEng {
 	const basicVec3 basicVec3FixedWest(0, 0, -1);
 
 	/**
-	* @brief basicVec4 constant of the ones vector.
+	* @brief basicVec4 constant of the zeroes vector.
 	*/
 	const basicVec4 basicVec4Zeroes(0, 0, 0, 0);
+
+	/**
+	* @brief basicVec4 constant of the negative ones vector.
+	*/
+	const basicVec4 basicVec4NegOnes(-1, -1, -1, -1);
 
 
 	// Operators.

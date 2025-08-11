@@ -617,8 +617,10 @@ namespace VoxelEng {
 		std::unordered_set<unsigned short> freeLocalIDs_;
 		Padded3DArray<unsigned short> blocksLocalIDs_;
 
+		bool isOpaque_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+
 		basicVec4 blockLightColor_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
-		char blockLightLevel_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting value in the specific block. Opaque blocks have -1 light and air blocks have 0 light by default.
+		char blockLightLevel_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting value in the specific block.
 		std::unordered_set<vec3> floodPointLightPositions_;
 
 		bool modified_;
@@ -662,7 +664,8 @@ namespace VoxelEng {
 		
 		void placeNewBlock(unsigned short& oldLocalID, const block& newBlock);
 
-		
+		basicVec4 getBlockLightAverage(bool isXLimit, bool isYLimit, const basicVec4& blockLightOwn,
+			const basicVec4& blockLight1, const basicVec4& blockLight2, const basicVec4& blockLight3);
 
 	};
 
@@ -1055,6 +1058,13 @@ namespace VoxelEng {
 		//return setInternalBlockID(linearIndex / (SCZ * SCY), (linearIndex / SCZ) % SCY, linearIndex % SCZ, newID);
 
 	//}
+
+	inline basicVec4 chunk::getBlockLightAverage(bool isXLimit, bool isYLimit, const basicVec4& blockLightOwn,
+		const basicVec4& blockLight1, const basicVec4& blockLight2, const basicVec4& blockLight3) {
+
+		return (blockLightOwn + (isXLimit ? basicVec4Zeroes : blockLight1) + (isYLimit ? basicVec4Zeroes : blockLight2) + ((isXLimit || isYLimit) ? basicVec4Zeroes : blockLight3)) / 4;
+
+	}
 
 
 	// 'chunkEvent' class.

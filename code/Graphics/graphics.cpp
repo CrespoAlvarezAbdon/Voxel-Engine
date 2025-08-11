@@ -131,9 +131,6 @@ namespace VoxelEng {
 				vbos_.at("screen")->bind();
 				vaos_.at("screen").addLayout(layoutScreen);
 
-				// MORE TODOS.
-				// -CUANDO SUBAS SPOTLIGHTS, CONVERTIR LOS ANGULOS A RADIANES.
-
 				// NOTE. UBOs and SSBOs have do not share binding points between them. So you can have both an UBO and A SSBO with binding point 1.
 
 				// Initialise UBOs.
