@@ -157,6 +157,24 @@ namespace VoxelEng {
 	typedef std::chrono::time_point<std::chrono::high_resolution_clock> timePoint;
 	typedef long long duration;
 
+	/**
+	* Provides a literal char definition.
+	*/
+	constexpr char operator"" _c(unsigned long long v) {
+
+		return static_cast<char>(v);
+
+	}
+
+	/**
+	* Provides a literal unsigned char definition.
+	*/
+	constexpr unsigned char operator"" _uc(unsigned long long v) {
+
+		return static_cast<unsigned char>(v);
+
+	}
+
 }
 
 #endif

@@ -339,7 +339,6 @@ namespace VoxelEng {
 
         basicVec4 extraColorData;
         
-
         if (textureID) {
 
             unsigned int modelSize = m.size();

@@ -36,7 +36,7 @@ namespace VoxelEng {
 		char intensity;
 
 		/**
-		* Light's color applied to its position. Last value is alpha so technically a light can make a block disappear.
+		* Light's color applied to its position. Last value is alpha.
 		*/
 		basicVec4 color;
 

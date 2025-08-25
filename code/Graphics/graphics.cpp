@@ -7,6 +7,8 @@
 #include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 #include <Graphics/Lighting/Lights/PointLight/pointLight.h>
 #include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
+#include <Graphics/Lighting/PackedLights/PackedDirectionalLight/packedDirectionalLight.hpp>
+#include <Graphics/Lighting/PackedLights/PackedPointLight/packedPointLight.hpp>
 #include <Graphics/Materials/materials.h>
 #include <Graphics/Vertex/ChunkVertexBuffer/chunkVertexBuffer.h>
 #include <Utilities/Logger/logger.h>
@@ -106,9 +108,9 @@ namespace VoxelEng {
 				layout3D.push<GLfloat>(3, true);
 				layout3D.push<GLfloat>(2, true);
 				layout3D.push<unsigned char>(4, true);
+				layout3D.push<char>(4, true);
 				layout3D.push<char>(4, false);
-				layout3D.push<char>(4, false);
-				layout3D.push<char>(4, false);
+				layout3D.push<char>(4, true);
 				vaos_.at("3D").bind();
 				vbos_.at("chunks")->bind();
 				vaos_.at("3D").addLayout(layout3D);
@@ -132,7 +134,7 @@ namespace VoxelEng {
 				vaos_.at("screen").addLayout(layoutScreen);
 
 				// NOTE. UBOs and SSBOs have do not share binding points between them. So you can have both an UBO and A SSBO with binding point 1.
-
+				// HAY QUE AÑADIR SPECULAR Y DIFFUSE	
 				// Initialise UBOs.
 				registry<std::string, var>* UBORegistry = registries::get("UBOs")->pointer<registry<std::string, var>>();
 				UBORegistry->insert("Materials",
@@ -141,8 +143,9 @@ namespace VoxelEng {
 					var::varType::UBO_OF_MATERIALS);
 
 				UBORegistry->insert("DirectionalLights",
-					static_cast<void*>(new UBO<directionalLight>("DirectionalLights",
-						*registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>(), 2)),
+					static_cast<void*>(new UBO<packedDirectionalLight>("DirectionalLightsPacked",
+						*registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>(), 
+						packedDirectionalLight::pack, 2)),
 					var::varType::UBO_OF_DIRECTIONALLIGHTS);
 
 				UBORegistry->insert("PointLights",
@@ -169,7 +172,7 @@ namespace VoxelEng {
 				// TODO. MOVE DIRECTIONAL LIGHT INSTANCE CREATION TO WORLD.H SO THAT EACH WORLD/DIMENSION HAS ITS PROPER DIRECTIONAL LIGHTS.
 				SSBO<lightInstance>* directionalLightsInstances = SSBORegistry->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
 				lightInstance& instance = directionalLightsInstances->get(0);
-				instance.pos = vec4(10.0f, 200.0f, 0.0f, 0.0f);
+				instance.pos = vec4(0.0f, 200.0f, 0.0f, 0.0f);
 				instance.dir = vec4(0.0f, -1.0f, 0.0f, 0.0f);
 				instance.lightTypeIndex = 0;
 				directionalLightsInstances->reuploadElement(0);

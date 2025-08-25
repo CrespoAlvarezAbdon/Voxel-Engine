@@ -35,7 +35,7 @@ struct Material {
     vec4 shininess;
 };
 
-struct DirectionalLight {
+struct DirectionalLightPacked {
     vec4 ambient;
     vec4 diffuse;
     vec4 specular;
@@ -74,8 +74,8 @@ layout(std140, binding = 1) uniform Materials {
     Material materials[MAX_MATERIALS];
 };
 
-layout(std140, binding = 2) uniform DirectionalLights {
-    DirectionalLight directionalLights[MAX_DIRECTIONAL_LIGHTS];
+layout(std140, binding = 2) uniform DirectionalLightsPacked {
+    DirectionalLightPacked directionalLightsPacked[MAX_DIRECTIONAL_LIGHTS];
 };
 
 layout(std140, binding = 3) uniform PointLights {
@@ -107,7 +107,7 @@ vec4 color;
 
 // Functions
 
-vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, float shadow, float hitDirLightModifier, Material material) {
+vec4 CalcDirLight(DirectionalLightPacked light, LightInstance lightInstance, vec3 n, vec3 viewDir, float shadow, float hitDirLightModifier, Material material) {
 
     // Specular shading calculations.
     vec3 reflectDir = reflect(lightInstance.dir, n);
@@ -212,13 +212,13 @@ void main() {
 	// Get material.
 	Material material = materials[v_materialIndex];
 	LightInstance lightInstance = directionalLightsInstances[0];
-	DirectionalLight light = directionalLights[int(lightInstance.lightTypeIndex)];
+	DirectionalLightPacked light = directionalLightsPacked[int(lightInstance.lightTypeIndex)];
 
-    vec4 textureColor = texture(textureAtlas, v_TexCoord);
+    vec4 albedo = texture(textureAtlas, v_TexCoord) * v_color;
 	vec3 norm = normalize(cross(dFdx(v_pos), dFdy(v_pos)));
 	vec3 viewDir = normalize(u_viewPos - v_pos);
     float hitDirLightModifier = max(dot(norm, normalize(-lightInstance.dir)), 0.0);
-    bool isTransparent = textureColor.a < 0.1;
+    bool isTransparent = albedo.a < 0.1;
 	
     // Discard transparent fragments.
     if (isTransparent)
@@ -228,17 +228,15 @@ void main() {
 
     ShadowCalculation(v_LightSpacePos, norm, lightInstance);
 
-	// Apply directional lights.
-	color = CalcDirLight(light, lightInstance, norm, viewDir, shadow, hitDirLightModifier, material) * u_useComplexLighting;
-
     // Apply point lights.
     vec4 acumPointLights = (v_blockLightColor + v_baryCoords.x * v_baryCoords.y * v_mixedVertexColorData) * u_useComplexLighting;
 
 	// Apply spot lights.
 
 	// Final color calculation.
-	color = color * textureColor * v_color + acumPointLights;
-	color.a = textureColor.a;
+    vec4 blockLit = (v_blockLightColor + v_baryCoords.x * v_baryCoords.y * v_mixedVertexColorData) * u_useComplexLighting;
+    color = albedo * CalcDirLight(light, lightInstance, norm, viewDir, shadow, hitDirLightModifier, material) + blockLit;
+	color.a = albedo.a;
 
     if(translucentShadow == 0.0 && hitDirLightModifier > 0.5)
     {

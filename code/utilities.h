@@ -357,6 +357,16 @@ namespace VoxelEng {
 	*/
 	uint32_t packNormalIntoGL_INT_2_10_10_10_REV(float normalX, float normalY, float normalZ);
 
+	namespace utilities {
+	
+		/**
+		* @brief Performs addition of two char but clamping the result to one of the char value range's limits if the result
+		* surpasses it.
+		*/
+		char safeAdd(char c, char c2);
+	
+	}
+
 }
 
 #endif

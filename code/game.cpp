@@ -32,7 +32,7 @@
 #include <Graphics/Lighting/Lights/PointLight/pointLight.h>
 #include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
 #include <Graphics/Materials/materials.h>
-#include <Graphics/Lighting/Lights/light.h>
+#include <Graphics/Lighting/Lights/light.hpp>
 #include <Graphics/Vertex/vertex.h>
 #include <Graphics/Vertex/ChunkVertexBuffer/chunkVertexBuffer.h>
 #include <Time/Timer/timer.h>
@@ -219,38 +219,38 @@ namespace VoxelEng {
             // Light types registration.
             registryInsOrdered<std::string, directionalLight>* directionalLightsRegistry = registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>();
             directionalLightsRegistry->insert("BlueDirectionalLight",
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f, 
-                0.0f, 0.0f, 1.0f);
+                0, 0, 127,
+                0, 0, 127,
+                0, 0, 127);
 
             registryInsOrdered<std::string, pointLight>* pointLightsRegistry = registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>();
             pointLightsRegistry->insert("RedPointLight",
-                8.0f, 0.0f, 0.0f,
-                8.0f, 0.0f, 0.0f,
-                8.0f, 0.0f, 0.0f,
-                8.0f);
+                127, 0, 0,
+                127, 0, 0,
+                127, 0, 0,
+                8);
             pointLightsRegistry->insert("BluePointLight",
-                0.0f, 0.0f, 8.0f,
-                0.0f, 0.0f, 8.0f,
-                0.0f, 0.0f, 8.0f,
-                8.0f);
+                0, 0, 127,
+                0, 0, 127,
+                0, 0, 127,
+                8);
             pointLightsRegistry->insert("NegativeRedPointLight",
-                -8.0f, 0.0f, 0.0f,
-                -8.0f, 0.0f, 0.0f,
-                -8.0f, 0.0f, 0.0f,
-                8.0f);
+                -128, 0, 0,
+                -128, 0, 0,
+                -128, 0, 0,
+                8);
             pointLightsRegistry->insert("NegativePointLight",
-                -8.0f, -8.0f, -8.0f,
-                -8.0f, -8.0f, -8.0f,
-                -8.0f, -8.0f, -8.0f,
-                8.0f);
+                -128, -128, -128,
+                -128, -128, -128,
+                -128, -128, -128,
+                8);
 
             registryInsOrdered<std::string, spotLight>* spotLightsRegistry = registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>();
             spotLightsRegistry->insert("GreenSpotLight",
-                0.0f, 5.0f, 0.0f,
-                0.0f, 10.0f, 0.0f, 
-                0.0f, 10.0f, 0.0f,
-                25.0f, 35.0f, 16.0f);
+                0, 64, 0,
+                0, 127, 0,
+                0, 127, 0,
+                25.0f, 35.0f, 16);
 
             // Block registration.
             block::init();

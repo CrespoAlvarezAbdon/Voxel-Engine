@@ -1,4 +1,4 @@
-#include "light.h"
+#include "light.hpp"
 #include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {

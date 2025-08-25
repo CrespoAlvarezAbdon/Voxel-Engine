@@ -3,7 +3,7 @@
 
 #include <vec.h>
 #include <Registry/registryElement.h>
-#include <Graphics/Lighting/lights/light.h>
+#include <Graphics/Lighting/lights/light.hpp>
 
 namespace VoxelEng {
 
@@ -30,9 +30,9 @@ namespace VoxelEng {
 		* @param specularG Percentage of green color emitted in specular lighting calculations by this light type.
 		* @param specularB Percentage of blue color emitted in specular lighting calculations by this light type.
 		*/
-		directionalLight(float ambientR, float ambientG, float ambientB,
-			float diffuseR, float diffuseG, float diffuseB,
-			float specularR, float specularG, float specularB);
+		directionalLight(char ambientR, char ambientG, char ambientB,
+			char diffuseR, char diffuseG, char diffuseB,
+			char specularR, char specularG, char specularB);
 
 
 		// Observers.
@@ -53,9 +53,9 @@ namespace VoxelEng {
 	: light()
 	{}
 
-	inline directionalLight::directionalLight(float ambientR, float ambientG, float ambientB, 
-		float diffuseR, float diffuseG, float diffuseB,
-		float specularR, float specularG, float specularB)
+	inline directionalLight::directionalLight(char ambientR, char ambientG, char ambientB,
+		char diffuseR, char diffuseG, char diffuseB,
+		char specularR, char specularG, char specularB)
 	: light(ambientR, ambientG, ambientB, diffuseR, diffuseG, diffuseB, specularR, specularG, specularB)
 	{}
 

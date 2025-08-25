@@ -4,7 +4,7 @@
 #include <definitions.h>
 #include <vec.h>
 #include <Registry/registryElement.h>
-#include <Graphics/Lighting/lights/light.h>
+#include <Graphics/Lighting/lights/light.hpp>
 
 namespace VoxelEng {
 
@@ -32,10 +32,10 @@ namespace VoxelEng {
 		* @param specularB Percentage of blue color emitted in specular lighting calculations by this light type.
 		* @param maxDistance Maximum distance this light can cover.
 		*/
-		pointLight(float ambientR, float ambientG, float ambientB, 
-			float diffuseR, float diffuseG, float diffuseB,
-			float specularR, float specularG, float specularB,
-			float maxDistance);
+		pointLight(char ambientR, char ambientG, char ambientB,
+			char diffuseR, char diffuseG, char diffuseB,
+			char specularR, char specularG, char specularB,
+			unsigned int maxDistance);
 
 
 		// Observers.
@@ -49,13 +49,13 @@ namespace VoxelEng {
 		/**
 		* @brief Get the light's maximum spread distance.
 		*/
-		float maxDistance() const;
+		unsigned int maxDistance() const;
 
 	protected:
 
 		static const unsigned int nArgs_;
 
-		float maxDistance_;
+		unsigned int maxDistance_;
 		float padding_[3];
 		
 	};
@@ -64,10 +64,10 @@ namespace VoxelEng {
 	: light(), maxDistance_(lightMaxIntensity), padding_{0.0f, 0.0f, 0.0f}
 	{}
 
-	inline pointLight::pointLight(float ambientR, float ambientG, float ambientB, 
-		float diffuseR, float diffuseG, float diffuseB,
-		float specularR, float specularG, float specularB,
-		float maxDistance)
+	inline pointLight::pointLight(char ambientR, char ambientG, char ambientB,
+		char diffuseR, char diffuseG, char diffuseB,
+		char specularR, char specularG, char specularB,
+		unsigned int maxDistance)
 	: light(ambientR, ambientG, ambientB, diffuseR, diffuseG, diffuseB, specularR, specularG, specularB),
 	  maxDistance_(maxDistance), padding_{ 0.0f, 0.0f, 0.0f }
 	{}
@@ -78,7 +78,7 @@ namespace VoxelEng {
 
 	}
 
-	inline float pointLight::maxDistance() const {
+	inline unsigned int pointLight::maxDistance() const {
 	
 		return maxDistance_;
 	

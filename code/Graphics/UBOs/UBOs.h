@@ -62,6 +62,19 @@ namespace VoxelEng {
 		*/
 		UBO(const std::string& name, const registryInsOrdered<std::string, T>& elements, unsigned int bindingPoint);
 
+		/**
+		* @brief Class constructor. Automatically uploads the given data into GPU.
+		* @param name UBO's name in the shaders it is going to be bound to.
+		* @param elements. The elements to make a copy of and store inside the UBO. They will be converted from T2 to T based on the given
+		* conversion function.
+		* @param convFunc. Function to convert T2 elements into T elements.
+		* @param bindingPoint The UBO's binding point that is referenced in the shader where it
+		* is going to be used.
+		*/
+		template <typename T2, typename F>
+		UBO(const std::string& name, const registryInsOrdered<std::string, T2>& elements, F&& convFunc, 
+			unsigned int bindingPoint);
+
 
 		// Observers.
 
@@ -133,6 +146,8 @@ namespace VoxelEng {
 
 	}
 
+	// MAÑANA. PONER UNA FUNCION OPCIONAL COMO PARÁMETRO PARA COGER LOS ELEMENTOS Y EMPAQUETARLOS.
+	// EMPAQUETAR 4 BYTES DE AMBIENT, DIFFUSE Y SPECULAR RESPECTIVELY EN UN INT CADA UNO Y EN LAS SHADERS CAMBIAR LAS STRUCTS DE LAS LUCES
 	template <typename T>
 	requires std::default_initializable<T>
 	UBO<T>::UBO(const std::string& name, const registryInsOrdered<std::string, T>& elements, unsigned int bindingPoint)
@@ -155,6 +170,32 @@ namespace VoxelEng {
 		glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint_, graphicsAPIID_);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	
+	}
+
+	template <typename T>
+	requires std::default_initializable<T>
+	template <typename T2, typename F>
+	UBO<T>::UBO(const std::string& name, const registryInsOrdered<std::string, T2>& elements, F&& convFunc,
+		unsigned int bindingPoint) 
+	: bindingPoint_(bindingPoint), name_(name), elements_(elements.size()) {
+	
+		typename registryInsOrdered<std::string, T2>::const_iterator it = elements.orderedCbegin();
+		int i = 0;
+		while (it != elements.orderedCend()) {
+
+			elements_[i] = convFunc(*(it->second));
+
+			it++;
+			i++;
+
+		}
+
+		glGenBuffers(1, &graphicsAPIID_);
+		glBindBuffer(GL_UNIFORM_BUFFER, graphicsAPIID_);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(T) * elements_.size(), elements_.data(), GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint_, graphicsAPIID_);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 	}
 
 	template <typename T>

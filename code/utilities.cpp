@@ -137,4 +137,15 @@ namespace VoxelEng {
 
 	}
 
+	namespace utilities {
+	
+		char safeAdd(char c, char c2) {
+
+			int result = c + c2;
+			return result > 127 ? 127 : result < -128 ? -128 : (char)result;
+
+		}
+	
+	}
+
 }

@@ -66,7 +66,7 @@ namespace VoxelEng {
 			// Light types registry initialisation.
 			registriesInsOrdered_->insert("DirectionalLights", static_cast<void*>(new registryInsOrdered<std::string, directionalLight>([](std::any args) {
 
-				auto tuple = std::any_cast<std::tuple<float, float, float, float, float, float, float, float, float>>(args);
+				auto tuple = std::any_cast<std::tuple<int, int, int, int, int, int, int, int, int>>(args);
 				return std::make_unique<directionalLight>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple),
 					std::get<3>(tuple), std::get<4>(tuple), std::get<5>(tuple),
 					std::get<6>(tuple), std::get<7>(tuple), std::get<8>(tuple));
@@ -74,13 +74,13 @@ namespace VoxelEng {
 			}, nullptr)), var::varType::REGISTRYINSORDERED_OF_STRINGS_DIRECTIONALLIGHTS);
 
 			registriesInsOrdered_->get("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>()->insert("Default",
-				0.5f, 0.5f, 0.5f,
-				1.0f, 1.0f, 1.0f, 
-				1.0f, 1.0f, 1.0f);
+				42, 42, 42,
+				127, 120, 108,
+				127, 127, 127);
 
 			registriesInsOrdered_->insert("PointLights", static_cast<void*>(new registryInsOrdered<std::string, pointLight>([](std::any args) {
 
-				auto tuple = std::any_cast<std::tuple<float, float, float, float, float, float, float, float, float, float>>(args);
+				auto tuple = std::any_cast<std::tuple<int, int, int, int, int, int, int, int, int, int>>(args);
 				return std::make_unique<pointLight>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple),
 					std::get<3>(tuple), std::get<4>(tuple), std::get<5>(tuple),
 					std::get<6>(tuple), std::get<7>(tuple), std::get<8>(tuple),
@@ -89,14 +89,14 @@ namespace VoxelEng {
 			}, nullptr)), var::varType::REGISTRYINSORDERED_OF_STRINGS_POINTLIGHTS);
 
 			registriesInsOrdered_->get("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>()->insert("Default",
-				0.5f, 0.5f, 0.5f,
-				1.0f, 1.0f, 1.0f, 
-				1.0f, 1.0f, 1.0f, 
-				16.0f);
+				127, 127, 127,
+				127, 127, 127,
+				127, 127, 127,
+				8);
 
 			registriesInsOrdered_->insert("SpotLights", static_cast<void*>(new registryInsOrdered<std::string, spotLight>([](std::any args) {
 
-				auto tuple = std::any_cast<std::tuple<float, float, float, float, float, float, float, float, float, float, float, float>>(args);
+				auto tuple = std::any_cast<std::tuple<int, int, int, int, int, int, int, int, int, float, float, int>>(args);
 				return std::make_unique<spotLight>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple),
 					std::get<3>(tuple), std::get<4>(tuple), std::get<5>(tuple),
 					std::get<6>(tuple), std::get<7>(tuple), std::get<8>(tuple),
@@ -105,10 +105,10 @@ namespace VoxelEng {
 			}, nullptr)), var::varType::REGISTRYINSORDERED_OF_STRINGS_SPOTLIGHTS);
 
 			registriesInsOrdered_->get("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>()->insert("Default",
-				0.5f, 0.5f, 0.5f,
-				1.0f, 1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				25.0f, 35.0f, 16.0f);
+				64, 64, 64,
+				127, 127, 127,
+				127, 127, 127,
+				25.0f, 35.0f, 16);
 
 			initialised_ = true;
 		

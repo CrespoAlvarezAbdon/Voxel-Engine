@@ -43,9 +43,9 @@ namespace VoxelEng {
 		* @param specularG Percentage of green color emitted in specular lighting calculations by this light type.
 		* @param specularB Percentage of blue color emitted in specular lighting calculations by this light type.
 		*/
-		light(float ambientR, float ambientG, float ambientB,
-			  float diffuseR, float diffuseG, float diffuseB,
-			  float specularR, float specularG, float specularB);
+		light(char ambientR, char ambientG, char ambientB,
+			char diffuseR, char diffuseG, char diffuseB,
+			char specularR, char specularG, char specularB);
 
 
 		// Observers.
@@ -62,9 +62,19 @@ namespace VoxelEng {
 		static unsigned int nArgs();
 
 		/**
-		* @brief Get the color provided by this light.
+		* @brief Get the ambient color provided by this light.
 		*/
-		basicVec4 color() const;
+		basicVec4 ambient() const;
+
+		/**
+		* @brief Get the diffuse color provided by this light.
+		*/
+		basicVec4 diffuse() const;
+
+		/**
+		* @brief Get the specular color provided by this light.
+		*/
+		basicVec4 specular() const;
 
 	protected:
 
@@ -72,20 +82,21 @@ namespace VoxelEng {
 		static std::string typeName_;
 		static const unsigned int nArgs_;
 
-		float ambient_[4];
-		float diffuse_[4]; // TODO. LEAVE ONLY THIS AND CHANGE IT TO CVEC3
-		float specular_[4];
+		basicVec4 ambient_;
+		basicVec4 diffuse_;
+		basicVec4 specular_;
 
 	};
 
 	inline light::light()
-	: ambient_{1.0f, 1.0f, 1.0f, 1.0f,}, diffuse_{ 1.0f,  1.0f, 1.0f, 1.0f }, specular_{ 1.0f, 1.0f, 1.0f, 1.0f }
+	: ambient_(basicVec4Zeroes), diffuse_(basicVec4Zeroes), specular_(basicVec4Zeroes)
 	{}
 
-	inline light::light(float ambientR, float ambientG, float ambientB, 
-		float diffuseR, float diffuseG, float diffuseB,
-		float specularR, float specularG, float specularB) 
-	: ambient_{ ambientR, ambientG, ambientB, 1.0f, }, diffuse_{ diffuseR, diffuseG, diffuseB, 1.0f }, specular_{ specularR, specularG, specularB, 1.0f }
+	inline light::light(char ambientR, char ambientG, char ambientB,
+		char diffuseR, char diffuseG, char diffuseB,
+		char specularR, char specularG, char specularB)
+	: ambient_{ ambientR, ambientG, ambientB, 127, }, diffuse_{ diffuseR, diffuseG, diffuseB, 127 }, 
+		specular_{ specularR, specularG, specularB, 127 }
 	{}
 
 	inline const std::string& light::typeName() {
@@ -100,11 +111,19 @@ namespace VoxelEng {
 
 	}
 
-	inline basicVec4 light::color() const
+	inline basicVec4 light::ambient() const
 	{
-	
-		return basicVec4(diffuse_[0], diffuse_[1], diffuse_[2], diffuse_[3]);
-	
+		return ambient_;
+	}
+
+	inline basicVec4 light::diffuse() const
+	{
+		return diffuse_;
+	}
+
+	inline basicVec4 light::specular() const
+	{
+		return specular_;
 	}
 
 }

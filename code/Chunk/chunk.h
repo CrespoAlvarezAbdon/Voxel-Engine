@@ -420,6 +420,11 @@ namespace VoxelEng {
 		void setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification = true);
 
 		/**
+		*
+		*/
+		void setBlockLight(const block& oldB, const block& b, const vec3& pos);
+
+		/**
 		* @brief Set the chunk's chunk position.
 		*/
 		void chunkPos(const vec3& newChunkPos);
@@ -615,14 +620,13 @@ namespace VoxelEng {
 		palette<unsigned short, unsigned int> palette_;
 		std::unordered_map<unsigned short, unsigned short> paletteCount_;
 		std::unordered_set<unsigned short> freeLocalIDs_;
-		Padded3DArray<unsigned short> blocksLocalIDs_;
-
-		bool isOpaque_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-
-		basicVec4 blockLightColor_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
-		char blockLightLevel_[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]; // Lighting value in the specific block.
 		std::unordered_set<vec3> floodPointLightPositions_;
 
+		Padded3DArray<unsigned short> blocksLocalIDs_;
+		Padded3DArray<bool> isOpaque_;
+		Padded3DArray<basicVec4> blockLightColor_; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
+		Padded3DArray<char> blockLightLevel_; // Lighting value in the specific block.
+		
 		bool modified_;
 		
 		std::atomic<short> nOpaqueBlocks_;
@@ -664,8 +668,8 @@ namespace VoxelEng {
 		
 		void placeNewBlock(unsigned short& oldLocalID, const block& newBlock);
 
-		basicVec4 getBlockLightAverage(bool isXLimit, bool isYLimit, const basicVec4& blockLightOwn,
-			const basicVec4& blockLight1, const basicVec4& blockLight2, const basicVec4& blockLight3);
+		basicVec4 getBlockLightAverage(const basicVec4& blockLightOwn,
+			const basicVec3& blockLightCoords1, const basicVec3& blockLightCoords2, const basicVec3& blockLightCords3);
 
 	};
 
@@ -1059,12 +1063,7 @@ namespace VoxelEng {
 
 	//}
 
-	inline basicVec4 chunk::getBlockLightAverage(bool isXLimit, bool isYLimit, const basicVec4& blockLightOwn,
-		const basicVec4& blockLight1, const basicVec4& blockLight2, const basicVec4& blockLight3) {
-
-		return (blockLightOwn + (isXLimit ? basicVec4Zeroes : blockLight1) + (isYLimit ? basicVec4Zeroes : blockLight2) + ((isXLimit || isYLimit) ? basicVec4Zeroes : blockLight3)) / 4;
-
-	}
+	
 
 
 	// 'chunkEvent' class.
@@ -1583,7 +1582,7 @@ namespace VoxelEng {
 		*/
 		static std::mutex& chunkNeighborsInfoMutex();
 
-		static void passLightToNeighbor(blockLightMod& floodLight, basicVec3& pos, const vec3& neighborOffset, const vec3& chunkPos);
+		static void passLightToNeighbor(const blockLightMod& floodLight, basicVec3& pos, const vec3& neighborOffset, const vec3& chunkPos);
 
 		static std::shared_ptr<neighborsInfo> getOrCreateChunkNeighborInfo(const vec3& chunkPos);
 

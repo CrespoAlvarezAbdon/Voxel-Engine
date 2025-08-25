@@ -13,6 +13,7 @@
 #include <string>
 #include <stdexcept>
 
+
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
@@ -34,19 +35,19 @@ namespace VoxelEng {
 
 	// Type definitions.
 
-#if GRAPHICS_API == OPENGL
+	#if GRAPHICS_API == OPENGL
 
-	typedef glm::vec2 vec2;
-	typedef glm::vec3 vec3;
-	typedef glm::vec4 vec4;
+		typedef glm::vec2 vec2;
+		typedef glm::vec3 vec3;
+		typedef glm::vec4 vec4;
 
-#else
+	#else
 
 
 
-#endif
+	#endif
 
-// Other operators.
+	// Other operators.
 
 	vec3 operator+(const vec3& v, blockViewDir viewDir);
 
@@ -127,14 +128,14 @@ namespace VoxelEng {
 		* @param v The right operand vector.
 		* @return A vector with the result of the addition.
 		*/
-		basicVec4 operator+(const basicVec4 v2) const;
+		basicVec4 operator+(const basicVec4 v) const;
 
 		/**
 		* @brief Component-based add the right operand vector to the left operand vector.
 		* @param v The right operand vector.
 		* @return The left operand vector.
 		*/
-		basicVec4& operator+=(const basicVec4 v2);
+		basicVec4& operator+=(const basicVec4 v);
 
 		/**
 		* @brief Multiply the vector's component by the given number.
@@ -151,6 +152,22 @@ namespace VoxelEng {
 		* @return A vector with the result of this operation.
 		*/
 		basicVec4 operator/(char scalar) const;
+
+		/**
+		* @brief Component-based add the right operand vector to the left operand vector.
+		* NOTE. If the sum of two components would surpass the data range limit, the result will be clamped to said limit
+		* @param v The right operand vector.
+		* @return The left operand vector.
+		*/
+		basicVec4 safeAdd(const basicVec4& v) const;
+
+		/**
+		* @brief Component-based add the right operand vector to the left operand vector.
+		* NOTE. If the sum of two components would surpass the data range limit, the result will be clamped to said limit
+		* @param v The right operand vector.
+		* @return The left operand vector.
+		*/
+		basicVec4& safeAdd(const basicVec4& v);
 
 	};
 

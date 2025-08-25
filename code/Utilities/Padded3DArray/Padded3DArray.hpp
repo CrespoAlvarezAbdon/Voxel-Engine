@@ -1,6 +1,7 @@
 #ifndef _VOXELENG_PADDED_3D_ARRAY_
 #define _VOXELENG_PADDED_3D_ARRAY_
 
+#include <algorithm>
 #include <vector>
 
 namespace VoxelEng {
@@ -52,7 +53,7 @@ namespace VoxelEng {
 			* @param z Third dimension coordinate.
 			* @return The element at the specified coordinates.
 			*/
-			T& operator[](int z);
+			typename std::vector<T>::reference operator[](int z);
 
 		private:
 
@@ -138,7 +139,7 @@ namespace VoxelEng {
 		* @param y Second dimension coordinate.
 		* @param z Third dimension coordinate.
 		*/
-		const T& at(int x, int y, int z) const;
+		typename std::vector<T>::const_reference at(int x, int y, int z) const;
 
 
 		// Modifiers.
@@ -155,6 +156,11 @@ namespace VoxelEng {
 		* @param value The given value.
 		*/
 		void fill(T value);
+
+		/**
+		* @brief Fill the array with the default value.
+		*/
+		void clear();
 
 		/**
 		* @brief Get the pointer to the array's raw data.
@@ -183,14 +189,15 @@ namespace VoxelEng {
 		std::vector<T> array_;
 		YSlice ySlice_;
 		ZSlice zSlice_;
+		T defaultValue_;
 
 		/*
 		Methods.
 		*/
 
-		const T& get(int x, int y, int z) const;
+		typename std::vector<T>::const_reference get(int x, int y, int z) const;
 
-		T& get(int x, int y, int z);
+		typename std::vector<T>::reference get(int x, int y, int z);
 
 	};
 
@@ -199,7 +206,7 @@ namespace VoxelEng {
 	: indexY(0), array_(array) {}
 
 	template <typename T>
-	T& Padded3DArray<T>::ZSlice::operator[](int z) {
+	typename std::vector<T>::reference Padded3DArray<T>::ZSlice::operator[](int z) {
 	
 		return array_.get(array_.ySlice_.indexX, array_.zSlice_.indexY, z);
 	
@@ -222,7 +229,7 @@ namespace VoxelEng {
 	: sizeX_(sizeX), sizeY_(sizeY), sizeZ_(sizeZ), padding_(padding),
 	  sizeYPadded_(sizeY + padding * 2), sizeZPadded_(sizeZ + padding * 2),
 	  array_((sizeX + padding*2) * sizeYPadded_* sizeZPadded_, defaultValue),
-	  ySlice_(*this), zSlice_(*this) {}
+	  ySlice_(*this), zSlice_(*this), defaultValue_(defaultValue) {}
 
 	template <typename T>
 	const T* Padded3DArray<T>::data() const {
@@ -239,7 +246,7 @@ namespace VoxelEng {
 	}
 
 	template <typename T>
-	const T& Padded3DArray<T>::at(int x, int y, int z) const {
+	typename std::vector<T>::const_reference Padded3DArray<T>::at(int x, int y, int z) const {
 	
 		return get(x, y, z);
 	
@@ -256,9 +263,15 @@ namespace VoxelEng {
 	template <typename T>
 	void Padded3DArray<T>::fill(T value) {
 	
-		for (int i = 0; i < array_.size(); i++)
-			array_[i] = value;
+		std::fill(array_.begin(), array_.end(), value);
 	
+	}
+
+	template <typename T>
+	void Padded3DArray<T>::clear() {
+
+		fill(defaultValue_);
+
 	}
 
 	template <typename T>
@@ -269,7 +282,7 @@ namespace VoxelEng {
 	}
 
 	template <typename T>
-	const T& Padded3DArray<T>::get(int x, int y, int z) const {
+	typename std::vector<T>::const_reference Padded3DArray<T>::get(int x, int y, int z) const {
 
 		// First apply the padding.
 		x += padding_;
@@ -284,7 +297,7 @@ namespace VoxelEng {
 	}
 
 	template <typename T>
-	T& Padded3DArray<T>::get(int x, int y, int z) {
+	typename std::vector<T>::reference Padded3DArray<T>::get(int x, int y, int z) {
 	
 		// First apply the padding.
 		x += padding_;

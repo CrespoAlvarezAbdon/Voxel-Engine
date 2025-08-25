@@ -34,10 +34,10 @@ namespace VoxelEng {
 		* @param outerCutOffAngle TODO.
 		* @param maxDistance Maximum distance this light can cover.
 		*/
-		spotLight(float ambientR, float ambientG, float ambientB, 
-			float diffuseR, float diffuseG, float diffuseB,
-			float specularR, float specularG, float specularB,
-			float cutOffAngle, float outerCutOffAngle, float maxDistance);
+		spotLight(char ambientR, char ambientG, char ambientB,
+			char diffuseR, char diffuseG, char diffuseB,
+			char specularR, char specularG, char specularB,
+			float cutOffAngle, float outerCutOffAngle, unsigned int maxDistance);
 
 
 		// Observers.
@@ -48,13 +48,19 @@ namespace VoxelEng {
 		*/
 		static unsigned int nArgs();
 
+		float cutOffAngle() const;
+
+		float outerCutOffAngle() const;
+
+		unsigned int maxDistance() const;
+
 	protected:
 
 		static const unsigned int nArgs_;
 
 		float cutOffAngle_;
 		float outerCutOffAngle_;
-		float maxDistance_;
+		unsigned int maxDistance_;
 		float padding_; // Only used for padding.
 		
 	};
@@ -63,10 +69,10 @@ namespace VoxelEng {
 		: directionalLight(), cutOffAngle_(90.0f), outerCutOffAngle_(45.0f), maxDistance_(lightMaxIntensity), padding_{0.0f}
 	{}
 
-	inline spotLight::spotLight(float ambientR, float ambientG, float ambientB,
-		float diffuseR, float diffuseG, float diffuseB,
-		float specularR, float specularG, float specularB,
-		float cutOffAngle, float outerCutOffAngle, float maxDistance)
+	inline spotLight::spotLight(char ambientR, char ambientG, char ambientB,
+		char diffuseR, char diffuseG, char diffuseB,
+		char specularR, char specularG, char specularB,
+		float cutOffAngle, float outerCutOffAngle, unsigned int maxDistance)
 	: directionalLight(ambientR, ambientG, ambientB, diffuseR, diffuseG, diffuseB, specularR, specularG, specularB),
 		cutOffAngle_(cutOffAngle), outerCutOffAngle_(outerCutOffAngle), maxDistance_(maxDistance), padding_{ 0.0f }
 	{}
@@ -75,6 +81,24 @@ namespace VoxelEng {
 
 		return directionalLight::nArgs() + nArgs_;
 
+	}
+
+	inline float spotLight::cutOffAngle() const {
+	
+		return cutOffAngle_;
+	
+	}
+
+	inline float spotLight::outerCutOffAngle() const {
+	
+		return outerCutOffAngle_;
+	
+	}
+
+	inline unsigned int spotLight::maxDistance() const {
+	
+		return maxDistance_;
+	
 	}
 
 }
