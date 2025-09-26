@@ -73,6 +73,12 @@ namespace VoxelEng {
 	const int CHUNK_SIZE = 16;
 
 	/**
+	* @brief Size of chunk C (in blocks) in X, Y AND Z axes but also counting the blocks from the neighboring chunks
+	* that C has also need to take into account for.
+	*/
+	const int chunkSizePlusNeighbors = CHUNK_SIZE + 1;
+
+	/**
 	* @brief Chunk size (in blocks) in X axis.
 	*/
 	const int CHUNK_SIZE_LIMIT = CHUNK_SIZE-1;
@@ -81,6 +87,12 @@ namespace VoxelEng {
 	* @brief The total number of blocks per chunk.
 	*/
 	const int nBlocksChunk = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+
+	/**
+	* @brief The total number of blocks per chunk C but also counting the blocks from the neighboring chunks
+	* that C has also need to take into account for.
+	*/
+	const int nBlocksChunkPlusNeighbors = chunkSizePlusNeighbors * chunkSizePlusNeighbors * chunkSizePlusNeighbors;
 
 	/**
 	* @brief The total number of blocks per chunk edge.
@@ -124,6 +136,11 @@ namespace VoxelEng {
 	*/
 	const char lightMaxIntensity = 8;
 
+	/**
+	* @brief The number of neighbors a chunk has.
+	*/
+	const int nChunkNeighbors = 26;
+
 
 	/////////////////////
 	//Type definitions.//
@@ -139,6 +156,8 @@ namespace VoxelEng {
 	typedef unsigned int numID;
 
 	typedef unsigned char byte; // Number with values between 0 and 255.
+
+	typedef signed char sbyte;
 
 	typedef float vertexCoord;
 

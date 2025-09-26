@@ -15,7 +15,6 @@
 #include "player.h"
 #include <Utilities/Logger/logger.h>
 
-
 namespace VoxelEng {
 
 	class inputFunctions {
@@ -274,6 +273,56 @@ namespace VoxelEng {
 		c->status();
 
 		neighborsInfo* info = chunkManager::getChunkNeighborInfo(c->chunkPos());
+
+		logger::debugLog("getCurrentChunk");
+		vec3 chunkRelPos = getChunkRelCoords(player::globalPos());
+		basicVec4 lightColor = c->getBlockLightColor(chunkRelPos);
+		char lightLevel = c->getBlockLightLevel(chunkRelPos);
+		logger::debugLog("getCurrentChunk for chunk " + std::to_string(c->chunkPos()));
+		logger::debugLog("light color is " + std::to_string(lightColor) + " with intensity " + std::to_string((int)lightLevel) + " at " + 
+			std::to_string(chunkRelPos));
+
+		chunkRelPos = getChunkRelCoords(player::globalPos()) + vec3FixedUp;
+		lightColor = c->getBlockLightColor(chunkRelPos);
+		lightLevel = c->getBlockLightLevel(chunkRelPos);
+		logger::debugLog("getCurrentChunk for chunk " + std::to_string(c->chunkPos()));
+		logger::debugLog("light color is " + std::to_string(lightColor) + " with intensity " + std::to_string((int)lightLevel) + " at " +
+			std::to_string(chunkRelPos));
+
+		chunkRelPos = getChunkRelCoords(player::globalPos()) + vec3FixedDown;
+		lightColor = c->getBlockLightColor(chunkRelPos);
+		lightLevel = c->getBlockLightLevel(chunkRelPos);
+		logger::debugLog("getCurrentChunk for chunk " + std::to_string(c->chunkPos()));
+		logger::debugLog("light color is " + std::to_string(lightColor) + " with intensity " + std::to_string((int)lightLevel) + " at " +
+			std::to_string(chunkRelPos));
+
+		chunkRelPos = getChunkRelCoords(player::globalPos()) + vec3FixedNorth;
+		lightColor = c->getBlockLightColor(chunkRelPos);
+		lightLevel = c->getBlockLightLevel(chunkRelPos);
+		logger::debugLog("getCurrentChunk for chunk " + std::to_string(c->chunkPos()));
+		logger::debugLog("light color is " + std::to_string(lightColor) + " with intensity " + std::to_string((int)lightLevel) + " at " +
+			std::to_string(chunkRelPos));
+
+		chunkRelPos = getChunkRelCoords(player::globalPos()) + vec3FixedSouth;
+		lightColor = c->getBlockLightColor(chunkRelPos);
+		lightLevel = c->getBlockLightLevel(chunkRelPos);
+		logger::debugLog("getCurrentChunk for chunk " + std::to_string(c->chunkPos()));
+		logger::debugLog("light color is " + std::to_string(lightColor) + " with intensity " + std::to_string((int)lightLevel) + " at " +
+			std::to_string(chunkRelPos));
+
+		chunkRelPos = getChunkRelCoords(player::globalPos()) + vec3FixedEast;
+		lightColor = c->getBlockLightColor(chunkRelPos);
+		lightLevel = c->getBlockLightLevel(chunkRelPos);
+		logger::debugLog("getCurrentChunk for chunk " + std::to_string(c->chunkPos()));
+		logger::debugLog("light color is " + std::to_string(lightColor) + " with intensity " + std::to_string((int)lightLevel) + " at " +
+			std::to_string(chunkRelPos));
+
+		chunkRelPos = getChunkRelCoords(player::globalPos()) + vec3FixedWest;
+		lightColor = c->getBlockLightColor(chunkRelPos);
+		lightLevel = c->getBlockLightLevel(chunkRelPos);
+		logger::debugLog("getCurrentChunk for chunk " + std::to_string(c->chunkPos()));
+		logger::debugLog("light color is " + std::to_string(lightColor) + " with intensity " + std::to_string((int)lightLevel) + " at " +
+			std::to_string(chunkRelPos));
 	
 	}
 

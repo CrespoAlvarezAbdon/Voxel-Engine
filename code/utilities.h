@@ -353,6 +353,15 @@ namespace VoxelEng {
 	}
 
 	/**
+	* @brief Return the given vector without sign in any of its components.
+	*/
+	inline basicVec3 abs(const basicVec3& v) {
+
+		return basicVec3{ (char)std::abs(v.x), (char)std::abs(v.y), (char)std::abs(v.z) };
+
+	}
+
+	/**
 	* @brief Encode the given normal vector into a OpenGL's GL_INT_2_10_10_10_REV 32-bit unsigned integer.
 	*/
 	uint32_t packNormalIntoGL_INT_2_10_10_10_REV(float normalX, float normalY, float normalZ);
@@ -363,7 +372,7 @@ namespace VoxelEng {
 		* @brief Performs addition of two char but clamping the result to one of the char value range's limits if the result
 		* surpasses it.
 		*/
-		char safeAdd(char c, char c2);
+		char clampAdd(char c, char c2, char min, char max);
 	
 	}
 

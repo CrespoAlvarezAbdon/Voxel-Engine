@@ -652,7 +652,7 @@ namespace VoxelEng {
         if (actualTime - lastSecondTime >= 1.0) {
 
             //std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame and total vertices is " << std::to_string(totalVertices);
-            logger::debugLog(std::to_string(1000.0 / nFramesDrawn) + "ms/frame");
+            //logger::debugLog(std::to_string(1000.0 / nFramesDrawn) + "ms/frame");
             nFramesDrawn = 0;
             lastSecondTime = glfwGetTime();
 

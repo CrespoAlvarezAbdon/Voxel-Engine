@@ -13,7 +13,6 @@
 #include <string>
 #include <stdexcept>
 
-
 #if GRAPHICS_API == OPENGL
 
 #include <GL/glew.h>
@@ -76,6 +75,8 @@ namespace VoxelEng {
 
 		bool operator==(const basicVec3& v) const;
 
+		basicVec3 operator+(const basicVec3& v) const;
+
 		~basicVec3();
 	};
 
@@ -93,9 +94,14 @@ namespace VoxelEng {
 	
 	}
 
+	inline basicVec3 basicVec3::operator+(const basicVec3& v) const {
+
+		return basicVec3{ x + v.x, y + v.y, z + v.z};
+
+	}
+
 	inline basicVec3::~basicVec3() 
 	{
-		int a = 3 + 2;
 	}
 
 
@@ -128,14 +134,14 @@ namespace VoxelEng {
 		* @param v The right operand vector.
 		* @return A vector with the result of the addition.
 		*/
-		basicVec4 operator+(const basicVec4 v) const;
+		basicVec4 operator+(const basicVec4& v) const;
 
 		/**
 		* @brief Component-based add the right operand vector to the left operand vector.
 		* @param v The right operand vector.
 		* @return The left operand vector.
 		*/
-		basicVec4& operator+=(const basicVec4 v);
+		basicVec4& operator+=(const basicVec4& v);
 
 		/**
 		* @brief Multiply the vector's component by the given number.
@@ -157,17 +163,21 @@ namespace VoxelEng {
 		* @brief Component-based add the right operand vector to the left operand vector.
 		* NOTE. If the sum of two components would surpass the data range limit, the result will be clamped to said limit
 		* @param v The right operand vector.
+		* @param min The minimun values to clamp to (component wise).
+		* @param max The maximun values to clamp to (component wise).
 		* @return The left operand vector.
 		*/
-		basicVec4 safeAdd(const basicVec4& v) const;
+		basicVec4 clampAdd(const basicVec4& v, const basicVec4& min, const basicVec4& max) const;
 
 		/**
 		* @brief Component-based add the right operand vector to the left operand vector.
 		* NOTE. If the sum of two components would surpass the data range limit, the result will be clamped to said limit
 		* @param v The right operand vector.
+		* @param min The minimun values to clamp to (component wise).
+		* @param max The maximun values to clamp to (component wise).
 		* @return The left operand vector.
 		*/
-		basicVec4& safeAdd(const basicVec4& v);
+		basicVec4& clampAdd(const basicVec4& v, const basicVec4& min, const basicVec4& max);
 
 	};
 
@@ -179,13 +189,13 @@ namespace VoxelEng {
 	: x(x), y(y), z(z), w(w)
 	{}
 
-	inline basicVec4 basicVec4::operator+(basicVec4 v) const {
+	inline basicVec4 basicVec4::operator+(const basicVec4& v) const {
 
 		return basicVec4{ x + v.x, y + v.y, z + v.z, w + v.w };
 
 	}
 
-	inline basicVec4& basicVec4::operator+=(basicVec4 v) {
+	inline basicVec4& basicVec4::operator+=( const basicVec4& v) {
 
 		x += v.x;
 		y += v.y;
@@ -278,12 +288,17 @@ namespace VoxelEng {
 	/**
 	* @brief basicVec4 constant of the zeroes vector.
 	*/
-	const basicVec4 basicVec4Zeroes(0, 0, 0, 0);
+	const basicVec4 basicVec4Zero(0, 0, 0, 0);
 
 	/**
 	* @brief basicVec4 constant of the negative ones vector.
 	*/
 	const basicVec4 basicVec4NegOnes(-1, -1, -1, -1);
+
+	/**
+	* @brief basicVec4 constant of the maximum light a block that is not a light source block can have.
+	*/
+	const basicVec4 basicVec4FullLight(111, 111, 111, 111); // 127 for light source is at the own light source, 111 is for the blocks closest to it.
 
 
 	// Operators.
@@ -305,22 +320,40 @@ namespace VoxelEng {
 
 namespace std {
 
-	inline std::string to_string(const VoxelEng::vec3& v) {
+	inline string to_string(const VoxelEng::vec3& v) {
 	
-		return std::to_string(v.x) + ',' + std::to_string(v.y) + ',' + std::to_string(v.z);
+		return to_string(v.x) + ',' + to_string(v.y) + ',' + to_string(v.z);
 	
+	}
+
+	inline string to_string(const VoxelEng::vec4& v) {
+
+		return to_string(v.x) + ',' + to_string(v.y) + ',' + to_string(v.z) + ',' + to_string(v.w);
+
 	}
 
 	template <>
 	class hash<VoxelEng::basicVec3> {
 	public:
 
-		std::size_t operator()(const VoxelEng::basicVec3& v) const
+		size_t operator()(const VoxelEng::basicVec3& v) const
 		{
-			return std::hash<glm::vec3>()(glm::vec3{v.x, v.y, v.z});
+			return hash<glm::vec3>()(glm::vec3{v.x, v.y, v.z});
 		}
 
 	};
+
+	inline string to_string(const VoxelEng::basicVec3& v) {
+
+		return to_string(v.x) + ',' + to_string(v.y) + ',' + to_string(v.z);
+
+	}
+
+	inline string to_string(const VoxelEng::basicVec4& v) {
+
+		return to_string(v.x) + ',' + to_string(v.y) + ',' + to_string(v.z) + ',' + to_string(v.w);
+
+	}
 
 }
 

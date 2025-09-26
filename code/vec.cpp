@@ -1,5 +1,6 @@
 #include "vec.h"
-#include "quaternion.h"
+#include <algorithm>
+#include <quaternion.h>
 #include <utilities.h>
 #include <Utilities/BlockViewDir/blockViewDir.hpp>
 
@@ -29,18 +30,21 @@ namespace VoxelEng {
 
 	}
 
-	basicVec4 basicVec4::safeAdd(const basicVec4& v) const {
+	basicVec4 basicVec4::clampAdd(const basicVec4& v, const basicVec4& min, const basicVec4& max) const {
 
-		return basicVec4(utilities::safeAdd(x, v.x), utilities::safeAdd(y, v.y), utilities::safeAdd(z, v.z), utilities::safeAdd(w, v.w));
+		return basicVec4(utilities::clampAdd(x, v.x, min.x, max.x), 
+			utilities::clampAdd(y, v.y, min.y, max.y),
+			utilities::clampAdd(z, v.z, min.z, max.z),
+			utilities::clampAdd(w, v.w, min.w, max.w));
 
 	}
 
-	basicVec4& basicVec4::safeAdd(const basicVec4& v) {
+	basicVec4& basicVec4::clampAdd(const basicVec4& v, const basicVec4& min, const basicVec4& max) {
 	
-		x = utilities::safeAdd(x, v.x);
-		y = utilities::safeAdd(y, v.y);
-		z = utilities::safeAdd(z, v.z);
-		w = utilities::safeAdd(w, v.w);
+		x = utilities::clampAdd(x, v.x, min.x, max.x);
+		y = utilities::clampAdd(y, v.y, min.y, max.y);
+		z = utilities::clampAdd(z, v.z, min.z, max.z);
+		w = utilities::clampAdd(w, v.w, min.w, max.w);
 
 		return *this;
 

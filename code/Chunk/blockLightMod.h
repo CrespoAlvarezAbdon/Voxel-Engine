@@ -24,6 +24,30 @@ namespace VoxelEng {
 	* light source.
 	*/
 	struct blockLightMod {
+		
+		/*
+		Methods.
+		*/
+
+		// Constructors
+
+		/**
+		* @brief Default constructor
+		*/
+		blockLightMod();
+
+		/**
+		* @brief Class constructor
+		* @param pos Block light modification position
+		* @param intensity Block light modification intensity
+		* @param color Block light modification color
+		*/
+		blockLightMod(const basicVec3& pos, char intensity, const basicVec4& color);
+
+
+		/*
+		Attributes
+		*/
 
 		/**
 		* @brief Position the light is being propagated to.
@@ -41,6 +65,12 @@ namespace VoxelEng {
 		basicVec4 color;
 
 	};
+
+	inline blockLightMod::blockLightMod() 
+	: pos(basicVec3Zero), intensity(0), color(basicVec4Zero) {}
+
+	inline blockLightMod::blockLightMod(const basicVec3& pos, char intensity, const basicVec4& color)
+		: pos(pos), intensity(intensity), color(color) {}
 
 }
 

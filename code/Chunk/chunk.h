@@ -352,7 +352,15 @@ namespace VoxelEng {
 		*/
 		const std::unordered_set<vec3>& getFloodPointLightPositions() const;
 
+		/**
+		* @brief Get the block light color at the given chunk relative pos.
+		*/
+		const basicVec4& getBlockLightColor(const vec3& chunkRelPos);
 
+		/**
+		* @brief Get the block light level at the given chunk relative pos.
+		*/
+		char getBlockLightLevel(const vec3& chunkRelPos);
 
 
 		// Modifiers.
@@ -392,7 +400,7 @@ namespace VoxelEng {
 		* chunk's generation process or otherwise.
 		* WARNING. For world generators that use this method: 'modification' must be set to false.
 		*/
-		const block& setBlock(GLbyte x, GLbyte y, GLbyte z, const block& block, bool modification = true);
+		const block& setBlock(sbyte x, sbyte y, sbyte z, const block& block, bool modification = true);
 
 		/**
 		* @brief Sets the value of a block within the chunk.
@@ -410,14 +418,6 @@ namespace VoxelEng {
 		* chunk's generation process or otherwise. For world generators that use this method, it must be set to false.
 		*/
 		const block& setBlock(unsigned int linearIndex, const block& block, bool modification = true);
-
-		/**
-		* @brief Set a neighbor block.
-		* A neighbor block is a copy of a block that is bordering this chunk. This copy is stored for mesh optimization purposes.
-		* 'modification' tells if the call to this method is NOT part of the
-		* chunk's generation process or otherwise. For world generators that use this method, it must be set to false.
-		*/
-		void setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& block, bool modification = true);
 
 		/**
 		*
@@ -499,6 +499,12 @@ namespace VoxelEng {
 		* @brief Recalculate all the block lighting applied to the chunk by its neighbors' block lights.
 		*/
 		void recalculateNeighborBlockLight();
+
+		/**
+		* @brief Apply the given block light modification to the chunk.
+		* @param mod The block light modification to apply.
+		*/
+		void applyBlockLight(char x, char y, char z, const basicVec4& color, char intensity);
 
 		/**
 		* @brief The chunk's block data will be filled with null blocks, leaving the chunk "empty of blocks".
@@ -604,6 +610,8 @@ namespace VoxelEng {
 		* @brief Clean up any resources allocated for this system.
 		*/ 
 		static void reset();
+
+		void clear();
 		
 	private:
 
@@ -666,7 +674,10 @@ namespace VoxelEng {
 		Methods.
 		*/
 		
-		void placeNewBlock(unsigned short& oldLocalID, const block& newBlock);
+		/*
+		Returns whether there was a block change (true) or not (false).
+		*/
+		bool placeNewBlock(unsigned short& oldLocalID, const block& newBlock);
 
 		basicVec4 getBlockLightAverage(const basicVec4& blockLightOwn,
 			const basicVec3& blockLightCoords1, const basicVec3& blockLightCoords2, const basicVec3& blockLightCords3);
@@ -868,6 +879,18 @@ namespace VoxelEng {
 	inline const std::unordered_set<vec3>& chunk::getFloodPointLightPositions() const {
 	
 		return floodPointLightPositions_;
+	
+	}
+
+	inline const basicVec4& chunk::getBlockLightColor(const vec3& chunkRelPos) {
+	
+		return blockLightColor_[chunkRelPos.x][chunkRelPos.y][chunkRelPos.z];
+	
+	}
+
+	inline char chunk::getBlockLightLevel(const vec3& chunkRelPos) {
+	
+		return blockLightLevel_[chunkRelPos.x][chunkRelPos.y][chunkRelPos.z];
 	
 	}
 
@@ -1582,7 +1605,7 @@ namespace VoxelEng {
 		*/
 		static std::mutex& chunkNeighborsInfoMutex();
 
-		static void passLightToNeighbor(const blockLightMod& floodLight, basicVec3& pos, const vec3& neighborOffset, const vec3& chunkPos);
+		static void passLightToNeighbor(const blockLightMod& floodLight, const basicVec3& startPos, const basicVec3& pos, const vec3& neighborOffset, const vec3& chunkPos);
 
 		static std::shared_ptr<neighborsInfo> getOrCreateChunkNeighborInfo(const vec3& chunkPos);
 

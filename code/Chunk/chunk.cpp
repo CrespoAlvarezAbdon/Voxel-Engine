@@ -71,7 +71,7 @@ namespace VoxelEng {
     chunk::chunk()
     : blocksLocalIDs_(16, 16, 16, 1, 0),
       isOpaque_(16, 16, 16, 1, false),
-      blockLightColor_(16, 16, 16, 1, basicVec4Zeroes),
+      blockLightColor_(16, 16, 16, 1, basicVec4Zero),
       blockLightLevel_(16, 16, 16, 1, 0),
       modified_(false),
       nOpaqueBlocks_(0),
@@ -96,7 +96,7 @@ namespace VoxelEng {
     chunk::chunk(bool empty, const vec3& chunkPos)
     : blocksLocalIDs_(16, 16, 16, 1, 0),
       isOpaque_(16, 16, 16, 1, false),
-      blockLightColor_(16, 16, 16, 1, basicVec4Zeroes),
+      blockLightColor_(16, 16, 16, 1, basicVec4Zero),
       blockLightLevel_(16, 16, 16, 1, 0),
       modified_(false),
       nOpaqueBlocks_(0),
@@ -244,179 +244,98 @@ namespace VoxelEng {
     
     }
 
-    const block& chunk::setBlock(GLbyte x, GLbyte y, GLbyte z, const block& b, bool modification) {
+    const block& chunk::setBlock(sbyte x, sbyte y, sbyte z, const block& b, bool modification) {
 
+        bool isNewBlockOpaque = b.opacity() == blockOpacity::OPAQUEBLOCK;
         unsigned short& actualLocalID = blocksLocalIDs_[x][y][z];
         unsigned short oldLocalID = actualLocalID;
         unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
         const block& oldB = block::getBlockC(oldGlobalID);
- 
-        placeNewBlock(actualLocalID, b);
+        vec3 neighborOffset;
 
-        bool blockWasModified = oldLocalID != actualLocalID;
+        const bool blockWasModified = placeNewBlock(actualLocalID, b);
 
         needsRemesh_ = needsRemesh_ || blockWasModified;
-
         modified_ = modified_ || (blockWasModified && modification);
 
-        if (!oldLocalID && actualLocalID)
-            nTotalBlocks_++;
-        else if (oldLocalID && !actualLocalID)
-            nTotalBlocks_--;
-        bool isNewBlockOpaque = b.opacity() == blockOpacity::OPAQUEBLOCK;
-        nOpaqueBlocks_ += (isNewBlockOpaque) - (oldB.opacity() == blockOpacity::OPAQUEBLOCK);
         isOpaque_[x][y][z] = isNewBlockOpaque;
 
-        setBlockLight(oldB, b, vec3{ x,y,z });
+        neighborOffset.x = x >= CHUNK_SIZE ? 1 : x <= -1 ? -1 : 0;
+        neighborOffset.y = y >= CHUNK_SIZE ? 1 : y <= -1 ? -1 : 0;
+        neighborOffset.z = z >= CHUNK_SIZE ? 1 : z <= -1 ? -1 : 0;
+        if (neighborOffset == vec3Zero) {
+
+            if (!oldLocalID && actualLocalID)
+                nTotalBlocks_++;
+            else if (oldLocalID && !actualLocalID)
+                nTotalBlocks_--;
+            nOpaqueBlocks_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+
+            setBlockLight(oldB, b, vec3{ x,y,z });
+
+        }
+        else if (neighborOffset == vec3FixedNorth) {
+        
+            if (!oldLocalID && actualLocalID)
+                nTotalBlocksPlusX_++;
+            else if (oldLocalID && !actualLocalID)
+                nTotalBlocksPlusX_--;
+            
+            nOpaqueBlocksPlusX_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+        
+        }
+        else if (neighborOffset == vec3FixedSouth) {
+        
+            if (!oldLocalID && actualLocalID)
+                nTotalBlocksMinusX_++;
+            else if (oldLocalID && !actualLocalID)
+                nTotalBlocksMinusX_--;
+            nOpaqueBlocksMinusX_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+        
+        }
+        else if (neighborOffset == vec3FixedUp) {
+        
+            if (!oldLocalID && actualLocalID)
+                nTotalBlocksPlusY_++;
+            else if (oldLocalID && !actualLocalID)
+                nTotalBlocksPlusY_--;
+            nOpaqueBlocksPlusY_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+        
+        }
+        else if (neighborOffset == vec3FixedDown) {
+        
+            if (!oldLocalID && actualLocalID)
+                nTotalBlocksMinusY_++;
+            else if (oldLocalID && !actualLocalID)
+                nTotalBlocksMinusY_--;
+            nOpaqueBlocksMinusY_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+        
+        }
+        else if (neighborOffset == vec3FixedEast) {
+        
+            if (!oldLocalID && actualLocalID)
+                nTotalBlocksPlusZ_++;
+            else if (oldLocalID && !actualLocalID)
+                nTotalBlocksPlusZ_--;
+            nOpaqueBlocksPlusZ_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+        
+        }
+        else if (neighborOffset == vec3FixedWest) {
+        
+            if (!oldLocalID && actualLocalID)
+                nTotalBlocksMinusZ_++;
+            else if (oldLocalID && !actualLocalID)
+                nTotalBlocksMinusZ_--;
+            nOpaqueBlocksMinusZ_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+        
+        }
 
         return oldB;
 
     }
 
-    void chunk::setBlockNeighbor(unsigned int firstIndex, unsigned int secondIndex, blockViewDir neighbor, const block& b, bool modification) {
-
-        unsigned short oldLocalID = 0;
-        bool blockWasModified = false;
-        
-        if (neighbor == blockViewDir::NONE)
-            logger::errorLog("No block view direction was specified");
-        else if (neighbor == blockViewDir::PLUSX) {
-
-            // TODO. REFACTOR THIS INTO A METHOD.
-            unsigned short& actualLocalID = blocksLocalIDs_[CHUNK_SIZE][firstIndex][secondIndex];
-            oldLocalID = actualLocalID;
-            unsigned short oldLocalID = actualLocalID;
-            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
-            const block& oldB = block::getBlockC(oldGlobalID);
-            placeNewBlock(actualLocalID, b);
-            blockWasModified = oldLocalID != actualLocalID;
-            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[CHUNK_SIZE_LIMIT][firstIndex][secondIndex];
-            if (!oldLocalID && actualLocalID)
-                nTotalBlocksPlusX_++;
-            else if (oldLocalID && !actualLocalID)
-                nTotalBlocksPlusX_--;
-            bool isNewBlockOpaque = b.opacity() == blockOpacity::OPAQUEBLOCK;
-            nOpaqueBlocksPlusX_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
-            isOpaque_[CHUNK_SIZE][firstIndex][secondIndex] = isNewBlockOpaque;
-
-            setBlockLight(oldB, b, vec3{ CHUNK_SIZE, firstIndex, secondIndex });
-
-        }
-        else if (neighbor == blockViewDir::NEGX) {
-
-            unsigned short& actualLocalID = blocksLocalIDs_[-1][firstIndex][secondIndex];
-            oldLocalID = actualLocalID;
-            unsigned short oldLocalID = actualLocalID;
-            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
-            const block& oldB = block::getBlockC(oldGlobalID);
-            placeNewBlock(actualLocalID, b);
-            blockWasModified = oldLocalID != actualLocalID;
-            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[0][firstIndex][secondIndex];
-            if (!oldLocalID && actualLocalID)
-                nTotalBlocksMinusX_++;
-            else if (oldLocalID && !actualLocalID)
-                nTotalBlocksMinusX_--;
-            bool isNewBlockOpaque = b.opacity() == blockOpacity::OPAQUEBLOCK;
-            nOpaqueBlocksMinusX_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
-            isOpaque_[-1][firstIndex][secondIndex] = isNewBlockOpaque;
-
-            setBlockLight(oldB, b, vec3{ -1, firstIndex, secondIndex });
-            
-        }
-        else if (neighbor == blockViewDir::PLUSY) {
-
-            unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][CHUNK_SIZE][secondIndex];
-            oldLocalID = actualLocalID;
-            unsigned short oldLocalID = actualLocalID;
-            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
-            const block& oldB = block::getBlockC(oldGlobalID);
-            placeNewBlock(actualLocalID, b);
-            blockWasModified = oldLocalID != actualLocalID;
-            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[firstIndex][CHUNK_SIZE_LIMIT][secondIndex];
-            if (!oldLocalID && actualLocalID)
-                nTotalBlocksPlusY_++;
-            else if (oldLocalID && !actualLocalID)
-                nTotalBlocksPlusY_--;
-            bool isNewBlockOpaque = b.opacity() == blockOpacity::OPAQUEBLOCK;
-            nOpaqueBlocksPlusY_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
-            isOpaque_[firstIndex][CHUNK_SIZE][secondIndex] = isNewBlockOpaque;
-
-            setBlockLight(oldB, b, vec3{ firstIndex, CHUNK_SIZE, secondIndex });
-
-        }
-        else if (neighbor == blockViewDir::NEGY) {
-
-            unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][-1][secondIndex];
-            oldLocalID = actualLocalID;
-            unsigned short oldLocalID = actualLocalID;
-            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
-            const block& oldB = block::getBlockC(oldGlobalID);
-            placeNewBlock(actualLocalID, b);
-            blockWasModified = oldLocalID != actualLocalID;
-            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[firstIndex][0][secondIndex];
-            if (!oldLocalID && actualLocalID)
-                nTotalBlocksMinusY_++;
-            else if (oldLocalID && !actualLocalID)
-                nTotalBlocksMinusY_--;
-            bool isNewBlockOpaque = b.opacity() == blockOpacity::OPAQUEBLOCK;
-            nOpaqueBlocksMinusY_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
-            isOpaque_[firstIndex][-1][secondIndex] = isNewBlockOpaque;
-
-            setBlockLight(oldB, b, vec3{ firstIndex, -1, secondIndex });
-
-        }
-        else if (neighbor == blockViewDir::PLUSZ) {
-
-            unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][secondIndex][CHUNK_SIZE];
-            oldLocalID = actualLocalID;
-            unsigned short oldLocalID = actualLocalID;
-            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
-            const block& oldB = block::getBlockC(oldGlobalID);
-            placeNewBlock(actualLocalID, b);
-            blockWasModified = oldLocalID != actualLocalID;
-            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[firstIndex][secondIndex][CHUNK_SIZE_LIMIT];
-            if (!oldLocalID && actualLocalID)
-                nTotalBlocksPlusZ_++;
-            else if (oldLocalID && !actualLocalID)
-                nTotalBlocksPlusZ_--;
-            bool isNewBlockOpaque = b.opacity() == blockOpacity::OPAQUEBLOCK;
-            nOpaqueBlocksPlusZ_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
-            isOpaque_[firstIndex][secondIndex][CHUNK_SIZE] = isNewBlockOpaque;
-
-            setBlockLight(oldB, b, vec3{ firstIndex, secondIndex, CHUNK_SIZE });
-
-        }
-        else if (neighbor == blockViewDir::NEGZ) {
-
-            unsigned short& actualLocalID = blocksLocalIDs_[firstIndex][secondIndex][-1];
-            oldLocalID = actualLocalID;
-            unsigned short oldLocalID = actualLocalID;
-            unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
-            const block& oldB = block::getBlockC(oldGlobalID);
-            placeNewBlock(actualLocalID, b);
-            blockWasModified = oldLocalID != actualLocalID;
-            needsRemesh_ = needsRemesh_ || blockWasModified && blocksLocalIDs_[firstIndex][secondIndex][0];
-            if (!oldLocalID && actualLocalID)
-                nTotalBlocksMinusZ_++;
-            else if (oldLocalID && !actualLocalID)
-                nTotalBlocksMinusZ_--;
-            bool isNewBlockOpaque = b.opacity() == blockOpacity::OPAQUEBLOCK;
-            nOpaqueBlocksMinusZ_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
-            isOpaque_[firstIndex][secondIndex][-1] = isNewBlockOpaque;
-
-            setBlockLight(oldB, b, vec3{ firstIndex, secondIndex, -1 });
-
-        }
-        else
-            logger::errorLog("Unsupported block view direction specified");
-
-        modified_ = modified_ || (blockWasModified && modification);
-
-    }
-
     void chunk::setBlockLight(const block& oldB, const block& b, const vec3& pos) {
-    
-        // Update block light information.
+
         const varRef& oldEmittedLight = oldB.emittedLight();
         const varRef& emittedLight = b.emittedLight();
 
@@ -492,6 +411,238 @@ namespace VoxelEng {
 
                             // Add block's model to the mesh if necessary.
                             if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+
+                                // Draw face for block at x + 1.
+                                if (x < CHUNK_SIZE_LIMIT && (neighborLocalID = blocksLocalIDs_[x + 1][y][z])) {
+
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+
+                                    if (b != *bNeighbor) {
+
+                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+
+                                        // Create the face's vertices for face x-.
+                                        for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                            aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + 1 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
+                                            aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
+                                            aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
+                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
+
+                                            switch (vertex)
+                                            {
+                                            case 0: // block vertex 4 (B)
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x, y, z + 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z + 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            case 1: // block vertex 7 (C)
+                                            case 4:
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x, y, z + 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z + 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 1;
+                                                break;
+                                            case 2: // block vertex 0 (A)
+                                            case 3:
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x, y, z - 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z - 1));
+                                                aux.lightExtraData.x = 1;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            case 5: // block vertex 3 (D)
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x, y, z - 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z - 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            }
+
+                                            chunkModel->push_back(aux);
+
+                                        }
+
+                                        // Add texture to the face.
+                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX-");
+
+                                    }
+
+                                }
+
+                                // x-
+                                if (x > 0 && (neighborLocalID = blocksLocalIDs_[x - 1][y][z])) {
+
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+
+                                    if (b != *bNeighbor) {
+
+                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+
+                                        // Create the face's vertices for face x+.
+                                        for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                            aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
+                                            aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
+                                            aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
+                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
+
+                                            switch (vertex)
+                                            {
+                                            case 0: // block vertex 1 (B)
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x, y, z - 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z - 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            case 1: // block vertex 2 (C)
+                                            case 4:
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x, y, z - 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z - 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 1;
+                                                break;
+                                            case 2: // block vertex 5 (A)
+                                            case 3:
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x, y, z + 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z + 1));
+                                                aux.lightExtraData.x = 1;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            case 5: // block vertex 6 (D)
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x, y, z + 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z + 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            }
+
+                                            chunkModel->push_back(aux);
+
+                                        }
+
+                                        // Add texture to the face.
+                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX+");
+
+                                    }
+
+                                }
+
+                                // y+
+                                if (y < CHUNK_SIZE_LIMIT && (neighborLocalID = blocksLocalIDs_[x][y + 1][z])) {
+
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+
+                                    if (b != *bNeighbor) {
+
+                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+
+                                        // Create the face's vertices for face y-.
+                                        for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                            aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
+                                            aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
+                                            aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
+                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
+
+                                            switch (vertex)
+                                            {
+                                            case 0: // block vertex 1 (B)
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x + 1, y, z), basicVec3(x, y, z - 1), basicVec3(x + 1, y, z - 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            case 1: // block vertex 5 (C)
+                                            case 4:
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x + 1, y, z), basicVec3(x, y, z + 1), basicVec3(x + 1, y, z + 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 1;
+                                                break;
+                                            case 2: // block vertex 0 (A)
+                                            case 3:
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x - 1, y, z), basicVec3(x, y, z - 1), basicVec3(x - 1, y, z - 1));
+                                                aux.lightExtraData.x = 1;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            case 5: // block vertex 4 (D)
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x - 1, y, z), basicVec3(x, y, z + 1), basicVec3(x - 1, y, z + 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            }
+
+                                            chunkModel->push_back(aux);
+
+                                        }
+
+                                        // Add texture to the face.
+                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY-");
+
+                                    }
+
+                                }
+
+                                // y-
+                                if (y > 0 && (neighborLocalID = blocksLocalIDs_[x][y - 1][z])) {
+
+                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
+
+                                    if (b != *bNeighbor) {
+
+                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+
+                                        // Create the face's vertices for face y+.
+                                        for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
+
+                                            aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
+                                            aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
+                                            aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
+                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
+
+                                            switch (vertex)
+                                            {
+                                            case 0: // block vertex 3 (B)
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x - 1, y, z), basicVec3(x, y, z - 1), basicVec3(x - 1, y, z - 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            case 1: // block vertex 7 (C)
+                                            case 4:
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x - 1, y, z), basicVec3(x, y, z + 1), basicVec3(x - 1, y, z + 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 1;
+                                                break;
+                                            case 2: // block vertex 2 (A)
+                                            case 3:
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x + 1, y, z), basicVec3(x, y, z - 1), basicVec3(x + 1, y, z - 1));
+                                                aux.lightExtraData.x = 1;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            case 5: // block vertex 6 (D)
+                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                    basicVec3(x + 1, y, z), basicVec3(x, y, z + 1), basicVec3(x + 1, y, z + 1));
+                                                aux.lightExtraData.x = 0;
+                                                aux.lightExtraData.y = 0;
+                                                break;
+                                            }
+
+                                            chunkModel->push_back(aux);
+
+                                        }
+
+                                        // Add texture to the face.
+                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY+");
+
+                                    }
+
+                                }
 
                                 // z+
                                 if (z < CHUNK_SIZE_LIMIT && (neighborLocalID = blocksLocalIDs_[x][y][z + 1])) {
@@ -608,296 +759,63 @@ namespace VoxelEng {
                                     }
 
                                 }
-                               
-                                // y+
-                                if (y < CHUNK_SIZE_LIMIT && (neighborLocalID = blocksLocalIDs_[x][y + 1][z])) {
-
-                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
-
-                                    if (b != *bNeighbor) {
-
-                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
-
-                                        // Create the face's vertices for face y-.
-                                        for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
-
-                                            aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
-                                            aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + 1 + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
-                                            aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
-                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
-                                            
-                                            switch (vertex)
-                                            {
-                                                case 0: // block vertex 1 (B)
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z], 
-                                                        basicVec3(x + 1, y, z), basicVec3(x, y, z - 1), basicVec3(x + 1, y, z - 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                                case 1: // block vertex 5 (C)
-                                                case 4:
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x + 1, y, z), basicVec3(x, y, z + 1), basicVec3(x + 1, y, z + 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 1;
-                                                    break;
-                                                case 2: // block vertex 0 (A)
-                                                case 3:
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z], 
-                                                        basicVec3(x - 1, y, z), basicVec3(x, y, z - 1), basicVec3(x - 1, y, z - 1));
-                                                    aux.lightExtraData.x = 1;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                                case 5: // block vertex 4 (D)
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x - 1, y, z), basicVec3(x, y, z + 1), basicVec3(x - 1, y, z + 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                            }
-
-                                            chunkModel->push_back(aux);
-
-                                        }
-
-                                        // Add texture to the face.
-                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY-");
-
-                                    }
-
-                                }
-                                
-                                // y-
-                                if (y > 0 && (neighborLocalID = blocksLocalIDs_[x][y - 1][z])) {
-
-                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
-
-                                    if (b != *bNeighbor) {
-
-                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
-
-                                        // Create the face's vertices for face y+.
-                                        for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
-
-                                            aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
-                                            aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y - 1 + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
-                                            aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
-                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
-
-                                            switch (vertex) 
-                                            {
-                                                case 0: // block vertex 3 (B)
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x - 1, y, z), basicVec3(x, y, z - 1), basicVec3(x - 1, y, z - 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                                case 1: // block vertex 7 (C)
-                                                case 4:
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x - 1, y, z), basicVec3(x, y, z + 1), basicVec3(x - 1, y, z + 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 1;
-                                                    break;
-                                                case 2: // block vertex 2 (A)
-                                                case 3:
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x + 1, y, z), basicVec3(x, y, z - 1), basicVec3(x + 1, y, z - 1));
-                                                    aux.lightExtraData.x = 1;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                                case 5: // block vertex 6 (D)
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x + 1, y, z), basicVec3(x, y, z + 1), basicVec3(x + 1, y, z + 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                            }
-
-                                            chunkModel->push_back(aux);
-
-                                        }
-
-                                        // Add texture to the face.
-                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceY+");
-
-                                    }
-
-                                }
-
-                                // Draw face for block at x + 1.
-                                if (x < CHUNK_SIZE_LIMIT && (neighborLocalID = blocksLocalIDs_[x + 1][y][z])) {
-
-                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
-
-                                    if (b != *bNeighbor) {
-
-                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
-
-                                        // Create the face's vertices for face x-.
-                                        for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
-
-                                            aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + 1 + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
-                                            aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
-                                            aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
-                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
-
-                                            switch (vertex)
-                                            {
-                                                case 0: // block vertex 4 (B)
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x, y, z + 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z + 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                                case 1: // block vertex 7 (C)
-                                                case 4: 
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x, y, z + 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z + 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 1;
-                                                    break;
-                                                case 2: // block vertex 0 (A)
-                                                case 3: 
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x, y, z - 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z - 1));
-                                                    aux.lightExtraData.x = 1;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                                case 5: // block vertex 3 (D)
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x, y, z - 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z - 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                            }
-
-                                            chunkModel->push_back(aux);
-
-                                        }
-
-                                        // Add texture to the face.
-                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX-");
-
-                                    }
-
-                                }
-
-                                // x-
-                                if (x > 0 && (neighborLocalID = blocksLocalIDs_[x - 1][y][z])) {
-
-                                    bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
-
-                                    if (b != *bNeighbor) {
-
-                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
-
-                                        // Create the face's vertices for face x+.
-                                        for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
-
-                                            aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x - 1 + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
-                                            aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
-                                            aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
-                                            aux.lightExtraData.z = bNeighbor->getMaterialIndex();
-
-                                            switch (vertex)
-                                            {
-                                                case 0: // block vertex 1 (B)
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z], 
-                                                        basicVec3(x, y, z - 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z - 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                                case 1: // block vertex 2 (C)
-                                                case 4:
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x, y, z - 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z - 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 1;
-                                                    break;
-                                                case 2: // block vertex 5 (A)
-                                                case 3: 
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x, y, z + 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z + 1));
-                                                    aux.lightExtraData.x = 1;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                                case 5: // block vertex 6 (D)
-                                                    aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                                        basicVec3(x, y, z + 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z + 1));
-                                                    aux.lightExtraData.x = 0;
-                                                    aux.lightExtraData.y = 0;
-                                                    break;
-                                            }
-
-                                            chunkModel->push_back(aux);
-
-                                        }
-
-                                        // Add texture to the face.
-                                        models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX+");
-
-                                    }
-
-                                }
 
                             }
 
                         }
 
-            if (nTotalBlocksPlusZ_) {
-            
-                for (x = 0; x < CHUNK_SIZE; x++)
-                    for (y = 0; y < CHUNK_SIZE; y++) {
+            if (nTotalBlocksPlusX_) {
 
-                        localID = blocksLocalIDs_[x][y][CHUNK_SIZE_LIMIT];
+                for (y = 0; y < CHUNK_SIZE; y++)
+                    for (z = 0; z < CHUNK_SIZE; z++) {
+
+                        localID = blocksLocalIDs_[CHUNK_SIZE_LIMIT][y][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[x][y][CHUNK_SIZE])) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[CHUNK_SIZE][y][z])) {
 
-                            // Front face vertices with culling of non-visible faces. z-
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                             if (b != *bNeighbor) {
 
                                 chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
-                                // Create the face's vertices for face z-.
+                                // Create the face's vertices for face x-.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                    aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
-                                    aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
-                                    aux.positions[2] = (chunkPos_.z + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
-                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
+                                    aux.positions[0] = (chunkPos_.x + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
+                                    aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
+                                    aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
+                                    aux.lightExtraData.z = bNeighbor->getMaterialIndex();
 
                                     switch (vertex)
                                     {
-                                        case 0: // block vertex 0 (B)
-                                            aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
-                                                basicVec3(x - 1, y, z), basicVec3(x, y - 1, z), basicVec3(x - 1, y - 1, z));
-                                            aux.lightExtraData.x = 0;
-                                            aux.lightExtraData.y = 0;
-                                            break;
-                                        case 1: // block vertex 3 (C)
-                                        case 4:
-                                            aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
-                                                basicVec3(x - 1, y, z), basicVec3(x, y + 1, z), basicVec3(x - 1, y + 1, z));
-                                            aux.lightExtraData.x = 0;
-                                            aux.lightExtraData.y = 1;
-                                            break;
-                                        case 2: // block vertex 1 (A)
-                                        case 3:
-                                            aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
-                                                basicVec3(x + 1, y, z), basicVec3(x, y - 1, z), basicVec3(x + 1, y - 1, z));
-                                            aux.lightExtraData.x = 1;
-                                            aux.lightExtraData.y = 0;
-                                            break;
-                                        case 5: // block vertex 2 (D)
-                                            aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
-                                                basicVec3(x + 1, y, z), basicVec3(x, y + 1, z), basicVec3(x + 1, y + 1, z));
-                                            aux.lightExtraData.x = 0;
-                                            aux.lightExtraData.y = 0;
-                                            break;
+                                    case 0: // block vertex 4 (B)
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
+                                            basicVec3(CHUNK_SIZE_LIMIT, y, z + 1), basicVec3(CHUNK_SIZE_LIMIT, y - 1, z), basicVec3(CHUNK_SIZE_LIMIT, y - 1, z + 1));
+                                        aux.lightExtraData.x = 0;
+                                        aux.lightExtraData.y = 0;
+                                        break;
+                                    case 1: // block vertex 7 (C)
+                                    case 4:
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
+                                            basicVec3(CHUNK_SIZE_LIMIT, y, z + 1), basicVec3(CHUNK_SIZE_LIMIT, y + 1, z), basicVec3(CHUNK_SIZE_LIMIT, y + 1, z + 1));
+                                        aux.lightExtraData.x = 0;
+                                        aux.lightExtraData.y = 1;
+                                        break;
+                                    case 2: // block vertex 0 (A)
+                                    case 3:
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
+                                            basicVec3(CHUNK_SIZE_LIMIT, y, z - 1), basicVec3(CHUNK_SIZE_LIMIT, y - 1, z), basicVec3(CHUNK_SIZE_LIMIT, y - 1, z - 1));
+                                        aux.lightExtraData.x = 1;
+                                        aux.lightExtraData.y = 0;
+                                        break;
+                                    case 5: // block vertex 3 (D)
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
+                                            basicVec3(CHUNK_SIZE_LIMIT, y, z - 1), basicVec3(CHUNK_SIZE_LIMIT, y + 1, z), basicVec3(CHUNK_SIZE_LIMIT, y + 1, z - 1));
+                                        aux.lightExtraData.x = 0;
+                                        aux.lightExtraData.y = 0;
+                                        break;
                                     }
 
                                     chunkModel->push_back(aux);
@@ -905,25 +823,25 @@ namespace VoxelEng {
                                 }
 
                                 // Add texture to the face.
-                                models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceZ-");
+                                models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX-");
 
                             }
 
                         }
 
                     }
-            
+
             }
 
-            if (nTotalBlocksMinusZ_) {
+            if (nTotalBlocksMinusX_) {
 
-                for (x = 0; x < CHUNK_SIZE; x++)
-                    for (y = 0; y < CHUNK_SIZE; y++) {
+                for (y = 0; y < CHUNK_SIZE; y++)
+                    for (z = 0; z < CHUNK_SIZE; z++) {
 
-                        localID = blocksLocalIDs_[x][y][0];
+                        localID = blocksLocalIDs_[0][y][z];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[x][y][-1])) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[-1][y][z])) {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -931,39 +849,39 @@ namespace VoxelEng {
 
                                 chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
-                                // Create the face's vertices for z+.
+                                // Create the face's vertices for face x+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                    aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
-                                    aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
-                                    aux.positions[2] = (chunkPos_.z - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
-                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
+                                    aux.positions[0] = (chunkPos_.x - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
+                                    aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
+                                    aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
+                                    aux.lightExtraData.z = bNeighbor->getMaterialIndex();
 
                                     switch (vertex)
                                     {
-                                    case 0: // block vertex 5 (B)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][0],
-                                            basicVec3(x + 1, y, z), basicVec3(x, y - 1, z), basicVec3(x + 1, y - 1, z));
+                                    case 0: // block vertex 1 (B)
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
+                                            basicVec3(0, y, z - 1), basicVec3(0, y - 1, z), basicVec3(0, y - 1, z - 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
-                                    case 1: // block vertex 6 (C)
+                                    case 1: // block vertex 2 (C)
                                     case 4:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][0],
-                                            basicVec3(x + 1, y, z), basicVec3(x, y + 1, z), basicVec3(x + 1, y + 1, z));
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
+                                            basicVec3(0, y, z - 1), basicVec3(0, y + 1, z), basicVec3(0, y + 1, z - 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 1;
                                         break;
-                                    case 2: // block vertex 4 (A)
+                                    case 2: // block vertex 5 (A)
                                     case 3:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                            basicVec3(x - 1, y, z), basicVec3(x, y - 1, z), basicVec3(x - 1, y - 1, 0));
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
+                                            basicVec3(0, y, z + 1), basicVec3(0, y - 1, z), basicVec3(0, y - 1, z + 1));
                                         aux.lightExtraData.x = 1;
                                         aux.lightExtraData.y = 0;
                                         break;
-                                    case 5: // block vertex 7 (D)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
-                                            basicVec3(x - 1, y, z), basicVec3(x, y + 1, z), basicVec3(x - 1, y + 1, 0));
+                                    case 5: // block vertex 6 (D)
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
+                                            basicVec3(0, y, z + 1), basicVec3(0, y + 1, z), basicVec3(0, y + 1, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
@@ -974,7 +892,7 @@ namespace VoxelEng {
                                 }
 
                                 // Add texture to the face.
-                                models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceZ+");
+                                models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX+");
 
                             }
 
@@ -1006,33 +924,33 @@ namespace VoxelEng {
                                     aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[0];
                                     aux.positions[1] = (chunkPos_.y + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](3)[vertex]).positions[2];
-                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
+                                    aux.lightExtraData.z = bNeighbor->getMaterialIndex();
 
                                     switch (vertex)
                                     {
                                     case 0: // block vertex 1 (B)
                                         aux.additionalData = getBlockLightAverage(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
-                                            basicVec3(x + 1, y, z), basicVec3(x, y, z - 1), basicVec3(x + 1, y, z - 1));
+                                            basicVec3(x + 1, CHUNK_SIZE_LIMIT, z), basicVec3(x, CHUNK_SIZE_LIMIT, z - 1), basicVec3(x + 1, CHUNK_SIZE_LIMIT, z - 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 1: // block vertex 5 (C)
                                     case 4:
                                         aux.additionalData = getBlockLightAverage(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
-                                            basicVec3(x + 1, y, z), basicVec3(x, y, z + 1), basicVec3(x + 1, y, z + 1));
+                                            basicVec3(x + 1, CHUNK_SIZE_LIMIT, z), basicVec3(x, CHUNK_SIZE_LIMIT, z + 1), basicVec3(x + 1, CHUNK_SIZE_LIMIT, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 1;
                                         break;
                                     case 2: // block vertex 0 (A)
                                     case 3:
                                         aux.additionalData = getBlockLightAverage(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
-                                            basicVec3(x - 1, y, z), basicVec3(x, y, z - 1), basicVec3(x - 1, y, z - 1));
+                                            basicVec3(x - 1, CHUNK_SIZE_LIMIT, z), basicVec3(x, CHUNK_SIZE_LIMIT, z - 1), basicVec3(x - 1, CHUNK_SIZE_LIMIT, z - 1));
                                         aux.lightExtraData.x = 1;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 5: // block vertex 4 (D)
                                         aux.additionalData = getBlockLightAverage(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
-                                            basicVec3(x - 1, y, z), basicVec3(x, y, z + 1), basicVec3(x - 1, y, z + 1));
+                                            basicVec3(x - 1, CHUNK_SIZE_LIMIT, z), basicVec3(x, CHUNK_SIZE_LIMIT, z + 1), basicVec3(x - 1, CHUNK_SIZE_LIMIT, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
@@ -1075,33 +993,33 @@ namespace VoxelEng {
                                     aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[0];
                                     aux.positions[1] = (chunkPos_.y - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[1];
                                     aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](2)[vertex]).positions[2];
-                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
+                                    aux.lightExtraData.z = bNeighbor->getMaterialIndex();
 
                                     switch (vertex)
                                     {
                                     case 0: // block vertex 3 (B)
                                         aux.additionalData = getBlockLightAverage(blockLightColor_[x][0][z],
-                                            basicVec3(x - 1, y, z), basicVec3(x, y, z - 1), basicVec3(x - 1, y, z - 1));
+                                            basicVec3(x - 1, 0, z), basicVec3(x, 0, z - 1), basicVec3(x - 1, 0, z - 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 1: // block vertex 7 (C)
                                     case 4:
                                         aux.additionalData = getBlockLightAverage(blockLightColor_[x][0][z],
-                                            basicVec3(x - 1, y, z), basicVec3(x, y, z + 1), basicVec3(x - 1, y, z + 1));
+                                            basicVec3(x - 1, 0, z), basicVec3(x, 0, z + 1), basicVec3(x - 1, 0, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 1;
                                         break;
                                     case 2: // block vertex 2 (A)
                                     case 3:
                                         aux.additionalData = getBlockLightAverage(blockLightColor_[x][0][z],
-                                            basicVec3(x + 1, y, z), basicVec3(x, y, z - 1), basicVec3(x + 1, y, z - 1));
+                                            basicVec3(x + 1, 0, z), basicVec3(x, 0, z - 1), basicVec3(x + 1, 0, z - 1));
                                         aux.lightExtraData.x = 1;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 5: // block vertex 6 (D)
                                         aux.additionalData = getBlockLightAverage(blockLightColor_[x][0][z],
-                                            basicVec3(x + 1, y, z), basicVec3(x, y, z + 1), basicVec3(x + 1, y, z + 1));
+                                            basicVec3(x + 1, 0, z), basicVec3(x, 0, z + 1), basicVec3(x + 1, 0, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
@@ -1122,55 +1040,56 @@ namespace VoxelEng {
 
             }
 
-            if (nTotalBlocksPlusX_) {
+            if (nTotalBlocksPlusZ_) {
 
-                for (y = 0; y < CHUNK_SIZE; y++)
-                    for (z = 0; z < CHUNK_SIZE; z++) {
+                for (x = 0; x < CHUNK_SIZE; x++)
+                    for (y = 0; y < CHUNK_SIZE; y++) {
 
-                        localID = blocksLocalIDs_[CHUNK_SIZE_LIMIT][y][z];
+                        localID = blocksLocalIDs_[x][y][CHUNK_SIZE_LIMIT];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[CHUNK_SIZE][y][z])) {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[x][y][CHUNK_SIZE])) {
 
+                            // Front face vertices with culling of non-visible faces. z-
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                             if (b != *bNeighbor) {
 
                                 chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
-                                // Create the face's vertices for face x-.
+                                // Create the face's vertices for face z-.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                    aux.positions[0] = (chunkPos_.x + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[0];
-                                    aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[1];
-                                    aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](4)[vertex]).positions[2];
-                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
+                                    aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[0];
+                                    aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[1];
+                                    aux.positions[2] = (chunkPos_.z + 1) * CHUNK_SIZE + blockVertices_->operator[](blockTriangles_->operator[](0)[vertex]).positions[2];
+                                    aux.lightExtraData.z = bNeighbor->getMaterialIndex();
 
                                     switch (vertex)
                                     {
-                                    case 0: // block vertex 4 (B)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
-                                            basicVec3(x, y, z + 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z + 1));
+                                    case 0: // block vertex 0 (B)
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
+                                            basicVec3(x - 1, y, CHUNK_SIZE_LIMIT), basicVec3(x, y - 1, CHUNK_SIZE_LIMIT), basicVec3(x - 1, y - 1, CHUNK_SIZE_LIMIT));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
-                                    case 1: // block vertex 7 (C)
+                                    case 1: // block vertex 3 (C)
                                     case 4:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
-                                            basicVec3(x, y, z + 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z + 1));
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
+                                            basicVec3(x - 1, y, CHUNK_SIZE_LIMIT), basicVec3(x, y + 1, CHUNK_SIZE_LIMIT), basicVec3(x - 1, y + 1, CHUNK_SIZE_LIMIT));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 1;
                                         break;
-                                    case 2: // block vertex 0 (A)
+                                    case 2: // block vertex 1 (A)
                                     case 3:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
-                                            basicVec3(x, y, z - 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z - 1));
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
+                                            basicVec3(x + 1, y, CHUNK_SIZE_LIMIT), basicVec3(x, y - 1, CHUNK_SIZE_LIMIT), basicVec3(x + 1, y - 1, CHUNK_SIZE_LIMIT));
                                         aux.lightExtraData.x = 1;
                                         aux.lightExtraData.y = 0;
                                         break;
-                                    case 5: // block vertex 3 (D)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
-                                            basicVec3(x, y, z - 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z - 1));
+                                    case 5: // block vertex 2 (D)
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
+                                            basicVec3(x + 1, y, CHUNK_SIZE_LIMIT), basicVec3(x, y + 1, CHUNK_SIZE_LIMIT), basicVec3(x + 1, y + 1, CHUNK_SIZE_LIMIT));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
@@ -1181,7 +1100,7 @@ namespace VoxelEng {
                                 }
 
                                 // Add texture to the face.
-                                models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX-");
+                                models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceZ-");
 
                             }
 
@@ -1191,15 +1110,15 @@ namespace VoxelEng {
 
             }
 
-            if (nTotalBlocksMinusX_) {
+            if (nTotalBlocksMinusZ_) {
 
-                for (y = 0; y < CHUNK_SIZE; y++)
-                    for (z = 0; z < CHUNK_SIZE; z++) {
+                for (x = 0; x < CHUNK_SIZE; x++)
+                    for (y = 0; y < CHUNK_SIZE; y++) {
 
-                        localID = blocksLocalIDs_[0][y][z];
+                        localID = blocksLocalIDs_[x][y][0];
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[-1][y][z]))  {
+                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blocksLocalIDs_[x][y][-1])) {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
@@ -1207,39 +1126,39 @@ namespace VoxelEng {
 
                                 chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
-                                // Create the face's vertices for face x+.
+                                // Create the face's vertices for z+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
 
-                                    aux.positions[0] = (chunkPos_.x - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[0];
-                                    aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[1];
-                                    aux.positions[2] = chunkPos_.z * CHUNK_SIZE + z + blockVertices_->operator[](blockTriangles_->operator[](5)[vertex]).positions[2];
-                                    aux.lightExtraData.x = bNeighbor->getMaterialIndex();
+                                    aux.positions[0] = chunkPos_.x * CHUNK_SIZE + x + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[0];
+                                    aux.positions[1] = chunkPos_.y * CHUNK_SIZE + y + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[1];
+                                    aux.positions[2] = (chunkPos_.z - 1) * CHUNK_SIZE + (16 - 1) + blockVertices_->operator[](blockTriangles_->operator[](1)[vertex]).positions[2];
+                                    aux.lightExtraData.z = bNeighbor->getMaterialIndex();
 
                                     switch (vertex)
                                     {
-                                    case 0: // block vertex 1 (B)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
-                                            basicVec3(x, y, z - 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z - 1));
+                                    case 0: // block vertex 5 (B)
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][0],
+                                            basicVec3(x + 1, y, 0), basicVec3(x, y - 1, 0), basicVec3(x + 1, y - 1, 0));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
-                                    case 1: // block vertex 2 (C)
+                                    case 1: // block vertex 6 (C)
                                     case 4:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
-                                            basicVec3(x, y, z - 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z - 1));
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][0],
+                                            basicVec3(x + 1, y, 0), basicVec3(x, y + 1, 0), basicVec3(x + 1, y + 1, 0));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 1;
                                         break;
-                                    case 2: // block vertex 5 (A)
+                                    case 2: // block vertex 4 (A)
                                     case 3:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
-                                            basicVec3(x, y, z + 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z + 1));
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][0],
+                                            basicVec3(x - 1, y, 0), basicVec3(x, y - 1, 0), basicVec3(x - 1, y - 1, 0));
                                         aux.lightExtraData.x = 1;
                                         aux.lightExtraData.y = 0;
                                         break;
-                                    case 5: // block vertex 6 (D)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
-                                            basicVec3(x, y, z + 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z + 1));
+                                    case 5: // block vertex 7 (D)
+                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][0],
+                                            basicVec3(x - 1, y, 0), basicVec3(x, y + 1, 0), basicVec3(x - 1, y + 1, 0));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
@@ -1250,7 +1169,7 @@ namespace VoxelEng {
                                 }
 
                                 // Add texture to the face.
-                                models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceX+");
+                                models::addBlockFaceTexture(*bNeighbor, *chunkModel, "faceZ+");
 
                             }
 
@@ -1273,7 +1192,6 @@ namespace VoxelEng {
 
     void chunk::clearBlockLight() {
     
-        isOpaque_.clear();
         blockLightColor_.clear();
         blockLightColor_.clear();
     
@@ -1284,10 +1202,13 @@ namespace VoxelEng {
         int x = 0,
             y = 0,
             z = 0;
+        char xOffsetMod = 0;
+        char yOffsetMod = 0;
+        char zOffsetMod = 0;
         unsigned short localID = 0;
         vec3 neighborOffset;
         std::deque<blockLightMod> floodLightsInstances;
-        Padded3DArray<bool> blockLightChecked = Padded3DArray<bool>(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, false);
+        Padded3DArray<char> blockLightIntensity(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0);
         threadsafe<std::list<blockLightMod>>* list = nullptr;
         blockLightMod* mod = nullptr;
         for (auto it = floodPointLightPositions_.cbegin(); it != floodPointLightPositions_.cend(); it++) {
@@ -1306,12 +1227,12 @@ namespace VoxelEng {
                 if (emittedLight.getVarType() == var::varType::POINTLIGHT) {
 
                     const pointLight& light = *(emittedLight.pointer<pointLight>());
+                    basicVec3 lightStartPos(static_cast<char>(x), static_cast<char>(y), static_cast<char>(z));
 
                     // Search for blocks affected by this light.
-                    blockLightChecked.clear();
+                    blockLightIntensity.clear();
                     floodLightsInstances.clear();
-                    floodLightsInstances.emplace_back(basicVec3{ static_cast<char>(x), static_cast<char>(y), static_cast<char>(z) },
-                        light.maxDistance(), light.ambient());
+                    floodLightsInstances.emplace_back(lightStartPos, light.maxDistance(), light.ambient());
 
                     while (floodLightsInstances.size() > 0) {
 
@@ -1321,121 +1242,136 @@ namespace VoxelEng {
                         neighborOffset.x = pos.x >= CHUNK_SIZE_LIMIT ? 1 : pos.x <= 0 ? -1 : 0;
                         neighborOffset.y = pos.y >= CHUNK_SIZE_LIMIT ? 1 : pos.y <= 0 ? -1 : 0;
                         neighborOffset.z = pos.z >= CHUNK_SIZE_LIMIT ? 1 : pos.z <= 0 ? -1 : 0;
+                        xOffsetMod = neighborOffset.x == CHUNK_SIZE ? 1 : -1;
+                        yOffsetMod = neighborOffset.y == CHUNK_SIZE ? 1 : -1;
+                        zOffsetMod = neighborOffset.z == CHUNK_SIZE ? 1 : -1;
 
-                        if (floodLight.intensity > 0 && !blockLightChecked[pos.x][pos.y][pos.z]) {
+                        if (floodLight.intensity > blockLightIntensity[pos.x][pos.y][pos.z]) {
 
-                            float lightLevelScale = floodLight.intensity / 8.0f; // 8 is the maximum allowed light level.
-                            blockLightColor_[pos.x][pos.y][pos.z].safeAdd(floodLight.color * lightLevelScale);
-                            blockLightLevel_[pos.x][pos.y][pos.z] = floodLight.intensity;
-                            blockLightChecked[pos.x][pos.y][pos.z] = true;
+                            applyBlockLight(pos.x, pos.y, pos.z, floodLight.color, floodLight.intensity);
+                            blockLightIntensity[pos.x][pos.y][pos.z] = floodLight.intensity;
+                            
+                            // X 0 0 
+                            if (neighborOffset.x != 0) {
+                            
+                                applyBlockLight(xOffsetMod, pos.y, pos.z, floodLight.color, floodLight.intensity - 1);
+
+                                if (floodLight.intensity > blockLightIntensity[xOffsetMod][pos.y][pos.z]) {
+
+                                    chunkManager::passLightToNeighbor(floodLight, lightStartPos, pos, { neighborOffset.x, 0, 0 }, chunkPos_);
+                                    blockLightIntensity[xOffsetMod][pos.y][pos.z] = floodLight.intensity;
+
+                                }
+
+                                // X Y 0
+                                if (neighborOffset.y != 0) {
+
+                                    applyBlockLight(xOffsetMod, yOffsetMod, pos.z, floodLight.color, floodLight.intensity - 1);
+
+                                    if (floodLight.intensity > blockLightIntensity[xOffsetMod][yOffsetMod][pos.z]) {
+
+                                        chunkManager::passLightToNeighbor(floodLight, lightStartPos, pos, { neighborOffset.x, neighborOffset.y, 0 }, chunkPos_);
+                                        blockLightIntensity[xOffsetMod][yOffsetMod][pos.z] = floodLight.intensity;
+
+                                    }
+
+                                    // X Y Z
+                                    if (neighborOffset.z != 0) {
+
+                                        applyBlockLight(xOffsetMod, yOffsetMod, zOffsetMod, floodLight.color, floodLight.intensity - 1);
+
+                                        if (floodLight.intensity > blockLightIntensity[xOffsetMod][yOffsetMod][zOffsetMod]) {
+
+                                            chunkManager::passLightToNeighbor(floodLight, lightStartPos, pos, { neighborOffset.x, neighborOffset.y, neighborOffset.z }, chunkPos_);
+                                            blockLightIntensity[xOffsetMod][yOffsetMod][zOffsetMod] = floodLight.intensity;
+
+                                        }
+
+                                    }
+
+                                }
+
+                                // X 0 Z
+                                if (neighborOffset.z != 0) {
+
+                                    applyBlockLight(xOffsetMod, pos.y, zOffsetMod, floodLight.color, floodLight.intensity - 1);
+
+                                    if (floodLight.intensity > blockLightIntensity[xOffsetMod][pos.y][zOffsetMod]) {
+
+                                        chunkManager::passLightToNeighbor(floodLight, lightStartPos, pos, { neighborOffset.x, 0, neighborOffset.z }, chunkPos_);
+                                        blockLightIntensity[xOffsetMod][pos.y][zOffsetMod] = floodLight.intensity;
+
+                                    }
+
+                                }
+                            
+                            }
+
+                            // 0 Y 0
+                            if(neighborOffset.y != 0) {
+
+                                applyBlockLight(pos.x, yOffsetMod, pos.z, floodLight.color, floodLight.intensity - 1);
+
+                                if (floodLight.intensity > blockLightIntensity[pos.x][yOffsetMod][pos.z]) {
+
+                                    chunkManager::passLightToNeighbor(floodLight, lightStartPos, pos, { 0, neighborOffset.y, 0 }, chunkPos_);
+                                    blockLightIntensity[pos.x][yOffsetMod][pos.z] = floodLight.intensity;
+
+                                }
+
+                                // 0 Y Z
+                                if (neighborOffset.z != 0) {
+
+                                    applyBlockLight(pos.x, yOffsetMod, zOffsetMod, floodLight.color, floodLight.intensity - 1);
+
+                                    if (floodLight.intensity > blockLightIntensity[pos.x][yOffsetMod][zOffsetMod]) {
+
+                                        chunkManager::passLightToNeighbor(floodLight, lightStartPos, pos, { 0, neighborOffset.y, neighborOffset.z }, chunkPos_);
+                                        blockLightIntensity[pos.x][yOffsetMod][zOffsetMod] = floodLight.intensity;
+
+                                    }
+
+                                }
+
+                            }
+
+                            // 0 0 Z
+                            if (neighborOffset.z != 0) {
+                            
+                                applyBlockLight(pos.x, pos.y, zOffsetMod, floodLight.color, floodLight.intensity - 1);
+
+                                if (floodLight.intensity > blockLightIntensity[pos.x][pos.y][zOffsetMod]) {
+
+                                    chunkManager::passLightToNeighbor(floodLight, lightStartPos, pos, { 0, 0, neighborOffset.z }, chunkPos_);
+                                    blockLightIntensity[pos.x][pos.y][zOffsetMod] = floodLight.intensity;
+
+                                }
+                            
+                            }
 
                             //+x
-                            if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x + 1][pos.y][pos.z] == 0)
+                            if (pos.x < CHUNK_SIZE_LIMIT && !isOpaque_[pos.x + 1][pos.y][pos.z])
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
-                            else if (neighborOffset.x == 1) {
-                            
-                                chunkManager::passLightToNeighbor(floodLight, pos, {1, 0, 0}, chunkPos_);
-                                if (neighborOffset.y == 1) {
-                                
-                                    chunkManager::passLightToNeighbor(floodLight, pos, { 1, 1, 0 }, chunkPos_);
-                                    if (neighborOffset.z == 1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, 1, 1 }, chunkPos_);
-                                    else if (neighborOffset.z == -1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, 1, -1 }, chunkPos_);
-                                
-                                }
-                                else if (neighborOffset.y == -1) {
-                                
-                                    chunkManager::passLightToNeighbor(floodLight, pos, { 1, -1, 0 }, chunkPos_);
-                                    if (neighborOffset.z == 1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, -1, 1 }, chunkPos_);
-                                    else if (neighborOffset.z == -1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, -1, -1 }, chunkPos_);
-                                
-                                }
-                                else {
-                                
-                                    if (neighborOffset.z == 1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, 0, 1 }, chunkPos_);
-                                    else if (neighborOffset.z == -1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { 1, 0, -1 }, chunkPos_);
-                                
-                                }
-
-                            }
 
                             //-x
-                            if (pos.x > 0 && blocksLocalIDs_[pos.x - 1][pos.y][pos.z] == 0)
+                            if (pos.x >  0 && !isOpaque_[pos.x - 1][pos.y][pos.z])
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
-                            else if (neighborOffset.x == -1) {
-
-                                chunkManager::passLightToNeighbor(floodLight, pos, { -1, 0, 0 }, chunkPos_);
-                                if (neighborOffset.y == 1) {
-                                
-                                    chunkManager::passLightToNeighbor(floodLight, pos, { -1, 1, 0 }, chunkPos_);
-                                    if (neighborOffset.z == 1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, 1, 1 }, chunkPos_);
-                                    else if (neighborOffset.z == -1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, 1, -1 }, chunkPos_);
-                                
-                                }
-                                else if (neighborOffset.y == -1) {
-                                
-                                    chunkManager::passLightToNeighbor(floodLight, pos, { -1, -1, 0 }, chunkPos_);
-                                    if (neighborOffset.z == 1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, -1, 1 }, chunkPos_);
-                                    else if (neighborOffset.z == -1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, -1, -1 }, chunkPos_);
-                                
-                                }
-                                else {
-                                
-                                    if (neighborOffset.z == 1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, 0, 1 }, chunkPos_);
-                                    else if (neighborOffset.z == -1)
-                                        chunkManager::passLightToNeighbor(floodLight, pos, { -1, 0, -1 }, chunkPos_);
-                                
-                                }
-
-                            }
-
+                            
                             //+y
-                            if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y + 1][pos.z] == 0)
+                            if (pos.y < CHUNK_SIZE_LIMIT && !isOpaque_[pos.x][pos.y + 1][pos.z]) 
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
-                            else if (neighborOffset.y == 1) {
-
-                                chunkManager::passLightToNeighbor(floodLight, pos, { 0, 1, 0 }, chunkPos_);
-                                if (neighborOffset.z == 1)
-                                    chunkManager::passLightToNeighbor(floodLight, pos, { 0, 1, 1 }, chunkPos_);
-                                else if (neighborOffset.z == -1)
-                                    chunkManager::passLightToNeighbor(floodLight, pos, { 0, 1, -1 }, chunkPos_);
-
-                            }
 
                             //-y
-                            if (pos.y > 0 && blocksLocalIDs_[pos.x][pos.y - 1][pos.z] == 0)
+                            if (pos.y > 0 && !isOpaque_[pos.x][pos.y - 1][pos.z])
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
-                            else if (neighborOffset.y == -1) {
-
-                                chunkManager::passLightToNeighbor(floodLight, pos, { 0, -1, 0 }, chunkPos_);
-                                if (neighborOffset.z == 1)
-                                    chunkManager::passLightToNeighbor(floodLight, pos, { 0, -1, 1 }, chunkPos_);
-                                else if (neighborOffset.z == -1)
-                                    chunkManager::passLightToNeighbor(floodLight, pos, { 0, -1, -1 }, chunkPos_);
-
-                            }
-
+    
                             //+z
-                            if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y][pos.z + 1] == 0)
+                            if (pos.z <= CHUNK_SIZE_LIMIT && !isOpaque_[pos.x][pos.y][pos.z + 1])
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
-                            else if (neighborOffset.z == 1)
-                                chunkManager::passLightToNeighbor(floodLight, pos, { 0, 0, 1 }, chunkPos_);
 
                             //-z
-                            if (pos.z > 0 && blocksLocalIDs_[pos.x][pos.y][pos.z - 1] == 0)
+                            if (pos.z >= 0 && !isOpaque_[pos.x][pos.y][pos.z - 1])
                                 floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
-                            else if (neighborOffset.z == -1)
-                                chunkManager::passLightToNeighbor(floodLight, pos, { 0, 0, -1 }, chunkPos_);
 
                         }
                         floodLightsInstances.pop_front();
@@ -1456,79 +1392,144 @@ namespace VoxelEng {
         unsigned short localID = 0;
         vec3 neighborOffset;
         std::deque<blockLightMod> floodLightsInstances;
-        Padded3DArray<bool> blockLightChecked = Padded3DArray<bool>(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, false);
+        Padded3DArray<char> blockLightIntensity(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0);
         std::shared_ptr<neighborsInfo> neighborsInfoPtr = chunkManager::getOrCreateChunkNeighborInfo(chunkPos_);
+
+        if (chunkPos_ == vec3(1, 4, -2))
+            int a = 3 + 2;
 
         neighborsInfoPtr->blockLightsFromNeighbor.lock();
         blockLightsByNeighbor& blockLightsByNeighborPtr = neighborsInfoPtr->blockLightsFromNeighbor.get();
         for (auto it = blockLightsByNeighborPtr.begin(); it != blockLightsByNeighborPtr.end(); it++) {
 
+            // First access the neighbor chunk providing light info
+            const vec3& providerChunkPos = it->first;
+            bool providerIsNorth = providerChunkPos.x == 1;
+            bool providerIsSouth = providerChunkPos.x == -1;
+            bool providerIsUp = providerChunkPos.y == 1;
+            bool providerIsDown = providerChunkPos.y == -1;
+            bool providerIsEast = providerChunkPos.z == 1;
+            bool providerIsWest = providerChunkPos.z == -1;
             it->second.lock();
-            const std::list<blockLightMod>& blockLightMods = it->second.get();
-            for (auto itLight = blockLightMods.cbegin(); itLight != blockLightMods.cend(); itLight++) {
+            const std::unordered_map<basicVec3, std::list<blockLightMod>>& blockLightMods = it->second.get();
+            for (auto itStartLight = blockLightMods.cbegin(); itStartLight != blockLightMods.cend(); itStartLight++) {
           
-                const basicVec3& blockLightPos = itLight->pos;
-                localID = blocksLocalIDs_[blockLightPos.x][blockLightPos.y][blockLightPos.z];
-                block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
+                // Then iterate for each light shared by that neighbor
+                blockLightIntensity.clear();
+                const std::list<blockLightMod>& lightSpreadList = itStartLight->second;
+                for (auto itLight = lightSpreadList.cbegin(); itLight != lightSpreadList.cend(); itLight++) {
+                    
+                    const blockLightMod& lightMod = *itLight;
+                    const basicVec3& blockLightPos = lightMod.pos;
+                    localID = blocksLocalIDs_[blockLightPos.x][blockLightPos.y][blockLightPos.z];
+                    block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                // Add block's light.
-                if (b.opacity() < blockOpacity::OPAQUEBLOCK) {
+                    // Add block's light.
+                    if (b.opacity() < blockOpacity::OPAQUEBLOCK) {
 
-                    // Search for blocks affected by this light.
-                    blockLightChecked.clear();
-                    floodLightsInstances.clear();
-                    floodLightsInstances.push_back(*itLight);
+                        // Search for blocks affected by this light.
+                        floodLightsInstances.clear();
+                        floodLightsInstances.push_back(lightMod);
+                        while (floodLightsInstances.size() > 0) {
 
-                    while (floodLightsInstances.size() > 0) {
+                            // Get next light and reset some variables.
+                            blockLightMod& floodLight = floodLightsInstances.front();
+                            basicVec3& pos = floodLight.pos;
+                            neighborOffset.x = pos.x >= CHUNK_SIZE_LIMIT ? 1 : pos.x <= 0 ? -1 : 0;
+                            neighborOffset.y = pos.y >= CHUNK_SIZE_LIMIT ? 1 : pos.y <= 0 ? -1 : 0;
+                            neighborOffset.z = pos.z >= CHUNK_SIZE_LIMIT ? 1 : pos.z <= 0 ? -1 : 0;
 
-                        // Get next light and reset some variables.
-                        blockLightMod& floodLight = floodLightsInstances.front();
-                        basicVec3& pos = floodLight.pos;
-                        neighborOffset.x = pos.x >= CHUNK_SIZE_LIMIT ? 1 : pos.x <= 0 ? -1 : 0;
-                        neighborOffset.y = pos.y >= CHUNK_SIZE_LIMIT ? 1 : pos.y <= 0 ? -1 : 0;
-                        neighborOffset.z = pos.z >= CHUNK_SIZE_LIMIT ? 1 : pos.z <= 0 ? -1 : 0;
+                            if (floodLight.intensity > blockLightIntensity[pos.x][pos.y][pos.z]) {
 
-                        if (floodLight.intensity > 0 && !blockLightChecked[pos.x][pos.y][pos.z]) {
+                                applyBlockLight(pos.x, pos.y, pos.z, floodLight.color, floodLight.intensity);
+                                blockLightIntensity[pos.x][pos.y][pos.z] = floodLight.intensity;
 
-                            float lightLevelScale = floodLight.intensity / 8.0f; // 8 is the maximum allowed light level.
-                            blockLightColor_[pos.x][pos.y][pos.z].safeAdd(floodLight.color * lightLevelScale);
-                            blockLightLevel_[pos.x][pos.y][pos.z] = floodLight.intensity;
-                            blockLightChecked[pos.x][pos.y][pos.z] = true;
+                                //+x
+                                if (pos.x <= CHUNK_SIZE_LIMIT && !isOpaque_[pos.x + 1][pos.y][pos.z]) {
 
-                            //+x
-                            if (pos.x < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x + 1][pos.y][pos.z] == 0)
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
- 
-                            //-x
-                            if (pos.x > 0 && blocksLocalIDs_[pos.x - 1][pos.y][pos.z] == 0)
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
+                                    if (pos.x < CHUNK_SIZE_LIMIT)
+                                        floodLightsInstances.emplace_back(basicVec3{ pos.x + 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
+                                    else
+                                        applyBlockLight(pos.x + 1, pos.y, pos.z, floodLight.color, providerIsNorth ? floodLight.intensity + 1 : floodLight.intensity - 1);
+                                }
 
-                            //+y
-                            if (pos.y < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y + 1][pos.z] == 0)
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
+                                //-x
+                                if (pos.x >= 0 && !isOpaque_[pos.x - 1][pos.y][pos.z]) {
 
-                            //-y
-                            if (pos.y > 0 && blocksLocalIDs_[pos.x][pos.y - 1][pos.z] == 0)
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
+                                    if (pos.x > 0)
+                                        floodLightsInstances.emplace_back(basicVec3{ pos.x - 1, pos.y, pos.z }, floodLight.intensity - 1, floodLight.color);
+                                    else
+                                        applyBlockLight(pos.x - 1, pos.y, pos.z, floodLight.color, providerIsSouth ? floodLight.intensity + 1 : floodLight.intensity - 1);
 
-                            //+z
-                            if (pos.z < CHUNK_SIZE_LIMIT && blocksLocalIDs_[pos.x][pos.y][pos.z + 1] == 0)
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
+                                }
 
-                            //-z
-                            if (pos.z > 0 && blocksLocalIDs_[pos.x][pos.y][pos.z - 1] == 0)
-                                floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
+                                //+y
+                                if (pos.y <= CHUNK_SIZE_LIMIT && !isOpaque_[pos.x][pos.y + 1][pos.z]) {
+
+                                    if (pos.y < CHUNK_SIZE_LIMIT)
+                                        floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y + 1, pos.z }, floodLight.intensity - 1, floodLight.color);
+                                    else
+                                        applyBlockLight(pos.x, pos.y + 1, pos.z, floodLight.color, providerIsUp ? floodLight.intensity + 1 : floodLight.intensity - 1);
+
+                                }
+
+                                //-y
+                                if (pos.y >= 0 && !isOpaque_[pos.x][pos.y - 1][pos.z]) {
+
+                                    if (pos.y > 0)
+                                        floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y - 1, pos.z }, floodLight.intensity - 1, floodLight.color);
+                                    else
+                                        applyBlockLight(pos.x, pos.y - 1, pos.z, floodLight.color, providerIsDown ? floodLight.intensity + 1 : floodLight.intensity - 1);
+
+                                }
+
+                                //+z
+                                if (pos.z <= CHUNK_SIZE_LIMIT && !isOpaque_[pos.x][pos.y][pos.z + 1]) {
+
+                                    if (pos.z < CHUNK_SIZE_LIMIT)
+                                        floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z + 1 }, floodLight.intensity - 1, floodLight.color);
+                                    else
+                                        applyBlockLight(pos.x, pos.y, pos.z + 1, floodLight.color, providerIsEast ? floodLight.intensity + 1 : floodLight.intensity - 1);
+
+                                }
+
+                                //-z
+                                if (pos.z >= 0 && !isOpaque_[pos.x][pos.y][pos.z - 1]) {
+
+                                    if (pos.z > 0)
+                                        floodLightsInstances.emplace_back(basicVec3{ pos.x, pos.y, pos.z - 1 }, floodLight.intensity - 1, floodLight.color);
+                                    else
+                                        applyBlockLight(pos.x, pos.y, pos.z - 1, floodLight.color, providerIsWest ? floodLight.intensity + 1 : floodLight.intensity - 1);
+
+                                }
+
+                            }
+                            floodLightsInstances.pop_front();
 
                         }
-                        floodLightsInstances.pop_front();
-                    }
 
+                    }
+                
                 }
-            
+
             }
             it->second.unlock();
         }
         neighborsInfoPtr->blockLightsFromNeighbor.unlock();
+    }
+
+    void chunk::applyBlockLight(char x, char y, char z, const basicVec4& color, char intensity) {
+    
+        // MAÑANA. VER SI SE PUEDE HACER EL mcm DE UN VECTOR O SU VECTOR UNITARIO PARA BÁSICAMENTE IDENTIFICAR SI UNA LUZ ES MULTIPLO DE OTRA CON UN NIVEL DE INTENSIDAD X O SI SON DISTINTAS LUCES?
+        //blockLightColor_[x][y][z].clampAdd(color * (intensity / 8.0f), basicVec4Zero, basicVec4FullLight); // 8 is the maximum allowed light level.
+       // blockLightLevel_[x][y][z] = std::clamp(blockLightLevel_[x][y][z] + intensity, 0, 7);
+
+
+
+        blockLightColor_[x][y][z].x = blockLightColor_[x][y][z].x > color.x * (intensity / 8.0f) ? blockLightColor_[x][y][z].x : color.x * (intensity / 8.0f);
+        blockLightColor_[x][y][z].y = blockLightColor_[x][y][z].y > color.y * (intensity / 8.0f) ? blockLightColor_[x][y][z].y : color.y * (intensity / 8.0f);
+        blockLightColor_[x][y][z].z = blockLightColor_[x][y][z].z > color.z * (intensity / 8.0f) ? blockLightColor_[x][y][z].z : color.z * (intensity / 8.0f);
+        blockLightLevel_[x][y][z] = blockLightLevel_[x][y][z] > intensity ? blockLightLevel_[x][y][z] : intensity;
     }
 
     void chunk::makeEmpty() {
@@ -1593,15 +1594,20 @@ namespace VoxelEng {
     
     }
 
-    void chunk::placeNewBlock(unsigned short& actualLocalID, const block& newBlock) {
+    void chunk::clear() {
+    
+        isOpaque_.clear();
+
+        clearBlockLight();
+    
+    }
+
+    bool chunk::placeNewBlock(unsigned short& actualLocalID, const block& newBlock) {
 
         unsigned int newGlobalID = newBlock.intID(),
             oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
-        needsRemesh_ = needsRemesh_ || oldGlobalID != newGlobalID;
-
-        int a = -1;
-        if (actualLocalID)
-            a = palette_.getT2(actualLocalID);
+        const bool blockChanged = oldGlobalID != newGlobalID;
+        needsRemesh_ = needsRemesh_ || blockChanged;
 
         if (actualLocalID) {
 
@@ -1648,32 +1654,40 @@ namespace VoxelEng {
 
         }
 
+        return blockChanged;
+
     }
 
     basicVec4 chunk::getBlockLightAverage(const basicVec4& blockLightOwn,
-        const basicVec3& blockLightCoords1, const basicVec3& blockLightCoords2, const basicVec3& blockLightCords3) {
+        const basicVec3& blockLightCoords1, const basicVec3& blockLightCoords2, const basicVec3& blockLightCoords3) {
+
+        const char AOLight = -49;
 
         int x = (blockLightOwn.x +
-            (isOpaque_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z] ? -1 :
+            (isOpaque_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z] ? AOLight :
                 blockLightColor_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z].x) +
-            (isOpaque_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z] ? -1 :
+            (isOpaque_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z] ? AOLight :
                 blockLightColor_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z].x) +
-            (isOpaque_[blockLightCords3.x][blockLightCords3.y][blockLightCords3.z] ? -1 :
-                blockLightColor_[blockLightCords3.x][blockLightCords3.y][blockLightCords3.z].x)) / 4;
+            (isOpaque_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z] ? AOLight :
+                blockLightColor_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z].x)) / 4;
         int y = (blockLightOwn.y +
-            (isOpaque_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z] ? -1 :
+            (isOpaque_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z] ? AOLight :
                 blockLightColor_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z].y) +
-            (isOpaque_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z] ? -1 :
+            (isOpaque_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z] ? AOLight :
                 blockLightColor_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z].y) +
-            (isOpaque_[blockLightCords3.x][blockLightCords3.y][blockLightCords3.z] ? -1 :
-                blockLightColor_[blockLightCords3.x][blockLightCords3.y][blockLightCords3.z].y)) / 4;
+            (isOpaque_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z] ? AOLight :
+                blockLightColor_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z].y)) / 4;
         int z = (blockLightOwn.z +
-            (isOpaque_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z] ? -1 :
+            (isOpaque_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z] ? AOLight :
                 blockLightColor_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z].z) +
-            (isOpaque_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z] ? -1 :
+            (isOpaque_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z] ? AOLight :
                 blockLightColor_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z].z) +
-            (isOpaque_[blockLightCords3.x][blockLightCords3.y][blockLightCords3.z] ? -1 :
-                blockLightColor_[blockLightCords3.x][blockLightCords3.y][blockLightCords3.z].z)) / 4;
+            (isOpaque_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z] ? AOLight :
+                blockLightColor_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z].z)) / 4;
+        
+        //x = blockLightOwn.x;
+        //y = blockLightOwn.y;
+        //z = blockLightOwn.z;
 
         return basicVec4((char)x, (char)y, (char)z, 127);
 
@@ -2331,23 +2345,29 @@ namespace VoxelEng {
             
     }
 
-    void chunkManager::passLightToNeighbor(const blockLightMod& floodLight, basicVec3& pos, const vec3& neighborOffset, const vec3& chunkPos) {
+    void chunkManager::passLightToNeighbor(const blockLightMod& floodLight, const basicVec3& startPos, const basicVec3& pos, 
+        const vec3& neighborOffset, const vec3& chunkPos) {
 
         std::shared_ptr<neighborsInfo> neighborsInfoPtr = getOrCreateChunkNeighborInfo(chunkPos + neighborOffset);
 
         neighborsInfoPtr->blockLightsFromNeighbor.lock();
-        threadsafe<std::list<blockLightMod>>* list =
-            &neighborsInfoPtr->blockLightsFromNeighbor.get()[basicVec3{ (char)-neighborOffset.x, (char)-neighborOffset.y, (char)-neighborOffset.z }]; // And pass it the data from this chunk.
+        blockLightsBySpreadLight* blockLightMods =
+            &neighborsInfoPtr->blockLightsFromNeighbor.get()[vec3{ (char)-neighborOffset.x, (char)-neighborOffset.y, (char)-neighborOffset.z }];
         neighborsInfoPtr->blockLightsFromNeighbor.unlock();
 
-        list->lock();
-        blockLightMod* mod = &list->get().emplace_back();
-        mod->color = floodLight.color;
-        mod->intensity = floodLight.intensity - 1;
-        mod->pos.x = neighborOffset.x == 1 ? -1 : neighborOffset.x == -1 ? CHUNK_SIZE : pos.x;
-        mod->pos.y = neighborOffset.y == 1 ? -1 : neighborOffset.y == -1 ? CHUNK_SIZE : pos.y;
-        mod->pos.z = neighborOffset.z == 1 ? -1 : neighborOffset.z == -1 ? CHUNK_SIZE : pos.z;
-        list->unlock();
+        char x = neighborOffset.x == 1 ? 0 : neighborOffset.x == -1 ? CHUNK_SIZE_LIMIT : pos.x;
+        char y = neighborOffset.y == 1 ? 0 : neighborOffset.y == -1 ? CHUNK_SIZE_LIMIT : pos.y;
+        char z = neighborOffset.z == 1 ? 0 : neighborOffset.z == -1 ? CHUNK_SIZE_LIMIT : pos.z;
+
+        blockLightMods->lock();
+        blockLightMod& mod = blockLightMods->get()[startPos].emplace_back();
+        mod.pos.x = x;
+        mod.pos.y = y;
+        mod.pos.z = z;
+        // Remove one intensity value per block travelled
+        mod.intensity = floodLight.intensity - (neighborOffset.x != 0) - (neighborOffset.y != 0) - (neighborOffset.z != 0);
+        mod.color = floodLight.color;
+        blockLightMods->unlock();
 
     }
 
@@ -2357,8 +2377,6 @@ namespace VoxelEng {
         std::shared_ptr<neighborsInfo>& neighborsInfoPtr = chunkNeighborsInfo_[chunkPos];
         if (!neighborsInfoPtr)
             neighborsInfoPtr = std::make_shared<neighborsInfo>();
-        else
-            int a = 3 + 2;
         chunkNeighborsInfoMutex_.unlock();
         return neighborsInfoPtr;
     
@@ -2722,7 +2740,7 @@ namespace VoxelEng {
                         z = sto<unsigned int>(word);
                         break;
                     default:
-                        throw std::runtime_error("This is not possible. Something has wrong horribly wrong when loading chunk from disk");
+                        throw std::runtime_error("This is not possible. Something has gone horribly wrong when loading chunk from disk");
                 }
 
                 word.clear();
@@ -2828,7 +2846,7 @@ namespace VoxelEng {
 
         chunk->clearBlockLight();
 
-        chunk->recalculateBlockLight();
+        //chunk->recalculateBlockLight(); // MAÑANA, EL ERROR ESTÁ AQUÍ. AQUI SE ESTÁ METIENDO LA LUZ CON INTENSITY 8 SIEMPRE INDEPENDIENTEMENTE DE LO QUE LE HAYAMOS PASADO PORQUE FLOODFILLLIGHTING LIST SOLO GUARDA POS
 
         chunk->needsRemesh(true); // TODO. EL BUG ES QUE SI MODIFICO UN BLOCK EN UN BORDE, TAMBIEN HAY QUE GUARDAR EL CHUNK VECINO QUE LE HACE FRONTERA.
     
@@ -2844,7 +2862,8 @@ namespace VoxelEng {
         
             chunk* c = &chunksPool_.get();
 
-            // TODO. DO A CHUNK.RESET() NON-STATIC METHOD.
+            c->clear();
+
             c->chunkPos(chunkPos);
 
             chunksMutex_.lock();
@@ -2853,14 +2872,6 @@ namespace VoxelEng {
 
             addFrontier(c);
 
-            // TODO. USAR ESTE SISTEMA PARA LOS NEIGHBORINFO???
-            /*vec3 neighborPos;
-            for (const vec3& offset : neighborsOffsets) {
-
-                neighborPos = chunkPos + offset;
-                onChunkLoad_.notify(neighborPos.x, neighborPos.y, neighborPos.z);
-
-            }*/
             onChunkLoad_.notify(chunkPos.x, chunkPos.z);
             onChunkLoad_.notify(chunkPos.x + 1, chunkPos.z);
             onChunkLoad_.notify(chunkPos.x - 1, chunkPos.z);

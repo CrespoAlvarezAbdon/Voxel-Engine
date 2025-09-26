@@ -89,7 +89,7 @@ namespace VoxelEng {
 	};
 
 	inline light::light()
-	: ambient_(basicVec4Zeroes), diffuse_(basicVec4Zeroes), specular_(basicVec4Zeroes)
+	: ambient_(basicVec4Zero), diffuse_(basicVec4Zero), specular_(basicVec4Zero)
 	{}
 
 	inline light::light(char ambientR, char ambientG, char ambientB,

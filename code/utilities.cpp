@@ -139,10 +139,10 @@ namespace VoxelEng {
 
 	namespace utilities {
 	
-		char safeAdd(char c, char c2) {
+		char clampAdd(char c, char c2, char min, char max) {
 
 			int result = c + c2;
-			return result > 127 ? 127 : result < -128 ? -128 : (char)result;
+			return result > max ? max : result < min ? min : (char)result;
 
 		}
 	

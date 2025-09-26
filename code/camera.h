@@ -61,7 +61,7 @@ namespace VoxelEng {
 		* Note: the window parameter must be the one with the graphics API context.
 		*/
 		camera(float FOV, float zNear, float zFar, window& window, bool isPlayerCamera,
-			   const vec3& position = vec3Zero, const vec3& rotation = vec3Zero);
+			const vec3& position = vec3Zero, const vec3& rotation = vec3Zero);
 
 
 		// Observers.
@@ -256,17 +256,17 @@ namespace VoxelEng {
 		window& window_;
 
 		float FOV_,
-			  zNear_,
-			  zFar_;
+			zNear_,
+			zFar_;
 
 		glm::mat4 projectionMatrix_,
-				  viewMatrix_,
-				  modelMatrix_; // All models' vertices will be multiplied with this matrix (so you can, for example, rotate the entire world around the camera).
+			viewMatrix_,
+			modelMatrix_; // All models' vertices will be multiplied with this matrix (so you can, for example, rotate the entire world around the camera).
 
 		transform transform_;
 
 		frustum cameraFrustum_;
-		
+
 	};
 
 	inline const camera* camera::cPlayerCamera() {
@@ -318,9 +318,9 @@ namespace VoxelEng {
 	}
 
 	inline const vec3& camera::viewDirection() const {
-	
+
 		return transform_.viewDirection;
-	
+
 	}
 
 	inline const vec3& camera::Xaxis() const {
@@ -336,15 +336,15 @@ namespace VoxelEng {
 	}
 
 	inline const vec3& camera::Zaxis() const {
-	
+
 		return transform_.Zaxis;
-	
+
 	}
 
 	inline bool camera::isInsideFrustum(const vec3& point) const {
-	
+
 		return cameraFrustum_.isInside(point);
-	
+
 	}
 
 	inline const vec3& camera::chunkPos() const {
@@ -396,9 +396,9 @@ namespace VoxelEng {
 	}
 
 	inline void camera::rotation(const vec3& newRotation) {
-	
+
 		rotation(newRotation.x, newRotation.y, newRotation.z);
-	
+
 	}
 
 	inline void camera::updateTransform(const transform& baseTransform) {
@@ -408,31 +408,31 @@ namespace VoxelEng {
 	}
 
 	inline void camera::updateTransform(const transform* baseTransform) {
-	
+
 		updateTransform(*baseTransform);
-	
+
 	}
 
 	inline void camera::updateView() {
 
-		#if GRAPHICS_API == OPENGL
+#if GRAPHICS_API == OPENGL
 
-			viewMatrix_ = glm::lookAt(transform_.position, transform_.position + transform_.viewDirection, transform_.Yaxis);
-			cameraFrustum_.updatePlanes();
+		viewMatrix_ = glm::lookAt(transform_.position, transform_.position + transform_.viewDirection, transform_.Yaxis);
+		cameraFrustum_.updatePlanes();
 
-		#else
+#else
 
 
 
-		#endif
+#endif
 
 	}
 
 	inline camera::~camera() {
-	
+
 		if (this == playerCamera_)
 			playerCamera_ = nullptr;
-	
+
 	}
 
 }

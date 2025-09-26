@@ -12,7 +12,8 @@
 
 namespace VoxelEng {
 
-	typedef std::unordered_map<basicVec3, threadsafe<std::list<blockLightMod>>> blockLightsByNeighbor;
+	typedef threadsafe<std::unordered_map<basicVec3, std::list<blockLightMod>>> blockLightsBySpreadLight;
+	typedef std::unordered_map<vec3, blockLightsBySpreadLight> blockLightsByNeighbor;
 
 	struct neighborsInfo {
 	

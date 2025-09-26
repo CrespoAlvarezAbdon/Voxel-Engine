@@ -34,23 +34,23 @@ namespace VoxelEng {
     }
 
     void camera::setPos(float newX, float newY, float newZ) {
-    
+
         transform_.position.x = newX;
         transform_.position.y = newY;
         transform_.position.z = newZ;
-    
+
     }
 
     void camera::setChunkPos(int newCX, int newCY, int newCZ) {
-    
+
         transform_.chunkPosition.x = newCX;
         transform_.chunkPosition.y = newCY;
         transform_.chunkPosition.z = newCZ;
-    
+
     }
 
     void camera::rotation(float newX, float newY, float newZ) {
-    
+
         transform_.rotation.x = newX;
         transform_.rotation.y = newY;
         transform_.rotation.z = newZ;
@@ -67,13 +67,13 @@ namespace VoxelEng {
 
     void camera::updateProjectionMatrix() {
 
-        #if GRAPHICS_API == OPENGL
+#if GRAPHICS_API == OPENGL
 
-            projectionMatrix_ = glm::perspective(glm::radians(FOV_), static_cast<float>(window_.width()) / window_.height(), zNear_, zFar_);
+        projectionMatrix_ = glm::perspective(glm::radians(FOV_), static_cast<float>(window_.width()) / window_.height(), zNear_, zFar_);
 
-        #else
+#else
 
-        #endif
+#endif
 
     }
 
