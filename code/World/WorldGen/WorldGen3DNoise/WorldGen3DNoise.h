@@ -184,6 +184,7 @@ namespace VoxelEng {
 		const block& layer2_;
 		const block& air_;
 		const block& lightBlock_;
+		const block& lightBlock2_;
 		const block& waterBlock_;
 		const block& beachBlock_;
 
@@ -225,7 +226,8 @@ namespace VoxelEng {
 	inline WorldGen3DNoise::WorldGen3DNoise(const block& ore1, const block& ore2, const block& ore3, const block& ore4,
 		const block& layer0, const block& layer1, const block& layer2, const block& air)
 		: spawnSet_(false), minHeight_(0), maxHeight_(0), AISpawnPos_(vec3Zero), ore1_(ore1), ore2_(ore2), ore3_(ore3), ore4_(ore4),
-		layer0_(layer0), layer1_(layer1), layer2_(layer2), air_(air), lightBlock_(block::getBlockC("starminer::marbleBlock2")),
+		layer0_(layer0), layer1_(layer1), layer2_(layer2), air_(air), lightBlock_(block::getBlockC("starminer::marbleBlock")),
+		lightBlock2_(block::getBlockC("starminer::marbleBlock2")),
 		waterBlock_(block::getBlockC("starminer::water")),
 		beachBlock_(block::getBlockC("starminer::sand")),
 		ore1SpreadRange_(std::uniform_int_distribution<unsigned int>::param_type(1, 8)),

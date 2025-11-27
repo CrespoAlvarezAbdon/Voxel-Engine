@@ -674,8 +674,6 @@ namespace VoxelEng {
         // Set the sun's directional light MVP matrix.
         SSBO<lightInstance>* directionalLightsInstances = registries::get("SSBOs")->pointer<registry<std::string, var>>()->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
         lightInstance& instance = directionalLightsInstances->get(0);
-        instance.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, .0f, 0.0f);
-        instance.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
         glm::mat4 proj = glm::ortho(-320.0f, 320.0f, -384.0f, 384.0f, zNear_, zFar_);
         glm::mat4 view = glm::lookAt(instance.pos, vec3Zero, vec3FixedUp);
         instance.MVP = proj * view;

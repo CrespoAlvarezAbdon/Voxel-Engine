@@ -155,9 +155,9 @@ namespace VoxelEng {
 
 		/**
 		* @brief Get the block data of this chunk.
-		* @return The block data of this chunk (local IDs, whether they are opaque or not, and their block light values).
+		* @returns The block data of this chunk (local IDs, whether they are opaque or not, and their block light values).
 		*/
-		chunkBlockData blockData() const;
+		chunkBlockData blockData();
 
 		/**
 		* @brief Get the block at the specified chunk-local coordinates.
@@ -230,13 +230,13 @@ namespace VoxelEng {
 
 		/**
 		* @brief Get whether this chunk's mesh needs to be regenerated or not.
-		* @return Whether this chunk's mesh needs to be regenerated (true) or not (false).
+		* @returnsWhether this chunk's mesh needs to be regenerated (true) or not (false).
 		*/
 		bool needsRemesh() const;
 
 		/**
 		* @brief Get whether this chunk was loaded from disk or not.
-		* @return Whether this chunk was loaded from disk (true) or not (false).
+		* @returnsWhether this chunk was loaded from disk (true) or not (false).
 		*/
 		bool loadedFromDisk() const;
 
@@ -391,7 +391,8 @@ namespace VoxelEng {
 		// Modifiers.
 
 		/**
-		* @brief Returns the pointer to the first element of the chunk's block array.
+		* @brief Get the chunk's block array.
+		* @returns The chunk's block array.
 		*/
 		Padded3DArray<unsigned short>& blocks();
 
@@ -450,7 +451,7 @@ namespace VoxelEng {
 		* @param b The block that replaces.
 		* @param pos The chunk-local-grid coordinates of the blocks.
 		*/
-		void setBlockLight(const block& oldB, const block& b, byte x, byte y, byte z);
+		void replaceBlockLight(const block& oldB, const block& b, byte x, byte y, byte z);
 
 		/**
 		* Apply the differences in block light when a block is replaced with another one.
@@ -458,7 +459,23 @@ namespace VoxelEng {
 		* @param b The block that replaces.
 		* @param pos The chunk-local-grid coordinates of the blocks.
 		*/
-		void setBlockLight(const block& oldB, const block& b, const vec3& pos);
+		void replaceBlockLight(const block& oldB, const block& b, const vec3& pos);
+
+		/**
+		* Apply the differences in block light when a block is replaced with another one.
+		* @param oldB The replaced block.
+		* @param b The block that replaces.
+		* @param pos The chunk-local-grid coordinates of the blocks.
+		*/
+		void setBlockLight(const block& b, byte x, byte y, byte z);
+
+		/**
+		* Apply the differences in block light when a block is replaced with another one.
+		* @param oldB The replaced block.
+		* @param b The block that replaces.
+		* @param pos The chunk-local-grid coordinates of the blocks.
+		*/
+		void setBlockLight(const block& b, const vec3& pos);
 
 		/**
 		* @brief Set the chunk's chunk position.
@@ -527,16 +544,42 @@ namespace VoxelEng {
 		void clearBlockLight();
 
 		/**
-		* @brief Apply the given block light modification to the chunk.
+		* @brief Add the given block light modification to the chunk.
 		* @param mod The block light modification to apply.
 		*/
-		void applyBlockLight(char x, char y, char z, const basicVec4& color, char intensity);
+		void addBlockLight(char x, char y, char z, const basicVec4& color, char intensity, bool markToBeRemeshed);
 
 		/**
 		* @brief Apply the given block light modification to the chunk.
 		* @param mod The block light modification to apply.
 		*/
-		void applyBlockLight(const vec3& pos, const basicVec4& color, char intensity);
+		void addBlockLight(const vec3& pos, const basicVec4& color, char intensity, bool markToBeRemeshed);
+
+		/**
+		* @brief Apply the given block light modification to the chunk.
+		* @param mod The block light modification to apply.
+		*/
+		void addBlockLight(const vec3& pos, char xOffset, char yOffset, char zOffset,
+			const basicVec4& color, char intensity, bool markToBeRemeshed);
+
+		/**
+		* @brief Apply the given block light modification to the chunk.
+		* @param mod The block light modification to apply.
+		*/
+		void applyBlockLight(char x, char y, char z, const basicVec4& color, char intensity, bool markToBeRemeshed);
+
+		/**
+		* @brief Apply the given block light modification to the chunk.
+		* @param mod The block light modification to apply.
+		*/
+		void applyBlockLight(const vec3& pos, const basicVec4& color, char intensity, bool markToBeRemeshed);
+
+		/**
+		* @brief Apply the given block light modification to the chunk.
+		* @param mod The block light modification to apply.
+		*/
+		void applyBlockLight(const vec3& pos, char xOffset, char yOffset, char zOffset, 
+			const basicVec4& color, char intensity, bool markToBeRemeshed);
 
 		/**
 		* @brief The chunk's block data will be filled with null blocks, leaving the chunk "empty of blocks".
@@ -657,8 +700,6 @@ namespace VoxelEng {
 		* @brief Clean up any resources allocated for this system.
 		*/ 
 		static void reset();
-
-		void clear();
 		
 	private:
 
@@ -679,9 +720,9 @@ namespace VoxelEng {
 
 		// Chunk block data (serializable).
 		Padded3DArray<unsigned short> blocksLocalIDs_;
-		Padded3DArray<bool> isOpaque_;
+		Padded3DArray<byte> isOpaque_;
 		Padded3DArray<basicVec4> blockLightColor_; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
-		Padded3DArray<char> blockLightLevel_; // Lighting value in the specific block.
+		Padded3DArray<char> blockLightLevel_; // Lighting value in the specific block. TODO. DELETE SINCE THIS IS ONLY USEFUL FOR DEBUGGING A SINGLE LIGHT.
 		
 		bool modified_;
 		
@@ -742,7 +783,7 @@ namespace VoxelEng {
 
 	}
 
-	inline chunkBlockData chunk::blockData() const {
+	inline chunkBlockData chunk::blockData() {
 	
 		return { &blocksLocalIDs_, &isOpaque_, &blockLightColor_, &blockLightLevel_};
 	
@@ -986,7 +1027,7 @@ namespace VoxelEng {
 
 	inline bool chunk::isOwned() const {
 	
-		return owners_;
+		return owners_.load() > 0;
 	
 	}
 
@@ -1038,10 +1079,16 @@ namespace VoxelEng {
 
 	}
 
-	inline void chunk::setBlockLight(const block& oldB, const block& b, byte x, byte y, byte z) {
+	inline void chunk::replaceBlockLight(const block& oldB, const block& b, byte x, byte y, byte z) {
 	
-		return setBlockLight(oldB, b, vec3(x, y, z));
+		return replaceBlockLight(oldB, b, vec3(x, y, z));
 	
+	}
+
+	inline void chunk::setBlockLight(const block& b, byte x, byte y, byte z) {
+
+		return setBlockLight(b, vec3(x, y, z));
+
 	}
 
 	inline chunkRenderingData& chunk::renderingData() {
@@ -1098,9 +1145,29 @@ namespace VoxelEng {
 
 	}
 
-	inline void chunk::applyBlockLight(const vec3& pos, const basicVec4& color, char intensity) {
+	inline void chunk::addBlockLight(const vec3& pos, const basicVec4& color, char intensity, bool markToBeRemeshed) {
+
+		addBlockLight(pos.x, pos.y, pos.z, color, intensity, markToBeRemeshed);
+
+	}
+
+	inline void chunk::addBlockLight(const vec3& pos, char xOffset, char yOffset, char zOffset,
+		const basicVec4& color, char intensity, bool markToBeRemeshed) {
+
+		addBlockLight(pos.x + xOffset, pos.y + yOffset, pos.z + zOffset, color, intensity, markToBeRemeshed);
+
+	}
+
+	inline void chunk::applyBlockLight(const vec3& pos, const basicVec4& color, char intensity, bool markToBeRemeshed) {
 	
-		applyBlockLight(pos.x, pos.y, pos.z, color, intensity);
+		applyBlockLight(pos.x, pos.y, pos.z, color, intensity, markToBeRemeshed);
+	
+	}
+
+	inline void chunk::applyBlockLight(const vec3& pos, char xOffset, char yOffset, char zOffset, 
+		const basicVec4& color, char intensity, bool markToBeRemeshed) {
+	
+		applyBlockLight(pos.x + xOffset, pos.y + yOffset, pos.z + zOffset, color, intensity, markToBeRemeshed);
 	
 	}
 
@@ -1326,7 +1393,7 @@ namespace VoxelEng {
 		/**
 		* @brief Get the read-only copy of the operations that need to be performed on
 		* the rendering thread's chunk VBO.
-		* @return The read-only copy of the operations that need to be performed on
+		* @returns The read-only copy of the operations that need to be performed on
 		* the rendering thread's chunk VBO.
 		*/
 		static std::unordered_map<vec3, chunkVBOoperation> const * chunkVBOoperationsRead();
@@ -1481,7 +1548,7 @@ namespace VoxelEng {
 		/**
 		* @brief Get the chunk specified at the given chunk-grid coordinates.
 		* @param chunkPos The given chunk-grid coordinates.
-		* @return The specified chunk.
+		* @returns The specified chunk.
 		*/
 		static const chunk* getChunkC(const vec3& chunkPos);
 
@@ -1720,7 +1787,7 @@ namespace VoxelEng {
 		/**
 		* @brief Get the chunk specified at the given chunk-grid coordinates.
 		* @param chunkPos The given chunk-grid coordinates.
-		* @return The specified chunk.
+		* @returns The specified chunk.
 		*/
 		static chunk* getChunk(const vec3& chunkPos);
 
@@ -1763,7 +1830,7 @@ namespace VoxelEng {
 
 		/**
 		* @brief Get the mutex that provides mutual exclusion for the dictionary of chunk's neighborInfo objects.
-		* @return The mutex that provides mutual exclusion for the dictionary of chunk's neighborInfo objects.
+		* @returnsThe mutex that provides mutual exclusion for the dictionary of chunk's neighborInfo objects.
 		*/
 		static std::mutex& chunkNeighborsInfoMutex();
 
@@ -1974,7 +2041,7 @@ namespace VoxelEng {
 		/**
 		* @brief Recalculate all the block lighting applied to the chunk.
 		*/
-		static void recalculateBlockLight_(chunk& c);
+		static void recalculateBlockLight_(chunk& c, bool priorityUpdate);
 
 
 		/*

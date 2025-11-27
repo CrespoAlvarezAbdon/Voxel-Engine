@@ -172,8 +172,8 @@ namespace VoxelEng {
 				// TODO. MOVE DIRECTIONAL LIGHT INSTANCE CREATION TO WORLD.H SO THAT EACH WORLD/DIMENSION HAS ITS PROPER DIRECTIONAL LIGHTS.
 				SSBO<lightInstance>* directionalLightsInstances = SSBORegistry->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
 				lightInstance& instance = directionalLightsInstances->get(0);
-				instance.pos = vec4(0.0f, 200.0f, 0.0f, 0.0f);
-				instance.dir = vec4(0.0f, -1.0f, 0.0f, 0.0f);
+				instance.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, .0f, 0.0f); 
+				instance.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
 				instance.lightTypeIndex = 0;
 				directionalLightsInstances->reuploadElement(0);
 

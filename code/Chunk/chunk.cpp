@@ -272,7 +272,7 @@ namespace VoxelEng {
                 nTotalBlocks_--;
             nOpaqueBlocks_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
-            setBlockLight(oldB, b, x, y, z);
+            replaceBlockLight(oldB, b, x, y, z);
 
         }
         else if (neighborOffset == vec3FixedNorth) {
@@ -335,37 +335,26 @@ namespace VoxelEng {
 
     }
 
-    void chunk::setBlockLight(const block& oldB, const block& b, const vec3& pos) {
+    void chunk::replaceBlockLight(const block& oldB, const block& b, const vec3& pos) {
 
-        const varRef& oldEmittedLight = oldB.emittedLight();
+        // Remove old light pos if any.
+        if (!oldB.emittedLight().isNull())
+            floodPointLightPositions_.erase(pos);
+
+        setBlockLight(b, pos);
+
+    }
+
+    void chunk::setBlockLight(const block& b, const vec3& pos) {
+
         const varRef& emittedLight = b.emittedLight();
+        if (!emittedLight.isNull()) { // Add new light pos if any.
 
-        if (!oldEmittedLight.isNull()) { // Remove old light pos.
+            floodPointLightPositions_.insert(pos);
 
-            if (oldEmittedLight.getVarType() == var::varType::POINTLIGHT)
-                floodPointLightPositions_.erase(pos);
-            else if (oldEmittedLight.getVarType() == var::varType::SPOTLIGHT)
-                throw std::runtime_error("This is not implemented yet");
-
-        }
-        if (!emittedLight.isNull()) { // Add new light pos.
-
-            if (emittedLight.getVarType() == var::varType::POINTLIGHT) {
-
-                floodPointLightPositions_.insert(pos);
-
-                // TODO. This needs to be parametrizable in the future for things that do not have the maximum value of light they provide when placed.
-                const pointLight* light = emittedLight.pointer<pointLight>();
-                blockLightColor_[pos.x][pos.y][pos.z] = light->ambient();
-                blockLightLevel_[pos.x][pos.y][pos.z] = light->maxDistance();
-
-            }
-            else if (emittedLight.getVarType() == var::varType::SPOTLIGHT)
-                throw std::runtime_error("This is not implemented yet");
-            else if (emittedLight.getVarType() == var::varType::DIRECTIONALLIGHT)
-                throw std::runtime_error("Directional lights cannot be applied by blocks");
-            else
-                throw std::runtime_error("Unknown light type for block specified (varType number is " + std::to_string((int)emittedLight.getVarType()) + ")");
+            const pointLight* light = emittedLight.pointer<pointLight>();
+            blockLightColor_[pos.x][pos.y][pos.z] = light->ambient();
+            blockLightLevel_[pos.x][pos.y][pos.z] = light->maxDistance();
 
         }
 
@@ -1201,17 +1190,38 @@ namespace VoxelEng {
 
     void chunk::clearBlockLight() {
 
+        isOpaque_.clear();
+        floodPointLightPositions_.clear();
         blockLightColor_.clear();
         blockLightLevel_.clear();
 
     }
 
-    void chunk::applyBlockLight(char x, char y, char z, const basicVec4& color, char intensity) {
+    void chunk::addBlockLight(char x, char y, char z, const basicVec4& color, char intensity, bool markToBeRemeshed) {
 
-        blockLightColor_[x][y][z].x = blockLightColor_[x][y][z].x > color.x * (intensity / 8.0f) ? blockLightColor_[x][y][z].x : color.x * (intensity / 8.0f);
-        blockLightColor_[x][y][z].y = blockLightColor_[x][y][z].y > color.y * (intensity / 8.0f) ? blockLightColor_[x][y][z].y : color.y * (intensity / 8.0f);
-        blockLightColor_[x][y][z].z = blockLightColor_[x][y][z].z > color.z * (intensity / 8.0f) ? blockLightColor_[x][y][z].z : color.z * (intensity / 8.0f);
-        blockLightLevel_[x][y][z] = blockLightLevel_[x][y][z] > intensity ? blockLightLevel_[x][y][z] : intensity;
+        float modifier = intensity / 8.0f;
+        float xColor = blockLightColor_[x][y][z].x + color.x * modifier > 127.0f ? 127.0f : blockLightColor_[x][y][z].x + color.x * modifier;
+        float yColor = blockLightColor_[x][y][z].y + color.y * modifier > 127.0f ? 127.0f : blockLightColor_[x][y][z].y + color.y * modifier;
+        float zColor = blockLightColor_[x][y][z].z + color.z * modifier > 127.0f ? 127.0f : blockLightColor_[x][y][z].z + color.z * modifier;
+
+        blockLightColor_[x][y][z].x = xColor;
+        blockLightColor_[x][y][z].y = yColor;
+        blockLightColor_[x][y][z].z = zColor;
+        blockLightLevel_[x][y][z] = intensity;
+
+        if (markToBeRemeshed)
+            needsRemesh_ = true;
+    }
+
+    void chunk::applyBlockLight(char x, char y, char z, const basicVec4& color, char intensity, bool markToBeRemeshed) {
+
+        blockLightColor_[x][y][z].x = color.x * (intensity / 8.0f);
+        blockLightColor_[x][y][z].y = color.y * (intensity / 8.0f);
+        blockLightColor_[x][y][z].z = color.z * (intensity / 8.0f);
+        blockLightLevel_[x][y][z] = intensity;
+
+        if (markToBeRemeshed)
+            needsRemesh_ = true;
     }
 
     void chunk::makeEmpty() {
@@ -1234,15 +1244,17 @@ namespace VoxelEng {
         nTotalBlocksPlusZ_ = 0;
         nTotalBlocksMinusZ_ = 0;
 
-        blocksLocalIDs_.fill(0);
+        blocksLocalIDs_.clear();
 
-        floodPointLightPositions_.clear();
+        clearBlockLight();
 
         palette_.clear();
         paletteCount_.clear();
         freeLocalIDs_.clear();
 
         blocksMutex_.unlock();
+
+        unloadWhenNoOwners_ = false;
 
     }
 
@@ -1295,13 +1307,6 @@ namespace VoxelEng {
 
     }
 
-    void chunk::clear() {
-
-        isOpaque_.clear();
-
-        clearBlockLight();
-
-    }
 
     bool chunk::placeNewBlock(unsigned short& actualLocalID, const block& newBlock) {
 
@@ -1362,23 +1367,23 @@ namespace VoxelEng {
     basicVec4 chunk::getBlockLightAverage(const basicVec4& blockLightOwn,
         const basicVec3& blockLightCoords1, const basicVec3& blockLightCoords2, const basicVec3& blockLightCoords3) {
 
-        const char AOLight = -49;
+        const char AOLight = 0;
 
-        int x = (blockLightOwn.x +
+        float x = (blockLightOwn.x +
             (isOpaque_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z] ? AOLight :
                 blockLightColor_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z].x) +
             (isOpaque_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z] ? AOLight :
                 blockLightColor_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z].x) +
             (isOpaque_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z] ? AOLight :
                 blockLightColor_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z].x)) / 4;
-        int y = (blockLightOwn.y +
+        float y = (blockLightOwn.y +
             (isOpaque_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z] ? AOLight :
                 blockLightColor_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z].y) +
             (isOpaque_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z] ? AOLight :
                 blockLightColor_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z].y) +
             (isOpaque_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z] ? AOLight :
                 blockLightColor_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z].y)) / 4;
-        int z = (blockLightOwn.z +
+        float z = (blockLightOwn.z +
             (isOpaque_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z] ? AOLight :
                 blockLightColor_[blockLightCoords1.x][blockLightCoords1.y][blockLightCoords1.z].z) +
             (isOpaque_[blockLightCoords2.x][blockLightCoords2.y][blockLightCoords2.z] ? AOLight :
@@ -1386,9 +1391,6 @@ namespace VoxelEng {
             (isOpaque_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z] ? AOLight :
                 blockLightColor_[blockLightCoords3.x][blockLightCoords3.y][blockLightCoords3.z].z)) / 4;
 
-        //x = blockLightOwn.x;
-        //y = blockLightOwn.y;
-        //z = blockLightOwn.z;
 
         return basicVec4((char)x, (char)y, (char)z, 127);
 
@@ -1898,10 +1900,8 @@ namespace VoxelEng {
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
         auto it = clientChunks_.find(chunkPos);
-
-        if (it == clientChunks_.end())
-            logger::errorLog("Chunk at " + std::to_string(chunkPos) + " is not registered");
-        else {
+        if (it != clientChunks_.end())
+        {
 
             chunk* unloadedChunk = it->second;
 
@@ -2234,41 +2234,42 @@ namespace VoxelEng {
         c->blockDataMutex().lock_shared();
 
         // Save local ID data (including duplicated data about neighbors).
+        const chunkBlockData cBlockData = c->blockData();
         const Padded3DArray<unsigned short>& blocks = c->blocks();
         std::string data(c->blocks().size() * sizeof(unsigned short), 0);
         std::memcpy(data.data(), c->blocks().data(), c->blocks().size() * sizeof(unsigned short));
 
         data += '@';
 
+        std::string isOpaqueData(cBlockData.isOpaque_->size() * sizeof(bool), 0);
+        std::memcpy(isOpaqueData.data(), cBlockData.isOpaque_->data(), cBlockData.isOpaque_->size() * sizeof(bool));
+
+        data += isOpaqueData;
+        data += '@';
+
         // Save palette data.
         const palette<unsigned short, unsigned int>& chunkPalette = c->getPalette();
         for (auto it = chunkPalette.cbegin(); it != chunkPalette.cend(); it++)
             data += std::to_string(it->first) + '|' + block::getBlockC(it->second).name() + '|';
-
         data += '@';
-
         const std::unordered_map<unsigned short, unsigned short>& chunkPaletteCount = c->getPaletteCount();
         for (auto it = chunkPaletteCount.cbegin(); it != chunkPaletteCount.cend(); it++)
             data += std::to_string(it->first) + '|' + std::to_string(it->second) + '|';
-
         data += '@';
-
         const std::unordered_set<unsigned short>& chunkFreeLocalIDs = c->getFreeLocalIDs();
         for (auto it = chunkFreeLocalIDs.cbegin(); it != chunkFreeLocalIDs.cend(); it++)
             data += std::to_string(*it) + '|';
-
         data += '@';
 
+        // Save block lights.
         const std::unordered_set<vec3>& floodPointLightPositions = c->getFloodPointLightPositions();
         for (auto it = floodPointLightPositions.cbegin(); it != floodPointLightPositions.cend(); it++)
             data += std::to_string((int)it->x) + '|' + std::to_string((int)it->y) + '|' + std::to_string((int)it->z) + '|';
-
         data += '@';
 
+        // Save block counters
         data += std::to_string(c->nOpaqueBlocks()) + '|' + std::to_string(c->nOpaqueBlocksPlusX()) + '|' + std::to_string(c->nOpaqueBlocksMinusX()) + '|' + std::to_string(c->nOpaqueBlocksPlusY()) + '|' + std::to_string(c->nOpaqueBlocksMinusY()) + '|' + std::to_string(c->nOpaqueBlocksPlusZ()) + '|' + std::to_string(c->nOpaqueBlocksMinusZ()) + '|';
-
         data += '@';
-
         data += std::to_string(c->nTotalBlocks()) + '|' + std::to_string(c->nTotalBlocksPlusX()) + '|' + std::to_string(c->nTotalBlocksMinusX()) + '|' + std::to_string(c->nTotalBlocksPlusY()) + '|' + std::to_string(c->nTotalBlocksMinusY()) + '|' + std::to_string(c->nTotalBlocksPlusZ()) + '|' + std::to_string(c->nTotalBlocksMinusZ()) + '|';
 
         c->blockDataMutex().unlock_shared();
@@ -2296,11 +2297,16 @@ namespace VoxelEng {
 
         chunk->blockDataMutex().lock();
 
+        // Deserialize local block ID data.
+        chunkBlockData cBlockData = chunk->blockData();
         Padded3DArray<unsigned short>& blocks = chunk->blocks();
-
         std::memcpy(blocks.data(), dataBegin, blocks.size() * sizeof(unsigned short));
         index += blocks.size() * sizeof(unsigned short) + 1; // +1 to skip the '@' delimiter character.
 
+        std::memcpy(cBlockData.isOpaque_->data(), dataBegin + index, cBlockData.isOpaque_->size() * sizeof(bool));
+        index += cBlockData.isOpaque_->size() * sizeof(bool) + 1; // +1 to skip the '@' delimiter character.
+
+        // Deserialize palette.
         palette<unsigned short, unsigned int>& chunkPalette = chunk->getPalette();
         c = data[index];
         while (c != '@') {
@@ -2334,7 +2340,6 @@ namespace VoxelEng {
             c = data[++index];
 
         }
-
         std::unordered_map<unsigned short, unsigned short>& chunkPaletteCount = chunk->getPaletteCount();
         c = data[++index]; // Skip the '@' delimiter character.
         while (c != '@') {
@@ -2367,7 +2372,6 @@ namespace VoxelEng {
             c = data[++index];
 
         }
-
         std::unordered_set<unsigned short>& chunkFreeLocalIDs = chunk->getFreeLocalIDs();
         c = data[++index]; // Skip the '@' delimiter character.
         while (c != '@') {
@@ -2388,6 +2392,7 @@ namespace VoxelEng {
 
         }
 
+        // Deserialize block lights.
         std::unordered_set<vec3>& floodPointLightPositions = chunk->getFloodPointLightPositions();
         c = data[++index]; // Skip the '@' delimiter character.
         while (c != '@') {
@@ -2422,7 +2427,12 @@ namespace VoxelEng {
 
             }
 
-            floodPointLightPositions.insert(vec3{ x,y,z });
+            vec3 pos(x, y, z);
+            floodPointLightPositions.insert(pos);
+
+            unsigned short localID = cBlockData.blocksLocalIDs_->at(x,y,z);
+            unsigned int globalID = localID ? chunkPalette.getT2(localID) : 0;
+            chunk->setBlockLight(block::getBlockC(globalID), pos);
 
         }
 
@@ -2518,10 +2528,6 @@ namespace VoxelEng {
 
         chunk->loadedFromDisk(true);
 
-        chunk->clearBlockLight();
-
-        //chunk->recalculateBlockLight(); // MAÑANA, EL ERROR ESTÁ AQUÍ. AQUI SE ESTÁ METIENDO LA LUZ CON INTENSITY 8 SIEMPRE INDEPENDIENTEMENTE DE LO QUE LE HAYAMOS PASADO PORQUE FLOODFILLLIGHTING LIST SOLO GUARDA POS
-
         chunk->needsRemesh(true); // TODO. EL BUG ES QUE SI MODIFICO UN BLOCK EN UN BORDE, TAMBIEN HAY QUE GUARDAR EL CHUNK VECINO QUE LE HACE FRONTERA.
 
     }
@@ -2536,7 +2542,7 @@ namespace VoxelEng {
 
             chunk* c = &chunksPool_.get();
 
-            c->clear();
+            c->makeEmpty();
 
             c->chunkPos(chunkPos);
 
@@ -3072,12 +3078,13 @@ namespace VoxelEng {
 
     }
 
-    void chunkManager::recalculateBlockLight_(chunk& c) {
+    void chunkManager::recalculateBlockLight_(chunk& c, bool priorityUpdate) {
 
         // Get and own this chunk plus its 26 neighbors. MAKE THIS INTO A FUNCTION.
         // Also get their block data.
         std::unordered_map<vec3, chunk*> ownedChunks; // Chunk pos offset is used as key.
         std::unordered_map<vec3, chunkBlockData> ownedBlockData; // Chunk pos offset is used as key.
+        std::unordered_map<vec3, Padded3DArray<char>> blockLightIntensity; // TODO. COMO SOLO HAY 26 VECINOS, CAMBIAR UNORDERED MAP POR UNA ESTRUCURA QUE HAGA UN SWITCH.
         bool skipJob = false;
         {
             const vec3& chunkPos = c.chunkPos();
@@ -3088,6 +3095,9 @@ namespace VoxelEng {
             ownedChunks[vec3Zero] = &c;
             ownChunk(c);
             ownedBlockData[vec3Zero] = c.blockData();
+            blockLightIntensity.emplace(std::piecewise_construct,
+                std::forward_as_tuple(vec3Zero),
+                std::forward_as_tuple(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0));
             for (auto it = neighborsOffsets.cbegin(); !skipJob && it != neighborsOffsets.cend(); it++) {
 
                 const vec3& chunkPosOffset = *it;
@@ -3097,6 +3107,9 @@ namespace VoxelEng {
 
                     ownChunk(*neighbor);
                     ownedBlockData[chunkPosOffset] = neighbor->blockData();
+                    blockLightIntensity.emplace(std::piecewise_construct, 
+                        std::forward_as_tuple(chunkPosOffset), 
+                        std::forward_as_tuple(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0));
 
                 }
                 else
@@ -3106,19 +3119,25 @@ namespace VoxelEng {
 
         }
 
+        
+
         // Propagate every light across the chunk and its neighbors without taking into account chunk borders.
         if (!skipJob) {
         
             const std::unordered_set<vec3>& floodPointLightPositions = c.getFloodPointLightPositions();
             vec3 chunkPosOffset = vec3Zero;
             vec3 chunkRelPos = vec3Zero;
+            vec3 neighborOffset = vec3Zero;
+            vec3 neighborPos = vec3Zero;
+            vec3 neighborRelPos = vec3Zero;
             std::deque<blockLightMod> floodLightsInstances;
-            Padded3DArray<char> blockLightIntensity(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0);
             bool firstSecondLoopIteration = false;
+            char neighborIntensity = 0; // TODO. cambiar por char& ???
             for (auto it = floodPointLightPositions.cbegin(); it != floodPointLightPositions.cend(); it++) {
 
                 // Reset first loop variables.
-                blockLightIntensity.clear();
+                for (auto it = neighborsOffsets.cbegin(); !skipJob && it != neighborsOffsets.cend(); it++)
+                    blockLightIntensity[*it].clear();
                 floodLightsInstances.clear();
 
                 // Add block's light and init second loop variables.
@@ -3132,14 +3151,189 @@ namespace VoxelEng {
 
                     firstSecondLoopIteration = true;
                     blockLightMod* floodLight = &floodLightsInstances.front();
-
                     do {
 
+                        // NO SE ESTÁ RECALCULANDO EL IS OPAQUE CUANDO SE DESERIALIZA UN CHUNK GUARDADO
                         if ((firstSecondLoopIteration || !blockData->isOpaque_->at(chunkRelPos)) &&
-                            floodLight->intensity > blockLightIntensity[chunkRelPos.x][chunkRelPos.y][chunkRelPos.z]) {
+                            floodLight->intensity > blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z]) {
 
-                            ownedChunks[chunkPosOffset]->applyBlockLight(chunkRelPos, floodLight->color, floodLight->intensity);
-                            blockLightIntensity[chunkRelPos.x][chunkRelPos.y][chunkRelPos.z] = floodLight->intensity;
+                            // Apply light on position.
+                            chunk* ownedChunk = ownedChunks[chunkPosOffset];
+                            ownedChunk->addBlockLight(chunkRelPos, floodLight->color, floodLight->intensity, true);
+                            blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z] = floodLight->intensity;
+
+                            // Calculate light blending across chunks.
+                            neighborOffset.x = chunkRelPos.x >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.x <= 0 ? -1 : 0;
+                            neighborOffset.y = chunkRelPos.y >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.y <= 0 ? -1 : 0;
+                            neighborOffset.z = chunkRelPos.z >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.z <= 0 ? -1 : 0;
+                            if (neighborOffset.x != 0) {
+                            
+                                if (neighborOffset.y != 0) {
+                                
+                                    // X Y Z
+                                    if (neighborOffset.z != 0) {
+                                    
+                                        neighborPos = chunkPosOffset + neighborOffset;
+                                        neighborRelPos = getChunkRelCoords(chunkRelPos + neighborOffset);
+                                        neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                        if (floodLight->intensity - 1 > neighborIntensity) {
+                                        
+                                            // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                            ownedChunk->addBlockLight(chunkRelPos + neighborOffset,
+                                                floodLight->color, floodLight->intensity - 1, true);
+                                            blockLightIntensity[chunkPosOffset][chunkRelPos + neighborOffset]
+                                                = floodLight->intensity - 1;
+
+                                            ownedChunks[neighborPos]->addBlockLight(neighborRelPos - neighborOffset,
+                                                floodLight->color, floodLight->intensity, true);
+                                            blockLightIntensity[neighborPos][neighborRelPos - neighborOffset]
+                                                = floodLight->intensity;
+                                        
+                                        }
+                                    
+                                    }
+
+                                    // X Y 0
+                                    neighborPos = vec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z);
+                                    neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
+                                    neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                    if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                        // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                        ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, neighborOffset.y, 0,
+                                            floodLight->color, floodLight->intensity - 1, true);
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z]
+                                            = floodLight->intensity - 1;
+
+                                        ownedChunks[neighborPos]->addBlockLight(neighborRelPos, -neighborOffset.x, -neighborOffset.y, 0,
+                                            floodLight->color, floodLight->intensity, true);
+                                        blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z]
+                                            = floodLight->intensity;
+
+                                    }
+
+                                }
+
+                                // X 0 Z
+                                if (neighborOffset.z != 0) {
+
+                                    neighborPos = vec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                    neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
+                                    neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                    if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                        // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                        ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, 0, neighborOffset.z,
+                                            floodLight->color, floodLight->intensity - 1, true);
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y][chunkRelPos.z + neighborOffset.z]
+                                            = floodLight->intensity - 1;
+
+                                        ownedChunks[neighborPos]->addBlockLight(neighborRelPos, -neighborOffset.x, 0, -neighborOffset.z,
+                                            floodLight->color, floodLight->intensity, true);
+                                        blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y][chunkRelPos.z - neighborOffset.z]
+                                            = floodLight->intensity;
+
+                                    }
+
+                                }
+
+                                // X 0 0
+                                neighborPos = vec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z );
+                                neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z));
+                                neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                    // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                    ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, 0, 0,
+                                        floodLight->color, floodLight->intensity - 1, true);
+                                    blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y][chunkRelPos.z]
+                                        = floodLight->intensity - 1;
+
+                                    ownedChunks[neighborPos]->addBlockLight(neighborRelPos, -neighborOffset.x, 0, 0,
+                                        floodLight->color, floodLight->intensity, true);
+                                    blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y][chunkRelPos.z]
+                                        = floodLight->intensity;
+
+                                }
+ 
+                            }
+
+                            if (neighborOffset.y != 0) {
+
+                                // 0 Y Z
+                                if (neighborOffset.z != 0) {
+
+                                    neighborPos = vec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                    neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z + neighborOffset.z));
+                                    neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                    if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                        // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                        ownedChunk->addBlockLight(chunkRelPos, 0, neighborOffset.y, neighborOffset.z,
+                                            floodLight->color, floodLight->intensity - 1, true);
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z + neighborOffset.z]
+                                            = floodLight->intensity - 1;
+
+                                        ownedChunks[neighborPos]->addBlockLight(neighborRelPos, 0, -neighborOffset.y, -neighborOffset.z,
+                                            floodLight->color, floodLight->intensity, true);
+                                        blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z - neighborOffset.z]
+                                            = floodLight->intensity;
+
+                                    }
+                                }
+
+                                // 0 Y 0
+                                neighborPos = vec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z );
+                                neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
+                                neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                    // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                    ownedChunk->addBlockLight(chunkRelPos, 0, neighborOffset.y, 0,
+                                        floodLight->color, floodLight->intensity - 1, true);
+                                    blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z]
+                                        = floodLight->intensity - 1;
+
+                                    ownedChunks[neighborPos]->addBlockLight(neighborRelPos, 0, -neighborOffset.y, 0,
+                                        floodLight->color, floodLight->intensity, true);
+                                    blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z]
+                                        = floodLight->intensity;
+
+                                }
+
+                            }
+
+                            // 0 0 Z
+                            if (neighborOffset.z != 0) {
+
+                                neighborPos = vec3(chunkPosOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
+                                neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                    // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                    ownedChunk->addBlockLight(chunkRelPos, 0, 0, neighborOffset.z,
+                                        floodLight->color, floodLight->intensity - 1, true);
+                                    blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z + neighborOffset.z]
+                                        = floodLight->intensity - 1;
+
+                                    ownedChunks[neighborPos]->addBlockLight(neighborRelPos, 0, 0, -neighborOffset.z,
+                                        floodLight->color, floodLight->intensity, true);
+                                    blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z - neighborOffset.z]
+                                        = floodLight->intensity;
+
+                                }
+                                
+                            }
+
+                            // Spread light.
 
                             //+x
                             floodLightsInstances.emplace_back(*blockGlobalPos + vec3FixedNorth, floodLight->intensity - 1, floodLight->color);
@@ -3180,6 +3374,11 @@ namespace VoxelEng {
 
             }
         
+            // Remesh chunks.
+            for (auto it = ownedChunks.cbegin(); it != ownedChunks.cend(); it++)
+                if (it->second->needsRemesh())
+                    remesh(it->second, priorityUpdate);
+
         }
 
         // Disown owned chunks.
@@ -3190,7 +3389,6 @@ namespace VoxelEng {
     void chunkManager::loadChunkJob(void* data) {
 
         chunk* c = static_cast<chunk*>(data);
-        c->makeEmpty();
         if (world::isSaved(c->chunkPos())) {  // Load previously saved chunk. Skips remaining loading passes.
 
             deserializeChunk(c, world::loadChunk(c->chunkPos()));
@@ -3207,13 +3405,11 @@ namespace VoxelEng {
 
     }
 
-
-
     void chunkManager::loadChunkJobPass2(void* data) {
 
         chunk* c = static_cast<chunk*>(data);
 
-        if (c->loadStatus() == chunkLoadStatus::BASICTERRAIN) {
+        if (c->loadStatus() == chunkLoadStatus::BASICTERRAIN || c->loadStatus() == chunkLoadStatus::BASICTERRAINFROMDISK) {
 
             worldGen::genPass2(*c);
 
@@ -3269,12 +3465,7 @@ namespace VoxelEng {
         chunk* c = std::get<chunk*>(*data);
         bool causesPriorityUpdate = std::get<bool>(*data);
 
-        recalculateBlockLight_(*c);
-
-        // Mark chunk as in need of a remesh.
-        c->needsRemesh(true);
-
-        remesh(c, causesPriorityUpdate);
+        recalculateBlockLight_(*c, causesPriorityUpdate);
 
         delete data; // Does not remove the chunk cause we passed a pointer no a reference.
 

@@ -102,7 +102,7 @@ namespace VoxelEng {
 					if (isAboveWaterLevel && !isBlockEmpty) {
 					
 						if(!noiseMakesBlockAt(blockPos.x, blockPos.y+1, blockPos.z))
-							chunk.setBlock(x, y, z, (x == 0 && z == 0) ? lightBlock_ : layer0_, false);
+							chunk.setBlock(x, y, z, (x == 0 && z == 0) ? lightBlock_ : (x == CHUNK_SIZE_LIMIT && z == CHUNK_SIZE_LIMIT) ? lightBlock2_ :  layer0_, false);
 						else if(!noiseMakesBlockAt(blockPos.x, blockPos.y+2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y+3, blockPos.z))
 							chunk.setBlock(x, y, z, layer1_, false);
 

@@ -8,10 +8,10 @@ namespace VoxelEng {
 
 	struct chunkBlockData {
 
-		const Padded3DArray<unsigned short>* blocksLocalIDs_;
-		const Padded3DArray<bool>* isOpaque_;
-		const Padded3DArray<basicVec4>* blockLightColor_; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
-		const Padded3DArray<char>* blockLightLevel_; // Lighting value in the specific block.
+		Padded3DArray<unsigned short>* blocksLocalIDs_;
+		Padded3DArray<byte>* isOpaque_;
+		Padded3DArray<basicVec4>* blockLightColor_; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
+		Padded3DArray<char>* blockLightLevel_; // Lighting value in the specific block.
 
 	};
 
