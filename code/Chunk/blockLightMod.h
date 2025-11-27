@@ -42,7 +42,7 @@ namespace VoxelEng {
 		* @param intensity Block light modification intensity
 		* @param color Block light modification color
 		*/
-		blockLightMod(const basicVec3& pos, char intensity, const basicVec4& color);
+		blockLightMod(const vec3& pos, char intensity, const basicVec4& color);
 
 
 		/*
@@ -52,7 +52,7 @@ namespace VoxelEng {
 		/**
 		* @brief Position the light is being propagated to.
 		*/
-		basicVec3 pos;
+		vec3 pos;
 
 		/**
 		* @brief It determines whether the light's color is applied fully in its position or not.
@@ -67,10 +67,10 @@ namespace VoxelEng {
 	};
 
 	inline blockLightMod::blockLightMod() 
-	: pos(basicVec3Zero), intensity(0), color(basicVec4Zero) {}
+	: pos(vec3Zero), intensity(0), color(basicVec4Zero) {}
 
-	inline blockLightMod::blockLightMod(const basicVec3& pos, char intensity, const basicVec4& color)
-		: pos(pos), intensity(intensity), color(color) {}
+	inline blockLightMod::blockLightMod(const vec3& pos, char intensity, const basicVec4& color)
+	: pos(pos), intensity(intensity), color(color) {}
 
 }
 

@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <vector>
 
+#include <vec.h>
+
 namespace VoxelEng {
 
 	/**
@@ -141,6 +143,14 @@ namespace VoxelEng {
 		*/
 		typename std::vector<T>::const_reference at(int x, int y, int z) const;
 
+		/**
+		* @brief Get the element at the specified coordinates.
+		* @param x First dimension coordinate.
+		* @param y Second dimension coordinate.
+		* @param z Third dimension coordinate.
+		*/
+		typename std::vector<T>::const_reference at(const vec3& coords) const;
+
 
 		// Modifiers.
 
@@ -250,6 +260,13 @@ namespace VoxelEng {
 	
 		return get(x, y, z);
 	
+	}
+
+	template <typename T>
+	typename std::vector<T>::const_reference Padded3DArray<T>::at(const vec3& coords) const {
+
+		return get(coords.x, coords.y, coords.z);
+
 	}
 
 	template <typename T>

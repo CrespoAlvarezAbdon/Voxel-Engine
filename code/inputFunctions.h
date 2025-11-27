@@ -10,9 +10,10 @@
 #ifndef _VOXELENG_INPUTFUNCTIONS_
 #define _VOXELENG_INPUTFUNCTIONS_
 
-#include "block.h"
 #include "game.h"
 #include "player.h"
+#include <Block/block.h>
+#include <Chunk/chunkEnums.hpp>
 #include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {
@@ -270,7 +271,7 @@ namespace VoxelEng {
 	inline void inputFunctions::getCurrentChunk() {
 	
 		chunk* c = chunkManager::getChunk(player::chunkPos());
-		c->status();
+		c->loadStatus();
 
 		neighborsInfo* info = chunkManager::getChunkNeighborInfo(c->chunkPos());
 

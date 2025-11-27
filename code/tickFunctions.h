@@ -9,9 +9,6 @@
 #ifndef _VOXELENG_TICKFUNC_
 #define _VOXELENG_TICKFUNC_
 
-#include "entity.h"
-
-
 namespace VoxelEng {
 
 	//////////////
@@ -20,7 +17,7 @@ namespace VoxelEng {
 
 	namespace TickFunctions {
 	
-
+		
 	
 	}
 

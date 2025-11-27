@@ -46,13 +46,11 @@ namespace VoxelEng {
 
 	void WorldGen3DNoise::generate_(chunk& chunk) {
 
+		chunk.clearBlockLight();
+
 		noiseLayer(chunk);
 
 		surfaceLayer(chunk);
-
-		chunk.clearBlockLight();
-
-		chunk.recalculateBlockLight();
 
 	}
 
@@ -159,10 +157,14 @@ namespace VoxelEng {
 
 				const vec2& chunkPosXZ = aChunkEvent->chunkPosXZ();
 				chunkColHeightMutex_.lock();
-				if (--chunkColHeightUses_.at(chunkPosXZ) == 0) {
+				if (auto it = chunkColHeightUses_.find(chunkPosXZ); it != chunkColHeightUses_.end()) {
 
-					chunkColHeightUses_.erase(chunkPosXZ);
-					chunkColHeight_.erase(chunkPosXZ);
+					if (--it->second == 0) {
+					
+						chunkColHeightUses_.erase(chunkPosXZ);
+						chunkColHeight_.erase(chunkPosXZ);
+					
+					}
 
 				}
 				chunkColHeightMutex_.unlock();

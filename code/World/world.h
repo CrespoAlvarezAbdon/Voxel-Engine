@@ -11,15 +11,19 @@
 #ifndef _VOXELENG_VOXELENGWORLD_
 #define _VOXELENG_VOXELENGWORLD_
 
+#include <array>
 #include <filesystem>
 #include <fstream>
+#include <list>
 #include <mutex>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 
+#include <atomicRecyclingPool.h>
 #include <database.h>
 #include <definitions.h>
+#include <threadPool.h>
 #include <vec.h>
 #include <Chunk/chunk.h>
 #include <Graphics/graphics.h>
@@ -110,16 +114,10 @@ namespace VoxelEng {
 		/**
 		* @brief Method to provide the capability of processing the global and entity ticks of the world
 		* to a worker thread that is not created inside this method.
-		* Effectively will call world::processGlobalTickFunctions() and the entity tick functions counterpart of
-		* this method.
 		*/
 		static void processWorldTicks();
 
-		/**
-		* @brief Method to provide the capability of processing the global ticks of the world
-		* to a worker thread that is not created inside this method.
-		*/
-		static void processGlobalTickFunctions();
+		
 
 		/**
 		* @brief Save all data related to the currently opened world.
@@ -179,9 +177,10 @@ namespace VoxelEng {
 		*/
 
 		static bool initialised_;
+		static std::mutex tickFunctionsMutex_;
 		static std::unordered_map<std::string, tickFunc> globalTickFunctions_;
 		static std::unordered_set<std::string> activeTickFunctions_;
-		static std::mutex tickFunctionsMutex_;
+
 		static unsigned int currentWorldSlot_;
 		static std::string currentWorldPath_;
 		static database* regions_;
@@ -192,7 +191,9 @@ namespace VoxelEng {
 		*/
 
 		static void saveAllChunks_();
-	
+
+		static void processGlobalTickFunctions_();
+
 	};
 
 	inline bool world::initialised() {

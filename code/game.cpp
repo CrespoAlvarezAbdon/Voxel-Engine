@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "batch.h"
-#include "block.h"
+
 #include "camera.h"
 #include "entity.h"
 #include "player.h"
@@ -23,6 +23,8 @@
 #include "inputFunctions.h"
 #include "renderer.h"
 #include "utilities.h"
+#include <Block/block.h>
+#include <Block/Properties/blockProperty.hpp>
 #include <Entities/plane.h>
 #include <Registry/registries.h> // This header also includes the classes that derive from 'registeredElement'.
 #include <Registry/registry.h>
@@ -57,7 +59,7 @@ namespace VoxelEng {
 
     // 'game' class.
 
-    std::atomic<bool> game::threadsExecute[3] = { false, false, false };
+    std::atomic<bool> game::threadsExecute[4] = { false, false, false, false };
 
     bool game::initialised_ = false,
          game::graphicalModeInitialised_ = false,
@@ -65,10 +67,10 @@ namespace VoxelEng {
 
     window* game::mainWindow_ = nullptr;
 
-    std::thread* game::chunkManagementThread_ = nullptr,
-               * game::priorityChunkUpdatesThread_ = nullptr,
-               * game::playerInputThread_ = nullptr,
-               * game::tickManagementThread_ = nullptr;
+    std::thread* game::chunkManagementThread_ = nullptr;
+    std::thread* game::priorityChunkUpdatesThread_ = nullptr;
+    std::thread* game::playerInputThread_ = nullptr;
+    std::thread* game::tickManagementThread_ = nullptr;
 
     std::unique_ptr<settings> game::settings_;
     std::atomic<engineMode> game::loopSelection_ = engineMode::MENULOOP;
@@ -254,6 +256,7 @@ namespace VoxelEng {
 
             // Block registration.
             block::init();
+            blockProperty::init();
             // TODO. CONVERT THIS INTO A REGISTRY OF BLOCKS.
             block::registerBlock("starminer::grass", blockOpacity::OPAQUEBLOCK, { {"all", 1} }, "UltraShiny"); // TODO. Manual texture ID assignment is temporary.
             block::registerBlock("starminer::stone", blockOpacity::OPAQUEBLOCK, { {"all", 2} });
@@ -1289,8 +1292,13 @@ namespace VoxelEng {
 
         input::shouldProcessInputs(true);
 
-        if (block::initialised())
+        if (block::initialised()) {
+        
             block::reset();
+            blockProperty::reset();
+        
+        }
+            
 
         if (registries::initialised())
             registries::reset();

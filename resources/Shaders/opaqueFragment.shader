@@ -108,8 +108,8 @@ layout(std430, binding = 3) buffer SpotLightsInstances {
 };
 
 // Variables.
-float shadow = 1.0;
-float translucentShadow = 1.0;
+float shadow = 0.0;
+float translucentShadow = 0.0;
 vec4 coloredShadow = vec4(0.0);
 
 vec4 unpackColor(int packedColor) {
@@ -131,7 +131,8 @@ vec4 unpackColor(int packedColor) {
 
 }
 
-vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, float shadow, float hitDirLightModifier, Material material) {
+// Shadow values are expected here to go from 1 (full bright) to 0 (full shadow)
+vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, float shadow, float translucentShadow, float hitDirLightModifier, Material material) {
 
     // Specular shading calculations.
     vec3 reflectDir = reflect(lightInstance.dir, n);
@@ -195,28 +196,27 @@ void ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstan
         vec3 projCoords = displacedPos.xyz / fragPosLightSpace.w;
         projCoords = projCoords * 0.5 + 0.5;
 
+        //vec3 normal = normalize(n);
+        //vec3 lightDir = normalize(lightInstance.pos - v_pos);
+        //float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
+        //float bias = 0.001 * (1.0 - dot(normal, lightDir)) + 0.0001;
+
         float closestDepth = texture(depthMap, projCoords.xy).r; 
         float closestTranslucentDepth = texture(translucentDepthMap, projCoords.xy).r;
         float currentDepth = projCoords.z;
-
-        vec3 normal = normalize(n);
-        vec3 lightDir = normalize(lightInstance.pos - v_pos);
-        
-        //float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
-        //float bias = 0.001 * (1.0 - dot(normal, lightDir)) + 0.0001;
-        shadow = currentDepth - bias > closestDepth ? 0.0 : 1.0;
-        translucentShadow = currentDepth -bias > closestTranslucentDepth ? 0.0 : 1.0;
+        shadow += currentDepth - bias > closestDepth ? 1.0 : 0.0;
+        translucentShadow += currentDepth - bias > closestTranslucentDepth ? 1.0 : 0.0;
 
         // Keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
         if(projCoords.z > 1.0) {
 
-            shadow = 1.0;
-            translucentShadow = 1.0;
+            shadow = 0.0;
+            translucentShadow = 0.0;
 
         }
             
         // Get shadow's color.
-        if (translucentShadow == 0.0 && shadow == 1.0) {
+        if (translucentShadow == 1.0 && shadow == 0.0) {
 
             coloredShadow = texture(shadowColor, projCoords.xy);
 
@@ -259,11 +259,11 @@ void main() {
         ShadowCalculation(v_LightSpacePos, norm, lightInstance);
 
 		// Apply directional lights.
-        vec4 blockLit = (v_blockLightColor + v_baryCoords.x * v_baryCoords.y * v_mixedVertexColorData) * u_useComplexLighting;
-        vec4 dirLight = CalcDirLight(light, lightInstance, norm, viewDir, shadow, hitDirLightModifier, material) * u_useComplexLighting;
-        color = albedo * dirLight + blockLit;
+        vec4 blockLit = (v_blockLightColor + v_baryCoords.x * v_baryCoords.y * v_mixedVertexColorData);
+        vec4 dirLight = CalcDirLight(light, lightInstance, norm, viewDir, (1 - shadow), (1 - translucentShadow), hitDirLightModifier, material) * u_useComplexLighting;
+        color = albedo * (dirLight + blockLit);
 
-        if(translucentShadow == 0.0 && hitDirLightModifier > 0.5)
+        if(translucentShadow == 1.0 && hitDirLightModifier > 0.5)
         {
             color += coloredShadow * u_useComplexLighting;
         }

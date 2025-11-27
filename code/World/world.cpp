@@ -1,11 +1,14 @@
 #include "world.h"
 #include <cstring>
-#include "block.h"
-#include "entity.h"
-#include "palette.h"
-#include "player.h"
-#include "game.h"
-#include "utilities.h"
+
+#include <entity.h>
+#include <palette.h>
+#include <player.h>
+#include <game.h>
+#include <threadPool.h>
+#include <utilities.h>
+
+#include <Block/block.h>
 #include <Utilities/Logger/logger.h>
 #include <World/WorldGen/worldGen.h>
 
@@ -14,9 +17,10 @@ namespace VoxelEng {
 	// 'world' class.
 
 	bool world::initialised_ = false;
+	std::mutex world::tickFunctionsMutex_;
 	std::unordered_map<std::string, tickFunc> world::globalTickFunctions_;
 	std::unordered_set<std::string> world::activeTickFunctions_;
-	std::mutex world::tickFunctionsMutex_;
+
 	unsigned int world::currentWorldSlot_ = 0;
 	std::string world::currentWorldPath_;
 	database* world::regions_ = nullptr;
@@ -32,8 +36,6 @@ namespace VoxelEng {
 
 			currentWorldSlot_ = 0;
 			currentWorldPath_.clear();
-
-			regions_ = nullptr;
 
 			initialised_ = true;
 		
@@ -111,25 +113,25 @@ namespace VoxelEng {
 
 		try {
 
-			// Lock any mutexes required for synchronisation with the rendering thread and used in the functions inside the loop below.
+			// Lock here any mutexes required for synchronisation with the rendering thread.
 			entityManager::syncMutex().lock();
 
 			while (game::threadsExecute[1]) {
 
-				processGlobalTickFunctions();
+				processGlobalTickFunctions_();
 
 				entityManager::manageEntities();
 
 				{
 
 					using namespace std::chrono_literals;
-					std::this_thread::sleep_for(1ms);
+					std::this_thread::sleep_for(1ms); // TODO. PONER AQUÍ QUE SE DESCANSE UN TICK DE MAINCRA (0.05s) REDUCIENDO EL TIEMPO GASTADO EN PROCESAR ESTE TICK
 
 				}
 
 			}
 
-			// Unlock any mutexes required for synchronisation with the rendering thread and used in the functions inside the loop below.
+			// Unlock here any mutexes required for synchronisation with the rendering thread.
 			entityManager::syncMutex().unlock();
 
 		}
@@ -142,22 +144,7 @@ namespace VoxelEng {
 	
 	}
 
-	void world::processGlobalTickFunctions() {
 	
-		std::unique_lock<std::mutex> lock(tickFunctionsMutex_);
-
-		for (auto it = activeTickFunctions_.cbegin(); it != activeTickFunctions_.cend(); it++)
-			globalTickFunctions_[*it]();
-
-		{
-
-			using namespace std::chrono_literals;
-
-			std::this_thread::sleep_for(1ms);
-
-		}
-	
-	}
 
 	void world::saveAll() {
 
@@ -324,6 +311,13 @@ namespace VoxelEng {
 
 			initialised_ = false;
 
+			if (regions_) {
+
+				delete regions_;
+				regions_ = nullptr;
+
+			}
+
 		}
 		else
 			logger::errorLog("The world class is not initialised");
@@ -342,5 +336,15 @@ namespace VoxelEng {
 			}
 
 	}
+
+	void world::processGlobalTickFunctions_() {
+
+		std::unique_lock<std::mutex> lock(tickFunctionsMutex_);
+		for (auto it = activeTickFunctions_.cbegin(); it != activeTickFunctions_.cend(); it++)
+			globalTickFunctions_[*it]();
+
+	}
+
+	
 
 }

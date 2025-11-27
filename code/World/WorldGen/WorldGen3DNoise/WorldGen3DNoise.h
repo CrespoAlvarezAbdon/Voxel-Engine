@@ -17,11 +17,11 @@
 
 #include <FastNoiseLite.h>
 
-#include <block.h>
 #include <definitions.h>
 #include <event.h>
 #include <listener.h>
 #include <vec.h>
+#include <Block/block.h>
 #include <Chunk/chunk.h>
 #include <Noise/Perlin3D/Perlin3D.hpp>
 #include <World/WorldGen/worldGen.h>

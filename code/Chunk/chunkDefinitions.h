@@ -2,11 +2,28 @@
 #define _VOXELENG_CHUNK_DEFINITIONS_
 
 #include <array>
+#include <utility>
+#include <unordered_map>
+#include <list>
 
 #include <definitions.h>
 #include <vec.h>
+#include <Block/blockState.hpp>
+#include <Block/lightData.hpp>
 
 namespace VoxelEng {
+
+    /*
+    Typedefs.
+    */
+
+    typedef std::unordered_map<vec3, std::list<std::pair<basicVec3, blockState>>> blockStatesToSet; // vec3 is chunkPos, basicVec3 is block pos un local chunk grid
+    typedef std::unordered_map<vec3, std::list<std::pair<basicVec3, lightData>>> lightDataToSet; // vec3 is chunkPos, basicVec3 is block pos un local chunk grid
+
+
+    /*
+    Constants.
+    */
 
     /**
     * @brief Number of chunk neighbors that a certain chunk has. Neighbor chunks
@@ -15,23 +32,12 @@ namespace VoxelEng {
     const unsigned int CHUNK_NEIGHBORS = 26;
 
     /**
-    * @brief All the possible offsets for all the possible neighbors that a chunk may have.
+    * @brief Number of chunk neighbors that a certain chunk has plus one. Neighbor chunks
+    * are those that share a border with the chunk.
     */
-	std::array<vec3, CHUNK_NEIGHBORS> neighborsOffsets = { 
+    const unsigned int CHUNK_NEIGHBORS_PLUS_ONE = CHUNK_NEIGHBORS + 1;
 
-        vec3{-1, -1, -1}, vec3{-1, -1,  0}, vec3{-1, -1,  1},
-        vec3{-1,  0, -1}, vec3{-1,  0,  0}, vec3{-1,  0,  1},
-        vec3{-1,  1, -1}, vec3{-1,  1,  0}, vec3{-1,  1,  1},
-
-        vec3{ 0, -1, -1}, vec3{ 0, -1,  0}, vec3{ 0, -1,  1},
-        vec3{ 0,  0, -1},                   vec3{ 0,  0,  1},
-        vec3{ 0,  1, -1}, vec3{ 0,  1,  0}, vec3{ 0,  1,  1},
-
-        vec3{ 1, -1, -1}, vec3{ 1, -1,  0}, vec3{ 1, -1,  1},
-        vec3{ 1,  0, -1}, vec3{ 1,  0,  0}, vec3{ 1,  0,  1},
-        vec3{ 1,  1, -1}, vec3{ 1,  1,  0}, vec3{ 1,  1,  1}
-
-	};
+    
 
 }
 

@@ -109,7 +109,7 @@ namespace VoxelEng {
             blockPos.y = floor(selectedBlockPos_.y);
             blockPos.z = floor(selectedBlockPos_.z);
 
-            selectedBlock_ = (chunkManager::getChunkLoadLevel(getChunkCoords(blockPos)) >= chunkStatus::DECORATED) ? &chunkManager::getBlock(blockPos) : block::emptyBlockP();
+            selectedBlock_ = (chunkManager::getChunkLoadStatus(getChunkCoords(blockPos)) >= chunkLoadStatus::DECORATED) ? &chunkManager::getBlock(blockPos) : block::emptyBlockP();
 
             if (selectedBlock_->isEmptyBlock()) { // No non-empty block found. Continue searching.
 
@@ -139,7 +139,7 @@ namespace VoxelEng {
 
             std::unique_lock<std::recursive_mutex> lock(chunkManager::chunksMutex());
 
-            chunk* selectedChunk = chunkManager::selectChunkByRealPos(selectedBlockPos_),
+            chunk* selectedChunk = chunkManager::getChunkByRealPos(selectedBlockPos_),
                  * neighbor = nullptr;
 
             if (selectedChunk && !selectedBlock_->isEmptyBlock()) {
@@ -204,12 +204,12 @@ namespace VoxelEng {
 
         if (!GUImanager::levelGUIOpened()) {
 
-            float xOld = std::floor(oldSelectedBlockPos_.x),
-                  yOld = std::floor(oldSelectedBlockPos_.y),
-                  zOld = std::floor(oldSelectedBlockPos_.z),
-                  x = std::floor(selectedBlockPos_.x),
-                  y = std::floor(selectedBlockPos_.y),
-                  z = std::floor(selectedBlockPos_.z);
+            float xOld = std::floor(oldSelectedBlockPos_.x);
+            float yOld = std::floor(oldSelectedBlockPos_.y);
+            float zOld = std::floor(oldSelectedBlockPos_.z);
+            float x = std::floor(selectedBlockPos_.x);
+            float y = std::floor(selectedBlockPos_.y);
+            float z = std::floor(selectedBlockPos_.z);
             bool isSolid = !blockToPlace_.load()->isEmptyBlock();
 
             // Only one coordinate may differ between the two positions.
@@ -229,7 +229,7 @@ namespace VoxelEng {
 
             } // else xOld == x && yOld == y
 
-            chunk* selectedChunk = chunkManager::selectChunkByChunkPos(xOld, yOld, zOld);
+            chunk* selectedChunk = chunkManager::getChunkByRealPos(xOld, yOld, zOld);
             if (selectedChunk && chunkManager::isEmptyBlock(xOld, yOld, zOld) && !selectedBlock_->isEmptyBlock()) {
 
                 chunk* neighbor = nullptr;

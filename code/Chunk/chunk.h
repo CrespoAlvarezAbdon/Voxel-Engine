@@ -21,14 +21,16 @@
 #include <set>
 #include <shared_mutex>
 #include <string>
+#include <typeinfo>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
 #include <time.h>
 #include <functional>
 #include <atomicRecyclingPool.h>
-#include <block.h>
 #include <definitions.h>
 #include <event.h>
 #include <listener.h>
@@ -36,7 +38,14 @@
 #include <palette.h>
 #include <vec.h>
 #include <utilities.h>
+#include <Block/block.h>
+#include <Block/blockState.hpp>
+#include <Block/lightData.hpp>
+#include <Block/Properties/blockProperty.hpp>
 #include <Chunk/blockLightMod.h>
+#include <Chunk/chunkBlockData.hpp>
+#include <Chunk/chunkDefinitions.h>
+#include <Chunk/chunkEnums.hpp>
 #include <Chunk/neighborsInfo.h>
 #include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 #include <Graphics/Textures/texture.h>
@@ -64,28 +73,6 @@ namespace VoxelEng {
 
 	class chunkManager;
 	class chunkVertexBuffer;
-
-
-	/////////////////
-	//Enum classes.//
-	/////////////////
-
-	/**
-	* @brief The different stages that a chunk has during its lifetime.
-	*/
-	enum class chunkStatus { NOTLOADED = 0, BASICTERRAIN = 1, BASICTERRAINFROMDISK = 2, DECORATED = 3, MESHED = 4};
-
-	/**
-	* @brief Definition of the multiples types of jobs related to chunk management.
-	*/
-	enum class chunkJobType { NONE = 0, LOAD = 1, LOAD2 = 2, ONLYREMESH = 3, UNLOADANDSAVE = 4, PRIORITYREMESH = 5};
-
-	// LOAD2 WILL BE USED FOR LIGHTING LAYER.
-
-	/**
-	* @brief Definition of the operations allowed in the chunk vertex buffer object.
-	*/
-	enum class chunkVBOoperation { NONE = 0, PUSH, FREE };
 
 
 	////////////
@@ -167,14 +154,34 @@ namespace VoxelEng {
 		const Padded3DArray<unsigned short>& blocks() const;
 
 		/**
-		* @brief Get the block at the specified chunk-local coordinates.
+		* @brief Get the block data of this chunk.
+		* @return The block data of this chunk (local IDs, whether they are opaque or not, and their block light values).
 		*/
-		const block& getBlock(GLbyte x, GLbyte y, GLbyte z, bool lock);
+		chunkBlockData blockData() const;
 
 		/**
 		* @brief Get the block at the specified chunk-local coordinates.
 		*/
-		const block& getBlock(const vec3& inChunkPos, bool lock);
+		template <typename T>
+		requires std::is_base_of_v<blockProperty, T> && std::is_default_constructible_v<T>
+		const blockState& get(GLbyte x, GLbyte y, GLbyte z);
+
+		/**
+		* @brief Get the block at the specified chunk-local coordinates.
+		*/
+		template <typename T>
+		requires std::is_base_of_v<blockProperty, T> && std::is_default_constructible_v<T>
+		const blockState& get(const vec3& inChunkPos);
+
+		/**
+		* @brief Get the light data at the specified chunk-local coordinates.
+		*/
+		lightData getLight(GLbyte x, GLbyte y, GLbyte z);
+
+		/**
+		* @brief Get the light data at the specified chunk-local coordinates.
+		*/
+		lightData getLight(const vec3& inChunkPos);
 
 		/**
 		* @brief Get the block at the specified chunk-local coordinates.
@@ -236,7 +243,7 @@ namespace VoxelEng {
 		/**
 		* @brief Returns the chunk's status.
 		*/
-		chunkStatus status() const;
+		chunkLoadStatus loadStatus() const;
 
 		/**
 		* @brief Get the number of non-null opaque blocks (blocks with ID != 0) that exist in the chunk.
@@ -362,6 +369,24 @@ namespace VoxelEng {
 		*/
 		char getBlockLightLevel(const vec3& chunkRelPos);
 
+		/**
+		* @brief Get whether the chunk is ownable or not.
+		* @returns Whether the chunk is ownable (true) or not (false).
+		*/
+		bool isOwnable() const;
+
+		/**
+		* @brief Get whether this chunk has owners or not.
+		* @returns Whether this chunks has owners (true) or not (false).
+		*/
+		bool isOwned() const;
+
+		/**
+		* @brief Get whether the chunk should unload inmediately after being released of its last owner or not.
+		* @returns Whether the chunk should unload inmediately after being released of its last owner (true) or not (false).
+		*/
+		bool unloadWhenNoOwners() const;
+
 
 		// Modifiers.
 
@@ -420,7 +445,18 @@ namespace VoxelEng {
 		const block& setBlock(unsigned int linearIndex, const block& block, bool modification = true);
 
 		/**
-		*
+		* Apply the differences in block light when a block is replaced with another one.
+		* @param oldB The replaced block.
+		* @param b The block that replaces.
+		* @param pos The chunk-local-grid coordinates of the blocks.
+		*/
+		void setBlockLight(const block& oldB, const block& b, byte x, byte y, byte z);
+
+		/**
+		* Apply the differences in block light when a block is replaced with another one.
+		* @param oldB The replaced block.
+		* @param b The block that replaces.
+		* @param pos The chunk-local-grid coordinates of the blocks.
 		*/
 		void setBlockLight(const block& oldB, const block& b, const vec3& pos);
 
@@ -437,7 +473,7 @@ namespace VoxelEng {
 		/**
 		* @brief Locks the block data mutex.
 		*/
-		std::shared_mutex& blockDataMutex();
+		std::shared_mutex& blockDataMutex(); // TODO. RENAME THIS TO BLOCKSDATAMUTEX
 
 		/**
 		* @brief Locks the rendering data mutex for shared ownership.
@@ -491,20 +527,16 @@ namespace VoxelEng {
 		void clearBlockLight();
 
 		/**
-		* @brief Recalculate all the block lighting applied to the chunk.
+		* @brief Apply the given block light modification to the chunk.
+		* @param mod The block light modification to apply.
 		*/
-		void recalculateBlockLight();
-
-		/**
-		* @brief Recalculate all the block lighting applied to the chunk by its neighbors' block lights.
-		*/
-		void recalculateNeighborBlockLight();
+		void applyBlockLight(char x, char y, char z, const basicVec4& color, char intensity);
 
 		/**
 		* @brief Apply the given block light modification to the chunk.
 		* @param mod The block light modification to apply.
 		*/
-		void applyBlockLight(char x, char y, char z, const basicVec4& color, char intensity);
+		void applyBlockLight(const vec3& pos, const basicVec4& color, char intensity);
 
 		/**
 		* @brief The chunk's block data will be filled with null blocks, leaving the chunk "empty of blocks".
@@ -514,7 +546,7 @@ namespace VoxelEng {
 		/**
 		* @brief Set the chunk's status.
 		*/
-		void status(chunkStatus level);
+		void loadStatus(chunkLoadStatus level);
 
 		/**
 		* @brief Set the number of non-null opaque blocks (blocks with ID != 0) that exist in the chunk.
@@ -598,6 +630,21 @@ namespace VoxelEng {
 		*/
 		void postGenPass();
 
+		/**
+		* @brief Increase chunk owner counter.
+		*/
+		void addOwner();
+
+		/**
+		* @brief Decrease chunk owner counter.
+		*/
+		void removeOwner();
+
+		/**
+		* @brief Set whether the chunk should unload inmediately after being released of its last owner or not.
+		* @param Whether the chunk should unload inmediately after being released of its last owner (true) or not (false).
+		*/
+		void unloadWhenNoOwners(bool value);
 
 		// Destructors.
 
@@ -630,6 +677,7 @@ namespace VoxelEng {
 		std::unordered_set<unsigned short> freeLocalIDs_;
 		std::unordered_set<vec3> floodPointLightPositions_;
 
+		// Chunk block data (serializable).
 		Padded3DArray<unsigned short> blocksLocalIDs_;
 		Padded3DArray<bool> isOpaque_;
 		Padded3DArray<basicVec4> blockLightColor_; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
@@ -651,10 +699,14 @@ namespace VoxelEng {
 		std::atomic<short> nTotalBlocksMinusY_;
 		std::atomic<short> nTotalBlocksPlusZ_;
 		std::atomic<short> nTotalBlocksMinusZ_;
+
 		std::atomic<bool> needsRemesh_;
 		std::atomic<bool> loadedFromDisk_;
 
-		std::atomic<chunkStatus> loadLevel_;
+		std::atomic<unsigned short> owners_;
+		bool unloadWhenNoOwners_;
+
+		std::atomic<chunkLoadStatus> loadStatus_;
 
 		vec3 chunkPos_;
 
@@ -690,16 +742,47 @@ namespace VoxelEng {
 
 	}
 
+	inline chunkBlockData chunk::blockData() const {
+	
+		return { &blocksLocalIDs_, &isOpaque_, &blockLightColor_, &blockLightLevel_};
+	
+	}
+
 	inline bool chunk::initialised() {
 	
 		return initialised_;
 	
 	}
 
-	inline const block& chunk::getBlock(const vec3& inChunkPos, bool lock) {
+	template <typename T>
+	requires std::is_base_of_v<blockProperty, T> && std::is_default_constructible_v<T>
+	const blockState& chunk::get(GLbyte x, GLbyte y, GLbyte z) {
 
-		return getBlock(inChunkPos.x, inChunkPos.y, inChunkPos.z, lock);
+		logger::errorLog("Unimplemented chunk::get for type " + std::to_string(typeid(T).name()));
+		return T();
 
+	}
+
+	
+
+	template <typename T>
+	requires std::is_base_of_v<blockProperty, T>&& std::is_default_constructible_v<T>
+	inline const blockState& chunk::get(const vec3& inChunkPos) {
+
+		return get<T>(inChunkPos.x, inChunkPos.y, inChunkPos.z);
+
+	}
+
+	inline lightData chunk::getLight(GLbyte x, GLbyte y, GLbyte z) {
+	
+		return {blockLightLevel_[x][y][z], blockLightColor_[x][y][z]};
+	
+	}
+
+	inline lightData chunk::getLight(const vec3& inChunkPos) {
+	
+		return getLight(inChunkPos.x, inChunkPos.y, inChunkPos.z);
+	
 	}
 
 	inline GLbyte chunk::x() const {
@@ -756,9 +839,9 @@ namespace VoxelEng {
 	
 	}
 
-	inline chunkStatus chunk::status() const {
+	inline chunkLoadStatus chunk::loadStatus() const {
 
-		return loadLevel_;
+		return loadStatus_;
 
 	}
 
@@ -884,6 +967,7 @@ namespace VoxelEng {
 
 	inline const basicVec4& chunk::getBlockLightColor(const vec3& chunkRelPos) {
 	
+		// TODO. DO AN AT METHOD FOR THE PADDEDARRAY CLASS.
 		return blockLightColor_[chunkRelPos.x][chunkRelPos.y][chunkRelPos.z];
 	
 	}
@@ -891,6 +975,24 @@ namespace VoxelEng {
 	inline char chunk::getBlockLightLevel(const vec3& chunkRelPos) {
 	
 		return blockLightLevel_[chunkRelPos.x][chunkRelPos.y][chunkRelPos.z];
+	
+	}
+
+	inline bool chunk::isOwnable() const {
+	
+		return loadStatus_ >= chunkLoadStatus::BASICTERRAIN;
+	
+	}
+
+	inline bool chunk::isOwned() const {
+	
+		return owners_;
+	
+	}
+
+	inline bool chunk::unloadWhenNoOwners() const {
+	
+		return unloadWhenNoOwners_;
 	
 	}
 
@@ -934,6 +1036,12 @@ namespace VoxelEng {
 
 		return setBlock(linearToVec3(linearIndex, CHUNK_SIZE, CHUNK_SIZE), b, modification);
 
+	}
+
+	inline void chunk::setBlockLight(const block& oldB, const block& b, byte x, byte y, byte z) {
+	
+		return setBlockLight(oldB, b, vec3(x, y, z));
+	
 	}
 
 	inline chunkRenderingData& chunk::renderingData() {
@@ -990,9 +1098,15 @@ namespace VoxelEng {
 
 	}
 
-	inline void chunk::status(chunkStatus level) {
+	inline void chunk::applyBlockLight(const vec3& pos, const basicVec4& color, char intensity) {
+	
+		applyBlockLight(pos.x, pos.y, pos.z, color, intensity);
+	
+	}
 
-		loadLevel_ = level;
+	inline void chunk::loadStatus(chunkLoadStatus level) {
+
+		loadStatus_ = level;
 
 	}
 
@@ -1233,26 +1347,36 @@ namespace VoxelEng {
 		static const block& getBlock(const vec3& blockPos);
 
 		/**
-		* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2
+		* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2.
+		* The order of iteration (and placement of obtained blocks in the returning collection) is x axis first,
+		* y axis second and z axis last, going from coordinate 'pos1' to coordinate 'pos2'.
 		*/
-		static std::vector<const block*> getBlocksBox(const vec3& pos1, const vec3& pos2);
+		template <typename T>
+		requires std::is_base_of_v<blockProperty, T> && std::is_default_constructible_v<T>
+		static std::vector<blockState> getInBox(const vec3& pos1, const vec3& pos2);
 
 		/**
-		* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2
+		* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2.
+		* The order of iteration (and placement of obtained blocks in the returning collection) is x axis first, 
+		* y axis second and z axis last, going from coordinate 'pos1' to coordinate 'pos2'.
 		*/
-		static std::vector<const block*> getBlocksBox(int x1, int y1, int z1, int x2, int y2, int z2);
+		template <typename T>
+		requires std::is_base_of_v<blockProperty, T> && std::is_default_constructible_v<T>
+		static std::vector<blockState> getInBox(int x1, int y1, int z1, int x2, int y2, int z2);
 
 		/**
-		* @brief Returns true if the given block position is currently inside the loaded area around
-		* the player or false otherwise.
+		* @brief Get all light data in the world that are in the box defined with the positions pos1 and pos2.
+		* The order of iteration (and placement of obtained blocks in the returning collection) is x axis first,
+		* y axis second and z axis last, going from coordinate 'pos1' to coordinate 'pos2'.
 		*/
-		static bool isInWorld(const vec3& blockPos);
+		static std::vector<lightData> getLightInBox(const vec3& pos1, const vec3& pos2);
 
 		/**
-		* @brief Returns true if the given block position is currently inside the loaded area around
-		* the player or false otherwise.
+		* @brief Get all light data in the world that are in the box defined with the positions pos1 and pos2.
+		* The order of iteration (and placement of obtained blocks in the returning collection) is x axis first, 
+		* y axis second and z axis last, going from coordinate 'pos1' to coordinate 'pos2'.
 		*/
-		static bool isInWorld(int x, int y, int z);
+		static std::vector<lightData> getLightInBox(int x1, int y1, int z1, int x2, int y2, int z2);
 
 		/**
 		* @brief Returns true if the given chunk position is inside the level's boundaries or false otherwise.
@@ -1265,14 +1389,14 @@ namespace VoxelEng {
 		static bool isChunkInWorld(int chunkX, int chunkY, int chunkZ);
 
 		/**
-		* @brief Returns the chunk's load level.
+		* @brief Returns the chunk's load status.
 		*/
-		static chunkStatus getChunkLoadLevel(const vec3& chunkPos);
+		static chunkLoadStatus getChunkLoadStatus(const vec3& chunkPos);
 
 		/**
-		* @brief Returns the chunk's load level.
+		* @brief Returns the chunk's load status.
 		*/
-		static chunkStatus getChunkLoadLevel(int chunkX, int chunkY, int chunkZ);
+		static chunkLoadStatus getChunkLoadStatus(int chunkX, int chunkY, int chunkZ);
 
 		/**
 		* @brief Returns the currently opened terrain file.
@@ -1361,6 +1485,10 @@ namespace VoxelEng {
 		*/
 		static const chunk* getChunkC(const vec3& chunkPos);
 
+		/**
+		* @brief Get the NeighborInfo object corresponding to the chunk of the given chunk-grid coordinates.
+		* @param chunkPos The given chunk-grid coordinates.
+		*/
 		static neighborsInfo* getChunkNeighborInfo(const vec3& chunkPos);
 
 
@@ -1388,29 +1516,28 @@ namespace VoxelEng {
 		static const block& setBlock(int x, int y, int z, const block& blockID);
 
 		/**
-		* @brief Select a chunk with the specified chunk position.
-		* WARNING. Not meant for use in AI mode.
+		* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2.
+		* The order of iteration (and placement of obtained blocks in the returning collection) is x axis first,
+		* y axis second and z axis last, going from coordinate 'pos1' to coordinate 'pos2'.
 		*/
-		static chunk* selectChunk(int chunkX, int chunkY, int chunkZ);
+		template <typename T>
+		requires std::is_base_of_v<blockProperty, T>&& std::is_default_constructible_v<T>
+		static void setInBox(const vec3& pos1, const vec3& pos2);
 
 		/**
-		* @brief Select a chunk with the specified chunk position.
-		* WARNING. Not meant for use in AI mode.
+		* @brief Get all blocks in the world that are in the box defined with the positions pos1 and pos2.
+		* The order of iteration (and placement of obtained blocks in the returning collection) is x axis first,
+		* y axis second and z axis last, going from coordinate 'pos1' to coordinate 'pos2'.
 		*/
-		static chunk* selectChunk(const vec3& chunkPos);
+		template <typename T>
+		requires std::is_base_of_v<blockProperty, T>&& std::is_default_constructible_v<T>
+		static void setInBox(int x1, int y1, int z1, int x2, int y2, int z2);
 
 		/**
-		* @brief Select a chunk with the specified block position by
-		* converting the global position cords x, y and z into chunk position.
-		* WARNING. Not meant for use in AI mode.
+		* @brief Set all provided light data in the corresponding blocks.
+		* @param data Contains the light data to set as well as the corresponding blocks where the data is to be set.
 		*/
-		static chunk* selectChunkByChunkPos(int x, int y, int z);
-
-		/**
-		* @brief Select a chunk with the specified global position.
-		* WARNING. Not meant for use in AI mode.
-		*/
-		static chunk* selectChunkByRealPos(const vec3& pos);
+		static void setLightInBox(const lightDataToSet& data);
 
 		/**
 		* @brief Select the neighbor -X chunk for the chunk with the specified chunk position
@@ -1496,8 +1623,6 @@ namespace VoxelEng {
 		*/
 		static void unloadFrontierChunk(const vec3& chunkPos);
 
-		static void undoNeighborInfo(chunk& c);
-
 		/**
 		* @brief Method called by the chunk management thread to use with infinite world types.
 		* It coordinates all meshing threads and manages the chunk unloading process
@@ -1544,13 +1669,13 @@ namespace VoxelEng {
 		static void deserializeChunk(chunk* c, const std::string& data);
 
 		/**
-		* @brief Load chunk at specified chunk coordinates and return a pointer to its corresponding object.
+		* @brief Load frontier chunk at specified chunk coordinates and return a pointer to its corresponding object.
 		* If it is already loaded, it only returns its corresponding object.
 		* NOTE. If it founds serialized data corresponding to this chunk, it will fill the chunk
 		* with said data instead of using the world generator.
 		* WARNING. DOES NOT CHECK IF THERE IS ALREADY A CHUNK AT THE SPECIFIED POSITION.
 		*/
-		static chunk* loadChunk(const vec3& chunkPos);
+		static chunk* loadFrontierChunk(const vec3& chunkPos);
 
 		/**
 		* @brief Issue a job related to chunk processing.
@@ -1600,14 +1725,63 @@ namespace VoxelEng {
 		static chunk* getChunk(const vec3& chunkPos);
 
 		/**
+		* @brief Select a chunk with the specified block position by
+		* converting the global position cords x, y and z into chunk position.
+		* WARNING. Not meant for use in AI mode.
+		*/
+		static chunk* getChunkByChunkPos(int x, int y, int z);
+
+		/**
+		* @brief Select a chunk with the specified global position.
+		* WARNING. Not meant for use in AI mode.
+		*/
+		static chunk* getChunkByRealPos(float x, float y, float z);
+
+		/**
+		* @brief Select a chunk with the specified global position.
+		* WARNING. Not meant for use in AI mode.
+		*/
+		static chunk* getChunkByRealPos(const vec3& pos);
+
+		/**
+		* @brief Own a chunk, making it unavailable to be freed or have its terrain unloaded unless all owners cease owning it.
+		* @param chunkPos. The specified chunk's chunk-grid coordinates.
+		*/
+		static chunk* ownChunk(const vec3& chunkPos);
+
+		/**
+		* @brief Own a chunk, making it unavailable to be freed or have its terrain unloaded unless all owners cease owning it.
+		* @param c. The specified chunk.
+		*/
+		static void ownChunk(chunk& c);
+
+		/**
+		* @brief Disown a chunk, making it unavailable to be freed or have its terrain unloaded until all owners cease owning it.
+		* @param chunkPos. The specified chunk's chunk-grid coordinates.
+		*/
+		static void disownChunk(chunk& c);
+
+		/**
 		* @brief Get the mutex that provides mutual exclusion for the dictionary of chunk's neighborInfo objects.
 		* @return The mutex that provides mutual exclusion for the dictionary of chunk's neighborInfo objects.
 		*/
 		static std::mutex& chunkNeighborsInfoMutex();
 
-		static void passLightToNeighbor(const blockLightMod& floodLight, const basicVec3& startPos, const basicVec3& pos, const vec3& neighborOffset, const vec3& chunkPos);
-
+		/**
+		* @brief Get (or create if not existing) a chunk neighbor info object for the chunk corresponding
+		* to the given chunk-grid coordinates.
+		* @param chunkPos The given chunk-grid coordinates.
+		*/
 		static std::shared_ptr<neighborsInfo> getOrCreateChunkNeighborInfo(const vec3& chunkPos);
+
+		/**
+		* @brief Add a global tick function to the level.
+		* @param c The chunk whose lights are to be processed.
+		* @param causesPriorityUpdate Whether the chunks affected by these lights' processing perform
+		* priority meshing updates (true) or not (false).
+		* @param pushJobBack Whether to push the job to the back of the processing list (true) or the front (false).
+		*/
+		static void addLightTickJob(chunk* c, bool causesPriorityUpdate, bool pushJobBack);
 
 
 		// Clean Up.
@@ -1747,11 +1921,14 @@ namespace VoxelEng {
 
 		static threadPool* chunkTasks_;
 		static threadPool* priorityChunkTasks_;
-
 		static std::unordered_map<vec3, unsigned int> currentJobsPerChunk_;
-
 		static atomicRecyclingPool<job>* loadChunkJobs_;
 		static atomicRecyclingPool<chunk> chunksPool_;
+
+		static std::mutex lightTickFunctionsMutex_;
+		static atomicRecyclingPool<job>* lightJobs_;
+		static std::list<tickFunc> pendingLightJobs_;
+		static threadPool* lightTasks_;
 
 		static chunkEvent onChunkLoad_;
 		static chunkEvent onChunkUnload_;
@@ -1769,16 +1946,42 @@ namespace VoxelEng {
 
 		static const block& getBlockOGWorld_(int posX, int posY, int posZ);
 
-		static void pushNewChunkMesh(bool isPriorityUpdate, chunk* c, std::size_t meshSize);
+		static void pushNewChunkMesh_(bool isPriorityUpdate, chunk* c, std::size_t meshSize);
 
+		static chunk* getChunk_(const vec3& chunkPos);
+
+		static chunk* getChunk_(const vec3& chunkPos, chunkExistence& existence, bool createIfDoesntExist = false);
+
+		static chunkExistence chunkExists_(const vec3& chunkPos);
+
+		static void simulatedChunkToCommon_(chunk* c);
+
+		// Increase own neighborinfo object pass counter by 1 and for its neighbors objects too. 
+		// Cannot exceed 27. If it reaches 27 (number of neighbors a chunk can have + 1)
+		static void increaseNeighborInfoPassCounter_(chunk* c, bool sendLoad2JobWhenRequired = false); 
 		
+		// Decrease own neighborinfo object pass counter by 1 and for its neighbors objects too. Erase any object whose counter reaches 0.--
+		static void decreaseNeighborInfoPassCounter_(chunk& c); 
+
+		static void processWorldLightUpdates_();
+
+		static void getAndOwnChunks_(int nChunksX, int nChunksY, int nChunksZ, std::unordered_map<vec3, chunk*>& ownedChunks, const vec3& chunkPos1);
+
+		static void getAndOwnChunks_(const lightDataToSet& data, std::unordered_map<vec3, chunk*>& ownedChunks);
+		
+		static void disownChunks_(std::unordered_map<vec3, chunk*>& ownedChunks);
+
+		/**
+		* @brief Recalculate all the block lighting applied to the chunk.
+		*/
+		static void recalculateBlockLight_(chunk& c);
+
 
 		/*
-		Job methods.
+		Jobs.
 		*/
-		static void loadChunkJob(void* data);
 
-		static void onLoadChunkJobFinish(chunk* c);
+		static void loadChunkJob(void* data);
 
 		static void loadChunkJobPass2(void* data);
 
@@ -1787,6 +1990,8 @@ namespace VoxelEng {
 		static void unloadAndSaveChunkJob(void* data);
 
 		static void priorityRemeshChunkJob(void* data);
+
+		static void processLightJob(void*);
 
 	};
 
@@ -1826,16 +2031,59 @@ namespace VoxelEng {
 
 	}
 
-	inline std::vector<const block*> chunkManager::getBlocksBox(const vec3& pos1, const vec3& pos2) {
+	template <typename T>
+	requires std::is_base_of_v<blockProperty, T> && std::is_default_constructible_v<T>
+	std::vector<blockState> chunkManager::getInBox(const vec3& pos1, const vec3& pos2) {
 
-		// std::vector has move semantics. This allows us to avoid the unnecessary copies that would otherwise be made here.
-		return getBlocksBox(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
+		int iInc = (pos1.x <= pos2.x) ? 1 : -1;
+		int jInc = (pos1.y <= pos2.y) ? 1 : -1;
+		int kInc = (pos1.z <= pos2.z) ? 1 : -1;
+		int xEnd = pos2.x + iInc; // To make the loop stop when (i, j, k), which started at (x1, y1, z1), has iterated
+		int yEnd = pos2.y + jInc; // through the box leading to (x2, y2, z2) and has also iterated said last point.
+		int zEnd = pos2.z + kInc;
+		int diffX = std::abs(pos1.x - pos2.x);
+		int diffY = std::abs(pos1.y - pos2.y);
+		int diffZ = std::abs(pos1.z - pos2.z);
+		int nChunksX = std::ceil(diffX / (float)CHUNK_SIZE);
+		int nChunksY = std::ceil(diffY / (float)CHUNK_SIZE);
+		int nChunksZ = std::ceil(diffZ / (float)CHUNK_SIZE);
+		vec3 chunkPos1 = getChunkCoords(pos1);
+		vec3 chunkCoords = vec3Zero;
+		vec3 chunkRelCoords = vec3Zero;
+		std::vector<T> elements((diffX + 1) * (diffY + 1) * (diffZ + 1), T());
+		std::unordered_map<vec3, chunk*> ownedChunks;
+
+		getAndOwnChunks_(nChunksX, nChunksY, nChunksZ, ownedChunks, chunkPos1);
+
+		// Obtain the blocks.
+		for (int i = pos1.x; i != xEnd; i += iInc)
+			for (int j = pos1.y; j != yEnd; j += jInc)
+				for (int k = pos1.z; k != zEnd; k += kInc) {
+
+					chunkCoords = getChunkCoords(i, j, k);
+					chunk* c = ownedChunks[chunkCoords];
+					if (c)
+						elements.push_back(c->get<T>(getChunkRelCoords(i, j, k)));
+
+				}
+
+		disownChunks_(ownedChunks);
+
+		return elements;
 
 	}
 
-	inline bool chunkManager::isInWorld(const vec3& blockPos) {
+	template <typename T>
+	requires std::is_base_of_v<blockProperty, T> && std::is_default_constructible_v<T>
+	inline std::vector<blockState> chunkManager::getInBox(int x1, int y1, int z1, int x2, int y2, int z2) {
+
+		return getInBox<T>({ x1,y1,z1 }, { x2,y2,z2 });
+
+	}
+
+	inline std::vector<lightData> chunkManager::getLightInBox(int x1, int y1, int z1, int x2, int y2, int z2) {
 	
-		return isInWorld(blockPos.x, blockPos.y, blockPos.z);
+		return getLightInBox({ x1,y1,z1 }, { x2,y2,z2 });
 	
 	}
 
@@ -1851,23 +2099,15 @@ namespace VoxelEng {
 	
 	}
 
-	inline bool chunkManager::isInWorld(int x, int y, int z) {
-
-		return x >= -nChunksToCompute_ * CHUNK_SIZE && x < (nChunksToCompute_ - 1) * CHUNK_SIZE &&
-			   y >= -yChunksRange * CHUNK_SIZE && y < (yChunksRange - 1) * CHUNK_SIZE&&
-			   z >= -nChunksToCompute_ * CHUNK_SIZE && z < (nChunksToCompute_ - 1) * CHUNK_SIZE;
-	
-	}
-
 	inline bool chunkManager::isChunkInWorld(int chunkX, int chunkY, int chunkZ) {
 
 		return isChunkInWorld(vec3{ chunkX, chunkY, chunkZ });
 
 	}
 
-	inline chunkStatus chunkManager::getChunkLoadLevel(int chunkX, int chunkY, int chunkZ) {
+	inline chunkLoadStatus chunkManager::getChunkLoadStatus(int chunkX, int chunkY, int chunkZ) {
 
-		return getChunkLoadLevel(vec3{ chunkX, chunkY, chunkZ });
+		return getChunkLoadStatus(vec3{ chunkX, chunkY, chunkZ });
 
 	}
 
@@ -1919,12 +2159,6 @@ namespace VoxelEng {
 		return clientChunks_.contains(chunkPos) ? clientChunks_[chunkPos] : nullptr;
 
 	}
-
-	inline chunk* chunkManager::selectChunk(int x, int y, int z) {
-
-		return selectChunk(vec3{ x, y, z });
-
-	}
 	
 	inline const block& chunkManager::setBlock(const vec3& pos, const block& blockID) {
 
@@ -1932,6 +2166,23 @@ namespace VoxelEng {
 
 	}
 
+	template <typename T>
+	requires std::is_base_of_v<blockProperty, T>&& std::is_default_constructible_v<T>
+	void chunkManager::setInBox(const vec3& pos1, const vec3& pos2) {
+	
+		
+	
+	}
+
+	template <typename T>
+	requires std::is_base_of_v<blockProperty, T>&& std::is_default_constructible_v<T>
+	void chunkManager::setInBox(int x1, int y1, int z1, int x2, int y2, int z2) {
+	
+	
+	
+	}
+
+	
 	inline std::recursive_mutex& chunkManager::chunksMutex() {
 
 		return chunksMutex_;
@@ -1988,8 +2239,19 @@ namespace VoxelEng {
 
 	inline chunk* chunkManager::getChunk(const vec3& chunkPos) {
 
+		// MAÑANA. 4 COSAS PARA EL OWNEO DE CHUNKS
+		// 1º. EL CHUNK TIENE QUE ESTAR CARGADO PREVIAMENTE. X
+		// 2º. SI SE LE DA OWN, AL ENTRAR EN EL METODO UNLOAD CHUNK, ESE CHUNK NO SE RENDERIZA NI SE REMESHEA, PERO NO SE PASA A LA POOL DE CHUNKS LIBRES.
+		// 3º. SI SE LE DA A DESOWN DESPUÉS Y EL CONTADOR DE OWNERS ES 0, ENTONCES SE PASA A LA POOL DE CHUNKS LIBRES SI SE EJECUTA UNLOAD CHUNK SOBRE ÉL.
+		// 4º. SI ESTANDO OWNEADO, PASA A VOLVER A REQUERIR RENDERIZARSE, SE HACE (IGUAL PARA ESTO VAMOS A TENER QUE TENER LA DISTINCIÓN ENTRE CHUNKS RENDERIZABLES (CR) Y CHUNKS CARGADOS (CC), donde CC incluye a CR
 		std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-		return clientChunks_.contains(chunkPos) ? clientChunks_[chunkPos] : nullptr;
+		return getChunk_(chunkPos);
+
+	}
+
+	inline chunk* chunkManager::getChunkByRealPos(const vec3& pos) {
+
+		return getChunkByRealPos(pos.x, pos.y, pos.z);
 
 	}
 
@@ -2003,6 +2265,18 @@ namespace VoxelEng {
 
 		clearChunksFlag_ = true;
 
+	}
+
+	inline chunk* chunkManager::getChunk_(const vec3& chunkPos) {
+
+		return clientChunks_.contains(chunkPos) ? clientChunks_[chunkPos] : simulatedChunks_.contains(chunkPos) ? simulatedChunks_[chunkPos] : nullptr;
+
+	}
+
+	inline chunkExistence chunkManager::chunkExists_(const vec3& chunkPos) {
+	
+		return clientChunks_.contains(chunkPos) ? chunkExistence::COMMON : simulatedChunks_.contains(chunkPos) ? chunkExistence::SIMULATED : chunkExistence::NOEXISTS;
+	
 	}
 
 }

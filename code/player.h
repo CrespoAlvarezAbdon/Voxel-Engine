@@ -10,11 +10,11 @@
 #ifndef _VOXELENG_PLAYER_
 #define _VOXELENG_PLAYER_
 
-#include "block.h"
 #include "entity.h"
 #include "gameWindow.h"
 #include "vec.h"
-#include "Graphics/transform.h"
+#include <Block/block.h>
+#include <Graphics/transform.h>
 
 #if GRAPHICS_API == OPENGL
 

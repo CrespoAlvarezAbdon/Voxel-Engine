@@ -69,7 +69,7 @@ namespace VoxelEng {
         * @brief Auxiliary threads' flags that tell if they can be executed or not or if
         * they should stop their execution or not.
         */
-        static std::atomic<bool> threadsExecute[3];
+        static std::atomic<bool> threadsExecute[4];
 
 
         /*
@@ -251,10 +251,10 @@ namespace VoxelEng {
         
 		static window* mainWindow_;
 
-        static std::thread* chunkManagementThread_,
-                          * priorityChunkUpdatesThread_,
-                          * playerInputThread_,
-                          * tickManagementThread_;
+        static std::thread* chunkManagementThread_;
+        static std::thread* priorityChunkUpdatesThread_;
+        static std::thread* playerInputThread_;
+        static std::thread* tickManagementThread_;
 
         static std::unique_ptr<settings> settings_;
         static std::atomic<engineMode> loopSelection_;

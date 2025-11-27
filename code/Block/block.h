@@ -152,8 +152,6 @@ namespace VoxelEng {
 		*/
 		unsigned int emittedLightIndex() const;
 
-		unsigned int nRegisteredBlocks();
-
 
 		// Modifiers.
 

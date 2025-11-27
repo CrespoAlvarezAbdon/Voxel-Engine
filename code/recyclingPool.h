@@ -73,7 +73,8 @@ namespace VoxelEng {
 	};
 
 	template<typename T>
-	recyclingPool<T>::recyclingPool(unsigned int nElements) {
+	recyclingPool<T>::recyclingPool(unsigned int nElements) 
+	: allFreeOnClear_(false) {
 	
 		for (unsigned int i = 0; i < nElements; i++)
 			freeElements_.push(new T());
