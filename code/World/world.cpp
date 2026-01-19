@@ -175,7 +175,7 @@ namespace VoxelEng {
 
 	}
 
-	std::string world::loadChunk(const vec3& chunkPos) {
+	std::string world::loadChunk(const ivec3& chunkPos) {
 	
 		if (regions_)
 			return regions_->get(std::to_string(chunkPos));
@@ -326,13 +326,23 @@ namespace VoxelEng {
 
 	void world::saveAllChunks_() {
 
-		const std::unordered_map<vec3, chunk*>& chunks = chunkManager::chunks();
+		std::unique_lock<std::recursive_mutex> lock(chunkManager::chunksMutex());
+		const chunksMap& chunks = chunkManager::chunks();
 		for (auto it = chunks.cbegin(); it != chunks.cend(); it++)
 			if (it->second->modified()) {
 			
 				saveChunk(it->second);
 				it->second->modified(false);
 			
+			}
+
+		const chunksMap& simulatedChunks = chunkManager::simulatedChunks();
+		for (auto it = simulatedChunks.cbegin(); it != simulatedChunks.cend(); it++)
+			if (it->second->modified()) {
+
+				saveChunk(it->second);
+				it->second->modified(false);
+
 			}
 
 	}

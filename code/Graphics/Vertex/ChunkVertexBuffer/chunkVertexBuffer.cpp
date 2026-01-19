@@ -5,9 +5,9 @@
 
 namespace VoxelEng {
 
-    const chunkVertexBufferZone& chunkVertexBuffer::bufferZone(const vec3& chunkPos, bool isTranslucidGeometry) {
+    const chunkVertexBufferZone& chunkVertexBuffer::bufferZone(const ivec3& chunkPos, bool isTranslucidGeometry) {
 
-        std::unordered_map<vec3, chunkVertexBufferZone>& bufferZones =
+        std::unordered_map<ivec3, chunkVertexBufferZone>& bufferZones =
             isTranslucidGeometry ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
 
         if (bufferZones.contains(chunkPos))
@@ -18,7 +18,11 @@ namespace VoxelEng {
 
     }
 
-    void chunkVertexBuffer::pushDynamicData(const vec3& chunkPos, const void* data, long long size, bool isTranslucidGeometry) {
+    void chunkVertexBuffer::pushDynamicData(const ivec3& chunkPos, const chunkRenderingData& chunkRenderData, bool isTranslucidGeometry) {
+
+        const void* data = isTranslucidGeometry ? chunkRenderData.translucentVertices.data() : chunkRenderData.vertices.data();
+        long long size = (isTranslucidGeometry ? chunkRenderData.translucentVertices.size() : chunkRenderData.vertices.size()) * sizeof(vertex);
+        const chunkExtraRenderingData& extraRenderData = chunkRenderData.extraRenderingData;
 
         if (size <= 0)
             throw std::runtime_error("Size of the data to push cannot be equal to or lower than 0");
@@ -26,7 +30,7 @@ namespace VoxelEng {
         if (data == nullptr)
             throw std::runtime_error("The provided pointer for the data to be pushed cannot be null");
 
-        std::unordered_map<vec3, chunkVertexBufferZone>& bufferZones = 
+        std::unordered_map<ivec3, chunkVertexBufferZone>& bufferZones =
             isTranslucidGeometry ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
 
         auto itPreexistingZone = bufferZones.find(chunkPos);
@@ -42,8 +46,6 @@ namespace VoxelEng {
                 if (lastPushedBytePos_ + size < maxSize_) {
 
                     bufferZones[chunkPos] = { lastPushedBytePos_ , size };
-                    if (bufferZones[chunkPos].startPos == 0)
-                        int a = 3 + 2;
                     glBufferSubData(GL_ARRAY_BUFFER, lastPushedBytePos_, size, data);
                     lastPushedBytePos_ += size;
 
@@ -60,8 +62,6 @@ namespace VoxelEng {
                 if (itFit->size == size) {
 
                     bufferZones[chunkPos] = { itFit->startPos , size };
-                    if (bufferZones[chunkPos].startPos == 0)
-                        int a = 3 + 2;
                     glBufferSubData(GL_ARRAY_BUFFER, itFit->startPos, size, data);
 
                     freedZones_.erase(itFit);
@@ -71,8 +71,6 @@ namespace VoxelEng {
                 else { // itFit->size > size
 
                     bufferZones[chunkPos] = { itFit->startPos , size };
-                    if (bufferZones[chunkPos].startPos == 0)
-                        int a = 3 + 2;
                     glBufferSubData(GL_ARRAY_BUFFER, itFit->startPos, size, data);
 
                     freedZonesBySize::iterator itSize = freedZonesBySize_.insert(
@@ -101,15 +99,11 @@ namespace VoxelEng {
 
                 // Update buffer zone.
                 preexistingZone.size = size;
-                if (preexistingZone.startPos == 0)
-                    int a = 3 + 2;
                 glBufferSubData(GL_ARRAY_BUFFER, preexistingZone.startPos, preexistingZone.size, data);
             
             }
             else if (size == preexistingZone.size) {
             
-                if (preexistingZone.startPos == 0)
-                    int a = 3 + 2;
                 glBufferSubData(GL_ARRAY_BUFFER, preexistingZone.startPos, preexistingZone.size, data);
             
             }
@@ -175,8 +169,6 @@ namespace VoxelEng {
                 }
 
                 glBufferSubData(GL_ARRAY_BUFFER, preexistingZone.startPos, preexistingZone.size, data);
-                if (bufferZones[chunkPos].startPos == 0)
-                    int a = 3 + 2;
             
             }
 
@@ -184,15 +176,12 @@ namespace VoxelEng {
 
     }
 
-    void chunkVertexBuffer::freeDynamicData(const vec3& chunkPos, bool isTranslucidGeometry) {
+    void chunkVertexBuffer::freeDynamicData(const ivec3& chunkPos, bool isTranslucidGeometry) {
 
-        std::unordered_map<vec3, chunkVertexBufferZone>& bufferZones =
+        std::unordered_map<ivec3, chunkVertexBufferZone>& bufferZones =
             isTranslucidGeometry ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
 
         if (bufferZones.contains(chunkPos)) {
-
-            if (bufferZones[chunkPos].startPos == 0)
-                int a = 3 + 2;
 
             freedZonesBySize::iterator itSize = freedZonesBySize_.insert(bufferZones[chunkPos]).first;
             freedZones::iterator it = freedZones_.insert(itSize).first;

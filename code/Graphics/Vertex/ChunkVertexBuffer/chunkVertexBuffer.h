@@ -1,27 +1,15 @@
-#ifndef _VOXELENG_CHUNKVERTEXBUFFER_
-#define _VOXELENG_CHUNKVERTEXBUFFER_
+#ifndef _VOXELENG_CHUNK_VERTEX_BUFFER_
+#define _VOXELENG_CHUNK_VERTEX_BUFFER_
 
 #include <unordered_map>
 #include <set>
 #include <utility>
-#include <Graphics/Vertex/VertexBuffer/vertexBuffer.h>
 #include <vec.h>
+#include <Chunk/chunkRenderingData.hpp>
+#include <Graphics/Vertex/ChunkVertexBuffer/chunkVertexBufferZone.hpp>
+#include <Graphics/Vertex/VertexBuffer/vertexBuffer.h>
 
 namespace VoxelEng {
-
-	////////////
-	//Structs.//
-	////////////
-
-	/**
-	* @brief Represents a portion of the chunk vertex buffer.
-	*/
-	struct chunkVertexBufferZone {
-
-		long long startPos; // Index of the first byte.
-		long long size; // Zone size in bytes.
-
-	};
 
 	/**
 	* @brief Specialization of 'vertexBuffer' class that defines a buffer
@@ -53,7 +41,7 @@ namespace VoxelEng {
 		* or not (false).
 		* @returns The buffer zone for the specified chunk.
 		*/
-		const chunkVertexBufferZone& bufferZone(const vec3& chunkPos, bool isTranslucidGeometry);
+		const chunkVertexBufferZone& bufferZone(const ivec3& chunkPos, bool isTranslucidGeometry);
 
 
 		// Modifiers.
@@ -63,12 +51,11 @@ namespace VoxelEng {
 		* It will attempt to reuse a freed portion of the buffer to allocate this data
 		* if available to reduce memory fragmentation.
 		* @param chunkPos The position in chunk coordinates of the chunk whose data is being pushed into the VBO.
-		* @param data Pointer to the begininng of the given data to push.
-		* @param size The given data's size. Must be greater than 0 or otherwise an exception will be thrown.
+		* @param chunkRenderData Chunk's rendering data to push into the VBO.
 		* @param isTranslucidGeometry Whether the given vertex data corresponds to translucid geometry (true)
 		* or not (false).
 		*/
-		void pushDynamicData(const vec3& chunkPos, const void* data, long long size, bool isTranslucidGeometry);
+		void pushDynamicData(const ivec3& chunkPos, const chunkRenderingData& chunkRenderData, bool isTranslucidGeometry);
 
 		/**
 		* @brief Will mark the zone of the buffer memory reserved for the given chunk as free.
@@ -78,7 +65,7 @@ namespace VoxelEng {
 		* @param isTranslucidGeometry Whether the given vertex data corresponds to translucid geometry (true)
 		* or not (false).
 		*/
-		void freeDynamicData(const vec3& chunkPos, bool isTranslucidGeometry);
+		void freeDynamicData(const ivec3& chunkPos, bool isTranslucidGeometry);
 
 	private:
 
@@ -109,8 +96,8 @@ namespace VoxelEng {
 		};
 		typedef std::set<freedZonesBySize::iterator, compareByStartPos> freedZones;
 
-		std::unordered_map<vec3, chunkVertexBufferZone> chunkVertexBufferZones_;
-		std::unordered_map<vec3, chunkVertexBufferZone> chunkTranslucidVertexBufferZones_;
+		std::unordered_map<ivec3, chunkVertexBufferZone> chunkVertexBufferZones_;
+		std::unordered_map<ivec3, chunkVertexBufferZone> chunkTranslucidVertexBufferZones_;
 		freedZones freedZones_;
 		freedZonesBySize freedZonesBySize_;
 	

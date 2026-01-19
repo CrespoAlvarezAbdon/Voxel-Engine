@@ -282,17 +282,17 @@ namespace VoxelEng {
 		
 		chunk.loadedFromDisk(false);
 
-		chunk.blockDataMutex().lock();
+		chunk.blocksDataMutex().lock();
 		selectedGen_->generate_(chunk);
-		chunk.blockDataMutex().unlock();
+		chunk.blocksDataMutex().unlock();
 	
 	}
 
 	inline void worldGen::genPass2(chunk& chunk) {
 
-		chunk.blockDataMutex().lock();
+		chunk.blocksDataMutex().lock();
 		selectedGen_->genPass2_(chunk);
-		chunk.blockDataMutex().unlock();
+		chunk.blocksDataMutex().unlock();
 
 	}
 

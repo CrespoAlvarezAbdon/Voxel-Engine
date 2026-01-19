@@ -178,12 +178,12 @@ namespace VoxelEng {
 
 		}
 
-		vertices_.push_back({ (translatedPos_.x - originalSize_.x), translatedPos_.y + originalSize_.y });
-		vertices_.push_back({ (translatedPos_.x - originalSize_.x), translatedPos_.y - originalSize_.y });
-		vertices_.push_back({ (translatedPos_.x + originalSize_.x), translatedPos_.y - originalSize_.y });
-		vertices_.push_back({ (translatedPos_.x + originalSize_.x), translatedPos_.y + originalSize_.y });
-		vertices_.push_back({ (translatedPos_.x - originalSize_.x), translatedPos_.y + originalSize_.y });
-		vertices_.push_back({ (translatedPos_.x + originalSize_.x), translatedPos_.y - originalSize_.y });
+		vertices_.push_back({ translatedPos_.x - originalSize_.x, translatedPos_.y + originalSize_.y });
+		vertices_.push_back({ translatedPos_.x - originalSize_.x, translatedPos_.y - originalSize_.y });
+		vertices_.push_back({ translatedPos_.x + originalSize_.x, translatedPos_.y - originalSize_.y });
+		vertices_.push_back({ translatedPos_.x + originalSize_.x, translatedPos_.y + originalSize_.y });
+		vertices_.push_back({ translatedPos_.x - originalSize_.x, translatedPos_.y + originalSize_.y });
+		vertices_.push_back({ translatedPos_.x + originalSize_.x, translatedPos_.y - originalSize_.y });
 
 		addTextures();
 

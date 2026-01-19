@@ -81,7 +81,7 @@ namespace VoxelEng {
 		* @brief Returns true if the specified chunkPos corresponds to a chunk that has been
 		* previously saved to the currently selected world or false otherwise.
 		*/
-		static bool isSaved(const vec3& chunkPos);
+		static bool isSaved(const ivec3& chunkPos);
 
 
 		// Modifiers.
@@ -138,7 +138,7 @@ namespace VoxelEng {
 		/**
 		* @brief Load the chunk's serialized data according to the currently used level slot.
 		*/
-		static std::string loadChunk(const vec3& chunkPos);
+		static std::string loadChunk(const ivec3& chunkPos);
 
 		/**
 		* @brief Load general information about the currently opened world such
@@ -202,7 +202,7 @@ namespace VoxelEng {
 	
 	}
 
-	inline bool world::isSaved(const vec3& chunkPos) {
+	inline bool world::isSaved(const ivec3& chunkPos) {
 	
 		if (regions_)
 			return regions_->exists(std::to_string(chunkPos));

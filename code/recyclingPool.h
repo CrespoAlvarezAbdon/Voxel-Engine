@@ -11,6 +11,9 @@
 
 namespace VoxelEng {
 
+	/**
+	* @brief Class used to recycle objects.
+	*/
 	template<typename T>
 	class recyclingPool {
 
@@ -64,7 +67,7 @@ namespace VoxelEng {
 		Attributes.
 		*/
 
-		std::queue<T*> freeElements_;
+		std::unordered_set<T*> freeElements_;
 		std::unordered_set<T*> occupiedElements_;
 		bool allFreeOnClear_; // Tells if all the elements must be free elements before clearing the pool.
 		std::mutex mutex_;
@@ -77,7 +80,7 @@ namespace VoxelEng {
 	: allFreeOnClear_(false) {
 	
 		for (unsigned int i = 0; i < nElements; i++)
-			freeElements_.push(new T());
+			freeElements_.insert(new T());
 	
 	}
 
@@ -146,8 +149,9 @@ namespace VoxelEng {
 		}
 		else {
 
-			element = freeElements_.front();
-			freeElements_.pop();
+			auto it = freeElements_.begin();
+			element = *it;
+			freeElements_.erase(it);
 
 		}
 
@@ -165,13 +169,13 @@ namespace VoxelEng {
 		if (occupiedElements_.contains(e)) {
 
 			occupiedElements_.erase(e);
-			freeElements_.push(e);
+			freeElements_.insert(e);
 
 			if (occupiedElements_.empty())
 				allFreeCV_.notify_all();
 
 		}
-		else
+		else if(!freeElements_.contains(e))
 			logger::errorLog("Element does not belong to this recyclingPool");
 	
 	}
@@ -199,8 +203,9 @@ namespace VoxelEng {
 		if (!allFreeOnClear_ || occupiedElements_.empty())
 			for (int i = 0; i < freeElements_.size(); i++) {
 
-				delete(freeElements_.front());
-				freeElements_.pop();
+				auto it = freeElements_.begin();
+				freeElements_.erase(it);
+				delete *it;
 
 			}
 		else

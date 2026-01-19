@@ -23,6 +23,12 @@
 
 #endif
 
+namespace glm {
+
+	bool operator<(const ivec3& v1, const ivec3& v2);
+
+}
+
 
 namespace VoxelEng {
 
@@ -39,6 +45,9 @@ namespace VoxelEng {
 		typedef glm::vec2 vec2;
 		typedef glm::vec3 vec3;
 		typedef glm::vec4 vec4;
+		typedef glm::ivec2 ivec2;
+		typedef glm::ivec3 ivec3;
+		typedef glm::ivec4 ivec4;
 
 	#else
 
@@ -49,7 +58,6 @@ namespace VoxelEng {
 	// Other operators.
 
 	vec3 operator+(const vec3& v, blockViewDir viewDir);
-
 
 	/**
 	* @brief Vector of 3 bytes, 1 byte per component.
@@ -248,6 +256,34 @@ namespace VoxelEng {
 	*/
 	const vec3 vec3FixedWest(0, 0, -1);
 	/**
+	* @brief vec3 constant of the zero vector.
+	*/
+	const ivec3 ivec3Zero(0, 0, 0);
+	/**
+	* @brief vec3 constant poiting to the fixed up direction.
+	*/
+	const ivec3 ivec3FixedUp(0, 1, 0);
+	/**
+	* @brief vec3 constant poiting to the fixed down direction.
+	*/
+	const ivec3 ivec3FixedDown(0, -1, 0);
+	/**
+	* @brief vec3 constant poiting to the fixed north direction.
+	*/
+	const ivec3 ivec3FixedNorth(1, 0, 0);
+	/**
+	* @brief vec3 constant poiting to the fixed south direction.
+	*/
+	const ivec3 ivec3FixedSouth(-1, 0, 0);
+	/**
+	* @brief vec3 constant poiting to the fixed east direction.
+	*/
+	const ivec3 ivec3FixedEast(0, 0, 1);
+	/**
+	* @brief vec3 constant poiting to the fixed west direction.
+	*/
+	const ivec3 ivec3FixedWest(0, 0, -1);
+	/**
 	* @brief vec4 filled only with zeroes.
 	*/
 	const vec4 vec4Zeroes(0, 0, 0, 0);
@@ -316,9 +352,39 @@ namespace VoxelEng {
 
 	}
 
+
+	// TEST //
+	struct Vec3Hash {
+		std::size_t operator()(const vec3& v) const noexcept {
+			std::size_t hx, hy, hz;
+
+			std::memcpy(&hx, &v.x, sizeof(float));
+			std::memcpy(&hy, &v.y, sizeof(float));
+			std::memcpy(&hz, &v.z, sizeof(float));
+
+			// Combine hashes (boost-style)
+			hx ^= hy + 0x9e3779b97f4a7c15 + (hx << 6) + (hx >> 2);
+			hx ^= hz + 0x9e3779b97f4a7c15 + (hx << 6) + (hx >> 2);
+
+			return hx;
+		}
+	};
+
+	struct Vec3Eq {
+		bool operator()(const vec3& a, const vec3& b) const noexcept {
+			return a.x == b.x && a.y == b.y && a.z == b.z;
+		}
+	};
+
 }
 
 namespace std {
+
+	inline string to_string(const VoxelEng::ivec3& v) {
+
+		return to_string(v.x) + ',' + to_string(v.y) + ',' + to_string(v.z);
+
+	}
 
 	inline string to_string(const VoxelEng::vec3& v) {
 	

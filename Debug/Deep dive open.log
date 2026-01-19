@@ -1,0 +1,114 @@
+﻿  AIAPI.cpp
+c1xx : fatal error C1083: Cannot open source file: 'code\AIAPI.cpp': No such file or directory
+  AIGameEx1.cpp
+c1xx : fatal error C1083: Cannot open source file: 'code\AI\AIGameEx1.cpp': No such file or directory
+  genetic.cpp
+c1xx : fatal error C1083: Cannot open source file: 'code\AI\genetic.cpp': No such file or directory
+  NN.cpp
+c1xx : fatal error C1083: Cannot open source file: 'code\AI\NN.cpp': No such file or directory
+  app.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\game.h(20,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  atomicRecyclingPool.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\atomicRecyclingPool.h(4,10): fatal error C1083: Cannot open include file: 'recyclingPool.h': No such file or directory
+  batch.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\batch.h(19,10): fatal error C1083: Cannot open include file: 'gameWindow.h': No such file or directory
+  block.cpp
+c1xx : fatal error C1083: Cannot open source file: 'code\block.cpp': No such file or directory
+  camera.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\camera.h(12,10): fatal error C1083: Cannot open include file: 'Chunk/chunk.h': No such file or directory
+  chunk.cpp
+c1xx : fatal error C1083: Cannot open source file: 'code\chunk.cpp': No such file or directory
+  controls.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\definitions.h(25,11): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+  database.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\database.h(11,10): fatal error C1083: Cannot open include file: 'leveldb/db.h': No such file or directory
+  event.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\event.h(6,10): fatal error C1083: Cannot open include file: 'Utilities/Logger/logger.h': No such file or directory
+  stb_image.cpp
+  game.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\game.h(20,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  gameWindow.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\gameWindow.h(14,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  graphics.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\graphics.h(20,10): fatal error C1083: Cannot open include file: 'batch.h': No such file or directory
+  framebuffer.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\Framebuffer.h(8,10): fatal error C1083: Cannot open include file: 'vec.h': No such file or directory
+  frustum.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\Frustum\frustum.h(12,10): fatal error C1083: Cannot open include file: 'Math/mathPlane.h': No such file or directory
+  plane.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\entity.h(21,10): fatal error C1083: Cannot open include file: 'batch.h': No such file or directory
+  Generating Code...
+  Compiling...
+  lighting.cpp
+c1xx : fatal error C1083: Cannot open source file: 'code\Graphics\Lighting\lighting.cpp': No such file or directory
+  directionalLight.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\Lighting\Lights\DirectionalLight\directionalLight.h(4,10): fatal error C1083: Cannot open include file: 'vec.h': No such file or directory
+  light.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\Lighting\Lights\light.hpp(4,10): fatal error C1083: Cannot open include file: 'vec.h': No such file or directory
+  pointLight.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\Lighting\Lights\PointLight\pointLight.h(4,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  spotLight.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\Lighting\Lights\SpotLight\spotLight.h(4,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  materials.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\Materials\materials.h(13,10): fatal error C1083: Cannot open include file: 'Registry/registryElement.h': No such file or directory
+  transform.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\transform.h(13,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  UBOs.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\UBOs\UBOs.h(16,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  gui.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\gui.h(18,10): fatal error C1083: Cannot open include file: 'controls.h': No such file or directory
+  GUIfunctions.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\game.h(20,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  indexBuffer.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\definitions.h(25,11): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+  input.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\definitions.h(25,11): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+  inputFunctions.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\game.h(20,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  listener.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\event.h(6,10): fatal error C1083: Cannot open include file: 'Utilities/Logger/logger.h': No such file or directory
+  logger.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Utilities\Logger\logger.cpp(4,10): fatal error C1083: Cannot open include file: 'game.h': No such file or directory
+  mathPlane.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Math\mathPlane.h(12,10): fatal error C1083: Cannot open include file: 'vec.h': No such file or directory
+  model.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\Models\model.h(17,10): fatal error C1083: Cannot open include file: 'Graphics/Vertex/vertex.h': No such file or directory
+  noise.cpp
+c1xx : fatal error C1083: Cannot open source file: 'code\noise.cpp': No such file or directory
+  palette.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\palette.h(7,10): fatal error C1083: Cannot open include file: 'Utilities/Logger/logger.h': No such file or directory
+  player.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\entity.h(21,10): fatal error C1083: Cannot open include file: 'batch.h': No such file or directory
+  Generating Code...
+  Compiling...
+  quaternion.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\vec.h(18,10): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+  recyclingPool.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\recyclingPool.h(8,10): fatal error C1083: Cannot open include file: 'Utilities/Logger/logger.h': No such file or directory
+  registries.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Registry\registries.h(15,10): fatal error C1083: Cannot open include file: 'Registry/RegistryInsOrdered/registryInsOrdered.h': No such file or directory
+  registry.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Registry\registry.h(11,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  registryElement.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Registry\registryElement.cpp(2,10): fatal error C1083: Cannot open include file: 'Utilities/Logger/logger.h': No such file or directory
+  registryInsOrdered.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Registry\RegistryInsOrdered\registryInsOrdered.h(9,10): fatal error C1083: Cannot open include file: 'Registry/registry.h': No such file or directory
+  renderer.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\renderer.h(18,10): fatal error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+  shader.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\Shaders\shader.h(16,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  texture.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Graphics\Textures\texture.h(15,10): fatal error C1083: Cannot open include file: 'Graphics/graphics.h': No such file or directory
+  threadPool.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\threadPool.h(19,10): fatal error C1083: Cannot open include file: 'atomicRecyclingPool.h': No such file or directory
+  tickFunctions.cpp
+  time.cpp
+c1xx : fatal error C1083: Cannot open source file: 'code\time.cpp': No such file or directory
+  timer.cpp
+c1xx : fatal error C1083: Cannot open source file: 'code\timer.cpp': No such file or directory
+  TreeNode.cpp
+  utilities.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\utilities.h(23,10): fatal error C1083: Cannot open include file: 'definitions.h': No such file or directory
+  var.cpp
+C:\Users\haory\Desktop\C++\Deep dive open\Github\code\Utilities\Var\var.h(13,10): fatal error C1083: Cannot open include file: 'Utilities/VarBase/varBase.h': No such file or directory
+  vec.cpp

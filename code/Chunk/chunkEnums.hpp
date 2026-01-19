@@ -21,7 +21,8 @@ namespace VoxelEng {
 	/**
 	* @brief The different stages that a chunk has during its loading process.
 	*/
-	enum class chunkLoadStatus { NOTLOADED = 0, BASICTERRAIN = 1, BASICTERRAINFROMDISK = 2, DECORATED = 3, MESHED = 4 };
+	enum class chunkLoadStatus { NOTLOADED = 0, AWAITING_LOAD, BASICTERRAIN, BASICTERRAINFROMDISK, PENDING_DECORATED, DECORATED, MESHED, 
+		PENDING_LIGHTS_APPLIED, LIGHTS_APPLIED };
 
 	/**
 	* @brief Definition of the multiples types of jobs related to chunk management.
@@ -33,7 +34,7 @@ namespace VoxelEng {
 	/**
 	* @brief Definition of the operations allowed in the chunk vertex buffer object.
 	*/
-	enum class chunkVBOoperation { NONE = 0, PUSH, FREE };
+	enum class VBOop { NONE = 0, PUSH = 1, FREE = 2 };
 
 }
 

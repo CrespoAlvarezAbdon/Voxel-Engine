@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <typeinfo>
 #include <type_traits>
+#include <optional>
 
 #include <definitions.h>
 #include <game.h>
@@ -46,7 +47,7 @@ namespace VoxelEng {
 
 	void WorldGen3DNoise::generate_(chunk& chunk) {
 
-		chunk.clearBlockLight();
+		//chunk.clearBlockLight();
 
 		noiseLayer(chunk);
 
@@ -54,9 +55,48 @@ namespace VoxelEng {
 
 	}
 
-	void WorldGen3DNoise::genPass2_(chunk& chunk) {
+	void WorldGen3DNoise::genPass2_(chunk& c) {
 
-		// PLACEHOLDER FOR STRUCTURE GENERATION
+		// Generate underwater and coast layers goes here.
+		const ivec3& chunkPos = c.chunkPos();
+		std::shared_ptr<neighborsInfo> neighborInfo = chunkManager::getOrCreateChunkNeighborInfo(chunkPos);
+		std::unique_lock<std::recursive_mutex> lock(c.ownedChunksMutex());
+		std::unordered_map<ivec3, chunk*>& ownedChunks = c.ownedChunks();
+
+		if (ownedChunks.size()) {
+		
+			chunk* cAbove = ownedChunks[vec3FixedUp];
+
+			std::shared_lock<std::shared_mutex> cAboveBlocksLock(cAbove->blocksDataMutex()); // Lock in shared mode since we are only reading terrain from this chunk.
+
+			// Set the modifications.
+			std::optional<unsigned short> waterBlockLocalID = c.getPalette().getT1Opt(waterBlock_.intID());
+			std::optional<unsigned short> waterBlockLocalIDChunkAbove = cAbove->getPalette().getT1Opt(waterBlock_.intID());
+			std::optional<unsigned short> stoneBlockLocalID = c.getPalette().getT1Opt(layer2_.intID());
+			if (waterBlockLocalID.has_value() && stoneBlockLocalID.has_value()) {
+
+				Padded3DArray<unsigned short>& cBlockLocalIDs = *c.blockData().blocksLocalIDs_;
+				Padded3DArray<unsigned short>& cAboveBlockLocalIDs = *cAbove->blockData().blocksLocalIDs_;
+				bool isAboveWaterLevel = false;
+				bool blockAboveIsWater = false;
+				int x, y, z;
+				unsigned short blockLocalID = 0;
+				for (x = 0; x < CHUNK_SIZE; x++)
+					for (z = 0; z < CHUNK_SIZE; z++)
+						for (y = 0; y < CHUNK_SIZE; y++) {
+
+							blockLocalID = cBlockLocalIDs[x][y][z];
+							if (blockLocalID == stoneBlockLocalID)
+								c.setBlock(x, y, z, beachBlock_, false);
+
+
+						}
+
+			}
+
+			// STRUCTURE/POI GENERATION GOES HERE.
+		
+		}
 
 	}
 
@@ -69,8 +109,8 @@ namespace VoxelEng {
 
 	void WorldGen3DNoise::noiseLayer(chunk& chunk) {
 	
-		vec3 chunkPos = chunk.chunkPos(),
-			 blockPos;
+		ivec3 chunkPos = chunk.chunkPos();
+	    ivec3 blockPos;
 		int x, y, z;
 		for (x = -1; x <= CHUNK_SIZE; x++)
 			for (z = -1; z <= CHUNK_SIZE; z++)
@@ -86,12 +126,11 @@ namespace VoxelEng {
 
 	void WorldGen3DNoise::surfaceLayer(chunk& chunk) {
 
-		vec3 chunkPos = chunk.chunkPos(),
-			 blockPos;
+		ivec3 chunkPos = chunk.chunkPos();
+		ivec3 blockPos;
 		int x, y, z;
 		bool isAboveWaterLevel = false;
 		bool isBlockEmpty = false;
-
 		for (x = -1; x <= CHUNK_SIZE; x++)
 			for (z = -1; z <= CHUNK_SIZE; z++)
 				for (y = -1; y <= CHUNK_SIZE; y++) {
@@ -107,8 +146,8 @@ namespace VoxelEng {
 							chunk.setBlock(x, y, z, layer1_, false);
 
 					}
-					else if (!isAboveWaterLevel)
-						chunk.setBlock(x, y, z, isBlockEmpty ? waterBlock_ : beachBlock_, false);
+					else if (!isAboveWaterLevel && isBlockEmpty)
+						chunk.setBlock(x, y, z, waterBlock_, false);
 					
 				}
 
@@ -155,7 +194,7 @@ namespace VoxelEng {
 			else
 			{
 
-				const vec2& chunkPosXZ = aChunkEvent->chunkPosXZ();
+				const ivec2& chunkPosXZ = aChunkEvent->chunkPosXZ();
 				chunkColHeightMutex_.lock();
 				if (auto it = chunkColHeightUses_.find(chunkPosXZ); it != chunkColHeightUses_.end()) {
 

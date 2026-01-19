@@ -164,6 +164,22 @@ namespace VoxelEng {
 		* @param y Second dimension coordinate.
 		* @param z Third dimension coordinate.
 		*/
+		typename std::vector<T>::const_reference get(int x, int y, int z) const;
+
+		/**
+		* @brief Get the element at the specified coordinates.
+		* @param x First dimension coordinate.
+		* @param y Second dimension coordinate.
+		* @param z Third dimension coordinate.
+		*/
+		typename std::vector<T>::const_reference get(const vec3& coords) const;
+
+		/**
+		* @brief Get the element at the specified coordinates.
+		* @param x First dimension coordinate.
+		* @param y Second dimension coordinate.
+		* @param z Third dimension coordinate.
+		*/
 		typename std::vector<T>::const_reference operator[](const vec3& coords) const;
 
 
@@ -184,6 +200,22 @@ namespace VoxelEng {
 		* @param z Third dimension coordinate.
 		*/
 		typename std::vector<T>::reference at(const vec3& coords);
+
+		/**
+		* @brief Get the element at the specified coordinates.
+		* @param x First dimension coordinate.
+		* @param y Second dimension coordinate.
+		* @param z Third dimension coordinate.
+		*/
+		typename std::vector<T>::reference get(int x, int y, int z);
+
+		/**
+		* @brief Get the element at the specified coordinates.
+		* @param x First dimension coordinate.
+		* @param y Second dimension coordinate.
+		* @param z Third dimension coordinate.
+		*/
+		typename std::vector<T>::reference get(const vec3& coords);
 
 		/**
 		* @brief Get the element at the specified coordinates.
@@ -314,6 +346,20 @@ namespace VoxelEng {
 	}
 
 	template <typename T>
+	inline typename std::vector<T>::const_reference Padded3DArray<T>::get(int x, int y, int z) const {
+
+		return array_[getLinearIndex_(x, y, z)];
+
+	}
+
+	template <typename T>
+	inline typename std::vector<T>::const_reference Padded3DArray<T>::get(const vec3& coords) const {
+
+		return array_[getLinearIndex_(coords.x, coords.y, coords.z)];
+
+	}
+
+	template <typename T>
 	inline typename std::vector<T>::const_reference Padded3DArray<T>::operator[](const vec3& coords) const {
 	
 		return array_[getLinearIndex_(coords.x, coords.y, coords.z)];
@@ -331,6 +377,20 @@ namespace VoxelEng {
 	inline typename std::vector<T>::reference Padded3DArray<T>::at(const vec3& coords) {
 
 		return array_.at(getLinearIndex_(coords.x, coords.y, coords.z));
+
+	}
+
+	template <typename T>
+	inline typename std::vector<T>::reference Padded3DArray<T>::get(int x, int y, int z) {
+
+		return array_[getLinearIndex_(x, y, z)];
+
+	}
+
+	template <typename T>
+	inline typename std::vector<T>::reference Padded3DArray<T>::get(const vec3& coords) {
+
+		return array_[getLinearIndex_(coords.x, coords.y, coords.z)];
 
 	}
 

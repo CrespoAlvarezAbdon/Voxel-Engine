@@ -3,10 +3,12 @@
 
 #include <cstddef>
 #include <concepts>
+#include <functional>
+#include <optional>
 #include <unordered_map>
-#include <Utilities/Logger/logger.h>
 
 #include <vec.h>
+#include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {
 
@@ -36,14 +38,32 @@ namespace VoxelEng {
 		/**
 		* @brief Returns the value associated with the specified key.
 		* Throws an exception if said key is not in the palette.
+		* @param l The specified key.
+		* @returns The value associated with the specified key.
 		*/
 		const T1& getT1(const T2& l) const;
 
 		/**
 		* @brief Returns the value associated with the specified key.
 		* Throws an exception if said key is not in the palette.
+		* @param s The specified key.
+		* @returns The value associated with the specified key.
 		*/
 		const T2& getT2(const T1& s) const;
+
+		/**
+		* @brief Returns the value associated with the specified key.
+		* @param l The specified key.
+		* @returns The value associated with the specified key or std::nullopt if there is no such value.
+		*/
+		std::optional<std::reference_wrapper<const T1>> getT1Opt(const T2& l) const;
+
+		/**
+		* @brief Returns the value associated with the specified key.
+		* @param s The specified key.
+		* @returns The value associated with the specified key or std::nullopt if there is no such value.
+		*/
+		std::optional<std::reference_wrapper<const T2>> getT2Opt(const T1& s) const;
 
 		/**
 		* @brief Returns true if the specified key is found
@@ -79,14 +99,32 @@ namespace VoxelEng {
 		/**
 		* @brief Returns the value associated with the specified key.
 		* Throws an exception if said key is not in the palette.
+		* @param l The specified key.
+		* @returns The value associated with the specified key.
 		*/
 		T1& getT1(const T2& l);
 
 		/**
 		* @brief Returns the value associated with the specified key.
 		* Throws an exception if said key is not in the palette.
+		* @param s The specified key.
+		* @returns The value associated with the specified key.
 		*/
 		T2& getT2(const T1& s);
+
+		/**
+		* @brief Returns the value associated with the specified key.
+		* @param l The specified key.
+		* @returns The value associated with the specified key or std::nullopt if there is no such value.
+		*/
+		std::optional<std::reference_wrapper<T1>> getT1Opt(const T2& l);
+
+		/**
+		* @brief Get the value associated with the specified key.
+		* @param s The specified key.
+		* @returns The value associated with the specified key or std::nullopt if there is no such value.
+		*/
+		std::optional<std::reference_wrapper<T2>> getT2Opt(const T1& s);
 
 		/**
 		* @brief Establishes a relation between the two values inside the palette.
@@ -145,6 +183,34 @@ namespace VoxelEng {
 			return T1ToT2_.at(s);
 		else
 			logger::errorLog("The specified T1 key is not present in the palette");
+
+	}
+
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	inline std::optional<std::reference_wrapper<const T1>> palette<T1, T2>::getT1Opt(const T2& l) const {
+
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
+
+		if (T2ToT1_.contains(l))
+			return T2ToT1_.at(l);
+		else
+			return std::nullopt;
+
+	}
+
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	std::optional<std::reference_wrapper<const T2>> palette<T1, T2>::getT2Opt(const T1& s) const {
+
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
+
+		if (T1ToT2_.contains(s))
+			return T1ToT2_.at(s);
+		else
+			return std::nullopt;
 
 	}
 
@@ -228,6 +294,34 @@ namespace VoxelEng {
 			return T1ToT2_.at(s);
 		else
  			logger::errorLog("The specified T1 key is not present in the palette");
+
+	}
+
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	std::optional<std::reference_wrapper<T1>> palette<T1, T2>::getT1Opt(const T2& l) {
+
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
+
+		if (T2ToT1_.contains(l))
+			return T2ToT1_.at(l);
+		else
+			return std::nullopt;
+
+	}
+
+	template<typename T1, typename T2>
+	requires T1smallerOrEqualToT2<T1, T2>
+	std::optional<std::reference_wrapper<T2>> palette<T1, T2>::getT2Opt(const T1& s) {
+
+		if (T1ToT2_.size() != T2ToT1_.size())
+			throw std::runtime_error("Palete is corrupt!");
+
+		if (T1ToT2_.contains(s))
+			return T1ToT2_.at(s);
+		else
+			return std::nullopt;
 
 	}
 

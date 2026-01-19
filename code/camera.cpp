@@ -67,13 +67,11 @@ namespace VoxelEng {
 
     void camera::updateProjectionMatrix() {
 
-#if GRAPHICS_API == OPENGL
+        #if GRAPHICS_API == OPENGL
 
-        projectionMatrix_ = glm::perspective(glm::radians(FOV_), static_cast<float>(window_.width()) / window_.height(), zNear_, zFar_);
+            projectionMatrix_ = glm::perspective(glm::radians(FOV_), static_cast<float>(window_.width()) / window_.height(), zNear_, zFar_);
 
-#else
-
-#endif
+        #endif
 
     }
 

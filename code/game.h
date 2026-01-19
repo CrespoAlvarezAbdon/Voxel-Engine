@@ -49,7 +49,7 @@ namespace VoxelEng {
     /**
     * @brief The execution modes of the engine.
     */
-    enum class engineMode {EXIT, MENULOOP, GRAPHICALMENU, INITLEVEL, EDITLEVEL, EXITLEVEL};
+    enum class engineMode { EXIT, MENULOOP, GRAPHICALMENU, INITLEVEL, EDITLEVEL, EXITLEVEL };
 
     /**
     * @brief Game engine API responsible for all the basic engines operations (startup, menu/level/AI mode loops, access to save slots...).
@@ -245,6 +245,10 @@ namespace VoxelEng {
 
 	private:
 
+        /*
+        Attributes.
+        */
+
         static bool initialised_,
                     graphicalModeInitialised_,
                     useComplexLighting_;
@@ -273,8 +277,8 @@ namespace VoxelEng {
         static camera* playerCamera_;
 
         static texture* blockTextureAtlas_;
-        static std::unordered_map<vec3, chunkRenderingData> const * chunksRenderingData_;
-        static std::unordered_map<vec3, chunkVBOoperation> const * chunksVBOoperations_;
+        static std::unordered_map<ivec3, chunkVBOop> const* chunksVBOops_;
+        static std::unordered_map<ivec3, chunkVBOop> const* chunksPriorityVBOops_;
 
         static const std::vector<model>* batchesToDraw_;
 
@@ -303,8 +307,8 @@ namespace VoxelEng {
         static SSBO<lightInstance>* spotLightsInstances_;
         
         // Gameloop-exclusive variables.
-        static std::unordered_set<vec3> opaqueChunkGeometryToDraw;
-        static std::unordered_set<vec3> translucentChunkGeometryToDraw;
+        static std::unordered_set<ivec3> opaqueChunkGeometryToDraw;
+        static std::unordered_set<ivec3> translucentChunkGeometryToDraw;
         static float screenShaderQuad[24];
         static double lastSecondTime;
         static double lastFrameTime;
@@ -318,6 +322,13 @@ namespace VoxelEng {
             static glm::mat4 MVPmatrix_;
 
         #endif
+
+
+        /*
+        Methods.
+        */
+
+        static void applyChangesInChunksVBO_(std::unordered_map<ivec3, chunkVBOop> const* chunksVBOoperations);
 
 	};
 

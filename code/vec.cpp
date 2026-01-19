@@ -4,6 +4,21 @@
 #include <utilities.h>
 #include <Utilities/BlockViewDir/blockViewDir.hpp>
 
+namespace glm {
+
+	bool operator<(const ivec3& v1, const ivec3& v2) {
+
+		if (v1.x != v2.x)
+			return v1.x < v2.x;
+		else if (v1.y != v2.y)
+			return v1.y < v2.y;
+		else
+			return v1.z < v2.z;
+
+	}
+
+}
+
 namespace VoxelEng {
 
 	vec3 operator+(const vec3& v, blockViewDir viewDir) {

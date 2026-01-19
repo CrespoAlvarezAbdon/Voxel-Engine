@@ -91,12 +91,11 @@ namespace VoxelEng {
         nTotalBlocksMinusZ_(0),
         needsRemesh_(false),
         loadedFromDisk_(false),
-        owners_(0),
         unloadWhenNoOwners_(false),
         loadStatus_(chunkLoadStatus::NOTLOADED),
         chunkPos_(vec3Zero) {}
 
-    chunk::chunk(bool empty, const vec3& chunkPos)
+    chunk::chunk(bool empty, const ivec3& chunkPos)
         : blocksLocalIDs_(16, 16, 16, 1, 0),
         isOpaque_(16, 16, 16, 1, false),
         blockLightColor_(16, 16, 16, 1, basicVec4Zero),
@@ -118,7 +117,6 @@ namespace VoxelEng {
         nTotalBlocksMinusZ_(0),
         needsRemesh_(false),
         loadedFromDisk_(false),
-        owners_(0),
         unloadWhenNoOwners_(false),
         loadStatus_(chunkLoadStatus::NOTLOADED),
         chunkPos_(vec3Zero) {
@@ -148,16 +146,17 @@ namespace VoxelEng {
         nTotalBlocksMinusY_(c.nTotalBlocksMinusY_.load()),
         nTotalBlocksPlusZ_(c.nTotalBlocksPlusZ_.load()),
         nTotalBlocksMinusZ_(c.nTotalBlocksMinusZ_.load()),
-        owners_(c.owners_.load()),
+        owners_(c.owners_),
         unloadWhenNoOwners_(c.unloadWhenNoOwners_),
-        loadStatus_(c.loadStatus_.load()),
+        loadStatus_(c.loadStatus_),
         needsRemesh_(c.needsRemesh_.load()),
         loadedFromDisk_(c.loadedFromDisk_.load()),
-        chunkPos_(c.chunkPos_) {
+        chunkPos_(c.chunkPos_),
+        ownedChunks_(c.ownedChunks_) {
 
         c.blocksMutex_.lock_shared();
 
-        renderingData_.globalChunkPos = c.renderingData_.globalChunkPos;
+        renderingData_ = c.renderingData_;
 
         palette_ = c.palette_;
         paletteCount_ = c.paletteCount_;
@@ -252,9 +251,9 @@ namespace VoxelEng {
         unsigned short oldLocalID = actualLocalID;
         unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
         const block& oldB = block::getBlockC(oldGlobalID);
-        vec3 neighborOffset;
+        ivec3 neighborOffset;
 
-        const bool blockWasModified = placeNewBlock(actualLocalID, b);
+        const bool blockWasModified = placeNewBlock_(actualLocalID, b);
 
         needsRemesh_ = needsRemesh_ || blockWasModified;
         modified_ = modified_ || (blockWasModified && modification);
@@ -264,7 +263,7 @@ namespace VoxelEng {
         neighborOffset.x = x >= CHUNK_SIZE ? 1 : x <= -1 ? -1 : 0;
         neighborOffset.y = y >= CHUNK_SIZE ? 1 : y <= -1 ? -1 : 0;
         neighborOffset.z = z >= CHUNK_SIZE ? 1 : z <= -1 ? -1 : 0;
-        if (neighborOffset == vec3Zero) {
+        if (neighborOffset == ivec3Zero) {
 
             if (!oldLocalID && actualLocalID)
                 nTotalBlocks_++;
@@ -275,7 +274,7 @@ namespace VoxelEng {
             replaceBlockLight(oldB, b, x, y, z);
 
         }
-        else if (neighborOffset == vec3FixedNorth) {
+        else if (neighborOffset == ivec3FixedNorth) {
 
             if (!oldLocalID && actualLocalID)
                 nTotalBlocksPlusX_++;
@@ -285,7 +284,7 @@ namespace VoxelEng {
             nOpaqueBlocksPlusX_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
         }
-        else if (neighborOffset == vec3FixedSouth) {
+        else if (neighborOffset == ivec3FixedSouth) {
 
             if (!oldLocalID && actualLocalID)
                 nTotalBlocksMinusX_++;
@@ -294,7 +293,7 @@ namespace VoxelEng {
             nOpaqueBlocksMinusX_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
         }
-        else if (neighborOffset == vec3FixedUp) {
+        else if (neighborOffset == ivec3FixedUp) {
 
             if (!oldLocalID && actualLocalID)
                 nTotalBlocksPlusY_++;
@@ -303,7 +302,7 @@ namespace VoxelEng {
             nOpaqueBlocksPlusY_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
         }
-        else if (neighborOffset == vec3FixedDown) {
+        else if (neighborOffset == ivec3FixedDown) {
 
             if (!oldLocalID && actualLocalID)
                 nTotalBlocksMinusY_++;
@@ -312,7 +311,7 @@ namespace VoxelEng {
             nOpaqueBlocksMinusY_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
         }
-        else if (neighborOffset == vec3FixedEast) {
+        else if (neighborOffset == ivec3FixedEast) {
 
             if (!oldLocalID && actualLocalID)
                 nTotalBlocksPlusZ_++;
@@ -321,7 +320,7 @@ namespace VoxelEng {
             nOpaqueBlocksPlusZ_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
 
         }
-        else if (neighborOffset == vec3FixedWest) {
+        else if (neighborOffset == ivec3FixedWest) {
 
             if (!oldLocalID && actualLocalID)
                 nTotalBlocksMinusZ_++;
@@ -335,7 +334,7 @@ namespace VoxelEng {
 
     }
 
-    void chunk::replaceBlockLight(const block& oldB, const block& b, const vec3& pos) {
+    void chunk::replaceBlockLight(const block& oldB, const block& b, const ivec3& pos) {
 
         // Remove old light pos if any.
         if (!oldB.emittedLight().isNull())
@@ -345,7 +344,7 @@ namespace VoxelEng {
 
     }
 
-    void chunk::setBlockLight(const block& b, const vec3& pos) {
+    void chunk::setBlockLight(const block& b, const ivec3& pos) {
 
         const varRef& emittedLight = b.emittedLight();
         if (!emittedLight.isNull()) { // Add new light pos if any.
@@ -360,20 +359,20 @@ namespace VoxelEng {
 
     }
 
-    void chunk::chunkPos(const vec3& newChunkPos) {
+    void chunk::chunkPos(const ivec3& newChunkPos) {
 
         chunkPos_ = newChunkPos;
-        renderingData_.globalChunkPos.x = newChunkPos.x * CHUNK_SIZE + CHUNK_SIZE / 2;
-        renderingData_.globalChunkPos.y = newChunkPos.y * CHUNK_SIZE + CHUNK_SIZE / 2;
-        renderingData_.globalChunkPos.z = newChunkPos.z * CHUNK_SIZE + CHUNK_SIZE / 2;
+        renderingData_.extraRenderingData.globalChunkPos.x = newChunkPos.x * CHUNK_SIZE + CHUNK_SIZE / 2;
+        renderingData_.extraRenderingData.globalChunkPos.y = newChunkPos.y * CHUNK_SIZE + CHUNK_SIZE / 2;
+        renderingData_.extraRenderingData.globalChunkPos.z = newChunkPos.z * CHUNK_SIZE + CHUNK_SIZE / 2;
 
     }
 
-    bool chunk::renewMesh() {
+    std::size_t chunk::renewMesh(bool forceRemesh) {
 
         std::unique_lock<std::shared_mutex> lock(renderingDataMutex_);
 
-        if (needsRemesh_) {
+        if (forceRemesh || needsRemesh_) {
 
             needsRemesh_ = false;
 
@@ -381,8 +380,6 @@ namespace VoxelEng {
 
             renderingData_.vertices = model();
             renderingData_.translucentVertices = model();
-            renderingData_.pointLights = std::vector<lightInstance>();
-            renderingData_.spotLights = std::vector<lightInstance>();
 
             // Read chunk data section starts.
             blocksMutex_.lock_shared();
@@ -430,27 +427,27 @@ namespace VoxelEng {
                                             switch (vertex)
                                             {
                                             case 0: // block vertex 4 (B)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x, y, z + 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z + 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 1: // block vertex 7 (C)
                                             case 4:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x, y, z + 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z + 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 1;
                                                 break;
                                             case 2: // block vertex 0 (A)
                                             case 3:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x, y, z - 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z - 1));
                                                 aux.lightExtraData.x = 1;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 5: // block vertex 3 (D)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x, y, z - 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z - 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
@@ -488,27 +485,27 @@ namespace VoxelEng {
                                             switch (vertex)
                                             {
                                             case 0: // block vertex 1 (B)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x, y, z - 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z - 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 1: // block vertex 2 (C)
                                             case 4:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x, y, z - 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z - 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 1;
                                                 break;
                                             case 2: // block vertex 5 (A)
                                             case 3:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x, y, z + 1), basicVec3(x, y - 1, z), basicVec3(x, y - 1, z + 1));
                                                 aux.lightExtraData.x = 1;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 5: // block vertex 6 (D)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x, y, z + 1), basicVec3(x, y + 1, z), basicVec3(x, y + 1, z + 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
@@ -546,27 +543,27 @@ namespace VoxelEng {
                                             switch (vertex)
                                             {
                                             case 0: // block vertex 1 (B)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x + 1, y, z), basicVec3(x, y, z - 1), basicVec3(x + 1, y, z - 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 1: // block vertex 5 (C)
                                             case 4:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x + 1, y, z), basicVec3(x, y, z + 1), basicVec3(x + 1, y, z + 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 1;
                                                 break;
                                             case 2: // block vertex 0 (A)
                                             case 3:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x - 1, y, z), basicVec3(x, y, z - 1), basicVec3(x - 1, y, z - 1));
                                                 aux.lightExtraData.x = 1;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 5: // block vertex 4 (D)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x - 1, y, z), basicVec3(x, y, z + 1), basicVec3(x - 1, y, z + 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
@@ -604,27 +601,27 @@ namespace VoxelEng {
                                             switch (vertex)
                                             {
                                             case 0: // block vertex 3 (B)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x - 1, y, z), basicVec3(x, y, z - 1), basicVec3(x - 1, y, z - 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 1: // block vertex 7 (C)
                                             case 4:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x - 1, y, z), basicVec3(x, y, z + 1), basicVec3(x - 1, y, z + 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 1;
                                                 break;
                                             case 2: // block vertex 2 (A)
                                             case 3:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x + 1, y, z), basicVec3(x, y, z - 1), basicVec3(x + 1, y, z - 1));
                                                 aux.lightExtraData.x = 1;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 5: // block vertex 6 (D)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x + 1, y, z), basicVec3(x, y, z + 1), basicVec3(x + 1, y, z + 1));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
@@ -662,27 +659,27 @@ namespace VoxelEng {
                                             switch (vertex)
                                             {
                                             case 0: // block vertex 0 (B)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x - 1, y, z), basicVec3(x, y - 1, z), basicVec3(x - 1, y - 1, z));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 1: // block vertex 3 (C)
                                             case 4:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x - 1, y, z), basicVec3(x, y + 1, z), basicVec3(x - 1, y + 1, z));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 1;
                                                 break;
                                             case 2: // block vertex 1 (A)
                                             case 3:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x + 1, y, z), basicVec3(x, y - 1, z), basicVec3(x + 1, y - 1, z));
                                                 aux.lightExtraData.x = 1;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 5: // block vertex 2 (D)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x + 1, y, z), basicVec3(x, y + 1, z), basicVec3(x + 1, y + 1, z));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
@@ -720,27 +717,27 @@ namespace VoxelEng {
                                             switch (vertex)
                                             {
                                             case 0: // block vertex 5 (B)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x + 1, y, z), basicVec3(x, y - 1, z), basicVec3(x + 1, y - 1, z));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 1: // block vertex 6 (C)
                                             case 4:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x + 1, y, z), basicVec3(x, y + 1, z), basicVec3(x + 1, y + 1, z));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 1;
                                                 break;
                                             case 2: // block vertex 4 (A)
                                             case 3:
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x - 1, y, z), basicVec3(x, y - 1, z), basicVec3(x - 1, y - 1, z));
                                                 aux.lightExtraData.x = 1;
                                                 aux.lightExtraData.y = 0;
                                                 break;
                                             case 5: // block vertex 7 (D)
-                                                aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][z],
+                                                aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][z],
                                                     basicVec3(x - 1, y, z), basicVec3(x, y + 1, z), basicVec3(x - 1, y + 1, z));
                                                 aux.lightExtraData.x = 0;
                                                 aux.lightExtraData.y = 0;
@@ -789,27 +786,27 @@ namespace VoxelEng {
                                     switch (vertex)
                                     {
                                     case 0: // block vertex 4 (B)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
                                             basicVec3(CHUNK_SIZE_LIMIT, y, z + 1), basicVec3(CHUNK_SIZE_LIMIT, y - 1, z), basicVec3(CHUNK_SIZE_LIMIT, y - 1, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 1: // block vertex 7 (C)
                                     case 4:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
                                             basicVec3(CHUNK_SIZE_LIMIT, y, z + 1), basicVec3(CHUNK_SIZE_LIMIT, y + 1, z), basicVec3(CHUNK_SIZE_LIMIT, y + 1, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 1;
                                         break;
                                     case 2: // block vertex 0 (A)
                                     case 3:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
                                             basicVec3(CHUNK_SIZE_LIMIT, y, z - 1), basicVec3(CHUNK_SIZE_LIMIT, y - 1, z), basicVec3(CHUNK_SIZE_LIMIT, y - 1, z - 1));
                                         aux.lightExtraData.x = 1;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 5: // block vertex 3 (D)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[CHUNK_SIZE_LIMIT][y][z],
                                             basicVec3(CHUNK_SIZE_LIMIT, y, z - 1), basicVec3(CHUNK_SIZE_LIMIT, y + 1, z), basicVec3(CHUNK_SIZE_LIMIT, y + 1, z - 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
@@ -858,27 +855,27 @@ namespace VoxelEng {
                                     switch (vertex)
                                     {
                                     case 0: // block vertex 1 (B)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[0][y][z],
                                             basicVec3(0, y, z - 1), basicVec3(0, y - 1, z), basicVec3(0, y - 1, z - 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 1: // block vertex 2 (C)
                                     case 4:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[0][y][z],
                                             basicVec3(0, y, z - 1), basicVec3(0, y + 1, z), basicVec3(0, y + 1, z - 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 1;
                                         break;
                                     case 2: // block vertex 5 (A)
                                     case 3:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[0][y][z],
                                             basicVec3(0, y, z + 1), basicVec3(0, y - 1, z), basicVec3(0, y - 1, z + 1));
                                         aux.lightExtraData.x = 1;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 5: // block vertex 6 (D)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[0][y][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[0][y][z],
                                             basicVec3(0, y, z + 1), basicVec3(0, y + 1, z), basicVec3(0, y + 1, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
@@ -927,27 +924,27 @@ namespace VoxelEng {
                                     switch (vertex)
                                     {
                                     case 0: // block vertex 1 (B)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
                                             basicVec3(x + 1, CHUNK_SIZE_LIMIT, z), basicVec3(x, CHUNK_SIZE_LIMIT, z - 1), basicVec3(x + 1, CHUNK_SIZE_LIMIT, z - 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 1: // block vertex 5 (C)
                                     case 4:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
                                             basicVec3(x + 1, CHUNK_SIZE_LIMIT, z), basicVec3(x, CHUNK_SIZE_LIMIT, z + 1), basicVec3(x + 1, CHUNK_SIZE_LIMIT, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 1;
                                         break;
                                     case 2: // block vertex 0 (A)
                                     case 3:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
                                             basicVec3(x - 1, CHUNK_SIZE_LIMIT, z), basicVec3(x, CHUNK_SIZE_LIMIT, z - 1), basicVec3(x - 1, CHUNK_SIZE_LIMIT, z - 1));
                                         aux.lightExtraData.x = 1;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 5: // block vertex 4 (D)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][CHUNK_SIZE_LIMIT][z],
                                             basicVec3(x - 1, CHUNK_SIZE_LIMIT, z), basicVec3(x, CHUNK_SIZE_LIMIT, z + 1), basicVec3(x - 1, CHUNK_SIZE_LIMIT, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
@@ -996,27 +993,27 @@ namespace VoxelEng {
                                     switch (vertex)
                                     {
                                     case 0: // block vertex 3 (B)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][0][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][0][z],
                                             basicVec3(x - 1, 0, z), basicVec3(x, 0, z - 1), basicVec3(x - 1, 0, z - 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 1: // block vertex 7 (C)
                                     case 4:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][0][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][0][z],
                                             basicVec3(x - 1, 0, z), basicVec3(x, 0, z + 1), basicVec3(x - 1, 0, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 1;
                                         break;
                                     case 2: // block vertex 2 (A)
                                     case 3:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][0][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][0][z],
                                             basicVec3(x + 1, 0, z), basicVec3(x, 0, z - 1), basicVec3(x + 1, 0, z - 1));
                                         aux.lightExtraData.x = 1;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 5: // block vertex 6 (D)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][0][z],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][0][z],
                                             basicVec3(x + 1, 0, z), basicVec3(x, 0, z + 1), basicVec3(x + 1, 0, z + 1));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
@@ -1066,27 +1063,27 @@ namespace VoxelEng {
                                     switch (vertex)
                                     {
                                     case 0: // block vertex 0 (B)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
                                             basicVec3(x - 1, y, CHUNK_SIZE_LIMIT), basicVec3(x, y - 1, CHUNK_SIZE_LIMIT), basicVec3(x - 1, y - 1, CHUNK_SIZE_LIMIT));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 1: // block vertex 3 (C)
                                     case 4:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
                                             basicVec3(x - 1, y, CHUNK_SIZE_LIMIT), basicVec3(x, y + 1, CHUNK_SIZE_LIMIT), basicVec3(x - 1, y + 1, CHUNK_SIZE_LIMIT));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 1;
                                         break;
                                     case 2: // block vertex 1 (A)
                                     case 3:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
                                             basicVec3(x + 1, y, CHUNK_SIZE_LIMIT), basicVec3(x, y - 1, CHUNK_SIZE_LIMIT), basicVec3(x + 1, y - 1, CHUNK_SIZE_LIMIT));
                                         aux.lightExtraData.x = 1;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 5: // block vertex 2 (D)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][CHUNK_SIZE_LIMIT],
                                             basicVec3(x + 1, y, CHUNK_SIZE_LIMIT), basicVec3(x, y + 1, CHUNK_SIZE_LIMIT), basicVec3(x + 1, y + 1, CHUNK_SIZE_LIMIT));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
@@ -1135,27 +1132,27 @@ namespace VoxelEng {
                                     switch (vertex)
                                     {
                                     case 0: // block vertex 5 (B)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][0],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][0],
                                             basicVec3(x + 1, y, 0), basicVec3(x, y - 1, 0), basicVec3(x + 1, y - 1, 0));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 1: // block vertex 6 (C)
                                     case 4:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][0],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][0],
                                             basicVec3(x + 1, y, 0), basicVec3(x, y + 1, 0), basicVec3(x + 1, y + 1, 0));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 1;
                                         break;
                                     case 2: // block vertex 4 (A)
                                     case 3:
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][0],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][0],
                                             basicVec3(x - 1, y, 0), basicVec3(x, y - 1, 0), basicVec3(x - 1, y - 1, 0));
                                         aux.lightExtraData.x = 1;
                                         aux.lightExtraData.y = 0;
                                         break;
                                     case 5: // block vertex 7 (D)
-                                        aux.additionalData = getBlockLightAverage(blockLightColor_[x][y][0],
+                                        aux.additionalData = getBlockLightAverage_(blockLightColor_[x][y][0],
                                             basicVec3(x - 1, y, 0), basicVec3(x, y + 1, 0), basicVec3(x - 1, y + 1, 0));
                                         aux.lightExtraData.x = 0;
                                         aux.lightExtraData.y = 0;
@@ -1181,8 +1178,13 @@ namespace VoxelEng {
             blocksMutex_.unlock_shared();
 
         }
-
-        loadStatus(chunkLoadStatus::MESHED);
+         
+        {
+            std::unique_lock<std::recursive_mutex> lock(loadStatusMutex_);
+            if (loadStatus_ < chunkLoadStatus::MESHED)
+                loadStatus_ = chunkLoadStatus::MESHED;
+        }
+        
         renderingData_.totalSize = renderingData_.vertices.size() + renderingData_.translucentVertices.size();
         return renderingData_.totalSize;
 
@@ -1226,9 +1228,48 @@ namespace VoxelEng {
 
     void chunk::makeEmpty() {
 
+        {
+            std::unique_lock<std::recursive_mutex> lock(loadStatusMutex_);
+            loadStatus_ = chunkLoadStatus::NOTLOADED;
+        }
+
         blocksMutex_.lock();
 
-        needsRemesh_ = true;
+        poraqui = false;
+        poraqui2 = false;
+        poraqui3 = false;
+        poraqui4 = false;
+        poraqui5 = false;
+        poraqui6 = false;
+        poraqui7 = false;
+        poraqui8 = false;
+        poraqui9 = false;
+        poraqui10 = false;
+        poraqui11 = false;
+        poraqui12 = false;
+        poraqui13 = false;
+        poraqui14 = false;
+        poraqui15 = chunkLoadStatus::NOTLOADED;
+        poraqui16 = false;
+        poraqui17 = false;
+        poraqui18 = false;
+        poraqui19 = false;
+        poraqui20 = false;
+        poraqui21 = false;
+        poraqui22 = false;
+        poraqui23 = false;
+        poraqui24 = false;
+        poraqui25 = false;
+        poraqui26 = false;
+        wasMadeEmpty = true;
+
+        palette_.clear();
+        paletteCount_.clear();
+        freeLocalIDs_.clear();
+        clearBlockLight();
+        blocksLocalIDs_.clear();
+
+        modified_ = false;
         nOpaqueBlocks_ = 0;
         nOpaqueBlocksPlusX_ = 0;
         nOpaqueBlocksMinusX_ = 0;
@@ -1244,29 +1285,36 @@ namespace VoxelEng {
         nTotalBlocksPlusZ_ = 0;
         nTotalBlocksMinusZ_ = 0;
 
-        blocksLocalIDs_.clear();
+        needsRemesh_ = false;
+        loadedFromDisk_ = false;
 
-        clearBlockLight();
+        owners_.clear();
+        unloadWhenNoOwners_ = false;
 
-        palette_.clear();
-        paletteCount_.clear();
-        freeLocalIDs_.clear();
+        chunkPos_ = vec3Zero;
+
+        renderingDataMutex_.lock();
+        renderingData_ = chunkRenderingData();
+        renderingDataMutex_.unlock();
+
+        {
+            std::unique_lock<std::recursive_mutex> lock(ownedChunksMutex_);
+            ownedChunks_.clear();
+        }
 
         blocksMutex_.unlock();
-
-        unloadWhenNoOwners_ = false;
 
     }
 
     void chunk::onUnloadAsFrontier() {
 
         // Check for the neighbors of this recently unloaded frontier chunk
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x + 1, chunkPos_.y, chunkPos_.z });
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x - 1, chunkPos_.y, chunkPos_.z });
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x, chunkPos_.y + 1, chunkPos_.z });
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x, chunkPos_.y - 1, chunkPos_.z });
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x, chunkPos_.y, chunkPos_.z + 1 });
-        chunkManager::onUnloadAsFrontier(vec3{ chunkPos_.x, chunkPos_.y, chunkPos_.z - 1 });
+        chunkManager::onUnloadAsFrontier(ivec3{ chunkPos_.x + 1, chunkPos_.y, chunkPos_.z });
+        chunkManager::onUnloadAsFrontier(ivec3{ chunkPos_.x - 1, chunkPos_.y, chunkPos_.z });
+        chunkManager::onUnloadAsFrontier(ivec3{ chunkPos_.x, chunkPos_.y + 1, chunkPos_.z });
+        chunkManager::onUnloadAsFrontier(ivec3{ chunkPos_.x, chunkPos_.y - 1, chunkPos_.z });
+        chunkManager::onUnloadAsFrontier(ivec3{ chunkPos_.x, chunkPos_.y, chunkPos_.z + 1 });
+        chunkManager::onUnloadAsFrontier(ivec3{ chunkPos_.x, chunkPos_.y, chunkPos_.z - 1 });
 
     }
 
@@ -1276,16 +1324,15 @@ namespace VoxelEng {
 
     }
 
-    void chunk::addOwner() {
+    void chunk::addOwner(const ivec3& chunkPos) {
 
-        owners_++;
+        owners_.insert(chunkPos);
 
     }
 
-    void chunk::removeOwner() {
+    void chunk::removeOwner(const ivec3& chunkPos) {
 
-        if (owners_)
-            owners_--;
+        owners_.erase(chunkPos);
 
     }
 
@@ -1295,7 +1342,43 @@ namespace VoxelEng {
 
     }
 
-    chunk::~chunk() {}
+    void chunk::getAndOwnChunks(const lightDataToSet& data) {
+
+        ivec3 chunkOffset = ivec3Zero;
+        ivec3 chunkCoords = ivec3Zero;
+
+        {
+            std::unique_lock<std::recursive_mutex> lock(chunkManager::chunksMutex());
+            std::unique_lock<std::recursive_mutex> lock2(ownedChunksMutex_);
+            
+            for (auto it = data.cbegin(); it != data.cend(); it++) {
+
+                chunk* c = chunkManager::getChunk(it->first);
+                ownedChunks_[chunkCoords] = c;
+                if (c)
+                    c->addOwner(chunkPos_);
+
+            }
+
+        }
+
+    }
+
+    void chunk::disownChunks() {
+
+        {
+        
+            std::unique_lock<std::recursive_mutex> lock(chunkManager::chunksMutex());
+            std::unique_lock<std::recursive_mutex> lock2(ownedChunksMutex_);
+            
+            for (auto it = ownedChunks_.cbegin(); it != ownedChunks_.cend(); it++)
+                if (chunk* c = it->second)
+                    chunkManager::removeOwner(*c, chunkPos_);
+            ownedChunks_.clear();
+        
+        }
+
+    }
 
     void chunk::reset() {
 
@@ -1308,7 +1391,7 @@ namespace VoxelEng {
     }
 
 
-    bool chunk::placeNewBlock(unsigned short& actualLocalID, const block& newBlock) {
+    bool chunk::placeNewBlock_(unsigned short& actualLocalID, const block& newBlock) {
 
         unsigned int newGlobalID = newBlock.intID(),
             oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
@@ -1364,7 +1447,7 @@ namespace VoxelEng {
 
     }
 
-    basicVec4 chunk::getBlockLightAverage(const basicVec4& blockLightOwn,
+    basicVec4 chunk::getBlockLightAverage_(const basicVec4& blockLightOwn,
         const basicVec3& blockLightCoords1, const basicVec3& blockLightCoords2, const basicVec3& blockLightCoords3) {
 
         const char AOLight = 0;
@@ -1396,12 +1479,40 @@ namespace VoxelEng {
 
     }
 
+    void chunk::getAndOwnChunksWithOffset_(int negOffsetX, int negOffsetY, int negOffsetZ, int offsetX, int offsetY, int offsetZ, 
+        bool relativeCoords) {
+
+        ivec3 chunkOffset = vec3Zero;
+        ivec3 chunkCoords = vec3Zero;
+
+        {
+            std::unique_lock<std::recursive_mutex> lock(chunkManager::chunksMutex());
+            std::unique_lock<std::recursive_mutex> lock2(ownedChunksMutex_);
+            for (int i = negOffsetX; i <= offsetX; i++)
+                for (int j = negOffsetY; j <= offsetY; j++)
+                    for (int k = negOffsetZ; k <= offsetZ; k++) {
+
+                        chunkOffset.x = i;
+                        chunkOffset.y = j;
+                        chunkOffset.z = k;
+                        chunkCoords = chunkPos_ + chunkOffset;
+                        chunk* c = chunkManager::getChunk(chunkCoords);
+                        if (!c)
+                            c = chunkManager::registerChunk(chunkCoords, false, true);
+                        ownedChunks_[relativeCoords ? chunkOffset : chunkCoords] = c;
+                        c->addOwner(chunkPos_);
+
+                    }
+        }
+
+    }
+
+
     // 'chunkEvent' class.
 
-    void chunkEvent::notify(const vec2& chunkPosXZ) {
+    void chunkEvent::notify(const ivec2& chunkPosXZ) {
 
         chunkPosXZ_ = chunkPosXZ;
-
         event::notify();
 
     }
@@ -1414,21 +1525,18 @@ namespace VoxelEng {
     int chunkManager::nChunksToCompute_ = 0;
 
     std::atomic<bool> chunkManager::clearChunksFlag_ = false;
-    std::atomic<bool> chunkManager::priorityUpdatesRemaining_ = false;
 
     std::atomic<bool> chunkManager::waitInitialTerrainLoaded_ = true;
 
-    std::unordered_map<vec3, chunk*> chunkManager::clientChunks_;
+    chunksMap chunkManager::clientChunks_;
+    chunksMap chunkManager::simulatedChunks_;
 
-    std::unordered_map<vec3, chunk*> chunkManager::simulatedChunks_;
+    std::unordered_set<ivec3>* chunkManager::chunkMeshes_ = nullptr;
 
-    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesUpdated_ = nullptr;
-    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesWrite_ = nullptr;
-    std::unordered_map<vec3, chunkRenderingData>* chunkManager::chunkMeshesRead_ = nullptr;
-
-    std::unordered_map<vec3, chunkVBOoperation>* chunkManager::chunkVBOoperationsWrite_ = nullptr;
-    std::unordered_map<vec3, chunkVBOoperation>* chunkManager::chunkVBOoperationsRead_ = nullptr;
-    std::mutex chunkManager::chunkVBOoperationsMutex_;
+    std::unordered_map<ivec3, chunkVBOop>* chunkManager::chunkVBOopsWrite_ = nullptr;
+    std::unordered_map<ivec3, chunkVBOop>* chunkManager::chunkVBOopsPriorityWrite_ = nullptr;
+    std::unordered_map<ivec3, chunkVBOop>* chunkManager::chunkVBOopsRead_ = nullptr;
+    std::unordered_map<ivec3, chunkVBOop>* chunkManager::chunkVBOopsPriorityRead_ = nullptr;
 
     std::list<chunk*> chunkManager::newChunkMeshes_;
     std::list<chunk*> chunkManager::priorityNewChunkMeshes_;
@@ -1444,17 +1552,16 @@ namespace VoxelEng {
         chunkManager::priorityManagerThreadCV_,
         chunkManager::priorityNewChunkMeshesCV_,
         chunkManager::loadingTerrainCV_;
-    std::condition_variable_any chunkManager::priorityUpdatesRemainingCV_;
 
-    std::unordered_map<unsigned int, std::unordered_map<vec3, bool>> chunkManager::AIChunkAvailable_;
-    std::unordered_map<unsigned int, std::unordered_map<vec3, chunk*>> chunkManager::AIagentChunks_;
+    std::unordered_map<unsigned int, std::unordered_map<ivec3, bool>> chunkManager::AIChunkAvailable_;
+    std::unordered_map<unsigned int, std::unordered_map<ivec3, chunk*>> chunkManager::AIagentChunks_;
     unsigned int chunkManager::selectedAIWorld_ = 0;
     bool chunkManager::originalWorldAccess_ = true;
 
-    vec3 chunkManager::playerChunkPosCopy_;
-    std::list<vec3> chunkManager::frontierChunks_;
-    std::unordered_map<vec3, std::list<vec3>::iterator> chunkManager::frontierChunksSet_;
-    std::list<vec3>::iterator chunkManager::frontierIt_;
+    ivec3 chunkManager::playerChunkPosCopy_;
+    std::list<ivec3> chunkManager::frontierChunks_;
+    std::unordered_map<ivec3, std::list<ivec3>::iterator> chunkManager::frontierChunksSet_;
+    std::list<ivec3>::iterator chunkManager::frontierIt_;
 
     chunkManager::closestChunk chunkManager::closestChunk_;
 
@@ -1473,7 +1580,7 @@ namespace VoxelEng {
     chunkEvent chunkManager::onChunkUnload_("On chunk unload");
 
     std::mutex chunkManager::chunkNeighborsInfoMutex_;
-    std::unordered_map<vec3, std::shared_ptr<neighborsInfo>> chunkManager::chunkNeighborsInfo_;
+    std::unordered_map<ivec3, std::shared_ptr<neighborsInfo>> chunkManager::chunkNeighborsInfo_;
 
     chunkVertexBuffer* chunkManager::vbo_ = nullptr;
 
@@ -1495,12 +1602,12 @@ namespace VoxelEng {
 
             selectedAIWorld_ = 0;
 
-            chunkMeshesUpdated_ = new std::unordered_map<vec3, chunkRenderingData>;
-            chunkMeshesWrite_ = new std::unordered_map<vec3, chunkRenderingData>;
-            chunkMeshesRead_ = new std::unordered_map<vec3, chunkRenderingData>;
+            chunkMeshes_ = new std::unordered_set<ivec3>;
 
-            chunkVBOoperationsWrite_ = new std::unordered_map<vec3, chunkVBOoperation>;
-            chunkVBOoperationsRead_ = new std::unordered_map<vec3, chunkVBOoperation>;
+            chunkVBOopsWrite_ = new std::unordered_map<ivec3, chunkVBOop>;
+            chunkVBOopsPriorityWrite_ = new std::unordered_map<ivec3, chunkVBOop>;
+            chunkVBOopsRead_ = new std::unordered_map<ivec3, chunkVBOop>;
+            chunkVBOopsPriorityRead_ = new std::unordered_map<ivec3, chunkVBOop>;
 
             chunkTasks_ = new threadPool(game::getSettings().maxChunkhreads());
             priorityChunkTasks_ = new threadPool(2);
@@ -1516,7 +1623,6 @@ namespace VoxelEng {
             lightTasks_ = new threadPool(1);
 
             clearChunksFlag_ = false;
-            priorityUpdatesRemaining_ = false;
 
             initialised_ = true;
 
@@ -1525,81 +1631,71 @@ namespace VoxelEng {
     }
 
     void chunkManager::updatePriorityReadChunkMeshes() {
+        
+        chunkVBOopsPriorityWrite_->clear();
 
         chunk* c = nullptr;
-
         std::unique_lock<std::mutex> priorityUpdatesLock(priorityUpdatesRemainingMutex_);
-
         for (auto it = priorityNewChunkMeshes_.begin(); it != priorityNewChunkMeshes_.end();) {
 
             c = *it;
             c->lockSharedRenderingDataMutex();
             chunkRenderingData& data = c->renderingData();
-            if (data.totalSize) {
-
-                chunkMeshesUpdated_->operator[](c->chunkPos()) = data;
-
-                chunkVBOoperationsMutex_.lock();
-                chunkVBOoperationsWrite_->operator[](c->chunkPos()) = chunkVBOoperation::PUSH;
-                chunkVBOoperationsMutex_.unlock();
-
-                //logger::debugLog("Chunkpos " + std::to_string(c->chunkPos()) + " with PRIORITY data " + std::to_string(data.totalSize));
-
-            }
+            if (data.totalSize)
+                chunkVBOopsPriorityWrite_->operator[](c->chunkPos()) = chunkVBOop(VBOop::PUSH, data);
             c->unlockSharedRenderingDataMutex();
-
             it = priorityNewChunkMeshes_.erase(it);
 
         }
-        *chunkMeshesWrite_ = *chunkMeshesUpdated_;
 
     }
 
-    void chunkManager::updateReadChunkMeshes(std::unique_lock<std::mutex>& priorityUpdatesLock) {
+    void chunkManager::updateReadChunkMeshes() {
 
-        chunk* c = nullptr;
+        chunkVBOopsWrite_->clear(); 
 
-        for (auto it = chunkMeshesUpdated_->begin(); it != chunkMeshesUpdated_->end();) {
+        for (auto it = chunkMeshes_->begin(); it != chunkMeshes_->end();) {
 
-            playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
+            const ivec3& chunkPos = *it;
+            chunk* c = getChunk_(chunkPos);
+            if (!c) {
 
-            while (priorityUpdatesRemaining_)
-                priorityUpdatesRemainingCV_.wait(priorityUpdatesLock);
-
-            if (!chunkInRenderDistance(it->first)) {
-
-                chunkVBOoperationsMutex_.lock();
-                chunkVBOoperationsWrite_->operator[](it->first) = chunkVBOoperation::FREE;
-                chunkVBOoperationsMutex_.unlock();
-
-                it = chunkMeshesUpdated_->erase(it);
+                chunkVBOopsWrite_->operator[](chunkPos) = chunkVBOop(VBOop::FREE);
+                it = chunkMeshes_->erase(it);
 
             }
-            else
+            else {
+            
+                ivec3 distancePlayer = chunkDistance(chunkPos, playerChunkPosCopy_);
+                bool a = distancePlayer.x > nChunksToCompute_ + 10 ||
+                    distancePlayer.z > nChunksToCompute_ + 10;
+                if (a)
+                    int b = 3 + 2; // HAY CHUNKS QUE NO SE DESCARGAN NUNCA PORQUE SE HAN QUEDADO EN SIMULATED CON OWNERS COLGANDO. PRUEBA A METER LOS OWNERS EN UN STD::MAP MEJOR.
+
                 it++;
+            
+            }
+                
 
         }
 
-        newChunkMeshesMutex_.lock();
+        chunk* c = nullptr;
+        std::unique_lock<std::recursive_mutex> updatesLock(newChunkMeshesMutex_);
         for (auto it = newChunkMeshes_.begin(); it != newChunkMeshes_.end();) {
 
-            while (priorityUpdatesRemaining_)
-                priorityUpdatesRemainingCV_.wait(priorityUpdatesLock);
-
             c = *it;
-            if (c->loadStatus() == chunkLoadStatus::MESHED) {
-
+            const ivec3& chunkPos = c->chunkPos();
+            c->loadStatusMutex().lock();
+            if (c->loadStatus() >= chunkLoadStatus::MESHED && chunkInRenderDistance(chunkPos, camera::cPlayerCamera()->chunkPos())) { // TODO. Is this condition truly necessary?
+                c->loadStatusMutex().unlock();
                 c->lockSharedRenderingDataMutex();
+
                 chunkRenderingData& data = c->renderingData();
                 if (data.totalSize) {
 
-                    chunkMeshesUpdated_->operator[](c->chunkPos()) = data;
-
-                    chunkVBOoperationsMutex_.lock();
-                    chunkVBOoperationsWrite_->operator[](c->chunkPos()) = chunkVBOoperation::PUSH;
-                    chunkVBOoperationsMutex_.unlock();
-
-                    //logger::debugLog("Chunkpos " + std::to_string(c->chunkPos()) + " with data " + std::to_string(data.totalSize));
+                    chunkMeshes_->insert(chunkPos);
+                    chunkVBOopsWrite_->operator[](chunkPos) = chunkVBOop(VBOop::PUSH, data);
+                    c->poraqui23 = true;
 
                 }
                 c->unlockSharedRenderingDataMutex();
@@ -1607,26 +1703,30 @@ namespace VoxelEng {
                 it = newChunkMeshes_.erase(it);
 
             }
-            else
+            else {
+            
+                c->loadStatusMutex().unlock();
                 it++;
+            
+            } 
 
         }
-        newChunkMeshesMutex_.unlock();
-
-        *chunkMeshesWrite_ = *chunkMeshesUpdated_; // Possible way to solve this bottleneck in the future?
 
     }
 
     void chunkManager::swapChunkMeshesBuffers() {
 
-        std::unordered_map<vec3, chunkRenderingData>* aux = chunkMeshesWrite_;
-        chunkMeshesWrite_ = chunkMeshesRead_;
-        chunkMeshesRead_ = aux;
+        std::unordered_map<ivec3, chunkVBOop>* auxChunkVBOops = chunkVBOopsWrite_;
+        chunkVBOopsWrite_ = chunkVBOopsRead_;
+        chunkVBOopsRead_ = auxChunkVBOops;
 
-        chunkVBOoperationsRead_->clear(); // Rendering thread is assumed to be synchronised and waiting with the chunk management thread so this is safe.
-        std::unordered_map<vec3, chunkVBOoperation>* auxChunkVBOoperations = chunkVBOoperationsWrite_;
-        chunkVBOoperationsWrite_ = chunkVBOoperationsRead_;
-        chunkVBOoperationsRead_ = auxChunkVBOoperations;
+    }
+
+    void chunkManager::swapChunkMeshesPriorityBuffers() {
+
+        std::unordered_map<ivec3, chunkVBOop>* auxVBOops = chunkVBOopsPriorityWrite_;
+        chunkVBOopsPriorityWrite_ = chunkVBOopsPriorityRead_;
+        chunkVBOopsPriorityRead_ = auxVBOops;
 
     }
 
@@ -1637,58 +1737,32 @@ namespace VoxelEng {
 
     }
 
-    std::vector<lightData> chunkManager::getLightInBox(const vec3& pos1, const vec3& pos2) {
-
-        int iInc = (pos1.x <= pos2.x) ? 1 : -1;
-        int jInc = (pos1.y <= pos2.y) ? 1 : -1;
-        int kInc = (pos1.z <= pos2.z) ? 1 : -1;
-        int xEnd = pos2.x + iInc; // To make the loop stop when (i, j, k), which started at (x1, y1, z1), has iterated
-        int yEnd = pos2.y + jInc; // through the box leading to (x2, y2, z2) and has also iterated said last point.
-        int zEnd = pos2.z + kInc;
-        int diffX = std::abs(pos1.x - pos2.x);
-        int diffY = std::abs(pos1.y - pos2.y);
-        int diffZ = std::abs(pos1.z - pos2.z);
-        int nChunksX = std::ceil(diffX / (float)CHUNK_SIZE);
-        int nChunksY = std::ceil(diffY / (float)CHUNK_SIZE);
-        int nChunksZ = std::ceil(diffZ / (float)CHUNK_SIZE);
-        vec3 chunkPos1 = getChunkCoords(pos1);
-        vec3 chunkCoords = vec3Zero;
-        vec3 chunkRelCoords = vec3Zero;
-        std::vector<lightData> elements((diffX + 1) * (diffY + 1) * (diffZ + 1), lightData());
-        std::unordered_map<vec3, chunk*> ownedChunks;
-
-        getAndOwnChunks_(nChunksX, nChunksY, nChunksZ, ownedChunks, chunkPos1);
-
-        // Obtain the blocks.
-        for (int i = pos1.x; i != xEnd; i += iInc)
-            for (int j = pos1.y; j != yEnd; j += jInc)
-                for (int k = pos1.z; k != zEnd; k += kInc) {
-
-                    chunkCoords = getChunkCoords(i, j, k);
-                    chunk* c = ownedChunks[chunkCoords];
-                    if (c)
-                        elements.push_back(c->getLight(getChunkRelCoords(i, j, k)));
-
-                }
-
-        disownChunks_(ownedChunks);
-
-        return elements;
-
-    }
-
-    bool chunkManager::isChunkInWorld(const vec3& chunkPos) {
+    bool chunkManager::isChunkInWorld(const ivec3& chunkPos) {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
         return clientChunks_.find(chunkPos) != clientChunks_.cend();
 
     }
 
-    chunkLoadStatus chunkManager::getChunkLoadStatus(const vec3& chunkPos) {
+    chunkLoadStatus chunkManager::getChunkLoadStatus(const ivec3& chunkPos) {
 
-        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-        return (clientChunks_.find(chunkPos) != clientChunks_.cend()) ? clientChunks_.at(chunkPos)->loadStatus() : chunkLoadStatus::NOTLOADED;
+        bool found = false;
+        chunksMap::iterator it;
+
+        {
+            std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+            it = clientChunks_.find(chunkPos);
+            found = it != clientChunks_.cend();
+        }
+
+        if (found) {
+        
+            std::unique_lock<std::recursive_mutex> lock(it->second->loadStatusMutex());
+            return it->second->loadStatus();
+        
+        }
+        else
+            return chunkLoadStatus::NOTLOADED;
 
     }
 
@@ -1703,42 +1777,51 @@ namespace VoxelEng {
 
     }
 
-    bool chunkManager::chunkInRenderDistance(const vec3& chunkPos) {
+    bool chunkManager::chunkInRenderDistance(const ivec3& chunkPos) {
 
-        vec3 distancePlayer = chunkDistance(chunkPos, playerChunkPosCopy_);
+        ivec3 distancePlayer = chunkDistance(chunkPos, playerChunkPosCopy_);
         return distancePlayer.x <= nChunksToCompute_ &&
             distancePlayer.z <= nChunksToCompute_ &&
             distancePlayer.y <= yChunksRange;
 
     }
 
-    vec3 chunkManager::chunkDistanceToPlayer(const vec3& chunkPos) {
+    bool chunkManager::chunkInRenderDistance(const ivec3& chunkPos, const vec3& playerPos) {
 
-        const vec3& playerPos = player::getCamera().chunkPos();
-        return vec3{ (float)std::abs(chunkPos.x - playerPos.x),
+        ivec3 distancePlayer = chunkDistance(chunkPos, playerPos);
+        return distancePlayer.x <= nChunksToCompute_ &&
+            distancePlayer.z <= nChunksToCompute_ &&
+            distancePlayer.y <= yChunksRange;
+
+    }
+
+    ivec3 chunkManager::chunkDistanceToPlayer(const ivec3& chunkPos) {
+
+        const ivec3& playerPos = player::getCamera().chunkPos();
+        return ivec3{ (float)std::abs(chunkPos.x - playerPos.x),
                      (float)std::abs(chunkPos.y - playerPos.y),
                      (float)std::abs(chunkPos.z - playerPos.z) };
 
     }
 
-    vec3 chunkManager::chunkDistance(const vec3& chunkPos1, const vec3& chunkPos2) {
+    ivec3 chunkManager::chunkDistance(const ivec3& chunkPos1, const ivec3& chunkPos2) {
 
-        vec3 signedDistance = chunkSignedDistance(chunkPos1, chunkPos2);
+        ivec3 signedDistance = chunkSignedDistance(chunkPos1, chunkPos2);
         return abs(signedDistance);
 
     }
 
-    vec3 chunkManager::chunkSignedDistance(const vec3& chunkPos1, const vec3& chunkPos2) {
+    ivec3 chunkManager::chunkSignedDistance(const ivec3& chunkPos1, const ivec3& chunkPos2) {
 
-        return vec3{ chunkPos1.x - chunkPos2.x,
+        return ivec3{ chunkPos1.x - chunkPos2.x,
                      chunkPos1.y - chunkPos2.y,
                      chunkPos1.z - chunkPos2.z };
 
     }
 
-    double chunkManager::distanceToPlayer(const vec3& chunkPos) {
+    double chunkManager::distanceToPlayer(const ivec3& chunkPos) {
 
-        const vec3& playerPos = player::getCamera().chunkPos();
+        const ivec3& playerPos = player::getCamera().chunkPos();
         double distanceX = playerPos.x - (chunkPos.x + 0.5) * CHUNK_SIZE;
         double distanceZ = playerPos.y - (chunkPos.y + 0.5) * CHUNK_SIZE;
         double distanceY = playerPos.z - (chunkPos.z + 0.5) * CHUNK_SIZE;
@@ -1746,7 +1829,7 @@ namespace VoxelEng {
 
     }
 
-    neighborsInfo* chunkManager::getChunkNeighborInfo(const vec3& chunkPos) {
+    neighborsInfo* chunkManager::getChunkNeighborInfo(const ivec3& chunkPos) {
 
         chunkNeighborsInfoMutex_.lock();
         neighborsInfo* neighborsInfoPtr = chunkNeighborsInfo_[chunkPos].get();
@@ -1767,117 +1850,83 @@ namespace VoxelEng {
 
     const block& chunkManager::setBlock(int x, int y, int z, const block& blockID) {
 
-        vec3 chunkPos = getChunkCoords(x, y, z);
+        ivec3 chunkPos = getChunkCoords(x, y, z);
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
-        if (clientChunks_.find(chunkPos) == clientChunks_.cend())
+        auto it = clientChunks_.find(chunkPos);
+        if (it == clientChunks_.cend())
             logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
-        else {
-
-            block removedBlock = clientChunks_.at(chunkPos)->setBlock(getChunkRelCoords(x, y, z), blockID);
-
-            return removedBlock;
-
-        }
+        else
+            return it->second->setBlock(getChunkRelCoords(x, y, z), blockID);
 
     }
 
-    void chunkManager::setLightInBox(const lightDataToSet& data) {
+    chunk* chunkManager::neighborMinusX(const ivec3& chunkPos) {
 
-        std::unordered_map<vec3, chunk*> ownedChunks;
-
-        getAndOwnChunks_(data, ownedChunks);
-
-        // Set the modifications.
-        for (auto it = data.cbegin(); it != data.cend(); it++)
-            if (chunk* c = ownedChunks[it->first])
-                for (auto itLight = it->second.cbegin(); itLight != it->second.cend(); itLight++) {
-                    //c->setBlockLight(itLight->first, itLight->second);
-                }
-
-        disownChunks_(ownedChunks);
-
-    }
-
-    chunk* chunkManager::neighborMinusX(const vec3& chunkPos) {
-
-        vec3 neighborChunkPos{ chunkPos.x - 1, chunkPos.y, chunkPos.z };
-
-
+        ivec3 neighborChunkPos{ chunkPos.x - 1, chunkPos.y, chunkPos.z };
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
-        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
-            return clientChunks_[neighborChunkPos];
+        auto it = clientChunks_.find(neighborChunkPos);
+        if (it != clientChunks_.end())
+            return it->second;
         else
             return nullptr;
 
     }
 
-    chunk* chunkManager::neighborPlusX(const vec3& chunkPos) {
+    chunk* chunkManager::neighborPlusX(const ivec3& chunkPos) {
 
-        vec3 neighborChunkPos{ chunkPos.x + 1, chunkPos.y, chunkPos.z };
-
-
+        ivec3 neighborChunkPos{ chunkPos.x + 1, chunkPos.y, chunkPos.z };
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
-        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
-            return clientChunks_[neighborChunkPos];
+        auto it = clientChunks_.find(neighborChunkPos);
+        if (it != clientChunks_.end())
+            return it->second;
         else
             return nullptr;
 
     }
 
-    chunk* chunkManager::neighborMinusY(const vec3& chunkPos) {
+    chunk* chunkManager::neighborMinusY(const ivec3& chunkPos) {
 
-        vec3 neighborChunkPos{ chunkPos.x, chunkPos.y - 1, chunkPos.z };
-
-
+        ivec3 neighborChunkPos{ chunkPos.x, chunkPos.y - 1, chunkPos.z };
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
-        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
-            return clientChunks_[neighborChunkPos];
+        auto it = clientChunks_.find(neighborChunkPos);
+        if (it != clientChunks_.end())
+            return it->second;
         else
             return nullptr;
 
     }
 
-    chunk* chunkManager::neighborPlusY(const vec3& chunkPos) {
+    chunk* chunkManager::neighborPlusY(const ivec3& chunkPos) {
 
-        vec3 neighborChunkPos{ chunkPos.x, chunkPos.y + 1, chunkPos.z };
-
-
+        ivec3 neighborChunkPos{ chunkPos.x, chunkPos.y + 1, chunkPos.z };
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
-        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
-            return clientChunks_[neighborChunkPos];
+        auto it = clientChunks_.find(neighborChunkPos);
+        if (it != clientChunks_.end())
+            return it->second;
         else
             return nullptr;
 
     }
 
-    chunk* chunkManager::neighborMinusZ(const vec3& chunkPos) {
+    chunk* chunkManager::neighborMinusZ(const ivec3& chunkPos) {
 
-        vec3 neighborChunkPos{ chunkPos.x, chunkPos.y, chunkPos.z - 1 };
-
-
+        ivec3 neighborChunkPos{ chunkPos.x, chunkPos.y, chunkPos.z - 1 };
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
-        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
-            return clientChunks_[neighborChunkPos];
+        auto it = clientChunks_.find(neighborChunkPos);
+        if (it != clientChunks_.end())
+            return it->second;
         else
             return nullptr;
 
     }
 
-    chunk* chunkManager::neighborPlusZ(const vec3& chunkPos) {
+    chunk* chunkManager::neighborPlusZ(const ivec3& chunkPos) {
 
-        vec3 neighborChunkPos{ chunkPos.x, chunkPos.y, chunkPos.z + 1 };
-
-
+        ivec3 neighborChunkPos{ chunkPos.x, chunkPos.y, chunkPos.z + 1 };
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
-        if (clientChunks_.find(neighborChunkPos) != clientChunks_.end())
-            return clientChunks_[neighborChunkPos];
+        auto it = clientChunks_.find(neighborChunkPos);
+        if (it != clientChunks_.end())
+            return it->second;
         else
             return nullptr;
 
@@ -1885,30 +1934,33 @@ namespace VoxelEng {
 
     void chunkManager::waitInitialTerrainLoaded() {
 
-        {
-
-            std::unique_lock<std::mutex> lock(loadingTerrainMutex_);
-            while (waitInitialTerrainLoaded_)
-                loadingTerrainCV_.wait(lock);
-
-        }
+        std::unique_lock<std::mutex> lock(loadingTerrainMutex_);
+        while (waitInitialTerrainLoaded_)
+            loadingTerrainCV_.wait(lock);
 
     }
 
-    void chunkManager::unloadFrontierChunk(const vec3& chunkPos) {
+    void chunkManager::unloadFrontierChunk(const ivec3& chunkPos) {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-
+        chunk* c = nullptr;
         auto it = clientChunks_.find(chunkPos);
-        if (it != clientChunks_.end())
+        if (it != clientChunks_.cend())
+            c = it->second;
+        else {
+        
+            auto it2 = simulatedChunks_.find(chunkPos);
+            if (it2 != simulatedChunks_.cend())
+                c = it2->second;
+        
+        }
+        
+        if (c)
         {
-
-            chunk* unloadedChunk = it->second;
-
-            decreaseNeighborInfoPassCounter_(*unloadedChunk);
+            c->poraqui17 = true;
 
             // Check if the chunk's neighbors become frontier chunks after it is unloaded.
-            unloadedChunk->onUnloadAsFrontier();
+            c->onUnloadAsFrontier();
 
             frontierChunks_.erase(frontierChunksSet_.at(chunkPos));
             frontierChunksSet_.erase(chunkPos);
@@ -1920,121 +1972,138 @@ namespace VoxelEng {
             onChunkUnload_.notify(chunkPos.x, chunkPos.z - 1);
 
             clientChunks_.erase(chunkPos);
-            if (unloadedChunk->isOwned()) {
+            if (c->isOwned()) {
 
-                simulatedChunks_[chunkPos] = unloadedChunk;
-                unloadedChunk->unloadWhenNoOwners(true);
+                simulatedChunks_[chunkPos] = c;
+                c->disownChunks();
+                c->unloadWhenNoOwners(true);
+                c->poraqui18 = true;
 
             }
-            else if(unloadedChunk->modified())
-                issueChunkMeshJob(chunkJobType::UNLOADANDSAVE, unloadedChunk, true);
+            else {
+            
+                c->poraqui19 = true;
+                decreaseNeighborInfoPassCounter_(*c);
+                issueChunkMeshJob(chunkJobType::UNLOADANDSAVE, c, true);
+            
+            }
 
         }
 
     }
 
-    void chunkManager::onUnloadAsFrontier(const vec3& chunkPos) {
+    void chunkManager::onUnloadAsFrontier(const ivec3& chunkPos) {
 
-        if (!frontierChunksSet_.contains(chunkPos) && chunkExists_(chunkPos) != chunkExistence::NOEXISTS)
+        if (!frontierChunksSet_.contains(chunkPos) && chunkExists_(chunkPos) != chunkExistence::NOEXISTS) {
+        
+            if (clientChunks_.contains(chunkPos))
+                clientChunks_[chunkPos]->poraqui26 = true;
             frontierChunksSet_[chunkPos] = frontierChunks_.insert(frontierChunks_.end(), chunkPos);
+        
+        }  
 
     }
 
     void chunkManager::addFrontier(chunk* chunk) {
 
-        const vec3& chunkPos = chunk->chunkPos();
-        if (!frontierChunksSet_.contains(chunkPos))
+        const ivec3& chunkPos = chunk->chunkPos();
+        if (!frontierChunksSet_.contains(chunkPos)) {
+        
             frontierChunksSet_[chunkPos] = frontierChunks_.insert(frontierChunks_.end(), chunkPos);
 
+            onChunkLoad_.notify(chunkPos.x, chunkPos.z);
+            onChunkLoad_.notify(chunkPos.x + 1, chunkPos.z);
+            onChunkLoad_.notify(chunkPos.x - 1, chunkPos.z);
+            onChunkLoad_.notify(chunkPos.x, chunkPos.z + 1);
+            onChunkLoad_.notify(chunkPos.x, chunkPos.z - 1);
+        
+        }
+
     }
 
-    void chunkManager::remesh(chunk* c, bool isPriorityUpdate) {
+    void chunkManager::remesh(chunk* c, bool isPriorityUpdate, bool forceRemesh) {
 
-        unsigned int meshSize = c->renewMesh();
-        pushNewChunkMesh_(isPriorityUpdate, c, meshSize);
+        pushNewChunkMesh_(isPriorityUpdate, c, c->renewMesh(forceRemesh));
 
     }
 
-    void chunkManager::renewMesh(const vec3& chunkPos, bool isPriorityUpdate) {
+    void chunkManager::renewMesh(const ivec3& chunkPos, bool isPriorityUpdate) {
 
-        chunksMutex_.lock();
-
-        auto it = clientChunks_.find(chunkPos);
-        if (it == clientChunks_.cend()) {
-
-            chunksMutex_.unlock();
-
-            logger::errorLog("The chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|"
-                + std::to_string(chunkPos.z) + " is not registered");
-
+        chunksMap::const_iterator it;
+        bool found = false;
+        chunk* c = nullptr;
+        {
+            std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+            it = clientChunks_.find(chunkPos);
+            if (found = (it == clientChunks_.cend()))
+                c = it->second;
         }
-        else {
-
-            chunksMutex_.unlock();
-
-            remesh(it->second, isPriorityUpdate);
-
-        }
+        
+        if (found)
+            logger::errorLog("The chunk " + std::to_string(chunkPos) + " is not registered");
+        else
+            remesh(c, isPriorityUpdate);
 
     }
 
     chunk* chunkManager::getChunkByChunkPos(int x, int y, int z) {
 
-        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
         return getChunk_({ x,y,z });
 
     }
 
     chunk* chunkManager::getChunkByRealPos(float x, float y, float z) {
 
-        vec3 chunkPos = getChunkCoords(x, y, z);
-
-        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-        return getChunk_(chunkPos);
+        return getChunk_(getChunkCoords(x, y, z));
 
     }
 
-    chunk* chunkManager::ownChunk(const vec3& chunkPos) {
+    chunk* chunkManager::addOwner(const ivec3& chunkPos, const ivec3& ownerChunkPos) {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
         chunk* c = getChunk_(chunkPos);
-        if (c) {
+        if (c)
+            c->addOwner(ownerChunkPos);
 
-            ownChunk(*c);
-            return c;
-
-        }
-        else
-            return nullptr;
+        return c;
 
     }
 
-    void chunkManager::ownChunk(chunk& c) {
+    void chunkManager::removeOwner(chunk& c, const ivec3& ownerChunkPos) {
 
         std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-        if (c.isOwnable())
-            c.addOwner();
+        if (c.isOwned()) {
+            c.removeOwner(ownerChunkPos);
+            if (!c.isOwned()) {
 
-    }
+                const ivec3& chunkPos = c.chunkPos();
+                if (simulatedChunks_.erase(chunkPos)) { // If chunk was simulated.
+                
+                    if (c.unloadWhenNoOwners()) { // And was told to unload when it has no owners, unload it.
 
-    void chunkManager::disownChunk(chunk& c) {
+                        decreaseNeighborInfoPassCounter_(c);
+                        issueChunkMeshJob(chunkJobType::UNLOADANDSAVE, &c, true);
 
-        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-        c.removeOwner();
-        if (!c.isOwned()) {
+                    }
+                    else { // Else, pass it to common chunks again.
 
-            const vec3& chunkPos = c.chunkPos();
-            simulatedChunks_.erase(chunkPos);
-            if (c.unloadWhenNoOwners())
-                issueChunkMeshJob(chunkJobType::UNLOADANDSAVE, &c, true);
-            else
-                clientChunks_[chunkPos] = &c;
+                        clientChunks_[chunkPos] = &c;
+                        c.poraqui14 = true;
+                        c.poraqui15 = c.loadStatus();
 
+                        // MAÑANA. AQUI FALTA UN LOAD???
+
+                    }
+                
+                }
+
+            }
+        
         }
 
     }
 
-    std::shared_ptr<neighborsInfo> chunkManager::getOrCreateChunkNeighborInfo(const vec3& chunkPos) {
+    std::shared_ptr<neighborsInfo> chunkManager::getOrCreateChunkNeighborInfo(const ivec3& chunkPos) {
 
         chunkNeighborsInfoMutex_.lock();
         std::shared_ptr<neighborsInfo>& neighborsInfoPtr = chunkNeighborsInfo_[chunkPos];
@@ -2047,16 +2116,61 @@ namespace VoxelEng {
 
     void chunkManager::addLightTickJob(chunk* c, bool causesPriorityUpdate, bool pushJobBack) {
 
-        std::unique_lock<std::mutex> lock(lightTickFunctionsMutex_);
+        c->loadStatusMutex().lock();
+        if (c->loadStatus() < chunkLoadStatus::PENDING_LIGHTS_APPLIED) {
+            c->loadStatus(chunkLoadStatus::PENDING_LIGHTS_APPLIED);
+            c->loadStatusMutex().unlock();
 
-        job* aJob = &lightJobs_->get();
+            std::unique_lock<std::mutex> lock(lightTickFunctionsMutex_);
 
-        // Set the task.
-        std::tuple<chunk*, bool>* data = new std::tuple<chunk*, bool>(c, causesPriorityUpdate);
-        aJob->setTask(processLightJob, data, lightJobs_);
+            job* aJob = &lightJobs_->get();
 
-        // Send the job to its corresponding queue.
-        lightTasks_->submitJob(aJob, pushJobBack);
+            // Set the task.
+            std::tuple<chunk*, bool>* data = new std::tuple<chunk*, bool>(c, causesPriorityUpdate);
+            aJob->setTask(processLightJob, data, lightJobs_);
+
+            // Send the job to its corresponding queue.
+            lightTasks_->submitJob(aJob, pushJobBack);
+        
+        }
+        else
+            c->loadStatusMutex().unlock();
+
+    }
+
+    chunk* chunkManager::registerChunk(const ivec3& chunkPos, bool ownNeighborChunks, bool isSimulated) {
+
+        chunk* c = &chunksPool_.get();
+        c->makeEmpty(); // TODO. EL MAKEEMPTY HACERLO UN REQUISITO DE T PARA RECYCLING POOLS???
+        c->chunkPos(chunkPos);
+
+        {
+            std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+
+            if (isSimulated) {
+            
+                simulatedChunks_[chunkPos] = c;
+                c->poraqui13 = true;
+            
+            }
+            else {
+            
+                clientChunks_[chunkPos] = c;
+                c->poraqui12 = true;
+
+            }
+                
+            if (ownNeighborChunks) {
+            
+                c->getAndOwnChunks();
+                c->poraqui11 = true;
+            
+            }
+            else
+                c->poraqui10 = true;
+        }
+
+        return c;
 
     }
 
@@ -2065,16 +2179,14 @@ namespace VoxelEng {
         {
             // NEXT. LOS JOBS DE NEIGHBOR QUE SE TIENE QUE ACTUALIZAR CON PRIORITY DEBEN IR EN UN MISMO JOB SINO DA PROBLEMAS.
 
-            std::unique_lock<std::mutex> lock(managerThreadMutex_),
-                priorityUpdatesLock(priorityUpdatesRemainingMutex_);
-
-            // First of all, load the chunk where the player is in.
+            std::unique_lock<std::mutex> lock(managerThreadMutex_);
             bool continueCreatingChunks = false;
-            vec3 chunkPos = vec3Zero;
+            ivec3 chunkPos = vec3Zero;
             unsigned int nIterations = 0;
             const unsigned int defaultMaxIterations = 128;
             unsigned int maxIterations = defaultMaxIterations;
 
+            // First of all, load the chunk where the player is in.
             if (game::threadsExecute[2]) {
 
                 playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
@@ -2099,23 +2211,8 @@ namespace VoxelEng {
                         playerChunkPosCopy_ = camera::cPlayerCamera()->chunkPos();
                         chunkPos = *frontierIt_;
 
-                        while (priorityUpdatesRemaining_)
-                            priorityUpdatesRemainingCV_.wait(priorityUpdatesLock);
-
-                        if (!chunkInRenderDistance(chunkPos)) {
-
-                            frontierIt_++;
-                            unloadFrontierChunk(chunkPos);
-
-                            // TODO. HAY QUE AÑADIR UN MIENTRAS HAYA UNA TAREA ASOCIADA A ESTE FRONTIER NO BORRARLO.
-                            chunkVBOoperationsMutex_.lock();
-                            chunkVBOoperationsWrite_->operator[](chunkPos) = chunkVBOoperation::FREE;
-                            chunkVBOoperationsMutex_.unlock();
-
-                        }
-                        else {
-
-                            chunk* c = getChunk(chunkPos);
+                        if (chunkInRenderDistance(chunkPos)) {
+                            
                             if (ensureChunkIfVisible(chunkPos + blockViewDir::PLUSX) +
                                 ensureChunkIfVisible(chunkPos + blockViewDir::NEGX) +
                                 ensureChunkIfVisible(chunkPos + blockViewDir::PLUSY) +
@@ -2132,6 +2229,15 @@ namespace VoxelEng {
                             else
                                 frontierIt_++;
                         }
+                        else {
+
+                            frontierIt_++;
+                            unloadFrontierChunk(chunkPos);
+
+                            // TODO. HAY QUE AÑADIR UN MIENTRAS HAYA UNA TAREA ASOCIADA A ESTE FRONTIER NO BORRARLO.
+                            chunkVBOopsWrite_->operator[](chunkPos) = chunkVBOop(VBOop::FREE); // TODO. NECESARIO???
+                            
+                        }
                     }
 
                 } while (continueCreatingChunks);
@@ -2147,7 +2253,7 @@ namespace VoxelEng {
 
                 // Sync with the rendering thread in order to pass it the most updated
                 // version of the chunks' meshes.
-                updateReadChunkMeshes(priorityUpdatesLock);
+                updateReadChunkMeshes();
                 managerThreadCV_.wait(lock);
 
                 {
@@ -2165,32 +2271,22 @@ namespace VoxelEng {
 
     void chunkManager::manageChunkPriorityUpdates() {
 
-        {
+        std::unique_lock<std::mutex> lock(priorityManagerThreadMutex_);
+        std::unique_lock<std::mutex> lockNewChunksMeshes(priorityNewChunkMeshesMutex_);
 
-            std::unique_lock<std::mutex> lock(priorityManagerThreadMutex_),
-                lockNewChunksMeshes(priorityNewChunkMeshesMutex_);
+        while (game::threadsExecute[2]) {
 
             priorityNewChunkMeshesCV_.wait(lockNewChunksMeshes);
-            while (game::threadsExecute[2]) {
 
-                priorityUpdatesRemaining_ = true;
+            // Sync with the rendering thread in order to pass it the most updated
+            // version of the chunks' meshes.
+            updatePriorityReadChunkMeshes();
+            priorityManagerThreadCV_.wait(lock);
 
-                // Sync with the rendering thread in order to pass it the most updated
-                // version of the chunks' meshes.
-                updatePriorityReadChunkMeshes();
-                priorityManagerThreadCV_.wait(lock);
+            {
 
-                priorityUpdatesRemaining_ = false;
-                priorityUpdatesRemainingCV_.notify_all();
-
-                priorityNewChunkMeshesCV_.wait(lockNewChunksMeshes);
-
-                {
-
-                    using namespace std::chrono_literals;
-                    std::this_thread::sleep_for(1ms);
-
-                }
+                using namespace std::chrono_literals;
+                std::this_thread::sleep_for(1ms);
 
             }
 
@@ -2207,18 +2303,41 @@ namespace VoxelEng {
 
     }
 
-    bool chunkManager::ensureChunkIfVisible(const vec3& chunkPos) {
+    bool chunkManager::ensureChunkIfVisible(const ivec3& chunkPos) {
+
+        chunk* c = getChunk_(chunkPos);
+        if (c)
+            c->poraqui25 = true;
 
         if (chunkInRenderDistance(chunkPos)) {
 
-            chunksMutex_.lock();
             chunkExistence existence = chunkExistence::NOEXISTS;
-            chunk* c = getChunk_(chunkPos, existence, true);
-            if (existence == chunkExistence::SIMULATED)
+            c = getChunk_(chunkPos, existence, true);
+            c->poraqui2 = true;
+            if (existence == chunkExistence::SIMULATED) {
+            
                 simulatedChunkToCommon_(c);
-            chunksMutex_.unlock();
+                return true;
+            
+            }
+            else if (existence == chunkExistence::COMMON) {
 
-            return existence >= chunkExistence::NOEXISTS ? true : loadFrontierChunk(chunkPos) != nullptr;
+                c->poraqui3 = true;
+                c->loadStatusMutex().lock();
+                if (c->loadStatus() == chunkLoadStatus::NOTLOADED) {
+                    c->loadStatusMutex().unlock();
+
+                    loadOrRemesh_(c);
+                
+                }
+                else
+                    c->loadStatusMutex().unlock();
+                
+                return true;
+
+            }
+            else
+                return false;
 
         }
         else
@@ -2231,7 +2350,7 @@ namespace VoxelEng {
         timer t;
         t.start();
 
-        c->blockDataMutex().lock_shared();
+        c->blocksDataMutex().lock_shared();
 
         // Save local ID data (including duplicated data about neighbors).
         const chunkBlockData cBlockData = c->blockData();
@@ -2262,7 +2381,7 @@ namespace VoxelEng {
         data += '@';
 
         // Save block lights.
-        const std::unordered_set<vec3>& floodPointLightPositions = c->getFloodPointLightPositions();
+        const std::unordered_set<ivec3>& floodPointLightPositions = c->getFloodPointLightPositions();
         for (auto it = floodPointLightPositions.cbegin(); it != floodPointLightPositions.cend(); it++)
             data += std::to_string((int)it->x) + '|' + std::to_string((int)it->y) + '|' + std::to_string((int)it->z) + '|';
         data += '@';
@@ -2272,7 +2391,7 @@ namespace VoxelEng {
         data += '@';
         data += std::to_string(c->nTotalBlocks()) + '|' + std::to_string(c->nTotalBlocksPlusX()) + '|' + std::to_string(c->nTotalBlocksMinusX()) + '|' + std::to_string(c->nTotalBlocksPlusY()) + '|' + std::to_string(c->nTotalBlocksMinusY()) + '|' + std::to_string(c->nTotalBlocksPlusZ()) + '|' + std::to_string(c->nTotalBlocksMinusZ()) + '|';
 
-        c->blockDataMutex().unlock_shared();
+        c->blocksDataMutex().unlock_shared();
 
         t.finish();
         logger::debugLog("Time for saving chunks is " + std::to_string(t.getDurationMs()));
@@ -2295,7 +2414,7 @@ namespace VoxelEng {
         unsigned int y = 0;
         unsigned int z = 0;
 
-        chunk->blockDataMutex().lock();
+        chunk->blocksDataMutex().lock();
 
         // Deserialize local block ID data.
         chunkBlockData cBlockData = chunk->blockData();
@@ -2393,7 +2512,7 @@ namespace VoxelEng {
         }
 
         // Deserialize block lights.
-        std::unordered_set<vec3>& floodPointLightPositions = chunk->getFloodPointLightPositions();
+        std::unordered_set<ivec3>& floodPointLightPositions = chunk->getFloodPointLightPositions();
         c = data[++index]; // Skip the '@' delimiter character.
         while (c != '@') {
 
@@ -2427,7 +2546,7 @@ namespace VoxelEng {
 
             }
 
-            vec3 pos(x, y, z);
+            ivec3 pos(x, y, z);
             floodPointLightPositions.insert(pos);
 
             unsigned short localID = cBlockData.blocksLocalIDs_->at(x,y,z);
@@ -2436,7 +2555,7 @@ namespace VoxelEng {
 
         }
 
-        chunk->blockDataMutex().unlock();
+        chunk->blocksDataMutex().unlock();
 
         c = data[++index]; // Skip the '@' delimiter character.
         unsigned int state = 0;
@@ -2532,40 +2651,30 @@ namespace VoxelEng {
 
     }
 
-    chunk* chunkManager::loadFrontierChunk(const vec3& chunkPos) {
+    chunk* chunkManager::loadFrontierChunk(const ivec3& chunkPos) {
 
-        chunksMutex_.lock();
-        auto cIt = clientChunks_.find(chunkPos);
-        chunksMutex_.unlock();
+        chunk* c = registerChunk(chunkPos, true);
 
-        if (cIt == clientChunks_.cend()) {
+        addFrontier(c);
 
-            chunk* c = &chunksPool_.get();
-
-            c->makeEmpty();
-
-            c->chunkPos(chunkPos);
-
-            chunksMutex_.lock();
-            clientChunks_[chunkPos] = c;
-            chunksMutex_.unlock();
-
-            addFrontier(c);
-
-            onChunkLoad_.notify(chunkPos.x, chunkPos.z);
-            onChunkLoad_.notify(chunkPos.x + 1, chunkPos.z);
-            onChunkLoad_.notify(chunkPos.x - 1, chunkPos.z);
-            onChunkLoad_.notify(chunkPos.x, chunkPos.z + 1);
-            onChunkLoad_.notify(chunkPos.x, chunkPos.z - 1);
+        c->loadStatusMutex().lock();
+        if (c->loadStatus() == chunkLoadStatus::NOTLOADED) {
+            c->loadStatus(chunkLoadStatus::AWAITING_LOAD);
+            c->loadStatusMutex().unlock();
 
             // Submit async task to load the chunk either from disk or by generating it.
-            issueChunkMeshJob(chunkJobType::LOAD, c, true); // TODO. PRIORIZAR DE ALGUNA MANERA LOS SIGUIENTES CHUNKS MÁS CERCANOS AL JUGADOR EN LA DIRECCIÓN A LA QUE SE ESTÁ MOVIENDO
-
-            return c;
-
+            issueChunkMeshJob(chunkJobType::LOAD, c); // TODO. PRIORIZAR LOS SIGUIENTES CHUNKS MÁS CERCANOS AL JUGADOR EN LA DIRECCIÓN A LA QUE SE ESTÁ MOVIENDO
+            c->poraqui8 = true;
+        
         }
         else
-            return cIt->second;
+        {
+            c->loadStatusMutex().unlock();
+            c->poraqui5 = true;
+        }
+           
+
+        return c;
 
     }
 
@@ -2632,7 +2741,7 @@ namespace VoxelEng {
 
         {
 
-            std::unique_lock<std::mutex> lock2(lightTickFunctionsMutex_);
+            std::unique_lock<std::mutex> lock(lightTickFunctionsMutex_);
 
             if (lightTasks_) {
 
@@ -2649,29 +2758,33 @@ namespace VoxelEng {
 
         }
 
-        chunksMutex_.lock();
-        for (auto it = clientChunks_.begin(); it != clientChunks_.end(); it++)
-            if (it->second)
-                delete it->second;
-        clientChunks_.clear();
-        chunksMutex_.unlock();
+        {
+            std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+            for (auto it = clientChunks_.begin(); it != clientChunks_.end(); it++)
+                if (it->second)
+                    delete it->second;
+            clientChunks_.clear();
 
-        if (chunkMeshesUpdated_)
-            chunkMeshesUpdated_->clear();
+            for (auto it = simulatedChunks_.begin(); it != simulatedChunks_.end(); it++)
+                if (it->second)
+                    delete it->second;
+            simulatedChunks_.clear();
+        }
+        
+        if (chunkMeshes_)
+            chunkMeshes_->clear();
 
-        if (chunkMeshesWrite_)
-            chunkMeshesWrite_->clear();
+        if (chunkVBOopsRead_)
+            chunkVBOopsRead_->clear();
 
-        if (chunkMeshesRead_)
-            chunkMeshesRead_->clear();
+        if (chunkVBOopsPriorityRead_)
+            chunkVBOopsPriorityRead_->clear();
 
-        chunkVBOoperationsMutex_.lock();
-        if (chunkVBOoperationsRead_)
-            chunkVBOoperationsRead_->clear();
+        if (chunkVBOopsWrite_)
+            chunkVBOopsWrite_->clear();
 
-        if (chunkVBOoperationsWrite_)
-            chunkVBOoperationsWrite_->clear();
-        chunkVBOoperationsMutex_.unlock();
+        if (chunkVBOopsPriorityWrite_)
+            chunkVBOopsPriorityWrite_->clear();
 
         chunksPool_.clear();
 
@@ -2730,90 +2843,58 @@ namespace VoxelEng {
 
         clear();
 
-        if (chunkMeshesUpdated_) {
+        if (chunkMeshes_)
+            chunkMeshes_->clear();
 
-            delete chunkMeshesUpdated_;
-            chunkMeshesUpdated_ = nullptr;
+        if (chunkVBOopsRead_)
+            chunkVBOopsRead_->clear();
 
-        }
+        if (chunkVBOopsPriorityRead_)
+            chunkVBOopsPriorityRead_->clear();
 
-        if (chunkMeshesWrite_) {
+        if (chunkVBOopsWrite_)
+            chunkVBOopsWrite_->clear();
 
-            delete chunkMeshesWrite_;
-            chunkMeshesWrite_ = nullptr;
-
-        }
-
-        if (chunkMeshesRead_) {
-
-            delete chunkMeshesRead_;
-            chunkMeshesRead_ = nullptr;
-
-        }
-
-        chunkVBOoperationsMutex_.lock();
-        if (chunkVBOoperationsRead_) {
-
-            delete chunkVBOoperationsRead_;
-            chunkVBOoperationsRead_ = nullptr;
-
-        }
-
-        if (chunkVBOoperationsWrite_) {
-
-            delete chunkVBOoperationsWrite_;
-            chunkVBOoperationsWrite_ = nullptr;
-
-        }
-        chunkVBOoperationsMutex_.unlock();
+        if (chunkVBOopsPriorityWrite_)
+            chunkVBOopsPriorityWrite_->clear();
 
         initialised_ = false;
 
     }
 
-    const block& chunkManager::getBlockOGWorld_(int posX, int posY, int posZ) {
+    chunk* chunkManager::getChunk_(const ivec3& chunkPos, chunkExistence& existence, bool createIfDoesntExist) {
 
-        vec3 chunkPos = getChunkCoords(posX, posY, posZ);
-
-        if (clientChunks_.find(chunkPos) == clientChunks_.end())
-            logger::errorLog("Chunk " + std::to_string(chunkPos.x) + "|" + std::to_string(chunkPos.y) + "|" + std::to_string(chunkPos.z) + " does not exist");
-        else
-            return clientChunks_.at(chunkPos)->get<blockProperty>(floorMod(posX, CHUNK_SIZE), floorMod(posY, CHUNK_SIZE), floorMod(posZ, CHUNK_SIZE)).b;
-
-    }
-
-    void chunkManager::pushNewChunkMesh_(bool isPriorityUpdate, chunk* c, std::size_t meshSize) {
-
-        if (isPriorityUpdate) {
-
-            priorityNewChunkMeshesMutex_.lock();
-            priorityNewChunkMeshes_.push_back(c);
-            priorityNewChunkMeshesMutex_.unlock();
-
-        }
-        else if (meshSize) {
-
-            newChunkMeshesMutex_.lock();
-            newChunkMeshes_.push_back(c);
-            newChunkMeshesMutex_.unlock();
-
+        chunksMap::const_iterator it;
+        chunksMap::const_iterator it2;
+        bool foundClientChunk = false;
+        bool foundSimulatedChunk = false;
+        chunk* c = nullptr;
+        {
+            std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+            it = clientChunks_.find(chunkPos);
+            it2 = simulatedChunks_.find(chunkPos);
+            foundClientChunk = it != clientChunks_.cend();
+            foundSimulatedChunk = it2 != simulatedChunks_.cend();
+            if (foundClientChunk)
+                c = it->second;
+            else if (foundSimulatedChunk)
+                c = it2->second;
         }
 
-    }
+        if (foundClientChunk) {
 
-    chunk* chunkManager::getChunk_(const vec3& chunkPos, chunkExistence& existence, bool createIfDoesntExist) {
-
-        std::unordered_map<vec3, chunk*>::const_iterator it;
-        if ((it = clientChunks_.find(chunkPos)) != clientChunks_.cend()) {
+            c->poraqui4 = true;
 
             existence = chunkExistence::COMMON;
-            return it->second;
+            return c;
 
         }
-        else if ((it = simulatedChunks_.find(chunkPos)) != simulatedChunks_.cend()) {
+        else if (foundSimulatedChunk) {
+
+            c->poraqui6 = true;
 
             existence = chunkExistence::SIMULATED;
-            return it->second;
+            return c;
 
         }
         else {
@@ -2823,7 +2904,9 @@ namespace VoxelEng {
             if (createIfDoesntExist) {
 
                 existence = chunkExistence::COMMON;
-                return loadFrontierChunk(chunkPos);
+                c = loadFrontierChunk(chunkPos);
+                c->poraqui7 = true;
+                return c;
 
             }
             else {
@@ -2837,68 +2920,116 @@ namespace VoxelEng {
 
     }
 
+    const block& chunkManager::getBlockOGWorld_(int posX, int posY, int posZ) {
 
+        ivec3 chunkPos = getChunkCoords(posX, posY, posZ);
+        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+        chunksMap::const_iterator it = clientChunks_.find(chunkPos);
+        if (it == clientChunks_.end())
+            logger::errorLog("Chunk " + std::to_string(chunkPos) + " does not exist");
+        else {
+        
+            chunk* c = it->second;
+            return c->get<blockProperty>(floorMod(posX, CHUNK_SIZE), floorMod(posY, CHUNK_SIZE), floorMod(posZ, CHUNK_SIZE)).b;
+        
+        }
+            
+    }
+
+    void chunkManager::pushNewChunkMesh_(bool isPriorityUpdate, chunk* c, std::size_t meshSize) {
+
+        c->poraqui20 = true;
+
+        if (isPriorityUpdate) {
+
+            c->poraqui21 = true;
+            priorityNewChunkMeshesMutex_.lock();
+            priorityNewChunkMeshes_.push_back(c);
+            priorityNewChunkMeshesMutex_.unlock();
+
+            priorityNewChunkMeshesCV_.notify_all();
+
+        }
+        else if (meshSize) {
+
+            c->poraqui22 = true;
+            newChunkMeshesMutex_.lock();
+            newChunkMeshes_.push_back(c);
+            newChunkMeshesMutex_.unlock();
+
+        }
+
+    }
 
     void chunkManager::simulatedChunkToCommon_(chunk* c) {
 
-        // MAÑANA. AHORA TOCA LA LUZ EN SÍ.
-        // 1º. HEBRA APARTE PARA PROCESAR LUCES.
-        // 2º. CADA VEZ QUE UN CHUNK LLEGA A PASS 2 (ES DECIR, TODOS SUS VECINOS ESTÁN ASEGURADOS DE ESTAR AL MENOS EN PASS 1 
-        // Y POR LO TANTO TIENEN TERRENO CARGADO), CHUNKMANAGERMUTEX LOCK, OWNEAR LOS 26 VECINOS MÁS EL CHUNK EN SÍ.
-        // 3º. PROPAGAR LAS LUCES DEL CHUNK EN SÍ Y SI SE VA A LOS BORDES PROPAGAR POR LOS VECINOS CORRESPONDIENTES
-        // (ESTO DEBE TRIGGEAR NECESIDAD DE REMESH Y MODIFIED = TRUE).
-        // 4º. DESOWNEAR LOS CHUNKS.
-
-        const vec3& chunkPos = c->chunkPos();
-
-        increaseNeighborInfoPassCounter_(c);
+        const ivec3& chunkPos = c->chunkPos();
 
         addFrontier(c);
 
-        onChunkLoad_.notify(chunkPos.x, chunkPos.z);
-        onChunkLoad_.notify(chunkPos.x + 1, chunkPos.z);
-        onChunkLoad_.notify(chunkPos.x - 1, chunkPos.z);
-        onChunkLoad_.notify(chunkPos.x, chunkPos.z + 1);
-        onChunkLoad_.notify(chunkPos.x, chunkPos.z - 1);
+        {
+            std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+            clientChunks_[chunkPos] = c;
+            simulatedChunks_.erase(chunkPos);
+            c->unloadWhenNoOwners(false);
+        }
 
-        clientChunks_[chunkPos] = c;
-        simulatedChunks_.erase(chunkPos);
+        loadOrRemesh_(c);
 
-        issueChunkMeshJob(chunkJobType::ONLYREMESH, c, true);
+    }
 
+    void chunkManager::loadOrRemesh_(chunk* c) {
+    
+        c->loadStatusMutex().lock();
+        if (c->loadStatus() == chunkLoadStatus::NOTLOADED) {
+            c->loadStatus(chunkLoadStatus::AWAITING_LOAD);
+            c->loadStatusMutex().unlock();
+
+            c->getAndOwnChunks();
+            issueChunkMeshJob(chunkJobType::LOAD, c);
+            c->poraqui = true;
+
+        }
+        else {
+            c->loadStatusMutex().unlock();
+
+            c->poraqui9 = true;
+
+            increaseNeighborInfoPassCounter_(c);
+            if (c->needsRemesh())
+                issueChunkMeshJob(chunkJobType::ONLYREMESH, c);
+
+        }
+    
     }
 
     void chunkManager::increaseNeighborInfoPassCounter_(chunk* c, bool sendLoad2JobWhenRequired) {
 
-        const vec3& chunkPos = c->chunkPos();
+        const ivec3& chunkPos = c->chunkPos();
 
         std::shared_ptr<neighborsInfo> info = getOrCreateChunkNeighborInfo(chunkPos);
 
         info->neighborsGenPass1Completed_.lock();
-        info->neighborsGenPass1Completed_.get()++;
-        if (sendLoad2JobWhenRequired && info->neighborsGenPass1Completed_.get() == 27)
+        std::set<ivec3>& completed = info->neighborsGenPass1Completed_.get();
+        completed.insert(chunkPos);
+        if (sendLoad2JobWhenRequired && completed.size() == 27)
             issueChunkMeshJob(chunkJobType::LOAD2, c);
-        else if (info->neighborsGenPass1Completed_.get() > 27)
-            info->neighborsGenPass1Completed_.get() = 27;
         info->neighborsGenPass1Completed_.unlock();
 
-        vec3 neighborPos;
-        for (const vec3& offset : neighborsOffsets) {
+        ivec3 neighborPos;
+        for (const ivec3& offset : neighborsOffsets) {
 
             neighborPos = chunkPos + offset;
 
             std::shared_ptr<neighborsInfo> infoNeighbor = getOrCreateChunkNeighborInfo(neighborPos);
 
-            chunksMutex_.lock();
             chunk* neighbor = getChunk_(neighborPos);
-            chunksMutex_.unlock();
 
             infoNeighbor->neighborsGenPass1Completed_.lock();
-            infoNeighbor->neighborsGenPass1Completed_.get()++;
-            if (sendLoad2JobWhenRequired && neighbor && infoNeighbor->neighborsGenPass1Completed_.get() == 27)
+            std::set<ivec3>& neighborCompleted = infoNeighbor->neighborsGenPass1Completed_.get();
+            neighborCompleted.insert(chunkPos);
+            if (sendLoad2JobWhenRequired && neighbor && neighborCompleted.size() == 27)
                 issueChunkMeshJob(chunkJobType::LOAD2, neighbor);
-            else if (infoNeighbor->neighborsGenPass1Completed_.get() > 27)
-                infoNeighbor->neighborsGenPass1Completed_.get() = 27;
             infoNeighbor->neighborsGenPass1Completed_.unlock();
 
         }
@@ -2908,7 +3039,7 @@ namespace VoxelEng {
     void chunkManager::decreaseNeighborInfoPassCounter_(chunk& c) {
 
         // Remove neighborInfo data originating from this chunk.
-        const vec3& chunkPos = c.chunkPos();
+        const ivec3& chunkPos = c.chunkPos();
         chunkNeighborsInfoMutex_.lock();
         auto info = chunkNeighborsInfo_.find(chunkPos);
         bool thereIsInfo = info != chunkNeighborsInfo_.cend();
@@ -2918,9 +3049,9 @@ namespace VoxelEng {
 
             std::shared_ptr<neighborsInfo> n = info->second;
             n->neighborsGenPass1Completed_.lock();
-            n->neighborsGenPass1Completed_.get()--;
-
-            if (n->neighborsGenPass1Completed_.get() == 0) {
+            std::set<ivec3>& completed = n->neighborsGenPass1Completed_.get();
+            completed.erase(chunkPos);
+            if (completed.empty()) {
 
                 n->neighborsGenPass1Completed_.unlock();
 
@@ -2932,8 +3063,8 @@ namespace VoxelEng {
             else
                 n->neighborsGenPass1Completed_.unlock();
 
-            vec3 neighborPos;
-            for (const vec3& offset : neighborsOffsets) {
+            ivec3 neighborPos;
+            for (const ivec3& offset : neighborsOffsets) {
 
                 neighborPos = chunkPos + offset;
 
@@ -2946,14 +3077,14 @@ namespace VoxelEng {
                 {
                     std::shared_ptr<neighborsInfo> neighborInfo = info->second;
                     neighborInfo->neighborsGenPass1Completed_.lock();
-                    neighborInfo->neighborsGenPass1Completed_.get()--;
-
-                    if (neighborInfo->neighborsGenPass1Completed_.get() == 0) {
+                    std::set<ivec3>& neighborCompleted = neighborInfo->neighborsGenPass1Completed_.get();
+                    neighborCompleted.erase(neighborPos);
+                    if (neighborCompleted.empty()) {
 
                         neighborInfo->neighborsGenPass1Completed_.unlock();
 
                         chunkNeighborsInfoMutex_.lock();
-                        chunkNeighborsInfo_.erase(neighborPos); // TODO. REUSABLE NEIGHBORINFO OBJECTS???
+                        chunkNeighborsInfo_.erase(chunkPos); // TODO. REUSABLE NEIGHBORINFO OBJECTS???
                         chunkNeighborsInfoMutex_.unlock();
 
                     }
@@ -2971,25 +3102,6 @@ namespace VoxelEng {
     void chunkManager::processWorldLightUpdates_() {
 
         try {
-
-            // Lock here any mutexes required for synchronisation with the rendering thread.
-            // MAÑANA. 
-            // 1º. VER SI HAY QUE METER UN SYNC CON LA RENDERING THREAD (DONE. NO HACE FALTA PORQUE ESOS SYNC SON PARA TRANSFERIR DATOS ENTRE RENDERING THREAD Y WORKING THREADS).
-            // 2º. VER SI EL CUERPO QUE HEMOS METIDO AQUÍ DE CÓDIGO ESTÁ CORRECTO (DONE).
-            // 3º. AÑADIR MÉTODO PARA MANDAR UNA TAREA DE PROCESAR LUZ.
-            // 4º. AÑADIR CHUNK JOB PROCESAR LUZ.
-            // 
-            // CUERPO DE 4º
-            // 1. OWNEAR EL CHUNK CON LA LUZ MÁS SUS 26 VECINOS.
-            // 2. PROPAGAR LA LUZ DEL CHUNK DE LA SIGUIENTE FORMA
-            // 2.1 SE COGE LA POS A PROPAGAR DE LA LUZ.
-            // 2.2 SE CALCULA NEIGHBOR OFFSET.
-            // 2.3 SE APLICA LA LUZ A SU POS.
-            // 2.4 SE PROPAGA LA LUZ EN LAS 6 DIRECCIONES.
-            // 2.5 SE AÑADEN ESAS POS PROPAGADAS A LA LISTA DE LUCES POR PROPAGAR.
-            // 2.6 VOLVER A 2.1 HASTA QUE NO QUEDEN POS POR PROPAGAR Y COGER NEXT LUZ A PROPAGAR. SI NO HAY MÁS, SE TERMINA.
-            // 3. DESOWNEAR EL CHUNK CON LA LUZ MÁS SUS 26 VECINOS.
-            // 
 
             while (game::threadsExecute[1]) {
 
@@ -3011,378 +3123,328 @@ namespace VoxelEng {
 
             }
 
-            // Unlock here any mutexes required for synchronisation with the rendering thread.
-
         }
         catch (...) {
 
-            VoxelEng::logger::say("Error was detected during engine execution. Shutting down entity and tick functions management thread.");
+            VoxelEng::logger::say("Error was detected during engine execution. Shutting down light tick functions management thread.");
             game::setLoopSelection(engineMode::EXIT);
 
         }
 
     }
 
-    void chunkManager::getAndOwnChunks_(int nChunksX, int nChunksY, int nChunksZ, std::unordered_map<vec3, chunk*>& ownedChunks,
-        const vec3& chunkPos1) {
-
-        vec3 chunkOffset = vec3Zero;
-        vec3 chunkCoords = vec3Zero;
-
-        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-        for (int i = 0; i != nChunksX; i++)
-            for (int j = 0; j != nChunksY; j++)
-                for (int k = 0; k != nChunksZ; k++) {
-
-                    chunkOffset.x = i;
-                    chunkOffset.y = j;
-                    chunkOffset.z = k;
-                    chunkCoords = chunkPos1 + chunkOffset;
-                    chunk* c = getChunk(chunkCoords);
-                    ownedChunks[chunkCoords] = c;
-                    if (c)
-                        ownChunk(*c);
-
-                }
-
-    }
-
-    void chunkManager::getAndOwnChunks_(const lightDataToSet& data, std::unordered_map<vec3, chunk*>& ownedChunks) {
-
-        vec3 chunkOffset = vec3Zero;
-        vec3 chunkCoords = vec3Zero;
-
-        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-        for (auto it = data.cbegin(); it != data.cend(); it++) {
-
-            chunk* c = getChunk(it->first);
-            ownedChunks[chunkCoords] = c;
-            if (c)
-                ownChunk(*c);
-
-        }
-
-    }
-
-    void chunkManager::disownChunks_(std::unordered_map<vec3, chunk*>& ownedChunks) {
-
-        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
-        for (auto it = ownedChunks.cbegin(); it != ownedChunks.cend(); it++) {
-
-            chunk* c = it->second;
-            if (c)
-                disownChunk(*c);
-
-        }
-
-
-    }
-
     void chunkManager::recalculateBlockLight_(chunk& c, bool priorityUpdate) {
 
-        // Get and own this chunk plus its 26 neighbors. MAKE THIS INTO A FUNCTION.
-        // Also get their block data.
-        std::unordered_map<vec3, chunk*> ownedChunks; // Chunk pos offset is used as key.
-        std::unordered_map<vec3, chunkBlockData> ownedBlockData; // Chunk pos offset is used as key.
-        std::unordered_map<vec3, Padded3DArray<char>> blockLightIntensity; // TODO. COMO SOLO HAY 26 VECINOS, CAMBIAR UNORDERED MAP POR UNA ESTRUCURA QUE HAGA UN SWITCH.
-        bool skipJob = false;
-        {
-            const vec3& chunkPos = c.chunkPos();
-            chunk* neighbor = nullptr;
+        // Get this chunk plus its 26 neighbors and their block data. TODO. MAKE THIS INTO A FUNCTION.
+        std::unique_lock<std::recursive_mutex> lock(c.ownedChunksMutex());
+        const std::unordered_map<ivec3, chunk*>& ownedChunks = c.ownedChunks();
 
-            std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+        if (!ownedChunks.empty()) {
+        
+            std::unordered_map<ivec3, chunkBlockData> ownedBlockData; // Chunk pos offset is used as key.
+            std::unordered_map<ivec3, Padded3DArray<char>> blockLightIntensity; // TODO. COMO SOLO HAY 26 VECINOS, CAMBIAR UNORDERED MAP POR UNA ESTRUCURA QUE HAGA UN SWITCH.
+            bool skipJob = false;
+            {
+                const ivec3& chunkPos = c.chunkPos();
+                chunk* neighbor = nullptr;
+                std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 
-            ownedChunks[vec3Zero] = &c;
-            ownChunk(c);
-            ownedBlockData[vec3Zero] = c.blockData();
-            blockLightIntensity.emplace(std::piecewise_construct,
-                std::forward_as_tuple(vec3Zero),
-                std::forward_as_tuple(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0));
-            for (auto it = neighborsOffsets.cbegin(); !skipJob && it != neighborsOffsets.cend(); it++) {
+                ownedBlockData[vec3Zero] = c.blockData();
+                blockLightIntensity.emplace(std::piecewise_construct,
+                    std::forward_as_tuple(vec3Zero),
+                    std::forward_as_tuple(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0));
+                for (auto it = neighborsOffsets.cbegin(); !skipJob && it != neighborsOffsets.cend(); it++) {
 
-                const vec3& chunkPosOffset = *it;
-                neighbor = getChunk(chunkPos + chunkPosOffset);
-                ownedChunks[chunkPosOffset] = neighbor;
-                if (neighbor) {
+                    const ivec3& chunkPosOffset = *it;
+                    if (neighbor = ownedChunks.at(chunkPosOffset)) {
 
-                    ownChunk(*neighbor);
-                    ownedBlockData[chunkPosOffset] = neighbor->blockData();
-                    blockLightIntensity.emplace(std::piecewise_construct, 
-                        std::forward_as_tuple(chunkPosOffset), 
-                        std::forward_as_tuple(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0));
+                        ownedBlockData[chunkPosOffset] = neighbor->blockData();
+                        blockLightIntensity.emplace(std::piecewise_construct,
+                            std::forward_as_tuple(chunkPosOffset),
+                            std::forward_as_tuple(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0));
+
+                    }
+                    else
+                        skipJob = true;
 
                 }
-                else
-                    skipJob = true;
 
             }
 
-        }
+            // Propagate every light across the chunk and its neighbors without taking into account chunk borders.
+            if (!skipJob) {
 
-        
+                const std::unordered_set<ivec3>& floodPointLightPositions = c.getFloodPointLightPositions();
+                ivec3 chunkPosOffset = vec3Zero;
+                ivec3 chunkRelPos = vec3Zero;
+                ivec3 neighborOffset = vec3Zero;
+                ivec3 neighborPos = vec3Zero;
+                ivec3 neighborRelPos = vec3Zero;
+                std::deque<blockLightMod> floodLightsInstances;
+                bool firstSecondLoopIteration = false;
+                char neighborIntensity = 0; // TODO. cambiar por char& ???
+                for (auto it = floodPointLightPositions.cbegin(); it != floodPointLightPositions.cend(); it++) {
 
-        // Propagate every light across the chunk and its neighbors without taking into account chunk borders.
-        if (!skipJob) {
-        
-            const std::unordered_set<vec3>& floodPointLightPositions = c.getFloodPointLightPositions();
-            vec3 chunkPosOffset = vec3Zero;
-            vec3 chunkRelPos = vec3Zero;
-            vec3 neighborOffset = vec3Zero;
-            vec3 neighborPos = vec3Zero;
-            vec3 neighborRelPos = vec3Zero;
-            std::deque<blockLightMod> floodLightsInstances;
-            bool firstSecondLoopIteration = false;
-            char neighborIntensity = 0; // TODO. cambiar por char& ???
-            for (auto it = floodPointLightPositions.cbegin(); it != floodPointLightPositions.cend(); it++) {
+                    // Reset first loop variables.
+                    for (auto it = neighborsOffsets.cbegin(); !skipJob && it != neighborsOffsets.cend(); it++)
+                        blockLightIntensity[*it].clear();
+                    floodLightsInstances.clear();
 
-                // Reset first loop variables.
-                for (auto it = neighborsOffsets.cbegin(); !skipJob && it != neighborsOffsets.cend(); it++)
-                    blockLightIntensity[*it].clear();
-                floodLightsInstances.clear();
+                    // Add block's light and init second loop variables.
+                    const ivec3* blockGlobalPos = &*it; // We assume the chunk is the center of the coordinate system.
+                    chunkPosOffset = getChunkCoords(*blockGlobalPos);
+                    chunkRelPos = getChunkRelCoords(*blockGlobalPos);
+                    const chunkBlockData* blockData = &ownedBlockData[chunkPosOffset]; // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
+                    floodLightsInstances.emplace_back(*blockGlobalPos,
+                        blockData->blockLightLevel_->at(chunkRelPos), blockData->blockLightColor_->at(chunkRelPos));
+                    if (floodLightsInstances.size() > 0) {
 
-                // Add block's light and init second loop variables.
-                const vec3* blockGlobalPos = &*it; // We assume the chunk is the center of the coordinate system.
-                chunkPosOffset = getChunkCoords(*blockGlobalPos);
-                chunkRelPos = getChunkRelCoords(*blockGlobalPos);
-                const chunkBlockData* blockData = &ownedBlockData[chunkPosOffset]; // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
-                floodLightsInstances.emplace_back(*blockGlobalPos,
-                    blockData->blockLightLevel_->at(chunkRelPos), blockData->blockLightColor_->at(chunkRelPos));
-                if (floodLightsInstances.size() > 0) {
+                        firstSecondLoopIteration = true;
+                        blockLightMod* floodLight = &floodLightsInstances.front();
+                        do {
 
-                    firstSecondLoopIteration = true;
-                    blockLightMod* floodLight = &floodLightsInstances.front();
-                    do {
+                            // NO SE ESTÁ RECALCULANDO EL IS OPAQUE CUANDO SE DESERIALIZA UN CHUNK GUARDADO
+                            if ((firstSecondLoopIteration || !blockData->isOpaque_->at(chunkRelPos)) &&
+                                floodLight->intensity > blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z]) {
 
-                        // NO SE ESTÁ RECALCULANDO EL IS OPAQUE CUANDO SE DESERIALIZA UN CHUNK GUARDADO
-                        if ((firstSecondLoopIteration || !blockData->isOpaque_->at(chunkRelPos)) &&
-                            floodLight->intensity > blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z]) {
+                                // Apply light on position.
+                                chunk* ownedChunk = ownedChunks.at(chunkPosOffset);
+                                ownedChunk->addBlockLight(chunkRelPos, floodLight->color, floodLight->intensity, true);
+                                blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z] = floodLight->intensity;
 
-                            // Apply light on position.
-                            chunk* ownedChunk = ownedChunks[chunkPosOffset];
-                            ownedChunk->addBlockLight(chunkRelPos, floodLight->color, floodLight->intensity, true);
-                            blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z] = floodLight->intensity;
+                                // Calculate light blending across chunks.
+                                neighborOffset.x = chunkRelPos.x >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.x <= 0 ? -1 : 0;
+                                neighborOffset.y = chunkRelPos.y >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.y <= 0 ? -1 : 0;
+                                neighborOffset.z = chunkRelPos.z >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.z <= 0 ? -1 : 0;
+                                if (neighborOffset.x != 0) {
 
-                            // Calculate light blending across chunks.
-                            neighborOffset.x = chunkRelPos.x >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.x <= 0 ? -1 : 0;
-                            neighborOffset.y = chunkRelPos.y >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.y <= 0 ? -1 : 0;
-                            neighborOffset.z = chunkRelPos.z >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.z <= 0 ? -1 : 0;
-                            if (neighborOffset.x != 0) {
-                            
-                                if (neighborOffset.y != 0) {
-                                
-                                    // X Y Z
-                                    if (neighborOffset.z != 0) {
-                                    
-                                        neighborPos = chunkPosOffset + neighborOffset;
-                                        neighborRelPos = getChunkRelCoords(chunkRelPos + neighborOffset);
+                                    if (neighborOffset.y != 0) {
+
+                                        // X Y Z
+                                        if (neighborOffset.z != 0) {
+
+                                            neighborPos = chunkPosOffset + neighborOffset;
+                                            neighborRelPos = getChunkRelCoords(chunkRelPos + neighborOffset);
+                                            neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                            if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                                // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                                ownedChunk->addBlockLight(chunkRelPos + neighborOffset,
+                                                    floodLight->color, floodLight->intensity - 1, true);
+                                                blockLightIntensity[chunkPosOffset][chunkRelPos + neighborOffset]
+                                                    = floodLight->intensity - 1;
+
+                                                ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos - neighborOffset,
+                                                    floodLight->color, floodLight->intensity, true);
+                                                blockLightIntensity[neighborPos][neighborRelPos - neighborOffset]
+                                                    = floodLight->intensity;
+
+                                            }
+
+                                        }
+
+                                        // X Y 0
+                                        neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z);
+                                        neighborRelPos =
+                                            getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
                                         neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
 
                                         if (floodLight->intensity - 1 > neighborIntensity) {
-                                        
+
                                             // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
-                                            ownedChunk->addBlockLight(chunkRelPos + neighborOffset,
+                                            ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, neighborOffset.y, 0,
                                                 floodLight->color, floodLight->intensity - 1, true);
-                                            blockLightIntensity[chunkPosOffset][chunkRelPos + neighborOffset]
+                                            blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z]
                                                 = floodLight->intensity - 1;
 
-                                            ownedChunks[neighborPos]->addBlockLight(neighborRelPos - neighborOffset,
+                                            ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, -neighborOffset.x, -neighborOffset.y, 0,
                                                 floodLight->color, floodLight->intensity, true);
-                                            blockLightIntensity[neighborPos][neighborRelPos - neighborOffset]
+                                            blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z]
                                                 = floodLight->intensity;
-                                        
+
                                         }
-                                    
+
                                     }
 
-                                    // X Y 0
-                                    neighborPos = vec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z);
-                                    neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
+                                    // X 0 Z
+                                    if (neighborOffset.z != 0) {
+
+                                        neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                        neighborRelPos =
+                                            getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
+                                        neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                        if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                            // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                            ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, 0, neighborOffset.z,
+                                                floodLight->color, floodLight->intensity - 1, true);
+                                            blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y][chunkRelPos.z + neighborOffset.z]
+                                                = floodLight->intensity - 1;
+
+                                            ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, -neighborOffset.x, 0, -neighborOffset.z,
+                                                floodLight->color, floodLight->intensity, true);
+                                            blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y][chunkRelPos.z - neighborOffset.z]
+                                                = floodLight->intensity;
+
+                                        }
+
+                                    }
+
+                                    // X 0 0
+                                    neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z);
+                                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z));
                                     neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
 
                                     if (floodLight->intensity - 1 > neighborIntensity) {
 
                                         // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
-                                        ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, neighborOffset.y, 0,
+                                        ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, 0, 0,
                                             floodLight->color, floodLight->intensity - 1, true);
-                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z]
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y][chunkRelPos.z]
                                             = floodLight->intensity - 1;
 
-                                        ownedChunks[neighborPos]->addBlockLight(neighborRelPos, -neighborOffset.x, -neighborOffset.y, 0,
+                                        ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, -neighborOffset.x, 0, 0,
                                             floodLight->color, floodLight->intensity, true);
-                                        blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z]
+                                        blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y][chunkRelPos.z]
                                             = floodLight->intensity;
 
                                     }
 
                                 }
 
-                                // X 0 Z
+                                if (neighborOffset.y != 0) {
+
+                                    // 0 Y Z
+                                    if (neighborOffset.z != 0) {
+
+                                        neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                        neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z + neighborOffset.z));
+                                        neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                        if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                            // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                            ownedChunk->addBlockLight(chunkRelPos, 0, neighborOffset.y, neighborOffset.z,
+                                                floodLight->color, floodLight->intensity - 1, true);
+                                            blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z + neighborOffset.z]
+                                                = floodLight->intensity - 1;
+
+                                            ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, 0, -neighborOffset.y, -neighborOffset.z,
+                                                floodLight->color, floodLight->intensity, true);
+                                            blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z - neighborOffset.z]
+                                                = floodLight->intensity;
+
+                                        }
+                                    }
+
+                                    // 0 Y 0
+                                    neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z);
+                                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
+                                    neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                    if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                        // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                        ownedChunk->addBlockLight(chunkRelPos, 0, neighborOffset.y, 0,
+                                            floodLight->color, floodLight->intensity - 1, true);
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z]
+                                            = floodLight->intensity - 1;
+
+                                        ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, 0, -neighborOffset.y, 0,
+                                            floodLight->color, floodLight->intensity, true);
+                                        blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z]
+                                            = floodLight->intensity;
+
+                                    }
+
+                                }
+
+                                // 0 0 Z
                                 if (neighborOffset.z != 0) {
 
-                                    neighborPos = vec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
-                                    neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
+                                    neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
                                     neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
 
                                     if (floodLight->intensity - 1 > neighborIntensity) {
 
                                         // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
-                                        ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, 0, neighborOffset.z,
+                                        ownedChunk->addBlockLight(chunkRelPos, 0, 0, neighborOffset.z,
                                             floodLight->color, floodLight->intensity - 1, true);
-                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y][chunkRelPos.z + neighborOffset.z]
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z + neighborOffset.z]
                                             = floodLight->intensity - 1;
 
-                                        ownedChunks[neighborPos]->addBlockLight(neighborRelPos, -neighborOffset.x, 0, -neighborOffset.z,
+                                        // TODO. UNA VEZ SEPAMOS QUE ESTO ES SEGURO CAMBIAR AT POR OPERATOR[]
+                                        ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, 0, 0, -neighborOffset.z,
                                             floodLight->color, floodLight->intensity, true);
-                                        blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y][chunkRelPos.z - neighborOffset.z]
+                                        blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z - neighborOffset.z]
                                             = floodLight->intensity;
 
                                     }
 
                                 }
 
-                                // X 0 0
-                                neighborPos = vec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z );
-                                neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z));
-                                neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+                                // Spread light.
 
-                                if (floodLight->intensity - 1 > neighborIntensity) {
+                                //+x
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedNorth, floodLight->intensity - 1, floodLight->color);
 
-                                    // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
-                                    ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, 0, 0,
-                                        floodLight->color, floodLight->intensity - 1, true);
-                                    blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y][chunkRelPos.z]
-                                        = floodLight->intensity - 1;
+                                //-x
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedSouth, floodLight->intensity - 1, floodLight->color);
 
-                                    ownedChunks[neighborPos]->addBlockLight(neighborRelPos, -neighborOffset.x, 0, 0,
-                                        floodLight->color, floodLight->intensity, true);
-                                    blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y][chunkRelPos.z]
-                                        = floodLight->intensity;
+                                //+y
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedUp, floodLight->intensity - 1, floodLight->color);
 
-                                }
- 
+                                //-y
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedDown, floodLight->intensity - 1, floodLight->color);
+
+                                //+z
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedEast, floodLight->intensity - 1, floodLight->color);
+
+                                //-z
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedWest, floodLight->intensity - 1, floodLight->color);
+
                             }
+                            floodLightsInstances.pop_front();
 
-                            if (neighborOffset.y != 0) {
+                            if (floodLightsInstances.size() > 0) {
 
-                                // 0 Y Z
-                                if (neighborOffset.z != 0) {
-
-                                    neighborPos = vec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z + neighborOffset.z);
-                                    neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z + neighborOffset.z));
-                                    neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
-
-                                    if (floodLight->intensity - 1 > neighborIntensity) {
-
-                                        // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
-                                        ownedChunk->addBlockLight(chunkRelPos, 0, neighborOffset.y, neighborOffset.z,
-                                            floodLight->color, floodLight->intensity - 1, true);
-                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z + neighborOffset.z]
-                                            = floodLight->intensity - 1;
-
-                                        ownedChunks[neighborPos]->addBlockLight(neighborRelPos, 0, -neighborOffset.y, -neighborOffset.z,
-                                            floodLight->color, floodLight->intensity, true);
-                                        blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z - neighborOffset.z]
-                                            = floodLight->intensity;
-
-                                    }
-                                }
-
-                                // 0 Y 0
-                                neighborPos = vec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z );
-                                neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
-                                neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
-
-                                if (floodLight->intensity - 1 > neighborIntensity) {
-
-                                    // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
-                                    ownedChunk->addBlockLight(chunkRelPos, 0, neighborOffset.y, 0,
-                                        floodLight->color, floodLight->intensity - 1, true);
-                                    blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z]
-                                        = floodLight->intensity - 1;
-
-                                    ownedChunks[neighborPos]->addBlockLight(neighborRelPos, 0, -neighborOffset.y, 0,
-                                        floodLight->color, floodLight->intensity, true);
-                                    blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z]
-                                        = floodLight->intensity;
-
-                                }
+                                // Reset loop variables
+                                firstSecondLoopIteration = false;
+                                floodLight = &floodLightsInstances.front();
+                                blockGlobalPos = &floodLight->pos; // We assume the chunk is the center of the coordinate system.
+                                chunkPosOffset = getChunkCoords(*blockGlobalPos);
+                                chunkRelPos = getChunkRelCoords(*blockGlobalPos);
+                                blockData = &ownedBlockData[chunkPosOffset]; // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
 
                             }
 
-                            // 0 0 Z
-                            if (neighborOffset.z != 0) {
+                        } while (floodLightsInstances.size() > 0);
 
-                                neighborPos = vec3(chunkPosOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
-                                neighborRelPos = getChunkRelCoords(vec3(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
-                                neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+                    }
 
-                                if (floodLight->intensity - 1 > neighborIntensity) {
+                }
 
-                                    // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
-                                    ownedChunk->addBlockLight(chunkRelPos, 0, 0, neighborOffset.z,
-                                        floodLight->color, floodLight->intensity - 1, true);
-                                    blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z + neighborOffset.z]
-                                        = floodLight->intensity - 1;
+                // Remesh chunks.
+                for (auto it = ownedChunks.cbegin(); it != ownedChunks.cend(); it++) {
 
-                                    ownedChunks[neighborPos]->addBlockLight(neighborRelPos, 0, 0, -neighborOffset.z,
-                                        floodLight->color, floodLight->intensity, true);
-                                    blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z - neighborOffset.z]
-                                        = floodLight->intensity;
+                    it->second->loadStatusMutex().lock();
+                    if (it->second->needsRemesh() && it->second->loadStatus() >= chunkLoadStatus::MESHED) {
 
-                                }
-                                
-                            }
+                        it->second->loadStatusMutex().unlock();
+                        remesh(it->second, priorityUpdate);
 
-                            // Spread light.
-
-                            //+x
-                            floodLightsInstances.emplace_back(*blockGlobalPos + vec3FixedNorth, floodLight->intensity - 1, floodLight->color);
-
-                            //-x
-                            floodLightsInstances.emplace_back(*blockGlobalPos + vec3FixedSouth, floodLight->intensity - 1, floodLight->color);
-
-                            //+y
-                            floodLightsInstances.emplace_back(*blockGlobalPos + vec3FixedUp, floodLight->intensity - 1, floodLight->color);
-
-                            //-y
-                            floodLightsInstances.emplace_back(*blockGlobalPos + vec3FixedDown, floodLight->intensity - 1, floodLight->color);
-
-                            //+z
-                            floodLightsInstances.emplace_back(*blockGlobalPos + vec3FixedEast, floodLight->intensity - 1, floodLight->color);
-
-                            //-z
-                            floodLightsInstances.emplace_back(*blockGlobalPos + vec3FixedWest, floodLight->intensity - 1, floodLight->color);
-
-                        }
-                        floodLightsInstances.pop_front();
-
-                        if (floodLightsInstances.size() > 0) {
-
-                            // Reset loop variables
-                            firstSecondLoopIteration = false;
-                            floodLight = &floodLightsInstances.front();
-                            blockGlobalPos = &floodLight->pos; // We assume the chunk is the center of the coordinate system.
-                            chunkPosOffset = getChunkCoords(*blockGlobalPos);
-                            chunkRelPos = getChunkRelCoords(*blockGlobalPos);
-                            blockData = &ownedBlockData[chunkPosOffset]; // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
-
-                        }
-
-                    } while (floodLightsInstances.size() > 0);
+                    }
+                    else
+                        it->second->loadStatusMutex().unlock();
 
                 }
 
             }
         
-            // Remesh chunks.
-            for (auto it = ownedChunks.cbegin(); it != ownedChunks.cend(); it++)
-                if (it->second->needsRemesh())
-                    remesh(it->second, priorityUpdate);
-
         }
-
-        // Disown owned chunks.
-        disownChunks_(ownedChunks);
 
     }
 
@@ -3392,13 +3454,19 @@ namespace VoxelEng {
         if (world::isSaved(c->chunkPos())) {  // Load previously saved chunk. Skips remaining loading passes.
 
             deserializeChunk(c, world::loadChunk(c->chunkPos()));
-            c->loadStatus(chunkLoadStatus::BASICTERRAINFROMDISK);
+            {
+                std::unique_lock<std::recursive_mutex> lock(c->loadStatusMutex());
+                c->loadStatus(chunkLoadStatus::BASICTERRAINFROMDISK);
+            }
 
         }
         else { // Generate new chunk.
 
             worldGen::generate(*c);
-            c->loadStatus(chunkLoadStatus::BASICTERRAIN);
+            {
+                std::unique_lock<std::recursive_mutex> lock(c->loadStatusMutex());
+                c->loadStatus(chunkLoadStatus::BASICTERRAIN);
+            }
 
         }
         increaseNeighborInfoPassCounter_(c, true);
@@ -3409,26 +3477,39 @@ namespace VoxelEng {
 
         chunk* c = static_cast<chunk*>(data);
 
+        c->loadStatusMutex().lock();
         if (c->loadStatus() == chunkLoadStatus::BASICTERRAIN || c->loadStatus() == chunkLoadStatus::BASICTERRAINFROMDISK) {
+            c->loadStatus(chunkLoadStatus::PENDING_DECORATED);
+            c->loadStatusMutex().unlock();
 
             worldGen::genPass2(*c);
 
+            c->loadStatusMutex().lock();
             c->loadStatus(chunkLoadStatus::DECORATED);
+            c->loadStatusMutex().unlock();
 
         }
+        else
+            c->loadStatusMutex().unlock();
 
         c->postGenPass();
 
-        remesh(c, false);
+        if (c->getFloodPointLightPositions().empty()) {
 
-        if (!c->getFloodPointLightPositions().empty())
+            c->poraqui16 = true;
+            remesh(c, false);
+            c->disownChunks();
+
+        }
+        else
             addLightTickJob(c, false, true);
 
     }
 
     void chunkManager::remeshChunkJob(void* data) {
 
-        remesh(static_cast<chunk*>(data), false);
+        chunk* c = static_cast<chunk*>(data);
+        remesh(c, false);
 
     }
 
@@ -3439,10 +3520,9 @@ namespace VoxelEng {
 
             world::saveChunk(c);
             c->modified(false);
+            c->disownChunks();
 
         }
-
-        c->loadStatus(chunkLoadStatus::NOTLOADED);
         chunksPool_.free(*c);
 
     }
@@ -3450,12 +3530,8 @@ namespace VoxelEng {
     void chunkManager::priorityRemeshChunkJob(void* data) {
 
         chunk* c = static_cast<chunk*>(data);
-
         c->needsRemesh(true);
-
         remesh(c, true);
-
-        priorityNewChunkMeshesCV_.notify_all();
 
     }
 
@@ -3465,9 +3541,23 @@ namespace VoxelEng {
         chunk* c = std::get<chunk*>(*data);
         bool causesPriorityUpdate = std::get<bool>(*data);
 
-        recalculateBlockLight_(*c, causesPriorityUpdate);
+        c->loadStatusMutex().lock();
+        if (c->loadStatus() == chunkLoadStatus::PENDING_LIGHTS_APPLIED) {
+            c->loadStatusMutex().unlock();
+        
+            recalculateBlockLight_(*c, causesPriorityUpdate);
 
-        delete data; // Does not remove the chunk cause we passed a pointer no a reference.
+            delete data; // Does not remove the chunk cause we passed a pointer no a reference.
+
+            c->loadStatusMutex().lock();
+            c->loadStatus(chunkLoadStatus::LIGHTS_APPLIED);
+            c->loadStatusMutex().unlock();
+
+            c->disownChunks();
+        
+        }
+        else
+            c->loadStatusMutex().unlock();
 
     }
 

@@ -98,7 +98,7 @@ namespace VoxelEng {
         float step = blockSearchIncrement_;
         const vec3& dir = playerTransform_.viewDirection,
                     globalPos = camera_->globalPos();
-        vec3 blockPos;
+        ivec3 blockPos;
         selectedBlock_ = block::emptyBlockP();
 
         while (step < blockReachRange_ && selectedBlock_->isEmptyBlock()) {

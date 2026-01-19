@@ -79,15 +79,15 @@ namespace VoxelEng {
 		Attributes.
 		*/
 
-		vec3 position,
-			 chunkPosition,
-			 rotation,
-			 scale,
-			 Xaxis,
-			 Yaxis,
-			 Zaxis,
-			 viewDirection,
-			 gravityDirection;
+		vec3 position;
+		ivec3 chunkPosition;
+		vec3 rotation;
+		vec3 scale;
+		vec3 Xaxis;
+		vec3 Yaxis;
+		vec3 Zaxis;
+		vec3 viewDirection;
+		vec3 gravityDirection;
 
 	};
 

@@ -3,7 +3,7 @@
 
 #include <list>
 #include <unordered_map>
-#include <unordered_set>
+#include <set>
 #include <vector>
 
 #include <vec.h>
@@ -13,11 +13,11 @@
 namespace VoxelEng {
 
 	typedef threadsafe<std::unordered_map<basicVec3, std::list<blockLightMod>>> blockLightsBySpreadLight;
-	typedef std::unordered_map<vec3, blockLightsBySpreadLight> blockLightsByNeighbor;
+	typedef std::unordered_map<ivec3, blockLightsBySpreadLight> blockLightsByNeighbor;
 
 	struct neighborsInfo {
 	
-		threadsafe<int> neighborsGenPass1Completed_;
+		threadsafe<std::set<ivec3>> neighborsGenPass1Completed_;
 		threadsafe<blockLightsByNeighbor> blockLightsFromNeighbor;
 	
 	};

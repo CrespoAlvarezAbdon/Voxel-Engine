@@ -111,7 +111,7 @@ namespace VoxelEng {
 		/**
 		* @brief Get the camera's chunk relative position.
 		*/
-		const vec3& chunkPos() const;
+		const ivec3& chunkPos() const;
 
 		/**
 		* @brief Get the camera's global position.
@@ -201,7 +201,7 @@ namespace VoxelEng {
 		/**
 		* @brief Set the camera's chunk position.
 		*/
-		void setChunkPos(const vec3& newChunkPos);
+		void setChunkPos(const ivec3& newChunkPos);
 
 		/**
 		* @brief Set the camera's chunk position.
@@ -347,7 +347,7 @@ namespace VoxelEng {
 
 	}
 
-	inline const vec3& camera::chunkPos() const {
+	inline const ivec3& camera::chunkPos() const {
 
 		return transform_.chunkPosition;
 
@@ -389,7 +389,7 @@ namespace VoxelEng {
 
 	}
 
-	inline void camera::setChunkPos(const vec3& newChunkPos) {
+	inline void camera::setChunkPos(const ivec3& newChunkPos) {
 
 		setChunkPos(newChunkPos.x, newChunkPos.y, newChunkPos.z);
 
@@ -415,16 +415,12 @@ namespace VoxelEng {
 
 	inline void camera::updateView() {
 
-#if GRAPHICS_API == OPENGL
+		#if GRAPHICS_API == OPENGL
 
-		viewMatrix_ = glm::lookAt(transform_.position, transform_.position + transform_.viewDirection, transform_.Yaxis);
-		cameraFrustum_.updatePlanes();
+			viewMatrix_ = glm::lookAt(transform_.position, transform_.position + transform_.viewDirection, transform_.Yaxis);
+			cameraFrustum_.updatePlanes();
 
-#else
-
-
-
-#endif
+		#endif
 
 	}
 
