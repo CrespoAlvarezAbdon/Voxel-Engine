@@ -1261,6 +1261,9 @@ namespace VoxelEng {
         poraqui24 = false;
         poraqui25 = false;
         poraqui26 = false;
+        poraqui27 = false;
+        poraqui28 = false;
+        poraqui29 = false;
         wasMadeEmpty = true;
 
         palette_.clear();
@@ -1984,7 +1987,7 @@ namespace VoxelEng {
             
                 c->poraqui19 = true;
                 decreaseNeighborInfoPassCounter_(*c);
-                issueChunkMeshJob(chunkJobType::UNLOADANDSAVE, c, true);
+                issueChunkJob(chunkJobType::UNLOADANDSAVE, c, true);
             
             }
 
@@ -2082,16 +2085,26 @@ namespace VoxelEng {
                     if (c.unloadWhenNoOwners()) { // And was told to unload when it has no owners, unload it.
 
                         decreaseNeighborInfoPassCounter_(c);
-                        issueChunkMeshJob(chunkJobType::UNLOADANDSAVE, &c, true);
+                        issueChunkJob(chunkJobType::UNLOADANDSAVE, &c, true);
 
                     }
-                    else { // Else, pass it to common chunks again.
+                    else { // Else, pass it to common chunks again IF inside chunk rendering distance. Otherwise, unload it.
 
-                        clientChunks_[chunkPos] = &c;
                         c.poraqui14 = true;
                         c.poraqui15 = c.loadStatus();
 
-                        // MAÑANA. AQUI FALTA UN LOAD???
+                        if (chunkInRenderDistance(chunkPos)) {
+
+                            c.poraqui29 = true;
+                            simulatedChunkToCommon_(&c);
+
+                        }
+                        else {
+                        
+                            decreaseNeighborInfoPassCounter_(c);
+                            issueChunkJob(chunkJobType::UNLOADANDSAVE, &c, true);
+                        
+                        }
 
                     }
                 
@@ -2663,7 +2676,7 @@ namespace VoxelEng {
             c->loadStatusMutex().unlock();
 
             // Submit async task to load the chunk either from disk or by generating it.
-            issueChunkMeshJob(chunkJobType::LOAD, c); // TODO. PRIORIZAR LOS SIGUIENTES CHUNKS MÁS CERCANOS AL JUGADOR EN LA DIRECCIÓN A LA QUE SE ESTÁ MOVIENDO
+            issueChunkJob(chunkJobType::LOAD, c); // TODO. PRIORIZAR LOS SIGUIENTES CHUNKS MÁS CERCANOS AL JUGADOR EN LA DIRECCIÓN A LA QUE SE ESTÁ MOVIENDO
             c->poraqui8 = true;
         
         }
@@ -2673,13 +2686,13 @@ namespace VoxelEng {
             c->poraqui5 = true;
         }
            
-
         return c;
 
     }
 
-    void chunkManager::issueChunkMeshJob(chunkJobType type, void* data, bool pushJobBack) {
+    void chunkManager::issueChunkJob(chunkJobType type, chunk* c, bool pushJobBack) {
 
+        bool send = true;
         job* aJob = &loadChunkJobs_->get();
 
         // Set the task.
@@ -2689,19 +2702,26 @@ namespace VoxelEng {
             logger::errorLog("No chunk job type was specified");
             break;
         case chunkJobType::LOAD:
-            aJob->setTask(loadChunkJob, data, loadChunkJobs_);
+            aJob->setTask(loadChunkJob, c, loadChunkJobs_);
             break;
         case chunkJobType::LOAD2:
-            aJob->setTask(loadChunkJobPass2, data, loadChunkJobs_);
+            c->loadStatusMutex().lock();
+            if (c->loadStatus() == chunkLoadStatus::BASICTERRAIN || c->loadStatus() == chunkLoadStatus::BASICTERRAINFROMDISK) {
+                c->loadStatus(chunkLoadStatus::PENDING_DECORATED);
+                aJob->setTask(loadChunkJobPass2, c, loadChunkJobs_);
+            }
+            else
+                send = false;
+            c->loadStatusMutex().unlock();
             break;
         case chunkJobType::ONLYREMESH:
-            aJob->setTask(remeshChunkJob, data, loadChunkJobs_);
+            aJob->setTask(remeshChunkJob, c, loadChunkJobs_);
             break;
         case chunkJobType::UNLOADANDSAVE:
-            aJob->setTask(unloadAndSaveChunkJob, data, loadChunkJobs_);
+            aJob->setTask(unloadAndSaveChunkJob, c, loadChunkJobs_);
             break;
         case chunkJobType::PRIORITYREMESH:
-            aJob->setTask(priorityRemeshChunkJob, data, loadChunkJobs_);
+            aJob->setTask(priorityRemeshChunkJob, c, loadChunkJobs_);
             break;
         default:
             logger::errorLog("Unsupported chunkJobType type " + std::to_string(static_cast<int>(type)));
@@ -2709,26 +2729,33 @@ namespace VoxelEng {
         }
 
         // Send the job to its corresponding queue.
-        switch (type) {
+        if (send) {
 
-        case chunkJobType::NONE:
-            logger::errorLog("No chunk job type was specified");
-            break;
+            switch (type) {
 
-        case chunkJobType::PRIORITYREMESH:
-            priorityChunkTasks_->submitJob(aJob, pushJobBack);
-            break;
-        case chunkJobType::LOAD:
-        case chunkJobType::LOAD2:
-        case chunkJobType::ONLYREMESH:
-        case chunkJobType::UNLOADANDSAVE:
-            chunkTasks_->submitJob(aJob, pushJobBack);
-            break;
-        default:
-            logger::errorLog("Unsupported chunkJobType type " + std::to_string(static_cast<int>(type)));
-            break;
+            case chunkJobType::NONE:
+                logger::errorLog("No chunk job type was specified");
+                break;
+
+            case chunkJobType::PRIORITYREMESH:
+                priorityChunkTasks_->submitJob(aJob, pushJobBack);
+                break;
+            case chunkJobType::LOAD:
+            case chunkJobType::LOAD2:
+            case chunkJobType::ONLYREMESH:
+            case chunkJobType::UNLOADANDSAVE:
+                chunkTasks_->submitJob(aJob, pushJobBack);
+                break;
+            default:
+                logger::errorLog("Unsupported chunkJobType type " + std::to_string(static_cast<int>(type)));
+                break;
+
+            }
 
         }
+        else
+            loadChunkJobs_->free(*aJob);
+        
     }
 
     void chunkManager::clear() {
@@ -2986,7 +3013,7 @@ namespace VoxelEng {
             c->loadStatusMutex().unlock();
 
             c->getAndOwnChunks();
-            issueChunkMeshJob(chunkJobType::LOAD, c);
+            issueChunkJob(chunkJobType::LOAD, c);
             c->poraqui = true;
 
         }
@@ -2997,7 +3024,7 @@ namespace VoxelEng {
 
             increaseNeighborInfoPassCounter_(c);
             if (c->needsRemesh())
-                issueChunkMeshJob(chunkJobType::ONLYREMESH, c);
+                issueChunkJob(chunkJobType::ONLYREMESH, c);
 
         }
     
@@ -3013,7 +3040,7 @@ namespace VoxelEng {
         std::set<ivec3>& completed = info->neighborsGenPass1Completed_.get();
         completed.insert(chunkPos);
         if (sendLoad2JobWhenRequired && completed.size() == 27)
-            issueChunkMeshJob(chunkJobType::LOAD2, c);
+            issueChunkJob(chunkJobType::LOAD2, c);
         info->neighborsGenPass1Completed_.unlock();
 
         ivec3 neighborPos;
@@ -3029,10 +3056,14 @@ namespace VoxelEng {
             std::set<ivec3>& neighborCompleted = infoNeighbor->neighborsGenPass1Completed_.get();
             neighborCompleted.insert(chunkPos);
             if (sendLoad2JobWhenRequired && neighbor && neighborCompleted.size() == 27)
-                issueChunkMeshJob(chunkJobType::LOAD2, neighbor);
+                issueChunkJob(chunkJobType::LOAD2, neighbor);
+            if(neighbor)
+                neighbor->poraqui28 = true;
             infoNeighbor->neighborsGenPass1Completed_.unlock();
 
         }
+
+        c->poraqui27 = true;
 
     }
 
@@ -3477,20 +3508,11 @@ namespace VoxelEng {
 
         chunk* c = static_cast<chunk*>(data);
 
+        worldGen::genPass2(*c);
+
         c->loadStatusMutex().lock();
-        if (c->loadStatus() == chunkLoadStatus::BASICTERRAIN || c->loadStatus() == chunkLoadStatus::BASICTERRAINFROMDISK) {
-            c->loadStatus(chunkLoadStatus::PENDING_DECORATED);
-            c->loadStatusMutex().unlock();
-
-            worldGen::genPass2(*c);
-
-            c->loadStatusMutex().lock();
-            c->loadStatus(chunkLoadStatus::DECORATED);
-            c->loadStatusMutex().unlock();
-
-        }
-        else
-            c->loadStatusMutex().unlock();
+        c->loadStatus(chunkLoadStatus::DECORATED);
+        c->loadStatusMutex().unlock();
 
         c->postGenPass();
 
@@ -3523,6 +3545,7 @@ namespace VoxelEng {
             c->disownChunks();
 
         }
+        c->poraqui24 = true;
         chunksPool_.free(*c);
 
     }

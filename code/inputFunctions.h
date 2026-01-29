@@ -142,6 +142,11 @@ namespace VoxelEng {
 		*/
 		static void getCurrentChunk();
 
+		/**
+		* @brief Reload the chunk the player is currently in.
+		*/
+		static void reloadCurrentChunk();
+
 		
 		// Clean up.
 
@@ -280,6 +285,13 @@ namespace VoxelEng {
 
 		int a = 3 + 2;
 	
+	}
+
+	inline void inputFunctions::reloadCurrentChunk() {
+
+		chunk* c = chunkManager::getChunk(player::chunkPos());
+		chunkManager::ensureChunkIfVisible(c->chunkPos());
+
 	}
 
 }

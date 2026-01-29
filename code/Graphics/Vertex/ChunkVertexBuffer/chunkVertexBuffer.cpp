@@ -45,7 +45,7 @@ namespace VoxelEng {
 
                 if (lastPushedBytePos_ + size < maxSize_) {
 
-                    bufferZones[chunkPos] = { lastPushedBytePos_ , size };
+                    bufferZones[chunkPos] = { lastPushedBytePos_ , size, extraRenderData };
                     glBufferSubData(GL_ARRAY_BUFFER, lastPushedBytePos_, size, data);
                     lastPushedBytePos_ += size;
 
@@ -61,7 +61,7 @@ namespace VoxelEng {
 
                 if (itFit->size == size) {
 
-                    bufferZones[chunkPos] = { itFit->startPos , size };
+                    bufferZones[chunkPos] = { itFit->startPos , size, extraRenderData };
                     glBufferSubData(GL_ARRAY_BUFFER, itFit->startPos, size, data);
 
                     freedZones_.erase(itFit);
@@ -70,7 +70,7 @@ namespace VoxelEng {
                 }
                 else { // itFit->size > size
 
-                    bufferZones[chunkPos] = { itFit->startPos , size };
+                    bufferZones[chunkPos] = { itFit->startPos , size, extraRenderData };
                     glBufferSubData(GL_ARRAY_BUFFER, itFit->startPos, size, data);
 
                     freedZonesBySize::iterator itSize = freedZonesBySize_.insert(
@@ -99,11 +99,13 @@ namespace VoxelEng {
 
                 // Update buffer zone.
                 preexistingZone.size = size;
+                preexistingZone.extraRenderingData = extraRenderData;
                 glBufferSubData(GL_ARRAY_BUFFER, preexistingZone.startPos, preexistingZone.size, data);
             
             }
             else if (size == preexistingZone.size) {
             
+                preexistingZone.extraRenderingData = extraRenderData;
                 glBufferSubData(GL_ARRAY_BUFFER, preexistingZone.startPos, preexistingZone.size, data);
             
             }
@@ -114,6 +116,7 @@ namespace VoxelEng {
                     // If this preexisting zone is the last buffer zone.
 
                     preexistingZone.size = size;
+                    preexistingZone.extraRenderingData = extraRenderData;
                     if (preexistingZone.startPos + preexistingZone.size < maxSize_)
                         lastPushedBytePos_ = preexistingZone.startPos + preexistingZone.size;
                     else
@@ -131,6 +134,7 @@ namespace VoxelEng {
                         // There is no freed zone with size greater than or equal to the required by this chunk's vertex data.
                         preexistingZone.startPos = lastPushedBytePos_;
                         preexistingZone.size = size;
+                        preexistingZone.extraRenderingData = extraRenderData;
                         if (preexistingZone.startPos + preexistingZone.size < maxSize_)
                             lastPushedBytePos_ = preexistingZone.startPos + preexistingZone.size;
                         else
@@ -146,6 +150,7 @@ namespace VoxelEng {
 
                             preexistingZone.startPos = itFit->startPos;
                             preexistingZone.size = size;
+                            preexistingZone.extraRenderingData = extraRenderData;
 
                             freedZones_.erase(itFit);
                             freedZonesBySize_.erase(itFit);
@@ -155,6 +160,7 @@ namespace VoxelEng {
 
                             preexistingZone.startPos = itFit->startPos;
                             preexistingZone.size = size;
+                            preexistingZone.extraRenderingData = extraRenderData;
 
                             freedZonesBySize::iterator itSize = freedZonesBySize_.insert({ itFit->startPos + size, itFit->size - size }).first;
                             auto itDebug = freedZones_.insert(itSize);

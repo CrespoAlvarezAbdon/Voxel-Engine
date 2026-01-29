@@ -114,6 +114,9 @@ namespace VoxelEng {
 		bool poraqui24 = false;
 		bool poraqui25 = false;
 		bool poraqui26 = false;
+		bool poraqui27 = false;
+		bool poraqui28 = false;
+		bool poraqui29 = false;
 		bool wasMadeEmpty = false;
 
 		// Initialisers.
@@ -1805,9 +1808,11 @@ namespace VoxelEng {
 		* @brief Issue a job related to chunk processing.
 		* The job will be executed on another thread and will lock the chunk's mutexes that
 		* are required.
+		* @param type Type of job to issue.
+		* @param c The chunk associated with the job to issue.
 		* @param pushJobBack. Whether to insert the job at the back of the queue (true) or at the beginning (false).
 		*/
-		static void issueChunkMeshJob(chunkJobType type, void* data, bool pushJobBack = true);
+		static void issueChunkJob(chunkJobType type, chunk* c, bool pushJobBack = true);
 
 		/** 
 		* @brief Used on chunkManager::onUnloadAsFrontier to update the neighbor

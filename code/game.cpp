@@ -609,6 +609,7 @@ namespace VoxelEng {
             input::setControlAction(controlCode::alpha9, inputFunctions::selectBlockSlot9, false);
             input::setControlAction(controlCode::p, inputFunctions::intentionalCrash, false);
             input::setControlAction(controlCode::q, inputFunctions::getCurrentChunk, false);
+            input::setControlAction(controlCode::t, inputFunctions::reloadCurrentChunk, false);
 
         }
 
@@ -762,13 +763,23 @@ namespace VoxelEng {
         shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
         translucentShadowFB_->getTexture(textureType::COLOR, 0)->bind(2);
         translucentShadowFB_->getTexture(textureType::DEPTH, 0)->bind(3);
+        bool once = false;
         for (const ivec3& chunkPos : opaqueChunkGeometryToDraw) {
 
             const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, false);
-            if (playerCamera_->isInsideFrustum(bufferZone.extraRenderingData.globalChunkPos))
+            if (playerCamera_->isInsideFrustum(bufferZone.extraRenderingData.globalChunkPos)) {
+
+                // MAÑANA. globalChunkPos POR ALGÚN MOTIVO ES 0 0 0 ALWAYS. ALSO RECUERDA QUE ALGUNOS CHUNKS NO ENTRAN EN LOAD1 PERO SI HAN DEJADO SU TICKET A SUS NEIGHBORS PARA PASAR A FASE2
+            
                 renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
+                once = true;
+            
+            }
 
         }
+
+        if (!once && !opaqueChunkGeometryToDraw.empty())
+            int a = 3 + 2;
 
         // Entity rendering. // TODO. HAY QUE METER TAMBIÉN LO DE VERTICES TRANSLÚCIDOS PARA LAS ENTIDADES.
         entitiesVao_->bind();
