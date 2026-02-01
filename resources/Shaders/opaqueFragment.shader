@@ -112,10 +112,11 @@ float shadow = 0.0;
 float translucentShadow = 0.0;
 vec4 coloredShadow = vec4(0.0);
 
+// Functions.
 vec4 unpackColor(int packedColor) {
 
     // Extract each 8-bit chunk
-    int r = int(packedColor        & 0xFFu);
+    int r = int(packedColor         & 0xFFu);
     int g = int((packedColor >>  8) & 0xFFu);
     int b = int((packedColor >> 16) & 0xFFu);
     int a = int((packedColor >> 24) & 0xFFu);
@@ -244,7 +245,8 @@ void main() {
         light.diffuse = unpackColor(lightPacked.params[1]);
         light.specular = unpackColor(lightPacked.params[2]);
 
-        // Initialize variables.
+        // Initialize and declare function variables.
+        color = vec4(0.0);
         vec4 albedo = texture(textureAtlas, v_TexCoord) * v_color;
         vec3 norm = normalize(cross(dFdx(v_pos), dFdy(v_pos)));
 		vec3 viewDir = normalize(u_viewPos - v_pos);
@@ -258,9 +260,11 @@ void main() {
         // Apply shadows.
         ShadowCalculation(v_LightSpacePos, norm, lightInstance);
 
-		// Apply directional lights.
+		// Apply lights.
         vec4 blockLit = (v_blockLightColor + v_baryCoords.x * v_baryCoords.y * v_mixedVertexColorData);
         vec4 dirLight = CalcDirLight(light, lightInstance, norm, viewDir, (1 - shadow), (1 - translucentShadow), hitDirLightModifier, material) * u_useComplexLighting;
+        
+        // Final color calculation.
         color = albedo * (dirLight + blockLit);
 
         if(translucentShadow == 1.0 && hitDirLightModifier > 0.5)

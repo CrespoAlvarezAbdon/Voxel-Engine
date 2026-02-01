@@ -15,7 +15,7 @@ void main()
 
     if (textureColor.a < 0.9)
     {
-        shadowColor = textureColor; // Reduce color intensity by half.
+        shadowColor = textureColor;
     }
         
     gl_FragDepth = gl_FragCoord.z;
