@@ -108,8 +108,8 @@ layout(std430, binding = 3) buffer SpotLightsInstances {
 };
 
 // Variables.
-float shadow = 1.0;
-float translucentShadow = 1.0;
+float shadow = 0.0;
+float translucentShadow = 0.0;
 vec4 coloredShadow = vec4(0.0);
 vec4 color;
 
@@ -117,7 +117,7 @@ vec4 color;
 vec4 unpackColor(int packedColor) {
 
     // Extract each 8-bit chunk
-    int r = int(packedColor         & 0xFFu);
+    int r = int( packedColor        & 0xFFu);
     int g = int((packedColor >>  8) & 0xFFu);
     int b = int((packedColor >> 16) & 0xFFu);
     int a = int((packedColor >> 24) & 0xFFu);
@@ -133,6 +133,7 @@ vec4 unpackColor(int packedColor) {
 
 }
 
+// Shadow values are expected here to go from 1 (full bright) to 0 (full shadow)
 vec4 CalcDirLight(DirectionalLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, float shadow, float translucentShadow, float hitDirLightModifier, Material material) {
 
     // Specular shading calculations.
@@ -268,7 +269,7 @@ void main() {
 
     if(translucentShadow == 1.0 && hitDirLightModifier > 0.5)
     {
-        color += coloredShadow * u_useComplexLighting;
+        color += coloredShadow / 4 * u_useComplexLighting;
     }
 
 	// Weight function

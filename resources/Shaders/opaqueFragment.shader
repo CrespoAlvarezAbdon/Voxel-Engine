@@ -116,7 +116,7 @@ vec4 coloredShadow = vec4(0.0);
 vec4 unpackColor(int packedColor) {
 
     // Extract each 8-bit chunk
-    int r = int(packedColor         & 0xFFu);
+    int r = int( packedColor        & 0xFFu);
     int g = int((packedColor >>  8) & 0xFFu);
     int b = int((packedColor >> 16) & 0xFFu);
     int a = int((packedColor >> 24) & 0xFFu);
@@ -269,7 +269,7 @@ void main() {
 
         if(translucentShadow == 1.0 && hitDirLightModifier > 0.5)
         {
-            color += coloredShadow * u_useComplexLighting;
+            color += coloredShadow / 4 * u_useComplexLighting;
         }
 
 	}
