@@ -3166,7 +3166,6 @@ namespace VoxelEng {
 
     void chunkManager::recalculateBlockLight_(chunk& c, bool priorityUpdate) {
 
-        // Get this chunk plus its 26 neighbors and their block data. TODO. MAKE THIS INTO A FUNCTION.
         std::unique_lock<std::recursive_mutex> lock(c.ownedChunksMutex());
         const std::unordered_map<ivec3, chunk*>& ownedChunks = c.ownedChunks();
 
@@ -3234,7 +3233,7 @@ namespace VoxelEng {
                         blockLightMod* floodLight = &floodLightsInstances.front();
                         do {
 
-                            // NO SE ESTÁ RECALCULANDO EL IS OPAQUE CUANDO SE DESERIALIZA UN CHUNK GUARDADO
+                            // MAÑANA. NO SE ESTÁ RECALCULANDO EL IS OPAQUE CUANDO SE DESERIALIZA UN CHUNK GUARDADO
                             if ((firstSecondLoopIteration || !blockData->isOpaque_->at(chunkRelPos)) &&
                                 floodLight->intensity > blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z]) {
 
@@ -3554,7 +3553,9 @@ namespace VoxelEng {
 
         chunk* c = static_cast<chunk*>(data);
         c->needsRemesh(true);
-        remesh(c, true);
+        c->getAndOwnChunks();
+        recalculateBlockLight_(*c, true);
+        c->disownChunks();
 
     }
 
