@@ -15,6 +15,7 @@
 #include <condition_variable>
 #include <cstddef>
 #include <deque>
+#include <initializer_list>
 #include <list>
 #include <thread>
 #include <mutex>
@@ -557,41 +558,85 @@ namespace VoxelEng {
 
 		/**
 		* @brief Add the given block light modification to the chunk.
-		* @param mod The block light modification to apply.
+		* @param x Chunk-local-grid X-axis coordinate.
+		* @param y Chunk-local-grid Y-axis coordinate.
+		* @param z Chunk-local-grid Z-axis coordinate.
+		* @param color Block light's color.
+		* @param intensity Block light's intensity.
+		* @param markToBeRemeshed Whether to set the chunk as in need to be remeshed (true) or not (false).
 		*/
 		void addBlockLight(char x, char y, char z, const basicVec4& color, char intensity, bool markToBeRemeshed);
 
 		/**
 		* @brief Apply the given block light modification to the chunk.
-		* @param mod The block light modification to apply.
+		* @param inChunkPos Chunk-local-grid coordinates.
+		* @param color Block light's color.
+		* @param intensity Block light's intensity.
+		* @param markToBeRemeshed Whether to set the chunk as in need to be remeshed (true) or not (false).
 		*/
-		void addBlockLight(const ivec3& blockPos, const basicVec4& color, char intensity, bool markToBeRemeshed);
+		void addBlockLight(const ivec3& inChunkPos, const basicVec4& color, char intensity, bool markToBeRemeshed);
 
 		/**
 		* @brief Apply the given block light modification to the chunk.
-		* @param mod The block light modification to apply.
+		* @param inChunkPos Chunk-local-grid coordinates.
+		* @param xOffset Chunk-local-grid X-axis coordinate offset.
+		* @param yOffset Chunk-local-grid Y-axis coordinate offset.
+		* @param zOffset Chunk-local-grid Z-axis coordinate offset.
+		* @param color Block light's color.
+		* @param intensity Block light's intensity.
+		* @param markToBeRemeshed Whether to set the chunk as in need to be remeshed (true) or not (false).
 		*/
-		void addBlockLight(const ivec3& blockPos, char xOffset, char yOffset, char zOffset,
+		void addBlockLight(const ivec3& inChunkPos, char xOffset, char yOffset, char zOffset,
 			const basicVec4& color, char intensity, bool markToBeRemeshed);
 
 		/**
 		* @brief Apply the given block light modification to the chunk.
-		* @param mod The block light modification to apply.
+		* @param x Chunk-local-grid X-axis coordinate.
+		* @param y Chunk-local-grid Y-axis coordinate.
+		* @param z Chunk-local-grid Z-axis coordinate.
+		* @param color Block light's color.
+		* @param intensity Block light's intensity.
+		* @param markToBeRemeshed Whether to set the chunk as in need to be remeshed (true) or not (false).
 		*/
 		void applyBlockLight(char x, char y, char z, const basicVec4& color, char intensity, bool markToBeRemeshed);
 
 		/**
 		* @brief Apply the given block light modification to the chunk.
-		* @param mod The block light modification to apply.
+		* @param inChunkPos Chunk-local-grid coordinates.
+		* @param color Block light's color.
+		* @param intensity Block light's intensity.
+		* @param markToBeRemeshed Whether to set the chunk as in need to be remeshed (true) or not (false).
 		*/
-		void applyBlockLight(const ivec3& blockPos, const basicVec4& color, char intensity, bool markToBeRemeshed);
+		void applyBlockLight(const ivec3& inChunkPos, const basicVec4& color, char intensity, bool markToBeRemeshed);
 
 		/**
 		* @brief Apply the given block light modification to the chunk.
-		* @param mod The block light modification to apply.
+		* @param inChunkPos Chunk-local-grid coordinates.
+		* @param xOffset Chunk-local-grid X-axis coordinate offset.
+		* @param yOffset Chunk-local-grid Y-axis coordinate offset.
+		* @param zOffset Chunk-local-grid Z-axis coordinate offset.
+		* @param color Block light's color.
+		* @param intensity Block light's intensity.
+		* @param markToBeRemeshed Whether to set the chunk as in need to be remeshed (true) or not (false).
 		*/
-		void applyBlockLight(const ivec3& blockPos, char xOffset, char yOffset, char zOffset,
+		void applyBlockLight(const ivec3& inChunkPos, char xOffset, char yOffset, char zOffset,
 			const basicVec4& color, char intensity, bool markToBeRemeshed);
+
+		/**
+		* @brief Remove any block light applied to the specified position in the chunk.
+		* @param inChunkPos Chunk-local-grid coordinates.
+		* @param markToBeRemeshed Whether to set the chunk as in need to be remeshed (true) or not (false).
+		*/
+		void removeBlockLight(const ivec3& inChunkPos, bool markToBeRemeshed);
+
+		/**
+		* @brief Remove any block light applied to the specified position in the chunk.
+		* @param x Chunk-local-grid X-axis coordinate.
+		* @param y Chunk-local-grid Y-axis coordinate.
+		* @param z Chunk-local-grid Z-axis coordinate.
+		* @param markToBeRemeshed Whether to set the chunk as in need to be remeshed (true) or not (false).
+		*/
+		void removeBlockLight(char x, char y, char z, bool markToBeRemeshed);
 
 		/**
 		* @brief The chunk's block data will be filled with null blocks, leaving the chunk "empty of blocks".
@@ -1242,6 +1287,12 @@ namespace VoxelEng {
 		const basicVec4& color, char intensity, bool markToBeRemeshed) {
 	
 		applyBlockLight(inChunkPos.x + xOffset, inChunkPos.y + yOffset, inChunkPos.z + zOffset, color, intensity, markToBeRemeshed);
+	
+	}
+
+	inline void chunk::removeBlockLight(const ivec3& inChunkPos, bool markToBeRemeshed) {
+	
+		removeBlockLight(inChunkPos.x, inChunkPos.y, inChunkPos.z, markToBeRemeshed);
 	
 	}
 
@@ -2104,10 +2155,18 @@ namespace VoxelEng {
 
 		static void processWorldLightUpdates_();
 
-		/**
-		* @brief Recalculate all the block lighting applied to the chunk.
-		*/
-		static void recalculateBlockLight_(chunk& c, bool priorityUpdate);
+		// Spread all blocklights from chunk c towards itself and its neighbors.
+		// WARNING. DOESN'T CLEAR PREVIOUS APPLIED LIGHTS.
+		static void spreadBlockLights_(chunk& c, bool priorityUpdate);
+
+		// Recalculate all the block lighting applied to the chunk and its neighbors after a blocklight in c has been removed.
+		// NOTE. The positions of the lights must be in global grid coordinates.
+		static void removeBlockLightAndRecalculate_(chunk& c, bool priorityUpdate, std::initializer_list<ivec3> lightsToRemove);
+
+		// Used in recalculateBlockLight_ to get required data related to the lighting of the chunk and its neighbors 
+		// that are going to get recalculated.
+		static bool getDataForCalculatingBlockLight_(chunk& c, const std::unordered_map<ivec3, chunk*>& ownedChunks, 
+			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData, std::unordered_map<ivec3, Padded3DArray<char>>& blockLightIntensity);
 
 		/*
 		Jobs.

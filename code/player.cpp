@@ -154,7 +154,6 @@ namespace VoxelEng {
                 if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos))) {
 
                     neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
-                    //neighbor->setBlockNeighbor(chunkRelPos.y, chunkRelPos.z, blockViewDir::PLUSX, block::emptyBlock());
                     chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
 
                 }

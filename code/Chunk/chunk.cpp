@@ -1226,6 +1226,26 @@ namespace VoxelEng {
             needsRemesh_ = true;
     }
 
+    void chunk::removeBlockLight(char x, char y, char z, bool markToBeRemeshed) {
+    
+        // MAÑANA.
+        // 1º. PONER LISTA DE LUCES VECINAS A LO PADDED ARRAY (THAT IS, CON COORDENADAS EN BORDES)
+        // 2º. SI EN RECALCULATE LA LUZ DE CHUNK C SE PASA A X VECINO, PONERLA EN SU LISTA (PUEDE HABER VARIAS LUCES EN LA MISMA POS 
+        //     (std::unordered_map<ivec3, std::unordered_multiset<color>>)
+        // 3º. SI SE QUITA X LUZ DE CHUNK C A X VECINO PORQUE YA NO LLEGA O PORQUE SE HA QUITADO, QUITARLA DE LA LISTA.
+        // 4º. CADA VEZ QUE SE CAMBIE EL CONTENIDO DE A LISTA, TOCA HACER RECALCULATE Y EN EL RECALCULATE SE TIENE EN CUENTA LAS LUCES VECINAS PERO
+        //     NO SE PROPAGA A SU VEZ A OTROS VECINOS (EL PADDED ARRAY TENDRÁ EN CUENTA ESQUINAS Y COLUMNAS.
+
+        blockLightColor_[x][y][z].x = 0;
+        blockLightColor_[x][y][z].y = 0;
+        blockLightColor_[x][y][z].z = 0;
+        blockLightLevel_[x][y][z] = 0;
+
+        if (markToBeRemeshed)
+            needsRemesh_ = true;
+    
+    }
+
     void chunk::makeEmpty() {
 
         {
@@ -3164,45 +3184,20 @@ namespace VoxelEng {
 
     }
 
-    void chunkManager::recalculateBlockLight_(chunk& c, bool priorityUpdate) {
+    void chunkManager::spreadBlockLights_(chunk& c, bool priorityUpdate) {
 
         std::unique_lock<std::recursive_mutex> lock(c.ownedChunksMutex());
         const std::unordered_map<ivec3, chunk*>& ownedChunks = c.ownedChunks();
 
         if (!ownedChunks.empty()) {
         
+            // Propagate every light across the chunk and its neighbors without taking into account chunk borders.
             std::unordered_map<ivec3, chunkBlockData> ownedBlockData; // Chunk pos offset is used as key.
             std::unordered_map<ivec3, Padded3DArray<char>> blockLightIntensity; // TODO. COMO SOLO HAY 26 VECINOS, CAMBIAR UNORDERED MAP POR UNA ESTRUCURA QUE HAGA UN SWITCH.
-            bool skipJob = false;
-            {
-                const ivec3& chunkPos = c.chunkPos();
-                chunk* neighbor = nullptr;
-                std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+            if (getDataForCalculatingBlockLight_(c, ownedChunks, ownedBlockData, blockLightIntensity)) {
 
-                ownedBlockData[vec3Zero] = c.blockData();
-                blockLightIntensity.emplace(std::piecewise_construct,
-                    std::forward_as_tuple(vec3Zero),
-                    std::forward_as_tuple(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0));
-                for (auto it = neighborsOffsets.cbegin(); !skipJob && it != neighborsOffsets.cend(); it++) {
-
-                    const ivec3& chunkPosOffset = *it;
-                    if (neighbor = ownedChunks.at(chunkPosOffset)) {
-
-                        ownedBlockData[chunkPosOffset] = neighbor->blockData();
-                        blockLightIntensity.emplace(std::piecewise_construct,
-                            std::forward_as_tuple(chunkPosOffset),
-                            std::forward_as_tuple(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0));
-
-                    }
-                    else
-                        skipJob = true;
-
-                }
-
-            }
-
-            // Propagate every light across the chunk and its neighbors without taking into account chunk borders.
-            if (!skipJob) {
+                // This is for the flooding process not to end on the same blocklight that starts it if the block is opaque.
+                bool firstSecondLoopIteration = false;
 
                 const std::unordered_set<ivec3>& floodPointLightPositions = c.getFloodPointLightPositions();
                 ivec3 chunkPosOffset = vec3Zero;
@@ -3211,12 +3206,543 @@ namespace VoxelEng {
                 ivec3 neighborPos = vec3Zero;
                 ivec3 neighborRelPos = vec3Zero;
                 std::deque<blockLightMod> floodLightsInstances;
-                bool firstSecondLoopIteration = false;
                 char neighborIntensity = 0; // TODO. cambiar por char& ???
                 for (auto it = floodPointLightPositions.cbegin(); it != floodPointLightPositions.cend(); it++) {
 
                     // Reset first loop variables.
-                    for (auto it = neighborsOffsets.cbegin(); !skipJob && it != neighborsOffsets.cend(); it++)
+                    for (auto it = neighborsOffsets.cbegin(); it != neighborsOffsets.cend(); it++)
+                        blockLightIntensity[*it].clear();
+                    floodLightsInstances.clear();
+
+                    // Add block's light and init second loop variables.
+                    const ivec3* blockGlobalPos = &*it; // We assume the chunk is the center of the coordinate system.
+                    chunkPosOffset = getChunkCoords(*blockGlobalPos);
+                    chunkRelPos = getChunkRelCoords(*blockGlobalPos);
+                    const chunkBlockData* blockData = &ownedBlockData[chunkPosOffset]; // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
+                    floodLightsInstances.emplace_back(*blockGlobalPos,
+                        blockData->blockLightLevel_->at(chunkRelPos), blockData->blockLightColor_->at(chunkRelPos));
+                    if (floodLightsInstances.size() > 0) { // TODO. IS THIS CONDITION NECESSARY?
+
+                        firstSecondLoopIteration = true;
+                        blockLightMod* floodLight = &floodLightsInstances.front();
+                        do {
+
+                            // MAÑANA. NO SE ESTÁ RECALCULANDO EL IS OPAQUE CUANDO SE DESERIALIZA UN CHUNK GUARDADO
+                            if ((firstSecondLoopIteration || !blockData->isOpaque_->at(chunkRelPos)) &&
+                                floodLight->intensity > blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z]) {
+
+                                // Apply light on position.
+                                chunk* ownedChunk = ownedChunks.at(chunkPosOffset);
+                                ownedChunk->addBlockLight(chunkRelPos, floodLight->color, floodLight->intensity, true);
+                                blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z] = floodLight->intensity;
+
+                                // Calculate light blending across chunks.
+                                neighborOffset.x = chunkRelPos.x >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.x <= 0 ? -1 : 0;
+                                neighborOffset.y = chunkRelPos.y >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.y <= 0 ? -1 : 0;
+                                neighborOffset.z = chunkRelPos.z >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.z <= 0 ? -1 : 0;
+                                if (neighborOffset.x != 0) {
+
+                                    if (neighborOffset.y != 0) {
+
+                                        // X Y Z
+                                        if (neighborOffset.z != 0) {
+
+                                            neighborPos = chunkPosOffset + neighborOffset;
+                                            neighborRelPos = getChunkRelCoords(chunkRelPos + neighborOffset);
+                                            neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                            if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                                // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                                ownedChunk->addBlockLight(chunkRelPos + neighborOffset,
+                                                    floodLight->color, floodLight->intensity - 1, true);
+                                                blockLightIntensity[chunkPosOffset][chunkRelPos + neighborOffset]
+                                                    = floodLight->intensity - 1;
+
+                                                ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos - neighborOffset,
+                                                    floodLight->color, floodLight->intensity, true);
+                                                blockLightIntensity[neighborPos][neighborRelPos - neighborOffset]
+                                                    = floodLight->intensity;
+
+                                            }
+
+                                        }
+
+                                        // X Y 0
+                                        neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z);
+                                        neighborRelPos =
+                                            getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
+                                        neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                        if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                            // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                            ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, neighborOffset.y, 0,
+                                                floodLight->color, floodLight->intensity - 1, true);
+                                            blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z]
+                                                = floodLight->intensity - 1;
+
+                                            ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, -neighborOffset.x, -neighborOffset.y, 0,
+                                                floodLight->color, floodLight->intensity, true);
+                                            blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z]
+                                                = floodLight->intensity;
+
+                                        }
+
+                                    }
+
+                                    // X 0 Z
+                                    if (neighborOffset.z != 0) {
+
+                                        neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                        neighborRelPos =
+                                            getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
+                                        neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                        if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                            // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                            ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, 0, neighborOffset.z,
+                                                floodLight->color, floodLight->intensity - 1, true);
+                                            blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y][chunkRelPos.z + neighborOffset.z]
+                                                = floodLight->intensity - 1;
+
+                                            ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, -neighborOffset.x, 0, -neighborOffset.z,
+                                                floodLight->color, floodLight->intensity, true);
+                                            blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y][chunkRelPos.z - neighborOffset.z]
+                                                = floodLight->intensity;
+
+                                        }
+
+                                    }
+
+                                    // X 0 0
+                                    neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z);
+                                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z));
+                                    neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                    if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                        // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                        ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, 0, 0,
+                                            floodLight->color, floodLight->intensity - 1, true);
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y][chunkRelPos.z]
+                                            = floodLight->intensity - 1;
+
+                                        ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, -neighborOffset.x, 0, 0,
+                                            floodLight->color, floodLight->intensity, true);
+                                        blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y][chunkRelPos.z]
+                                            = floodLight->intensity;
+
+                                    }
+
+                                }
+
+                                if (neighborOffset.y != 0) {
+
+                                    // 0 Y Z
+                                    if (neighborOffset.z != 0) {
+
+                                        neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                        neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z + neighborOffset.z));
+                                        neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                        if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                            // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                            ownedChunk->addBlockLight(chunkRelPos, 0, neighborOffset.y, neighborOffset.z,
+                                                floodLight->color, floodLight->intensity - 1, true);
+                                            blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z + neighborOffset.z]
+                                                = floodLight->intensity - 1;
+
+                                            ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, 0, -neighborOffset.y, -neighborOffset.z,
+                                                floodLight->color, floodLight->intensity, true);
+                                            blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z - neighborOffset.z]
+                                                = floodLight->intensity;
+
+                                        }
+                                    }
+
+                                    // 0 Y 0
+                                    neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z);
+                                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
+                                    neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                    if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                        // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                        ownedChunk->addBlockLight(chunkRelPos, 0, neighborOffset.y, 0,
+                                            floodLight->color, floodLight->intensity - 1, true);
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z]
+                                            = floodLight->intensity - 1;
+
+                                        ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, 0, -neighborOffset.y, 0,
+                                            floodLight->color, floodLight->intensity, true);
+                                        blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z]
+                                            = floodLight->intensity;
+
+                                    }
+
+                                }
+
+                                // 0 0 Z
+                                if (neighborOffset.z != 0) {
+
+                                    neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
+                                    neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                    if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                        // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                        ownedChunk->addBlockLight(chunkRelPos, 0, 0, neighborOffset.z,
+                                            floodLight->color, floodLight->intensity - 1, true);
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z + neighborOffset.z]
+                                            = floodLight->intensity - 1;
+
+                                        // TODO. UNA VEZ SEPAMOS QUE ESTO ES SEGURO CAMBIAR AT POR OPERATOR[]
+                                        ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, 0, 0, -neighborOffset.z,
+                                            floodLight->color, floodLight->intensity, true);
+                                        blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z - neighborOffset.z]
+                                            = floodLight->intensity;
+
+                                    }
+
+                                }
+
+                                // Spread light.
+
+                                //+x
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedNorth, floodLight->intensity - 1, floodLight->color);
+
+                                //-x
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedSouth, floodLight->intensity - 1, floodLight->color);
+
+                                //+y
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedUp, floodLight->intensity - 1, floodLight->color);
+
+                                //-y
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedDown, floodLight->intensity - 1, floodLight->color);
+
+                                //+z
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedEast, floodLight->intensity - 1, floodLight->color);
+
+                                //-z
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedWest, floodLight->intensity - 1, floodLight->color);
+
+                            }
+                            floodLightsInstances.pop_front();
+
+                            if (floodLightsInstances.size() > 0) {
+
+                                // Reset loop variables
+                                firstSecondLoopIteration = false;
+                                floodLight = &floodLightsInstances.front();
+                                blockGlobalPos = &floodLight->pos; // We assume the chunk is the center of the coordinate system.
+                                chunkPosOffset = getChunkCoords(*blockGlobalPos);
+                                chunkRelPos = getChunkRelCoords(*blockGlobalPos);
+                                blockData = &ownedBlockData[chunkPosOffset]; // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
+
+                            }
+
+                        } while (floodLightsInstances.size() > 0);
+
+                    }
+
+                }
+
+                // Remesh chunks.
+                for (auto it = ownedChunks.cbegin(); it != ownedChunks.cend(); it++) {
+
+                    it->second->loadStatusMutex().lock();
+                    if (it->second->needsRemesh() && it->second->loadStatus() >= chunkLoadStatus::MESHED) {
+
+                        it->second->loadStatusMutex().unlock();
+                        remesh(it->second, priorityUpdate);
+
+                    }
+                    else
+                        it->second->loadStatusMutex().unlock();
+
+                }
+
+            }
+        
+        }
+
+    }
+
+    void chunkManager::removeBlockLightAndRecalculate_(chunk& c, bool priorityUpdate, std::initializer_list<ivec3> lightsToRemove) {
+
+        std::unique_lock<std::recursive_mutex> lock(c.ownedChunksMutex());
+        const std::unordered_map<ivec3, chunk*>& ownedChunks = c.ownedChunks();
+
+        if (!ownedChunks.empty()) {
+
+            // Propagate every light across the chunk and its neighbors without taking into account chunk borders.
+            std::unordered_map<ivec3, chunkBlockData> ownedBlockData; // Chunk pos offset is used as key.
+            std::unordered_map<ivec3, Padded3DArray<char>> blockLightIntensity; // TODO. COMO SOLO HAY 26 VECINOS, CAMBIAR UNORDERED MAP POR UNA ESTRUCURA QUE HAGA UN SWITCH.
+            if (getDataForCalculatingBlockLight_(c, ownedChunks, ownedBlockData, blockLightIntensity)) {
+
+                ivec3 chunkPosOffset = vec3Zero;
+                ivec3 chunkRelPos = vec3Zero;
+                ivec3 neighborOffset = vec3Zero;
+                ivec3 neighborPos = vec3Zero;
+                ivec3 neighborRelPos = vec3Zero;
+                const std::unordered_set<ivec3>& floodPointLightPositions = c.getFloodPointLightPositions();
+                std::deque<blockLightMod> floodLightsInstances;
+                bool firstSecondLoopIteration = false;
+                char neighborIntensity = 0; // TODO. cambiar por char& ???
+
+                // FIRST. REMOVE LIGHT. LATER MAKE THIS INTO A FUNCTION FOR READABILITY.
+                for (auto it = lightsToRemove.begin(); it != lightsToRemove.end(); it++) {
+
+                    // Reset first loop variables.
+                    for (auto it = neighborsOffsets.cbegin(); it != neighborsOffsets.cend(); it++)
+                        blockLightIntensity[*it].clear();
+                    floodLightsInstances.clear();
+
+                    // Add block's light and init second loop variables.
+                    const ivec3* blockGlobalPos = &*it; // We assume the chunk is the center of the coordinate system.
+                    chunkPosOffset = getChunkCoords(*blockGlobalPos);
+                    chunkRelPos = getChunkRelCoords(*blockGlobalPos);
+                    const chunkBlockData* blockData = &ownedBlockData[chunkPosOffset]; // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
+                    floodLightsInstances.emplace_back(*blockGlobalPos,
+                        blockData->blockLightLevel_->at(chunkRelPos), blockData->blockLightColor_->at(chunkRelPos));
+                    if (floodLightsInstances.size() > 0) {
+
+                        firstSecondLoopIteration = true;
+                        blockLightMod* floodLight = &floodLightsInstances.front();
+                        do {
+
+                            if (floodLight->color.x > 0 && (firstSecondLoopIteration || !blockData->isOpaque_->at(chunkRelPos)) &&
+                                floodLight->color.x >= ownedBlockData[chunkPosOffset].blockLightColor_->get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z).x) {
+
+                                // Apply light on position.
+                                chunk* ownedChunk = ownedChunks.at(chunkPosOffset);
+                                ownedChunk->removeBlockLight(chunkRelPos, true);
+                                blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z] = floodLight->intensity;
+
+                                // Calculate light blending across chunks.
+                                neighborOffset.x = chunkRelPos.x >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.x <= 0 ? -1 : 0;
+                                neighborOffset.y = chunkRelPos.y >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.y <= 0 ? -1 : 0;
+                                neighborOffset.z = chunkRelPos.z >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.z <= 0 ? -1 : 0;
+                                if (neighborOffset.x != 0) {
+
+                                    if (neighborOffset.y != 0) {
+
+                                        // X Y Z
+                                        if (neighborOffset.z != 0) {
+
+                                            neighborPos = chunkPosOffset + neighborOffset;
+                                            neighborRelPos = getChunkRelCoords(chunkRelPos + neighborOffset);
+                                            neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                            if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                                // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                                ownedChunk->addBlockLight(chunkRelPos + neighborOffset,
+                                                    floodLight->color, floodLight->intensity - 1, true);
+                                                blockLightIntensity[chunkPosOffset][chunkRelPos + neighborOffset]
+                                                    = floodLight->intensity - 1;
+
+                                                ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos - neighborOffset,
+                                                    floodLight->color, floodLight->intensity, true);
+                                                blockLightIntensity[neighborPos][neighborRelPos - neighborOffset]
+                                                    = floodLight->intensity;
+
+                                            }
+
+                                        }
+
+                                        // X Y 0
+                                        neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z);
+                                        neighborRelPos =
+                                            getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
+                                        neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                        if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                            // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                            ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, neighborOffset.y, 0,
+                                                floodLight->color, floodLight->intensity - 1, true);
+                                            blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z]
+                                                = floodLight->intensity - 1;
+
+                                            ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, -neighborOffset.x, -neighborOffset.y, 0,
+                                                floodLight->color, floodLight->intensity, true);
+                                            blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z]
+                                                = floodLight->intensity;
+
+                                        }
+
+                                    }
+
+                                    // X 0 Z
+                                    if (neighborOffset.z != 0) {
+
+                                        neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                        neighborRelPos =
+                                            getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
+                                        neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                        if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                            // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                            ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, 0, neighborOffset.z,
+                                                floodLight->color, floodLight->intensity - 1, true);
+                                            blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y][chunkRelPos.z + neighborOffset.z]
+                                                = floodLight->intensity - 1;
+
+                                            ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, -neighborOffset.x, 0, -neighborOffset.z,
+                                                floodLight->color, floodLight->intensity, true);
+                                            blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y][chunkRelPos.z - neighborOffset.z]
+                                                = floodLight->intensity;
+
+                                        }
+
+                                    }
+
+                                    // X 0 0
+                                    neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z);
+                                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z));
+                                    neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                    if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                        // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                        ownedChunk->addBlockLight(chunkRelPos, neighborOffset.x, 0, 0,
+                                            floodLight->color, floodLight->intensity - 1, true);
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x + neighborOffset.x][chunkRelPos.y][chunkRelPos.z]
+                                            = floodLight->intensity - 1;
+
+                                        ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, -neighborOffset.x, 0, 0,
+                                            floodLight->color, floodLight->intensity, true);
+                                        blockLightIntensity[neighborPos][chunkRelPos.x - neighborOffset.x][chunkRelPos.y][chunkRelPos.z]
+                                            = floodLight->intensity;
+
+                                    }
+
+                                }
+
+                                if (neighborOffset.y != 0) {
+
+                                    // 0 Y Z
+                                    if (neighborOffset.z != 0) {
+
+                                        neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                        neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z + neighborOffset.z));
+                                        neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                        if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                            // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                            ownedChunk->addBlockLight(chunkRelPos, 0, neighborOffset.y, neighborOffset.z,
+                                                floodLight->color, floodLight->intensity - 1, true);
+                                            blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z + neighborOffset.z]
+                                                = floodLight->intensity - 1;
+
+                                            ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, 0, -neighborOffset.y, -neighborOffset.z,
+                                                floodLight->color, floodLight->intensity, true);
+                                            blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z - neighborOffset.z]
+                                                = floodLight->intensity;
+
+                                        }
+                                    }
+
+                                    // 0 Y 0
+                                    neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z);
+                                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
+                                    neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                    if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                        // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                        ownedChunk->addBlockLight(chunkRelPos, 0, neighborOffset.y, 0,
+                                            floodLight->color, floodLight->intensity - 1, true);
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y + neighborOffset.y][chunkRelPos.z]
+                                            = floodLight->intensity - 1;
+
+                                        ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, 0, -neighborOffset.y, 0,
+                                            floodLight->color, floodLight->intensity, true);
+                                        blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y - neighborOffset.y][chunkRelPos.z]
+                                            = floodLight->intensity;
+
+                                    }
+
+                                }
+
+                                // 0 0 Z
+                                if (neighborOffset.z != 0) {
+
+                                    neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
+                                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
+                                    neighborIntensity = blockLightIntensity[neighborPos][neighborRelPos];
+
+                                    if (floodLight->intensity - 1 > neighborIntensity) {
+
+                                        // Apply light to both neighbors so that smooth lighting's blending can be made correctly.
+                                        ownedChunk->addBlockLight(chunkRelPos, 0, 0, neighborOffset.z,
+                                            floodLight->color, floodLight->intensity - 1, true);
+                                        blockLightIntensity[chunkPosOffset][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z + neighborOffset.z]
+                                            = floodLight->intensity - 1;
+
+                                        // TODO. UNA VEZ SEPAMOS QUE ESTO ES SEGURO CAMBIAR AT POR OPERATOR[]
+                                        ownedChunks.at(neighborPos)->addBlockLight(neighborRelPos, 0, 0, -neighborOffset.z,
+                                            floodLight->color, floodLight->intensity, true);
+                                        blockLightIntensity[neighborPos][chunkRelPos.x][chunkRelPos.y][chunkRelPos.z - neighborOffset.z]
+                                            = floodLight->intensity;
+
+                                    }
+
+                                }
+
+                                // Spread light.
+
+                                //+x
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedNorth, floodLight->intensity - 1, floodLight->color);
+
+                                //-x
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedSouth, floodLight->intensity - 1, floodLight->color);
+
+                                //+y
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedUp, floodLight->intensity - 1, floodLight->color);
+
+                                //-y
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedDown, floodLight->intensity - 1, floodLight->color);
+
+                                //+z
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedEast, floodLight->intensity - 1, floodLight->color);
+
+                                //-z
+                                floodLightsInstances.emplace_back(*blockGlobalPos + ivec3FixedWest, floodLight->intensity - 1, floodLight->color);
+
+                            }
+                            floodLightsInstances.pop_front();
+
+                            if (floodLightsInstances.size() > 0) {
+
+                                // Reset loop variables
+                                firstSecondLoopIteration = false;
+                                floodLight = &floodLightsInstances.front();
+                                blockGlobalPos = &floodLight->pos; // We assume the chunk is the center of the coordinate system.
+                                chunkPosOffset = getChunkCoords(*blockGlobalPos);
+                                chunkRelPos = getChunkRelCoords(*blockGlobalPos);
+                                blockData = &ownedBlockData[chunkPosOffset]; // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
+
+                            }
+
+                        } while (floodLightsInstances.size() > 0);
+
+                    }
+
+                }
+
+                // THEN. REPROPAGATE LIGHT ONLY ON THE CHUNKS AFFECTED BY THE REMOVAL PROCESS.
+                for (auto it = floodPointLightPositions.cbegin(); it != floodPointLightPositions.cend(); it++) {
+
+                    // Reset first loop variables.
+                    for (auto it = neighborsOffsets.cbegin(); it != neighborsOffsets.cend(); it++)
                         blockLightIntensity[*it].clear();
                     floodLightsInstances.clear();
 
@@ -3473,8 +3999,41 @@ namespace VoxelEng {
                 }
 
             }
-        
+
         }
+
+    }
+
+    bool chunkManager::getDataForCalculatingBlockLight_(chunk& c, const std::unordered_map<ivec3, chunk*>& ownedChunks,
+        std::unordered_map<ivec3, chunkBlockData>& ownedBlockData, std::unordered_map<ivec3, Padded3DArray<char>>& blockLightIntensity) {
+
+        bool isDataEnough = true;
+
+        const ivec3& chunkPos = c.chunkPos();
+        chunk* neighbor = nullptr;
+        std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
+
+        ownedBlockData[vec3Zero] = c.blockData();
+        blockLightIntensity.emplace(std::piecewise_construct,
+            std::forward_as_tuple(vec3Zero),
+            std::forward_as_tuple(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0));
+        for (auto it = neighborsOffsets.cbegin(); isDataEnough && it != neighborsOffsets.cend(); it++) {
+
+            const ivec3& chunkPosOffset = *it;
+            if (neighbor = ownedChunks.at(chunkPosOffset)) {
+
+                ownedBlockData[chunkPosOffset] = neighbor->blockData();
+                blockLightIntensity.emplace(std::piecewise_construct,
+                    std::forward_as_tuple(chunkPosOffset),
+                    std::forward_as_tuple(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE, 1, 0));
+
+            }
+            else
+                isDataEnough = false;
+
+        }
+
+        return isDataEnough;
 
     }
 
