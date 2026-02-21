@@ -118,7 +118,7 @@ namespace VoxelEng {
 	*/
 	struct basicVec4 
 	{
-		char x;
+		char x; // TODO. CAMBIAR POR BYTE.
 		char y;
 		char z;
 		char w;

@@ -50,6 +50,7 @@
 #include <Chunk/chunkRenderingData.hpp>
 #include <Chunk/chunkVBOop.hpp>
 #include <Chunk/neighborsInfo.h>
+#include <Graphics/Lighting/definitions.hpp>
 #include <Graphics/Textures/texture.h>
 #include <Graphics/Shaders/shader.h>
 #include <Graphics/Models/model.h>
@@ -826,14 +827,14 @@ namespace VoxelEng {
 		palette<unsigned short, unsigned int> palette_;
 		std::unordered_map<unsigned short, unsigned short> paletteCount_;
 		std::unordered_set<unsigned short> freeLocalIDs_;
-		std::unordered_set<ivec3> floodPointLightPositions_;
 
 		// Chunk block data (serializable).
 		Padded3DArray<unsigned short> blocksLocalIDs_;
 		Padded3DArray<byte> isOpaque_;
 		Padded3DArray<basicVec4> blockLightColor_; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
 		Padded3DArray<char> blockLightLevel_; // Lighting value in the specific block. TODO. DELETE SINCE THIS IS ONLY USEFUL FOR DEBUGGING A SINGLE LIGHT.
-		
+		std::unordered_set<ivec3> floodPointLightPositions_;
+
 		bool modified_;
 		
 		std::atomic<short> nOpaqueBlocks_;
@@ -906,7 +907,7 @@ namespace VoxelEng {
 
 	inline chunkBlockData chunk::blockData() {
 	
-		return { &blocksLocalIDs_, &isOpaque_, &blockLightColor_, &blockLightLevel_};
+		return { &blocksLocalIDs_, &isOpaque_, &blockLightColor_, &blockLightLevel_, &floodPointLightPositions_};
 	
 	}
 
@@ -2155,17 +2156,20 @@ namespace VoxelEng {
 
 		static void processWorldLightUpdates_();
 
-		// Spread all blocklights from chunk c towards itself and its neighbors.
+		// Recalculate all blocklights from chunk c towards itself and its neighbors.
 		// WARNING. DOESN'T CLEAR PREVIOUS APPLIED LIGHTS.
-		static void spreadBlockLights_(chunk& c, bool priorityUpdate);
+		static void recalculateBlockLight_(chunk& c, bool priorityUpdate);
 
-		// Recalculate all the block lighting applied to the chunk and its neighbors after a blocklight in c has been removed.
-		// NOTE. The positions of the lights must be in global grid coordinates.
-		static void removeBlockLightAndRecalculate_(chunk& c, bool priorityUpdate, std::initializer_list<ivec3> lightsToRemove);
+		// Recalculate all blocklights from chunk c towards itself and its neighbors after a block light removal.
+		static void recalculateBlockLightAfterRemoval_(chunk& c, bool priorityUpdate, std::initializer_list<ivec3> blockLightsToRemove);
+
+		/*static void removeLightChannel_(colorChannel channel, blockLightMod& floodLight, const std::unordered_map<ivec3, chunk*>& ownedChunks,
+			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData, std::unordered_map<ivec3, Padded3DArray<char>>& blockLightIntensity,
+			const ivec3& chunkPosOffset, const ivec3& chunkRelPos);*/
 
 		// Used in recalculateBlockLight_ to get required data related to the lighting of the chunk and its neighbors 
 		// that are going to get recalculated.
-		static bool getDataForCalculatingBlockLight_(chunk& c, const std::unordered_map<ivec3, chunk*>& ownedChunks, 
+		static bool getDataForCalculatingBlockLight_(chunk& c, const std::unordered_map<ivec3, chunk*>& ownedChunks,
 			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData, std::unordered_map<ivec3, Padded3DArray<char>>& blockLightIntensity);
 
 		/*

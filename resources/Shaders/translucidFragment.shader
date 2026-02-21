@@ -264,7 +264,7 @@ void main() {
     vec4 dirLight = CalcDirLight(light, lightInstance, norm, viewDir, (1 - shadow), (1 - translucentShadow), hitDirLightModifier, material) * u_useComplexLighting;
         
 	// Final color calculation.
-    color = albedo * (dirLight + blockLit);
+    color = albedo * dirLight + blockLit;
 	color.a = albedo.a;
 
     if(translucentShadow == 1.0 && hitDirLightModifier > 0.5)
