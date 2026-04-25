@@ -66,48 +66,62 @@ namespace VoxelEng {
 			// Light types registry initialisation.
 			registriesInsOrdered_->insert("DirectionalLights", static_cast<void*>(new registryInsOrdered<std::string, directionalLight>([](std::any args) {
 
-				auto tuple = std::any_cast<std::tuple<int, int, int, int, int, int, int, int, int>>(args);
-				return std::make_unique<directionalLight>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple),
-					std::get<3>(tuple), std::get<4>(tuple), std::get<5>(tuple),
-					std::get<6>(tuple), std::get<7>(tuple), std::get<8>(tuple));
+				auto tuple = std::any_cast<std::tuple<
+					int, int, int, int, 
+					int, int, int, int,
+					int, int, int, int>>(args);
+				return std::make_unique<directionalLight>(
+					std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple), std::get<3>(tuple),
+					std::get<4>(tuple), std::get<5>(tuple), std::get<6>(tuple), std::get<7>(tuple),
+					std::get<8>(tuple), std::get<9>(tuple), std::get<10>(tuple), std::get<11>(tuple));
 
 			}, nullptr)), var::varType::REGISTRYINSORDERED_OF_STRINGS_DIRECTIONALLIGHTS);
 
 			registriesInsOrdered_->get("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>()->insert("Default",
-				42, 42, 42,
-				127, 120, 108,
-				127, 127, 127);
+				42, 42, 42, 0,
+				127, 120, 108, 0,
+				127, 127, 127, 0);
 
 			registriesInsOrdered_->insert("PointLights", static_cast<void*>(new registryInsOrdered<std::string, pointLight>([](std::any args) {
 
-				auto tuple = std::any_cast<std::tuple<int, int, int, int, int, int, int, int, int, int>>(args);
-				return std::make_unique<pointLight>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple),
-					std::get<3>(tuple), std::get<4>(tuple), std::get<5>(tuple),
-					std::get<6>(tuple), std::get<7>(tuple), std::get<8>(tuple),
-					std::get<9>(tuple));
+				auto tuple = std::any_cast<std::tuple<
+					int, int, int, int, 
+					int, int, int, int, 
+					int, int, int, int,
+					int, int, int, int>>(args);
+				return std::make_unique<pointLight>(
+					std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple), std::get<3>(tuple), 
+					std::get<4>(tuple), std::get<5>(tuple), std::get<6>(tuple), std::get<7>(tuple), 
+					std::get<8>(tuple), std::get<9>(tuple), std::get<10>(tuple), std::get<11>(tuple),
+					std::get<12>(tuple), std::get<13>(tuple), std::get<14>(tuple), std::get<15>(tuple));
 
 			}, nullptr)), var::varType::REGISTRYINSORDERED_OF_STRINGS_POINTLIGHTS);
 
 			registriesInsOrdered_->get("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>()->insert("Default",
-				127, 127, 127,
-				127, 127, 127,
-				127, 127, 127,
-				8);
+				127, 127, 127, 0,
+				127, 127, 127, 0,
+				127, 127, 127, 0,
+				8, 8, 8, 0);
 
 			registriesInsOrdered_->insert("SpotLights", static_cast<void*>(new registryInsOrdered<std::string, spotLight>([](std::any args) {
 
-				auto tuple = std::any_cast<std::tuple<int, int, int, int, int, int, int, int, int, float, float, int>>(args);
-				return std::make_unique<spotLight>(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple),
-					std::get<3>(tuple), std::get<4>(tuple), std::get<5>(tuple),
-					std::get<6>(tuple), std::get<7>(tuple), std::get<8>(tuple),
-					std::get<9>(tuple), std::get<10>(tuple), std::get<11>(tuple));
+				auto tuple = std::any_cast<std::tuple<
+					int, int, int, int, 
+					int, int, int, int, 
+					int, int, int, int, 
+					float, float, int>>(args);
+				return std::make_unique<spotLight>(
+					std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple), std::get<3>(tuple),
+					std::get<4>(tuple), std::get<5>(tuple), std::get<6>(tuple), std::get<7>(tuple),
+					std::get<8>(tuple), std::get<9>(tuple), std::get<10>(tuple), std::get<11>(tuple),
+					std::get<12>(tuple), std::get<13>(tuple), std::get<14>(tuple));
 
 			}, nullptr)), var::varType::REGISTRYINSORDERED_OF_STRINGS_SPOTLIGHTS);
 
 			registriesInsOrdered_->get("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>()->insert("Default",
-				64, 64, 64,
-				127, 127, 127,
-				127, 127, 127,
+				64, 64, 64, 0,
+				127, 127, 127, 0,
+				127, 127, 127, 0,
 				25.0f, 35.0f, 16);
 
 			initialised_ = true;

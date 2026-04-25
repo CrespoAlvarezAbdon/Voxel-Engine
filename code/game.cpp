@@ -215,37 +215,37 @@ namespace VoxelEng {
             // Light types registration.
             registryInsOrdered<std::string, directionalLight>* directionalLightsRegistry = registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>();
             directionalLightsRegistry->insert("BlueDirectionalLight",
-                0, 0, 127,
-                0, 0, 127,
-                0, 0, 127);
+                0, 0, 127, 0,
+                0, 0, 127, 0,
+                0, 0, 127, 0);
 
             registryInsOrdered<std::string, pointLight>* pointLightsRegistry = registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>();
             pointLightsRegistry->insert("RedPointLight",
-                127, 0, 0,
-                127, 0, 0,
-                127, 0, 0,
-                8);
+                127, 0, 0, 0,
+                127, 0, 0, 0,
+                127, 0, 0, 0,
+                8, 0, 0, 0);
             pointLightsRegistry->insert("BluePointLight",
-                0, 0, 127,
-                0, 0, 127,
-                0, 0, 127,
-                8);
+                0, 0, 127, 0,
+                0, 0, 127, 0,
+                0, 0, 127, 0,
+                0, 0, 8, 0);
             pointLightsRegistry->insert("NegativeRedPointLight",
-                -128, 0, 0,
-                -128, 0, 0,
-                -128, 0, 0,
-                8);
+                -128, 0, 0, 0,
+                -128, 0, 0, 0,
+                -128, 0, 0, 0,
+                8, 0, 0, 0);
             pointLightsRegistry->insert("NegativePointLight",
-                -128, -128, -128,
-                -128, -128, -128,
-                -128, -128, -128,
-                8);
+                -128, -128, -128, 0,
+                -128, -128, -128, 0,
+                -128, -128, -128, 0,
+                8, 8, 8, 0);
 
             registryInsOrdered<std::string, spotLight>* spotLightsRegistry = registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>();
             spotLightsRegistry->insert("GreenSpotLight",
-                0, 64, 0,
-                0, 127, 0,
-                0, 127, 0,
+                0, 64, 0, 0,
+                0, 127, 0, 0,
+                0, 127, 0, 0,
                 25.0f, 35.0f, 16);
 
             // Block registration.

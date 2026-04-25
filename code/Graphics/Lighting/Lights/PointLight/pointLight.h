@@ -4,6 +4,7 @@
 #include <definitions.h>
 #include <vec.h>
 #include <Registry/registryElement.h>
+#include <Graphics/Lighting/definitions.hpp>
 #include <Graphics/Lighting/lights/light.hpp>
 
 namespace VoxelEng {
@@ -32,10 +33,10 @@ namespace VoxelEng {
 		* @param specularB Percentage of blue color emitted in specular lighting calculations by this light type.
 		* @param maxDistance Maximum distance this light can cover.
 		*/
-		pointLight(char ambientR, char ambientG, char ambientB,
-			char diffuseR, char diffuseG, char diffuseB,
-			char specularR, char specularG, char specularB,
-			unsigned int maxDistance);
+		pointLight(lightValue ambientR, lightValue ambientG, lightValue ambientB, lightValue ambientA,
+			lightValue diffuseR, lightValue diffuseG, lightValue diffuseB, lightValue diffuseA,
+			lightValue specularR, lightValue specularG, lightValue specularB, lightValue specularA,
+			lightIntensity intensityR, lightIntensity intensityG, lightIntensity intensityB, lightIntensity intensityA);
 
 
 		// Observers.
@@ -47,29 +48,30 @@ namespace VoxelEng {
 		static unsigned int nArgs();
 
 		/**
-		* @brief Get the light's maximum spread distance.
+		* @brief Get the light's maximum intensity.
 		*/
-		unsigned int maxDistance() const;
+		const basicUVec4& intensity() const;
 
 	protected:
 
 		static const unsigned int nArgs_;
 
-		unsigned int maxDistance_;
-		float padding_[3];
+		basicUVec4 intensity_;
 		
 	};
 
 	inline pointLight::pointLight()
-	: light(), maxDistance_(lightMaxIntensity), padding_{0.0f, 0.0f, 0.0f}
+	: light(), intensity_(basicUVec4Zero)
 	{}
 
-	inline pointLight::pointLight(char ambientR, char ambientG, char ambientB,
-		char diffuseR, char diffuseG, char diffuseB,
-		char specularR, char specularG, char specularB,
-		unsigned int maxDistance)
-	: light(ambientR, ambientG, ambientB, diffuseR, diffuseG, diffuseB, specularR, specularG, specularB),
-	  maxDistance_(maxDistance), padding_{ 0.0f, 0.0f, 0.0f }
+	inline pointLight::pointLight(lightValue ambientR, lightValue ambientG, lightValue ambientB, lightValue ambientA,
+		lightValue diffuseR, lightValue diffuseG, lightValue diffuseB, lightValue diffuseA,
+		lightValue specularR, lightValue specularG, lightValue specularB, lightValue specularA,
+		lightIntensity intensityR, lightIntensity intensityG, lightIntensity intensityB, lightIntensity intensityA)
+	: light(ambientR, ambientG, ambientB, ambientA, 
+		diffuseR, diffuseG, diffuseB, diffuseA, 
+		specularR, specularG, specularB, specularA),
+	  intensity_(intensityR, intensityG, intensityB, intensityA)
 	{}
 
 	inline unsigned int pointLight::nArgs() {
@@ -78,9 +80,9 @@ namespace VoxelEng {
 
 	}
 
-	inline unsigned int pointLight::maxDistance() const {
+	inline const basicUVec4& pointLight::intensity() const {
 	
-		return maxDistance_;
+		return intensity_;
 	
 	}
 

@@ -30,9 +30,9 @@ namespace VoxelEng {
 		* @param specularG Percentage of green color emitted in specular lighting calculations by this light type.
 		* @param specularB Percentage of blue color emitted in specular lighting calculations by this light type.
 		*/
-		directionalLight(char ambientR, char ambientG, char ambientB,
-			char diffuseR, char diffuseG, char diffuseB,
-			char specularR, char specularG, char specularB);
+		directionalLight(lightValue ambientR, lightValue ambientG, lightValue ambientB, lightValue ambientA,
+			lightValue diffuseR, lightValue diffuseG, lightValue diffuseB, lightValue diffuseA,
+			lightValue specularR, lightValue specularG, lightValue specularB, lightValue specularA);
 
 
 		// Observers.
@@ -53,10 +53,12 @@ namespace VoxelEng {
 	: light()
 	{}
 
-	inline directionalLight::directionalLight(char ambientR, char ambientG, char ambientB,
-		char diffuseR, char diffuseG, char diffuseB,
-		char specularR, char specularG, char specularB)
-	: light(ambientR, ambientG, ambientB, diffuseR, diffuseG, diffuseB, specularR, specularG, specularB)
+	inline directionalLight::directionalLight(lightValue ambientR, lightValue ambientG, lightValue ambientB, lightValue ambientA,
+		lightValue diffuseR, lightValue diffuseG, lightValue diffuseB, lightValue diffuseA,
+		lightValue specularR, lightValue specularG, lightValue specularB, lightValue specularA)
+	: light(ambientR, ambientG, ambientB, ambientA,
+		diffuseR, diffuseG, diffuseB, diffuseA,
+		specularR, specularG, specularB, specularA)
 	{}
 
 	inline unsigned int directionalLight::nArgs() {

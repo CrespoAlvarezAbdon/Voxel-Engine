@@ -65,4 +65,24 @@ namespace VoxelEng {
 
 	}
 
+	basicUVec4 basicUVec4::clampAdd(const basicUVec4& v, const basicUVec4& min, const basicUVec4& max) const {
+
+		return basicUVec4(utilities::clampAdd(x, v.x, min.x, max.x),
+			utilities::clampAdd(y, v.y, min.y, max.y),
+			utilities::clampAdd(z, v.z, min.z, max.z),
+			utilities::clampAdd(w, v.w, min.w, max.w));
+
+	}
+
+	basicUVec4& basicUVec4::clampAdd(const basicUVec4& v, const basicUVec4& min, const basicUVec4& max) {
+
+		x = utilities::clampAdd(x, v.x, min.x, max.x);
+		y = utilities::clampAdd(y, v.y, min.y, max.y);
+		z = utilities::clampAdd(z, v.z, min.z, max.z);
+		w = utilities::clampAdd(w, v.w, min.w, max.w);
+
+		return *this;
+
+	}
+
 }

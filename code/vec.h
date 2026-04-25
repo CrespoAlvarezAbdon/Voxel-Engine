@@ -23,6 +23,8 @@
 
 #endif
 
+#include "definitions.h"
+
 namespace glm {
 
 	bool operator<(const ivec3& v1, const ivec3& v2);
@@ -114,14 +116,14 @@ namespace VoxelEng {
 
 
 	/**
-	* @brief Vector of 4 bytes, 1 byte per component.
+	* @brief Vector of 4 signed bytes, 1 byte per component.
 	*/
 	struct basicVec4 
 	{
-		char x; // TODO. CAMBIAR POR BYTE.
-		char y;
-		char z;
-		char w;
+		sbyte x;
+		sbyte y;
+		sbyte z;
+		sbyte w;
 
 		/**
 		* @brief Default class constructor.
@@ -135,7 +137,7 @@ namespace VoxelEng {
 		* @param z Third component.
 		* @param w Fourth component.
 		*/
-		basicVec4(char x, char y, char z, char w);
+		basicVec4(sbyte x, sbyte y, sbyte z, sbyte w);
 
 		/**
 		* @brief Perform component-based addition of two vectors.
@@ -165,7 +167,7 @@ namespace VoxelEng {
 		* @param scale The given number.
 		* @return A vector with the result of this operation.
 		*/
-		basicVec4 operator/(char scalar) const;
+		basicVec4 operator/(sbyte scalar) const;
 
 		/**
 		* @brief Component-based add the right operand vector to the left operand vector.
@@ -193,7 +195,7 @@ namespace VoxelEng {
 	: x(0), y(0), z(0), w(0)
 	{}
 
-	inline basicVec4::basicVec4(char x, char y, char z, char w)
+	inline basicVec4::basicVec4(sbyte x, sbyte y, sbyte z, sbyte w)
 	: x(x), y(y), z(z), w(w)
 	{}
 
@@ -218,12 +220,130 @@ namespace VoxelEng {
 	
 	}
 
-	inline basicVec4 basicVec4::operator/(char scalar) const {
+	inline basicVec4 basicVec4::operator/(sbyte scalar) const {
 
 		return basicVec4{ x / scalar, y / scalar, z / scalar, w / scalar };
 
 	}
 
+	/**
+	* @brief Vector of 4 unsigned bytes, 1 byte per component.
+	*/
+	struct basicUVec4
+	{
+		byte x;
+		byte y;
+		byte z;
+		byte w;
+
+		/**
+		* @brief Default class constructor.
+		*/
+		basicUVec4();
+
+		/**
+		* @brief Class constructor.
+		* @param x First component.
+		* @param y Second component.
+		* @param z Third component.
+		* @param w Fourth component.
+		*/
+		basicUVec4(byte x, byte y, byte z, byte w);
+
+		/**
+		* @brief Perform component-based addition of two vectors.
+		* @param v The right operand vector.
+		* @return A vector with the result of the addition.
+		*/
+		basicUVec4 operator+(const basicUVec4& v) const;
+
+		/**
+		* @brief Component-based add the right operand vector to the left operand vector.
+		* @param v The right operand vector.
+		* @return The left operand vector.
+		*/
+		basicUVec4& operator+=(const basicUVec4& v);
+
+		/**
+		* @brief Multiply the vector's component by the given number.
+		* The multiplication will be done with the given number's type and then cast back to the vector components' type.
+		* @param scale The given number. Must be greater than or equal to 0.
+		* @return A vector with the result of this operation.
+		*/
+		basicUVec4 operator*(float scalar) const;
+
+		/**
+		* @brief Divide the vector's component by the given number.
+		* The multiplication will be done with the given number's type and then cast back to the vector components' type.
+		* @param scale The given number.
+		* @return A vector with the result of this operation.
+		*/
+		basicUVec4 operator/(byte scalar) const;
+
+		/**
+		* @brief Component-based add the right operand vector to the left operand vector.
+		* NOTE. If the sum of two components would surpass the data range limit, the result will be clamped to said limit
+		* @param v The right operand vector.
+		* @param min The minimun values to clamp to (component wise).
+		* @param max The maximun values to clamp to (component wise).
+		* @return The left operand vector.
+		*/
+		basicUVec4 clampAdd(const basicUVec4& v, const basicUVec4& min, const basicUVec4& max) const;
+
+		/**
+		* @brief Component-based add the right operand vector to the left operand vector.
+		* NOTE. If the sum of two components would surpass the data range limit, the result will be clamped to said limit
+		* @param v The right operand vector.
+		* @param min The minimun values to clamp to (component wise).
+		* @param max The maximun values to clamp to (component wise).
+		* @return The left operand vector.
+		*/
+		basicUVec4& clampAdd(const basicUVec4& v, const basicUVec4& min, const basicUVec4& max);
+
+	};
+
+	inline basicUVec4::basicUVec4()
+	: x(0), y(0), z(0), w(0)
+	{}
+
+	inline basicUVec4::basicUVec4(byte x, byte y, byte z, byte w)
+	: x(x), y(y), z(z), w(w)
+	{}
+
+	inline basicUVec4 basicUVec4::operator+(const basicUVec4& v) const {
+
+		return basicUVec4{ static_cast<byte>(x + v.x), static_cast<byte>(y + v.y), static_cast<byte>(z + v.z), static_cast<byte>(w + v.w) };
+
+	}
+
+	inline basicUVec4& basicUVec4::operator+=(const basicUVec4& v) {
+
+		x += v.x;
+		y += v.y;
+		z += v.z;
+		return *this;
+
+	}
+
+	inline basicUVec4 basicUVec4::operator*(float scalar) const {
+
+		return basicUVec4{ 
+			static_cast<byte>(x * scalar), 
+			static_cast<byte>(y * scalar), 
+			static_cast<byte>(z * scalar), 
+			static_cast<byte>(w * scalar) };
+
+	}
+
+	inline basicUVec4 basicUVec4::operator/(byte scalar) const {
+
+		return basicUVec4{
+			static_cast<byte>(x / scalar),
+			static_cast<byte>(y / scalar),
+			static_cast<byte>(z / scalar),
+			static_cast<byte>(w / scalar) };
+
+	}
 
 	// Constants.
 
@@ -332,9 +452,14 @@ namespace VoxelEng {
 	const basicVec4 basicVec4NegOnes(-1, -1, -1, -1);
 
 	/**
-	* @brief basicVec4 constant of the maximum light a block that is not a light source block can have.
+	* @brief basicVec4 constant of the maximum light intensity a block can have (usually the source of that light).
 	*/
-	const basicVec4 basicVec4FullLight(111, 111, 111, 111); // 127 for light source is at the own light source, 111 is for the blocks closest to it.
+	const basicUVec4 basicUVec4MaxIntensity(kLightMaxIntensity, kLightMaxIntensity, kLightMaxIntensity, kLightMaxIntensity);
+
+	/**
+	* @brief basicUVec4 constant of the zeroes vector.
+	*/
+	const basicUVec4 basicUVec4Zero(0, 0, 0, 0);
 
 
 	// Operators.

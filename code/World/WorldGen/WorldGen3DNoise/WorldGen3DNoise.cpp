@@ -80,17 +80,11 @@ namespace VoxelEng {
 				bool isAboveWaterLevel = false;
 				bool blockAboveIsWater = false;
 				int x, y, z;
-				unsigned short blockLocalID = 0;
 				for (x = 0; x < CHUNK_SIZE; x++)
 					for (z = 0; z < CHUNK_SIZE; z++)
-						for (y = 0; y < CHUNK_SIZE; y++) {
-
-							blockLocalID = cBlockLocalIDs[x][y][z];
-							if (blockLocalID == stoneBlockLocalID)
+						for (y = 0; y < CHUNK_SIZE; y++)
+							if (cBlockLocalIDs.get(x, y, z) == stoneBlockLocalID)
 								c.setBlock(x, y, z, beachBlock_, false);
-
-
-						}
 
 			}
 
@@ -141,7 +135,8 @@ namespace VoxelEng {
 					if (isAboveWaterLevel && !isBlockEmpty) {
 					
 						if(!noiseMakesBlockAt(blockPos.x, blockPos.y+1, blockPos.z))
-							chunk.setBlock(x, y, z, (x == 0 && z == 0) ? lightBlock_ : (x == CHUNK_SIZE_LIMIT && z == CHUNK_SIZE_LIMIT) ? lightBlock2_ :  layer0_, false);
+							//chunk.setBlock(x, y, z, (x == 0 && z == 0) ? lightBlock_ : (x == CHUNK_SIZE_LIMIT && z == CHUNK_SIZE_LIMIT) ? lightBlock2_ : layer0_, false);
+							chunk.setBlock(x, y, z, layer0_, false);
 						else if(!noiseMakesBlockAt(blockPos.x, blockPos.y+2, blockPos.z) || !noiseMakesBlockAt(blockPos.x, blockPos.y+3, blockPos.z))
 							chunk.setBlock(x, y, z, layer1_, false);
 

@@ -345,7 +345,8 @@ namespace VoxelEng {
 
             if (modelSize >= 6) {
 
-                // -A + B -C +D
+                // The colors of the four vertices of the same face block added like this: 
+                // -ColorVertexA + ColorVertexB - ColorVertexC + ColorVertexD
                 extraColorData.x = -m.operator[](modelSize - 4).additionalData.x
                     + m.operator[](modelSize - 6).additionalData.x
                     - m.operator[](modelSize - 5).additionalData.x
@@ -371,36 +372,42 @@ namespace VoxelEng {
                 m.operator[](modelSize - 6).colorExtraData.x = extraColorData.x;
                 m.operator[](modelSize - 6).colorExtraData.y = extraColorData.y;
                 m.operator[](modelSize - 6).colorExtraData.z = extraColorData.z;
+                m.operator[](modelSize - 6).colorExtraData.w = extraColorData.w;
 
                 m.operator[](modelSize - 5).textureCoords[0] = texCoordX;
                 m.operator[](modelSize - 5).textureCoords[1] = texCoordY;
                 m.operator[](modelSize - 5).colorExtraData.x = extraColorData.x;
                 m.operator[](modelSize - 5).colorExtraData.y = extraColorData.y;
                 m.operator[](modelSize - 5).colorExtraData.z = extraColorData.z;
+                m.operator[](modelSize - 5).colorExtraData.w = extraColorData.w;
 
                 m.operator[](modelSize - 4).textureCoords[0] = texCoordX2;
                 m.operator[](modelSize - 4).textureCoords[1] = texCoordY2;
                 m.operator[](modelSize - 4).colorExtraData.x = extraColorData.x;
                 m.operator[](modelSize - 4).colorExtraData.y = extraColorData.y;
                 m.operator[](modelSize - 4).colorExtraData.z = extraColorData.z;
+                m.operator[](modelSize - 4).colorExtraData.w = extraColorData.w;
 
                 m.operator[](modelSize - 3).textureCoords[0] = texCoordX2;
                 m.operator[](modelSize - 3).textureCoords[1] = texCoordY2;
                 m.operator[](modelSize - 3).colorExtraData.x = extraColorData.x;
                 m.operator[](modelSize - 3).colorExtraData.y = extraColorData.y;
                 m.operator[](modelSize - 3).colorExtraData.z = extraColorData.z;
+                m.operator[](modelSize - 3).colorExtraData.w = extraColorData.w;
 
                 m.operator[](modelSize - 2).textureCoords[0] = texCoordX;
                 m.operator[](modelSize - 2).textureCoords[1] = texCoordY;
                 m.operator[](modelSize - 2).colorExtraData.x = extraColorData.x;
                 m.operator[](modelSize - 2).colorExtraData.y = extraColorData.y;
                 m.operator[](modelSize - 2).colorExtraData.z = extraColorData.z;
+                m.operator[](modelSize - 2).colorExtraData.w = extraColorData.w;
 
                 m.operator[](modelSize - 1).textureCoords[0] = texCoordX2;
                 m.operator[](modelSize - 1).textureCoords[1] = texCoordY;
                 m.operator[](modelSize - 1).colorExtraData.x = extraColorData.x;
                 m.operator[](modelSize - 1).colorExtraData.y = extraColorData.y;
                 m.operator[](modelSize - 1).colorExtraData.z = extraColorData.z;
+                m.operator[](modelSize - 1).colorExtraData.w = extraColorData.w;
 
             }
             else

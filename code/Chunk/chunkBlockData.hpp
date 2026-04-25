@@ -11,8 +11,7 @@ namespace VoxelEng {
 
 		Padded3DArray<unsigned short>* blocksLocalIDs_;
 		Padded3DArray<byte>* isOpaque_;
-		Padded3DArray<basicVec4>* blockLightColor_; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
-		Padded3DArray<char>* blockLightLevel_; // Lighting value in the specific block.
+		Padded3DArray<blockLight>* blockLightColor_; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
 		std::unordered_set<ivec3>* floodPointLightPositions_;
 
 	};

@@ -27,7 +27,9 @@ namespace VoxelEng {
 	/**
 	* @brief Definition of the multiples types of jobs related to chunk management.
 	*/
-	enum class chunkJobType { NONE = 0, LOAD, LOAD2, ONLYREMESH, UNLOADANDSAVE, PRIORITYREMESH, PRIORITYREMESHBLOCKLIGHTREMOVED, SAVEONLY };
+	enum class chunkJobType { NONE = 0, LOAD, LOAD2, ONLYREMESH, UNLOADANDSAVE, 
+		PRIORITYREMESH, PRIORITYREMESH_ADDEDLIGHT, PRIORITYREMESH_REMOVEDLIGHT, 
+		SAVEONLY };
 
 	// LOAD2 WILL BE USED FOR LIGHTING LAYER.
 

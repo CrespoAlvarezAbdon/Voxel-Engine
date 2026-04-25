@@ -2,7 +2,9 @@
 #define _VOXELENG_BLOCK_LIGHT_MODIFICATION_
 
 #include <type_traits>
+
 #include <vec.h>
+#include <Chunk/blockLight.hpp>
 
 #if GRAPHICS_API == OPENGL
 
@@ -39,10 +41,9 @@ namespace VoxelEng {
 		/**
 		* @brief Class constructor
 		* @param pos Block light modification position
-		* @param intensity Block light modification intensity
 		* @param color Block light modification color
 		*/
-		blockLightMod(const ivec3& pos, char intensity, const basicVec4& color);
+		blockLightMod(const ivec3& pos, const blockLight& color);
 
 
 		/*
@@ -55,22 +56,17 @@ namespace VoxelEng {
 		ivec3 pos;
 
 		/**
-		* @brief It determines whether the light's color is applied fully in its position or not.
-		*/
-		char intensity;
-
-		/**
 		* Light's color applied to its position. Last value is alpha.
 		*/
-		basicVec4 color;
+		blockLight color;
 
 	};
 
 	inline blockLightMod::blockLightMod() 
-	: pos(vec3Zero), intensity(0), color(basicVec4Zero) {}
+	: pos(vec3Zero) {}
 
-	inline blockLightMod::blockLightMod(const ivec3& pos, char intensity, const basicVec4& color)
-	: pos(pos), intensity(intensity), color(color) {}
+	inline blockLightMod::blockLightMod(const ivec3& pos, const blockLight& color)
+	: pos(pos), color(color) {}
 
 }
 

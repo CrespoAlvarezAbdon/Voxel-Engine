@@ -10,9 +10,9 @@
 #ifndef _VOXELENG_PLAYER_
 #define _VOXELENG_PLAYER_
 
-#include "entity.h"
-#include "gameWindow.h"
-#include "vec.h"
+#include <entity.h>
+#include <gameWindow.h>
+#include <vec.h>
 #include <Block/block.h>
 #include <Graphics/transform.h>
 

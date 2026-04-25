@@ -9,7 +9,7 @@
 #include <definitions.h>
 #include <vec.h>
 #include <Block/blockState.hpp>
-#include <Block/lightData.hpp>
+#include <Chunk/blockLight.hpp>
 
 namespace VoxelEng {
 
@@ -18,7 +18,7 @@ namespace VoxelEng {
     */
 
     typedef std::unordered_map<vec3, std::list<std::pair<basicVec3, blockState>>> blockStatesToSet; // vec3 is chunkPos, basicVec3 is block pos un local chunk grid
-    typedef std::unordered_map<vec3, std::list<std::pair<basicVec3, lightData>>> lightDataToSet; // vec3 is chunkPos, basicVec3 is block pos un local chunk grid
+    typedef std::unordered_map<vec3, std::list<std::pair<basicVec3, blockLight>>> lightDataToSet; // vec3 is chunkPos, basicVec3 is block pos un local chunk grid
 
 
     /*

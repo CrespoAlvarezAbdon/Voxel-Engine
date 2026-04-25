@@ -160,7 +160,7 @@ namespace VoxelEng {
 	T translateRange(T value, T r1Min, T r1Max, T r2Min, T r2Max) {
 	
 		if (r1Min < r1Max && r2Min < r2Max)
-			return (value - r1Min) * ((r2Max - r2Min) / (r1Max - r1Min)) + r2Min;
+			return (value - r1Min) * ((r2Max - r2Min) / (float)(r1Max - r1Min)) + r2Min;
 		else
 			logger::errorLog("The following condition must be true: r1Min < r1Max && r2Min < r2Max");
 	

@@ -1,7 +1,7 @@
 #include "player.h"
 
-#include "game.h"
-#include "gui.h"
+#include <game.h>
+#include <gui.h>
 
 namespace VoxelEng {
 
@@ -139,58 +139,88 @@ namespace VoxelEng {
 
             std::unique_lock<std::recursive_mutex> lock(chunkManager::chunksMutex());
 
-            chunk* selectedChunk = chunkManager::getChunkByRealPos(selectedBlockPos_),
-                 * neighbor = nullptr;
+            chunk* selectedChunk = chunkManager::getChunkByRealPos(selectedBlockPos_);
 
             if (selectedChunk && !selectedBlock_->isEmptyBlock()) {
 
-                const vec3& chunkPos = selectedChunk->chunkPos();
-                vec3 chunkRelPos = getChunkRelCoords(selectedBlockPos_);
+                chunk* neighbor = nullptr;
+                const ivec3& chunkPos = selectedChunk->chunkPos();
+                ivec3 chunkRelPos = getChunkRelCoords(selectedBlockPos_);
 
-                selectedChunk->setBlock(chunkRelPos, block::emptyBlock());
+                const block& oldB = selectedChunk->setBlock(chunkRelPos, block::emptyBlock());
 
-                chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, selectedChunk, false);
+                if (oldB.emittedLight().isNull()) {
+                
+                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, selectedChunk, false);
 
-                if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos))) {
+                    if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos))) {
 
-                    neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
 
+                    }
+
+                    if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(chunkPos))) {
+
+                        neighbor->setBlock(-1, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+
+                    }
+
+                    if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(chunkPos))) {
+
+                        neighbor->setBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z, block::emptyBlock());
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+
+                    }
+
+                    if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(chunkPos))) {
+
+                        neighbor->setBlock(chunkRelPos.x, -1, chunkRelPos.z, block::emptyBlock());
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+
+                    }
+
+                    if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(chunkPos))) {
+
+                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE, block::emptyBlock());
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+
+                    }
+
+                    if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos))) {
+
+                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, block::emptyBlock());
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+
+                    }
+                
                 }
+                else { // Old block had light.
 
-                if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(chunkPos))) {
+                    if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos)))
+                        neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
 
-                    neighbor->setBlock(-1, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                    if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(chunkPos)))
+                        neighbor->setBlock(-1, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
 
-                }
+                    if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(chunkPos)))
+                        neighbor->setBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z, block::emptyBlock());
 
-                if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(chunkPos))) {
+                    if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(chunkPos)))
+                        neighbor->setBlock(chunkRelPos.x, -1, chunkRelPos.z, block::emptyBlock());
 
-                    neighbor->setBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z, block::emptyBlock());
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                    if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(chunkPos)))
+                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE, block::emptyBlock());
 
-                }
+                    if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos)))
+                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, block::emptyBlock());
 
-                if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(chunkPos))) {
-
-                    neighbor->setBlock(chunkRelPos.x, -1, chunkRelPos.z, block::emptyBlock());
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
-
-                }
-
-                if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(chunkPos))) {
-
-                    neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE, block::emptyBlock());
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
-
-                }
-
-                if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos))) {
-
-                    neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, block::emptyBlock());
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
-
+                    std::list<ivec3>* lightsToRemove = new std::list<ivec3>();
+                    lightsToRemove->push_back(chunkRelPos);
+                    std::tuple<chunk*, std::list<ivec3>*>* data = new std::tuple<chunk*, std::list<ivec3>*>(selectedChunk, lightsToRemove);
+                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH_REMOVEDLIGHT, data);
+                
                 }
 
             }
@@ -232,56 +262,83 @@ namespace VoxelEng {
             if (selectedChunk && chunkManager::isEmptyBlock(xOld, yOld, zOld) && !selectedBlock_->isEmptyBlock()) {
 
                 chunk* neighbor = nullptr;
+                const ivec3& chunkPos = selectedChunk->chunkPos();
+                ivec3 chunkRelPos{ floorMod(xOld, CHUNK_SIZE),
+                                   floorMod(yOld, CHUNK_SIZE),
+                                   floorMod(zOld, CHUNK_SIZE) };
 
-                const vec3& chunkPos = selectedChunk->chunkPos();
-                vec3 chunkRelPos{ floorMod(xOld, CHUNK_SIZE),
-                                  floorMod(yOld, CHUNK_SIZE),
-                                  floorMod(zOld, CHUNK_SIZE) };
+                const block& oldB = selectedChunk->setBlock(chunkRelPos, *blockToPlace_);
 
-                selectedChunk->setBlock(chunkRelPos, *blockToPlace_);
 
-                chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, selectedChunk);
+                if (blockToPlace_.load()->emittedLight().isNull()) {
 
-                if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos))) {
+                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, selectedChunk);
+
+                    if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos))) {
+
+                        neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, *blockToPlace_);
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+
+                    }
+
+                    if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(chunkPos))) {
+
+                        neighbor->setBlock(-1, chunkRelPos.y, chunkRelPos.z, *blockToPlace_);
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+
+                    }
+
+                    if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(chunkPos))) {
+
+                        neighbor->setBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z, *blockToPlace_);
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+
+                    }
+
+                    if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(chunkPos))) {
+
+                        neighbor->setBlock(chunkRelPos.x, -1, chunkRelPos.z, *blockToPlace_);
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+
+                    }
+
+                    if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(chunkPos))) {
+
+                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE, *blockToPlace_);
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+
+                    }
+
+                    if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos))) {
+
+                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, *blockToPlace_);
+                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+
+                    }
+
+                }
+                else { // If the block to place provides light.
                 
-                    neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, *blockToPlace_);
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                    if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos)))
+                        neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, *blockToPlace_);
+
+                    if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(chunkPos)))
+                        neighbor->setBlock(-1, chunkRelPos.y, chunkRelPos.z, *blockToPlace_);
+
+                    if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(chunkPos)))
+                        neighbor->setBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z, *blockToPlace_);
+
+                    if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(chunkPos)))
+                        neighbor->setBlock(chunkRelPos.x, -1, chunkRelPos.z, *blockToPlace_);
+
+                    if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(chunkPos)))
+                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE, *blockToPlace_);
+
+                    if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos)))
+                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, *blockToPlace_);
+
+                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH_ADDEDLIGHT, selectedChunk);
                 
-                }
-
-                if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(chunkPos))) {
-
-                    neighbor->setBlock(-1, chunkRelPos.y, chunkRelPos.z, *blockToPlace_);
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
-
-                }
-
-                if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(chunkPos))) {
-
-                    neighbor->setBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z, *blockToPlace_);
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
-
-                }
-
-                if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(chunkPos))) {
-
-                    neighbor->setBlock(chunkRelPos.x, -1, chunkRelPos.z, *blockToPlace_);
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
-
-                }
-
-                if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(chunkPos))) {
-
-                    neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE, *blockToPlace_);
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
-
-                }
-
-                if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos))) {
-
-                    neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, *blockToPlace_);
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
-
                 }
 
             }

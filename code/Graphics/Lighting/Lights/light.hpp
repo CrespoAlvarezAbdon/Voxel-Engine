@@ -2,6 +2,7 @@
 #define _VOXELENG_LIGHT_
 
 #include <vec.h>
+#include <Graphics/Lighting/definitions.hpp>
 #include <Registry/registryElement.h>
 
 namespace VoxelEng {
@@ -43,9 +44,9 @@ namespace VoxelEng {
 		* @param specularG Percentage of green color emitted in specular lighting calculations by this light type.
 		* @param specularB Percentage of blue color emitted in specular lighting calculations by this light type.
 		*/
-		light(char ambientR, char ambientG, char ambientB,
-			char diffuseR, char diffuseG, char diffuseB,
-			char specularR, char specularG, char specularB);
+		light(lightValue ambientR, lightValue ambientG, lightValue ambientB, lightValue ambientA,
+			lightValue diffuseR, lightValue diffuseG, lightValue diffuseB, lightValue diffuseA,
+			lightValue specularR, lightValue specularG, lightValue specularB, lightValue specularA);
 
 
 		// Observers.
@@ -92,11 +93,11 @@ namespace VoxelEng {
 	: ambient_(basicVec4Zero), diffuse_(basicVec4Zero), specular_(basicVec4Zero)
 	{}
 
-	inline light::light(char ambientR, char ambientG, char ambientB,
-		char diffuseR, char diffuseG, char diffuseB,
-		char specularR, char specularG, char specularB)
-	: ambient_{ ambientR, ambientG, ambientB, 127, }, diffuse_{ diffuseR, diffuseG, diffuseB, 127 }, 
-		specular_{ specularR, specularG, specularB, 127 }
+	inline light::light(lightValue ambientR, lightValue ambientG, lightValue ambientB, lightValue ambientA,
+		lightValue diffuseR, lightValue diffuseG, lightValue diffuseB, lightValue diffuseA,
+		lightValue specularR, lightValue specularG, lightValue specularB, lightValue specularA)
+	: ambient_{ ambientR, ambientG, ambientB, ambientA, }, diffuse_{ diffuseR, diffuseG, diffuseB, diffuseA },
+	  specular_{ specularR, specularG, specularB, specularA }
 	{}
 
 	inline const std::string& light::typeName() {

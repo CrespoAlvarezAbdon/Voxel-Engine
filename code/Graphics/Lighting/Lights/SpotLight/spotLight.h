@@ -34,9 +34,9 @@ namespace VoxelEng {
 		* @param outerCutOffAngle TODO.
 		* @param maxDistance Maximum distance this light can cover.
 		*/
-		spotLight(char ambientR, char ambientG, char ambientB,
-			char diffuseR, char diffuseG, char diffuseB,
-			char specularR, char specularG, char specularB,
+		spotLight(lightValue ambientR, lightValue ambientG, lightValue ambientB, lightValue ambientA,
+			lightValue diffuseR, lightValue diffuseG, lightValue diffuseB, lightValue diffuseA,
+			lightValue specularR, lightValue specularG, lightValue specularB, lightValue specularA,
 			float cutOffAngle, float outerCutOffAngle, unsigned int maxDistance);
 
 
@@ -66,14 +66,16 @@ namespace VoxelEng {
 	};
 
 	inline spotLight::spotLight()
-		: directionalLight(), cutOffAngle_(90.0f), outerCutOffAngle_(45.0f), maxDistance_(lightMaxIntensity), padding_{0.0f}
+		: directionalLight(), cutOffAngle_(90.0f), outerCutOffAngle_(45.0f), maxDistance_(kLightMaxIntensity), padding_{0.0f}
 	{}
 
-	inline spotLight::spotLight(char ambientR, char ambientG, char ambientB,
-		char diffuseR, char diffuseG, char diffuseB,
-		char specularR, char specularG, char specularB,
+	inline spotLight::spotLight(lightValue ambientR, lightValue ambientG, lightValue ambientB, lightValue ambientA,
+		lightValue diffuseR, lightValue diffuseG, lightValue diffuseB, lightValue diffuseA,
+		lightValue specularR, lightValue specularG, lightValue specularB, lightValue specularA,
 		float cutOffAngle, float outerCutOffAngle, unsigned int maxDistance)
-	: directionalLight(ambientR, ambientG, ambientB, diffuseR, diffuseG, diffuseB, specularR, specularG, specularB),
+	: directionalLight(ambientR, ambientG, ambientB, ambientA,
+		diffuseR, diffuseG, diffuseB, diffuseA,
+		specularR, specularG, specularB, specularA),
 		cutOffAngle_(cutOffAngle), outerCutOffAngle_(outerCutOffAngle), maxDistance_(maxDistance), padding_{ 0.0f }
 	{}
 

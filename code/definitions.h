@@ -134,7 +134,7 @@ namespace VoxelEng {
 	* Light intensity is decreased minimally by one per block travelled, so it also dictactes the
 	* maximum distance travelled by light from its source block.
 	*/
-	const char lightMaxIntensity = 8;
+	const float kLightMaxIntensity = 8.0f;
 
 	/**
 	* @brief The number of neighbors a chunk has.
@@ -155,9 +155,9 @@ namespace VoxelEng {
 	typedef unsigned short numericShortID;
 	typedef unsigned int numID;
 
-	typedef unsigned char byte; // Number with values between 0 and 255.
+	typedef uint8_t byte; // Number with values between 0 and 255.
 
-	typedef signed char sbyte;
+	typedef int8_t sbyte;
 
 	typedef float vertexCoord;
 
