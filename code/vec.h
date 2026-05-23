@@ -23,7 +23,8 @@
 
 #endif
 
-#include "definitions.h"
+#include <definitions.h>
+#include <Graphics/Lighting/definitions.hpp>
 
 namespace glm {
 
@@ -170,6 +171,12 @@ namespace VoxelEng {
 		basicVec4 operator/(sbyte scalar) const;
 
 		/**
+		* @brief Get whether the two given vectors are equal or not.
+		* @returns Whether the two given vectors are equal (true) or not (false).
+		*/
+		bool operator==(const basicVec4& v) const;
+
+		/**
 		* @brief Component-based add the right operand vector to the left operand vector.
 		* NOTE. If the sum of two components would surpass the data range limit, the result will be clamped to said limit
 		* @param v The right operand vector.
@@ -224,6 +231,12 @@ namespace VoxelEng {
 
 		return basicVec4{ x / scalar, y / scalar, z / scalar, w / scalar };
 
+	}
+
+	inline bool basicVec4::operator==(const basicVec4& v) const {
+	
+		return x == v.x && y == v.y && z == v.z && w == v.w;
+	
 	}
 
 	/**

@@ -64,18 +64,32 @@ namespace VoxelEng {
 
 		/**
 		* @brief Get the ambient color provided by this light.
+		* Value range is [-127, 128].
+		* @returns The ambient color provided by this light.
 		*/
-		basicVec4 ambient() const;
+		const basicVec4& ambient() const;
+
+		/**
+		* @brief Get the ambient color provided by this light.
+		* Value range is [-127, 128].
+		* @param channel The specific color channel from which to get the ambient color value from.
+		* @returns The ambient color provided by this light.
+		*/
+		lightValue ambient(colorChannel channel) const;
 
 		/**
 		* @brief Get the diffuse color provided by this light.
+		* Value range is [-127, 128].
+		* @returns The diffuse color provided by this light.
 		*/
-		basicVec4 diffuse() const;
+		const basicVec4& diffuse() const;
 
 		/**
 		* @brief Get the specular color provided by this light.
+		* Value range is [-127, 128].
+		* @returns The specular color provided by this light.
 		*/
-		basicVec4 specular() const;
+		const basicVec4& specular() const;
 
 	protected:
 
@@ -112,19 +126,22 @@ namespace VoxelEng {
 
 	}
 
-	inline basicVec4 light::ambient() const
-	{
+	inline const basicVec4& light::ambient() const {
+
 		return ambient_;
+
 	}
 
-	inline basicVec4 light::diffuse() const
-	{
+	inline const basicVec4& light::diffuse() const {
+
 		return diffuse_;
+
 	}
 
-	inline basicVec4 light::specular() const
-	{
+	inline const basicVec4& light::specular() const {
+
 		return specular_;
+
 	}
 
 }

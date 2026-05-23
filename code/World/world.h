@@ -23,10 +23,10 @@
 #include <atomicRecyclingPool.h>
 #include <database.h>
 #include <definitions.h>
-#include <threadPool.h>
 #include <vec.h>
 #include <Chunk/chunk.h>
 #include <Graphics/graphics.h>
+#include <Threading/threadPool.hpp>
 
 #if GRAPHICS_API == OPENGL
 

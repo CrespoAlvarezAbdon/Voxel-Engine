@@ -35,7 +35,6 @@
 #include <time.h>
 #include <functional>
 #include <listener.h>
-#include <threadPool.h>
 #include <palette.h>
 #include <vec.h>
 #include <utilities.h>
@@ -57,6 +56,8 @@
 #include <Graphics/Vertex/vertex.h>
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
 #include <Registry/RegistryInsOrdered/registryInsOrdered.h>
+#include <Threading/threadPool.hpp>
+#include <Threading/Job/atomicJobPool.hpp>
 #include <Utilities/BlockViewDir/blockViewDir.hpp>
 #include <Utilities/Padded3DArray/Padded3DArray.hpp>
 
@@ -332,7 +333,7 @@ namespace VoxelEng {
 		/**
 		* @brief Get the block light color at the given chunk relative pos.
 		*/
-		const blockLight& getBlockLightColor(const ivec3& chunkRelPos);
+		const blockLight& getBlockLight(const ivec3& chunkRelPos);
 
 		/**
 		* @brief Get whether this chunk has owners or not.
@@ -688,7 +689,7 @@ namespace VoxelEng {
 		* @param inChunkPos Chunk-local-grid coordinates.
 		* @param markToBeRemeshed Whether to set the chunk as in need to be remeshed (true) or not (false).
 		*/
-		void removeBlockLight(const ivec3& inChunkPos, bool markToBeRemeshed, colorChannel channel);
+		void removeBlockLight(const ivec3& inChunkPos, colorChannel channel, bool markToBeRemeshed = true);
 
 		/**
 		* @brief Remove any block light applied to the specified position in the chunk.
@@ -697,7 +698,7 @@ namespace VoxelEng {
 		* @param z Chunk-local-grid Z-axis coordinate.
 		* @param markToBeRemeshed Whether to set the chunk as in need to be remeshed (true) or not (false).
 		*/
-		void removeBlockLight(char x, char y, char z, bool markToBeRemeshed, colorChannel channel);
+		void removeBlockLight(char x, char y, char z, colorChannel channel, bool markToBeRemeshed = true);
 
 		/**
 		* @brief Remove any block light applied to the specified position in the chunk.
@@ -707,7 +708,7 @@ namespace VoxelEng {
 		* @param zOffset Chunk-local-grid Z-axis coordinate offset.
 		* @param markToBeRemeshed Whether to set the chunk as in need to be remeshed (true) or not (false).
 		*/
-		void removeBlockLight(const ivec3& inChunkPos, char xOffset, char yOffset, char zOffset, bool markToBeRemeshed, colorChannel channel);
+		void removeBlockLight(const ivec3& inChunkPos, char xOffset, char yOffset, char zOffset, colorChannel channel, bool markToBeRemeshed = true);
 
 		/**
 		* @brief The chunk's block data will be filled with null blocks, leaving the chunk "empty of blocks".
@@ -887,7 +888,7 @@ namespace VoxelEng {
 		static const modelNormals* blockNormals_;
 		
 		// Serializable data.
-		palette<unsigned short, unsigned int> palette_;
+		palette<unsigned short, unsigned int> palette_; // TODO. CAMBIAR VALUE POR EL NAMESPACED ID???
 		std::unordered_map<unsigned short, unsigned short> paletteCount_;
 		std::unordered_set<unsigned short> freeLocalIDs_;
 
@@ -1182,10 +1183,9 @@ namespace VoxelEng {
 	
 	}
 
-	inline const blockLight& chunk::getBlockLightColor(const ivec3& chunkRelPos) {
+	inline const blockLight& chunk::getBlockLight(const ivec3& chunkRelPos) {
 	
-		// TODO. DO AN AT METHOD FOR THE PADDEDARRAY CLASS.
-		return blockLightColor_.get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z);
+		return blockLightColor_.at(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z);
 	
 	}
 
@@ -1399,22 +1399,22 @@ namespace VoxelEng {
 
 	}
 
-	inline void chunk::removeBlockLight(const ivec3& inChunkPos, bool markToBeRemeshed, colorChannel channel) {
+	inline void chunk::removeBlockLight(const ivec3& inChunkPos, colorChannel channel, bool markToBeRemeshed) {
 	
-		removeBlockLight(inChunkPos.x, inChunkPos.y, inChunkPos.z, markToBeRemeshed, channel);
+		removeBlockLight(inChunkPos.x, inChunkPos.y, inChunkPos.z, channel, markToBeRemeshed);
 	
 	}
 
-	inline void chunk::removeBlockLight(char x, char y, char z, bool markToBeRemeshed, colorChannel channel) {
+	inline void chunk::removeBlockLight(char x, char y, char z, colorChannel channel, bool markToBeRemeshed) {
 
 		setBlockLight(x, y, z, 0, 0, channel, markToBeRemeshed);
 
 	}
 
 	inline void chunk::removeBlockLight(const ivec3& inChunkPos, char xOffset, char yOffset, char zOffset, 
-		bool markToBeRemeshed, colorChannel channel) {
+		colorChannel channel, bool markToBeRemeshed) {
 
-		removeBlockLight(inChunkPos.x + xOffset, inChunkPos.y + yOffset, inChunkPos.z + zOffset, markToBeRemeshed, channel);
+		removeBlockLight(inChunkPos.x + xOffset, inChunkPos.y + yOffset, inChunkPos.z + zOffset, channel, markToBeRemeshed);
 
 	}
 
@@ -1981,7 +1981,16 @@ namespace VoxelEng {
 		* @brief Issue a job related to chunk processing.
 		* The job will be executed on another thread and will lock the chunk's mutexes that
 		* are required.
-		* @param type Type of job to issue.
+		* @param jobsData One pair of job data type and associated job data per job to issue.
+		* @param pushJobBack. Whether to insert the job at the back of the queue (true) or at the beginning (false).
+		*/
+		static void issueChunkJob(const std::list<std::pair<chunkJobType, void*>>& jobsData, bool pushJobBack = true);
+
+		/**
+		* @brief Issue a job related to chunk processing.
+		* The job will be executed on another thread and will lock the chunk's mutexes that
+		* are required.
+		* @param types Types of tasks to issue for a job.
 		* @param data Data associated with the job.
 		* @param pushJobBack. Whether to insert the job at the back of the queue (true) or at the beginning (false).
 		*/
@@ -2232,7 +2241,7 @@ namespace VoxelEng {
 		static atomicRecyclingPool<chunk> chunksPool_;
 
 		static std::mutex lightTickFunctionsMutex_;
-		static atomicRecyclingPool<job>* lightJobs_;
+		static atomicJobPool* lightJobs_;
 		static std::list<tickFunc> pendingLightJobs_;
 		static threadPool* lightTasks_;
 
@@ -2282,6 +2291,11 @@ namespace VoxelEng {
 		// WARNING. DOESN'T CLEAR PREVIOUS APPLIED LIGHTS.
 		static void recalculateBlockLight_(chunk& c, bool priorityUpdate, const std::unordered_set<ivec3>* lights = nullptr);
 
+		// Used in recalculateBlockLight_ to get required data related to the lighting of the chunk and its neighbors 
+		// that are going to get recalculated.
+		static bool getDataForCalculatingBlockLight_(chunk& c, const std::unordered_map<ivec3, chunk*>& ownedChunks,
+			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData);
+
 		static void addLightChannelSource_(colorChannel channel, blockLightMod& floodLight, const std::unordered_map<ivec3, chunk*>& ownedChunks,
 			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData,
 			const ivec3& chunkPosOffset, const ivec3& chunkRelPos, std::deque<blockLightMod>& floodLightsInstances,
@@ -2293,16 +2307,28 @@ namespace VoxelEng {
 		static void removeLightChannelSource_(colorChannel channel, blockLightMod& floodLight, const std::unordered_map<ivec3, chunk*>& ownedChunks,
 			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData,
 			const ivec3& chunkPosOffset, const ivec3& chunkRelPos, std::deque<blockLightMod>& floodLightsInstances,
-			const ivec3& blockGlobalPos, bool ignoreIntensityComparison, std::unordered_set<ivec3>& blockLightsToRepropagate);
+			const ivec3& blockGlobalPos, std::unordered_set<ivec3>& blockLightsToRepropagate, bool checkIfNeighborsAreLightSources);
 
-		// Used in recalculateBlockLight_ to get required data related to the lighting of the chunk and its neighbors 
-		// that are going to get recalculated.
-		static bool getDataForCalculatingBlockLight_(chunk& c, const std::unordered_map<ivec3, chunk*>& ownedChunks,
+		static void recalculateBlockLightAfterNonTransparentPlaced_(
+			chunk& c, bool priorityUpdate, std::list<ivec3>& blockPositions, const block& placedBlock);
+
+		static void removeLightFromPlacedBlock_(colorChannel channel, const std::unordered_map<ivec3, chunk*>& ownedChunks,
+			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData, const ivec3& blockGlobalPos,
+			const ivec3& chunkPosOffset, const ivec3& chunkRelPos, std::list<ivec3>& blockPositions,
+			bool ignoreIntensityComparison, std::unordered_set<ivec3>& blockLightsToRepropagate, const block& placedBlock);
+
+		static lightIntensity expectedIntensityFromNeighbors_(const ivec3& chunkPosOffset, const ivec3& globalBlockPos, colorChannel channel,
 			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData);
 
+		
 		/*
 		Jobs.
 		*/
+
+		// Returns if the job should be submitted to be processed.
+		static bool pushChunkTask_(chunkJobType type, void* data, job& j);
+
+		static void sendJob_(job& j, bool pushJobBack, bool isPriority);
 
 		static void loadChunkJob(void* data);
 
@@ -2317,6 +2343,8 @@ namespace VoxelEng {
 		static void priorityRemeshAddedLightChunkJob(void* data);
 
 		static void priorityRemeshRemovedLightChunkJob(void* data);
+
+		static void solidBlockPlacedOnLightChunkJob(void* data);
 
 		static void processLightJob(void*);
 

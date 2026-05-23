@@ -34,7 +34,7 @@ namespace VoxelEng {
 		// Constructors
 
 		/**
-		* @brief Default constructor
+		* @brief Default class constructor
 		*/
 		blockLightMod();
 
@@ -43,7 +43,7 @@ namespace VoxelEng {
 		* @param pos Block light modification position
 		* @param color Block light modification color
 		*/
-		blockLightMod(const ivec3& pos, const blockLight& color);
+		blockLightMod(const ivec3& pos, const blockLight& color = blockLight());
 
 
 		/*

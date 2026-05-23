@@ -1,13 +1,12 @@
 #include "world.h"
+
 #include <cstring>
 
 #include <entity.h>
 #include <palette.h>
 #include <player.h>
 #include <game.h>
-#include <threadPool.h>
 #include <utilities.h>
-
 #include <Block/block.h>
 #include <Utilities/Logger/logger.h>
 #include <World/WorldGen/worldGen.h>

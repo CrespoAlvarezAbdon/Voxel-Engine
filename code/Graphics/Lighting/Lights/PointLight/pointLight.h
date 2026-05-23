@@ -49,8 +49,17 @@ namespace VoxelEng {
 
 		/**
 		* @brief Get the light's maximum intensity.
+		* @returns The light's maximum intensity.
 		*/
 		const basicUVec4& intensity() const;
+
+		/**
+		* @brief Get the light's maximum intensity.
+		* Value range is [0, 8].
+		* @param channel The channel form which to get the light's maximum intensity (only one channel at a time).
+		* @returns The light's maximum intensity.
+		*/
+		lightIntensity intensity(colorChannel channel) const;
 
 	protected:
 

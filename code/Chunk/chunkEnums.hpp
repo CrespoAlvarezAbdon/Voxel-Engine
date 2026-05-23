@@ -11,6 +11,10 @@
 
 namespace VoxelEng {
 
+	//////////
+	//Enums.//
+	//////////
+
 	/**
 	* @brief The different forms a chunk may exist in the chunk manager system.
 	* COMMON -> Chunk that exists loaded because it is inside a player's load radius.
@@ -29,6 +33,7 @@ namespace VoxelEng {
 	*/
 	enum class chunkJobType { NONE = 0, LOAD, LOAD2, ONLYREMESH, UNLOADANDSAVE, 
 		PRIORITYREMESH, PRIORITYREMESH_ADDEDLIGHT, PRIORITYREMESH_REMOVEDLIGHT, 
+		SOLID_BLOCK_PLACED_ON_LIGHT,
 		SAVEONLY };
 
 	// LOAD2 WILL BE USED FOR LIGHTING LAYER.
@@ -37,6 +42,13 @@ namespace VoxelEng {
 	* @brief Definition of the operations allowed in the chunk vertex buffer object.
 	*/
 	enum class VBOop { NONE = 0, PUSH = 1, FREE = 2 };
+
+	
+	//////////////
+	//Functions.//
+	//////////////
+
+	bool isPriority(chunkJobType type);
 
 }
 

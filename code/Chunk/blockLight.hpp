@@ -78,6 +78,12 @@ namespace VoxelEng {
 
 		lightValue value(colorChannel channel) const;
 
+		/**
+		* @brief Get whether all the intensity and values for all channels for this blocklight are 0.
+		* @returns Whether all the intensity and values for all channels for this blocklight are 0 (true) or otherwise (false).
+		*/
+		bool isZero() const;
+
 
 		/**
 		* @brief Obtain this block light's with a specified atenuation applied to all specified channels.
@@ -148,7 +154,7 @@ namespace VoxelEng {
 
 	inline lightValue blockLight::getWithIntensity(colorChannel channel) const {
 	
-		return value(channel) * (intensity(channel) / kLightMaxIntensity);
+		return value(channel) * (intensity(channel) / static_cast<float>(kLightMaxIntensity));
 	
 	}
 
@@ -246,6 +252,12 @@ namespace VoxelEng {
 
 		return value_.w;
 
+	}
+
+	inline bool blockLight::isZero() const {
+	
+		return intensityBits_ == 0 && value_ == basicVec4Zero;
+	
 	}
 
 	inline void blockLight::clear() {

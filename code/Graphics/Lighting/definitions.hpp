@@ -3,6 +3,10 @@
 
 namespace VoxelEng {
 
+	/////////////
+	//Typedefs.//
+	/////////////
+
 	/**
 	* @brief Light intensity. It determines how much further the light will expand for each channel. Range is [0, 8].
 	*/
@@ -12,6 +16,11 @@ namespace VoxelEng {
 	* @brief Value for a light channel. Range is [-127, 128].
 	*/
 	typedef sbyte lightValue;
+
+
+	/////////////////
+	//Enum classes.//
+	/////////////////
 
 	/**
 	* @brief Color channels.
@@ -23,6 +32,18 @@ namespace VoxelEng {
 	* RGB = Only RGB color channels.
 	*/
 	enum class colorChannel {RED = 0, GREEN, BLUE, ALPHA, ALL, RGB};
+
+
+	//////////////
+	//Constants.//
+	//////////////
+
+	/**
+	* @brief Default maximum intensity that a light source can emit to.
+	* Light intensity is decreased minimally by one per block travelled, so it also dictactes the
+	* maximum distance travelled by light from its source block.
+	*/
+	const lightIntensity kLightMaxIntensity = 8;
 
 }
 

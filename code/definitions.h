@@ -130,13 +130,6 @@ namespace VoxelEng {
 	const float piDiv = 3.1415926f / 180.0f;
 
 	/**
-	* @brief Default maximum intensity that a light source can emit to.
-	* Light intensity is decreased minimally by one per block travelled, so it also dictactes the
-	* maximum distance travelled by light from its source block.
-	*/
-	const float kLightMaxIntensity = 8.0f;
-
-	/**
 	* @brief The number of neighbors a chunk has.
 	*/
 	const int nChunkNeighbors = 26;

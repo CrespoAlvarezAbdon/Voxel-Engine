@@ -9,6 +9,7 @@ namespace VoxelEng {
 
 	struct chunkBlockData {
 
+		// TODO. FUSE THESE THREE ARRAYS OF THE SAME SIZE INTO ONE TO ONLY HAVE TO DO AT MOST 1 SEARCH?
 		Padded3DArray<unsigned short>* blocksLocalIDs_;
 		Padded3DArray<byte>* isOpaque_;
 		Padded3DArray<blockLight>* blockLightColor_; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.

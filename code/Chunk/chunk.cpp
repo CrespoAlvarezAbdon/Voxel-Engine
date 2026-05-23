@@ -19,6 +19,7 @@
 #include <gui.h>
 #include <game.h>
 #include <Chunk/chunkNeighbors.hpp>
+#include <Chunk/Utilities/utilities.hpp>
 #include <Time/Timer/timer.h>
 #include <Graphics/graphics.h>
 #include <Graphics/Lighting/Lights/light.hpp>
@@ -1505,7 +1506,7 @@ namespace VoxelEng {
     atomicRecyclingPool<chunk> chunkManager::chunksPool_;
 
     std::mutex chunkManager::lightTickFunctionsMutex_;
-    atomicRecyclingPool<job>* chunkManager::lightJobs_ = nullptr;
+    atomicJobPool* chunkManager::lightJobs_ = nullptr;
     std::list<tickFunc> chunkManager::pendingLightJobs_;
     threadPool* chunkManager::lightTasks_ = nullptr;
 
@@ -1551,7 +1552,7 @@ namespace VoxelEng {
             vbo_->bind();
             vbo_->prepareDynamic(1024LL * 1024 * 1024 * 2); // 1024^3 bytes = 1GB.
 
-            lightJobs_ = new atomicRecyclingPool<job>(1); // Only one thread for processing block lighting updates.
+            lightJobs_ = new atomicJobPool(1); // Only one thread for processing block lighting updates.
             lightJobs_->setAllFreeOnClear(true);
             lightTasks_ = new threadPool(1);
 
@@ -2093,11 +2094,11 @@ namespace VoxelEng {
 
             std::unique_lock<std::mutex> lock(lightTickFunctionsMutex_);
 
-            job* aJob = &lightJobs_->get();
+            job& aJob = lightJobs_->get();
 
             // Set the task.
             std::tuple<chunk*, bool>* data = new std::tuple<chunk*, bool>(c, causesPriorityUpdate);
-            aJob->setTask(processLightJob, data, lightJobs_);
+            aJob.pushBackTask(processLightJob, data);
 
             // Send the job to its corresponding queue.
             lightTasks_->submitJob(aJob, pushJobBack);
@@ -2655,82 +2656,31 @@ namespace VoxelEng {
 
     }
 
+    void chunkManager::issueChunkJob(const std::list<std::pair<chunkJobType, void*>>& jobsData, bool pushJobBack) {
+
+        bool shouldSendJob = true;
+        bool priorityJob = false;
+        job& aJob = loadChunkJobs_->get();
+        for (auto it = jobsData.begin(); shouldSendJob && it != jobsData.end(); it++) {
+        
+            shouldSendJob = pushChunkTask_(it->first, it->second, aJob);
+            priorityJob = priorityJob || isPriority(it->first);
+        
+        }
+
+        if (shouldSendJob)
+            sendJob_(aJob, pushJobBack, priorityJob);
+
+    }
     void chunkManager::issueChunkJob(chunkJobType type, void* data, bool pushJobBack) {
 
-        bool send = true;
-        job* aJob = &loadChunkJobs_->get();
+        job& aJob = loadChunkJobs_->get();
 
-        chunk* c = nullptr;
-
-        // Set the task.
-        switch (type) {
-
-        case chunkJobType::NONE:
-            logger::errorLog("No chunk job type was specified");
-            break;
-        case chunkJobType::LOAD:
-            aJob->setTask(loadChunkJob, static_cast<chunk*>(data), loadChunkJobs_);
-            break;
-        case chunkJobType::LOAD2:
-            c = static_cast<chunk*>(data);
-            c->loadStatusMutex().lock();
-            if (c->loadStatus() == chunkLoadStatus::BASICTERRAIN || c->loadStatus() == chunkLoadStatus::BASICTERRAINFROMDISK) {
-                c->loadStatus(chunkLoadStatus::PENDING_DECORATED);
-                aJob->setTask(loadChunkJobPass2, c, loadChunkJobs_);
-            }
-            else
-                send = false;
-            c->loadStatusMutex().unlock();
-            break;
-        case chunkJobType::ONLYREMESH:
-            aJob->setTask(remeshChunkJob, static_cast<chunk*>(data), loadChunkJobs_);
-            break;
-        case chunkJobType::UNLOADANDSAVE:
-            aJob->setTask(unloadAndSaveChunkJob, static_cast<chunk*>(data), loadChunkJobs_);
-            break;
-        case chunkJobType::PRIORITYREMESH:
-            aJob->setTask(priorityRemeshChunkJob, static_cast<chunk*>(data), loadChunkJobs_);
-            break;
-        case chunkJobType::PRIORITYREMESH_ADDEDLIGHT:
-            aJob->setTask(priorityRemeshAddedLightChunkJob, static_cast<chunk*>(data), loadChunkJobs_);
-            break;
-        case chunkJobType::PRIORITYREMESH_REMOVEDLIGHT:
-            aJob->setTask(priorityRemeshRemovedLightChunkJob, data, loadChunkJobs_);
-            break;
-        default:
-            logger::errorLog("Unsupported chunkJobType type " + std::to_string(static_cast<int>(type)));
-            break;
-        }
-
-        // Send the job to its corresponding queue.
-        if (send) {
-
-            switch (type) {
-
-            case chunkJobType::NONE:
-                logger::errorLog("No chunk job type was specified");
-                break;
-
-            case chunkJobType::PRIORITYREMESH:
-            case chunkJobType::PRIORITYREMESH_ADDEDLIGHT:
-            case chunkJobType::PRIORITYREMESH_REMOVEDLIGHT:
-                priorityChunkTasks_->submitJob(aJob, pushJobBack);
-                break;
-            case chunkJobType::LOAD:
-            case chunkJobType::LOAD2:
-            case chunkJobType::ONLYREMESH:
-            case chunkJobType::UNLOADANDSAVE:
-                chunkTasks_->submitJob(aJob, pushJobBack);
-                break;
-            default:
-                logger::errorLog("Unsupported chunkJobType type " + std::to_string(static_cast<int>(type)));
-                break;
-
-            }
-
-        }
+        // Send the job to its corresponding queue if adequate.
+        if (pushChunkTask_(type, data, aJob))
+            sendJob_(aJob, pushJobBack, isPriority(type));
         else
-            loadChunkJobs_->free(*aJob);
+            loadChunkJobs_->free(aJob);
         
     }
 
@@ -3180,7 +3130,7 @@ namespace VoxelEng {
                     chunkPosOffset = getChunkCoords(*blockGlobalPos);
                     chunkRelPos = getChunkRelCoords(*blockGlobalPos);
                     const chunkBlockData* blockData = &ownedBlockData[chunkPosOffset]; // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
-                    floodLightsInstances.emplace_back(*blockGlobalPos, blockData->blockLightColor_->at(chunkRelPos));
+                    floodLightsInstances.emplace_back(*blockGlobalPos, blockData->blockLightColor_->get(chunkRelPos));
 
                     firstSecondLoopIteration = true; // To spread beyond the block light source's position.
                     blockLightMod* floodLight = &floodLightsInstances.front();
@@ -3235,6 +3185,30 @@ namespace VoxelEng {
             }
 
         }
+
+    }
+
+    bool chunkManager::getDataForCalculatingBlockLight_(chunk& c, const std::unordered_map<ivec3, chunk*>& ownedChunks,
+        std::unordered_map<ivec3, chunkBlockData>& ownedBlockData) {
+
+        bool isDataEnough = true;
+
+        const ivec3& chunkPos = c.chunkPos();
+        chunk* neighbor = nullptr;
+        //std::unique_lock<std::recursive_mutex> lock(chunksMutex_); // Careful! This causes deadlock.
+
+        chunkBlockData& blockData = ownedBlockData[vec3Zero] = c.blockData();
+        for (auto it = neighborsOffsets.cbegin(); isDataEnough && it != neighborsOffsets.cend(); it++) {
+
+            const ivec3& chunkPosOffset = *it;
+            if (neighbor = ownedChunks.at(chunkPosOffset))
+                ownedBlockData[chunkPosOffset] = neighbor->blockData();
+            else
+                isDataEnough = false;
+
+        }
+
+        return isDataEnough;
 
     }
 
@@ -3456,7 +3430,7 @@ namespace VoxelEng {
                     floodLightsInstances.clear();
 
                     // Add block's light and init second loop variables.
-                    const ivec3* blockGlobalPos = &*it; // We assume the chunk is the center of the coordinate system.
+                    const ivec3* blockGlobalPos = &*it; // We assume chunk c is the center of the coordinate system for this method.
                     chunkPosOffset = getChunkCoords(*blockGlobalPos);
                     chunkRelPos = getChunkRelCoords(*blockGlobalPos);
                     const chunkBlockData* blockData = &ownedBlockData[chunkPosOffset]; // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
@@ -3469,17 +3443,17 @@ namespace VoxelEng {
                         if (firstSecondLoopIteration || !blockData->isOpaque_->at(chunkRelPos)) {
 
                             removeLightChannelSource_(colorChannel::RED, *floodLight, ownedChunks, ownedBlockData,
-                                chunkPosOffset, chunkRelPos, floodLightsInstances, *blockGlobalPos, firstSecondLoopIteration, 
-                                blockLightsToRepropagate);
+                                chunkPosOffset, chunkRelPos, floodLightsInstances, *blockGlobalPos, 
+                                blockLightsToRepropagate, firstSecondLoopIteration);
                             removeLightChannelSource_(colorChannel::GREEN, *floodLight, ownedChunks, ownedBlockData,
-                                chunkPosOffset, chunkRelPos, floodLightsInstances, *blockGlobalPos, firstSecondLoopIteration, 
-                                blockLightsToRepropagate);
+                                chunkPosOffset, chunkRelPos, floodLightsInstances, *blockGlobalPos, 
+                                blockLightsToRepropagate, firstSecondLoopIteration);
                             removeLightChannelSource_(colorChannel::BLUE, *floodLight, ownedChunks, ownedBlockData,
-                                chunkPosOffset, chunkRelPos, floodLightsInstances, *blockGlobalPos, firstSecondLoopIteration, 
-                                blockLightsToRepropagate);
+                                chunkPosOffset, chunkRelPos, floodLightsInstances, *blockGlobalPos, 
+                                blockLightsToRepropagate, firstSecondLoopIteration);
                             removeLightChannelSource_(colorChannel::ALPHA, *floodLight, ownedChunks, ownedBlockData,
-                                chunkPosOffset, chunkRelPos, floodLightsInstances, *blockGlobalPos, firstSecondLoopIteration, 
-                                blockLightsToRepropagate);
+                                chunkPosOffset, chunkRelPos, floodLightsInstances, *blockGlobalPos, 
+                                blockLightsToRepropagate, firstSecondLoopIteration);
 
                         }
                         floodLightsInstances.pop_front();
@@ -3489,7 +3463,7 @@ namespace VoxelEng {
                             // Reset loop variables
                             firstSecondLoopIteration = false;
                             floodLight = &floodLightsInstances.front();
-                            blockGlobalPos = &floodLight->pos; // We assume the chunk is the center of the coordinate system.
+                            blockGlobalPos = &floodLight->pos; // We assume chunk c is the center of the coordinate system for this method.
                             chunkPosOffset = getChunkCoords(*blockGlobalPos);
                             chunkRelPos = getChunkRelCoords(*blockGlobalPos);
                             blockData = &ownedBlockData[chunkPosOffset]; // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
@@ -3524,10 +3498,10 @@ namespace VoxelEng {
 
     }
 
-    void chunkManager::removeLightChannelSource_(colorChannel channel, blockLightMod& floodLight, const std::unordered_map<ivec3, chunk*>& ownedChunks,
-        std::unordered_map<ivec3, chunkBlockData>& ownedBlockData,
+    void chunkManager::removeLightChannelSource_(colorChannel channel, blockLightMod& floodLight, 
+        const std::unordered_map<ivec3, chunk*>& ownedChunks, std::unordered_map<ivec3, chunkBlockData>& ownedBlockData,
         const ivec3& chunkPosOffset, const ivec3& chunkRelPos, std::deque<blockLightMod>& floodLightsInstances, const ivec3& blockGlobalPos,
-        bool ignoreIntensityComparison, std::unordered_set<ivec3>& blockLightsToRepropagate) {
+        std::unordered_set<ivec3>& blockLightsToRepropagate, bool checkIfNeighborsAreLightSources) {
 
         lightIntensity intensity = floodLight.color.intensity(channel);
         lightIntensity currentIntensity = 
@@ -3540,7 +3514,7 @@ namespace VoxelEng {
 
                 // Apply light on position.
                 chunk* ownedChunk = ownedChunks.at(chunkPosOffset);
-                ownedChunk->removeBlockLight(chunkRelPos, true, channel);
+                ownedChunk->removeBlockLight(chunkRelPos, channel);
 
                 // Calculate light blending across chunks.
                 lightIntensity intensityMinus1 = intensity - 1;
@@ -3565,8 +3539,8 @@ namespace VoxelEng {
                             if (intensityMinus1 > currentIntensity) {
                             
                                 // This light values used for bending across chunk will be properly readded in the repropagation step.
-                                ownedChunk->removeBlockLight(chunkRelPos + neighborOffset, true, channel);
-                                ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos - neighborOffset, true, channel);
+                                ownedChunk->removeBlockLight(chunkRelPos + neighborOffset, channel);
+                                ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos - neighborOffset, channel);
                             
                             }
                             
@@ -3580,8 +3554,8 @@ namespace VoxelEng {
 
                         if (intensityMinus1 > currentIntensity) {
                         
-                            ownedChunk->removeBlockLight(chunkRelPos, neighborOffset.x, neighborOffset.y, 0, true, channel);
-                            ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, -neighborOffset.x, -neighborOffset.y, 0, true, channel);
+                            ownedChunk->removeBlockLight(chunkRelPos, neighborOffset.x, neighborOffset.y, 0, channel);
+                            ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, -neighborOffset.x, -neighborOffset.y, 0, channel);
                         
                         }
 
@@ -3597,8 +3571,8 @@ namespace VoxelEng {
 
                         if (intensityMinus1 > currentIntensity) {
                         
-                            ownedChunk->removeBlockLight(chunkRelPos, neighborOffset.x, 0, neighborOffset.z, true, channel);
-                            ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, -neighborOffset.x, 0, -neighborOffset.z, true, channel);
+                            ownedChunk->removeBlockLight(chunkRelPos, neighborOffset.x, 0, neighborOffset.z, channel);
+                            ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, -neighborOffset.x, 0, -neighborOffset.z, channel);
                         
                         }
 
@@ -3611,8 +3585,8 @@ namespace VoxelEng {
 
                     if (intensityMinus1 > currentIntensity) {
                     
-                        ownedChunk->removeBlockLight(chunkRelPos, neighborOffset.x, 0, 0, true, channel);
-                        ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, -neighborOffset.x, 0, 0, true, channel);
+                        ownedChunk->removeBlockLight(chunkRelPos, neighborOffset.x, 0, 0, channel);
+                        ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, -neighborOffset.x, 0, 0, channel);
                     
                     }
 
@@ -3629,8 +3603,8 @@ namespace VoxelEng {
 
                         if (intensityMinus1 > currentIntensity) {
                         
-                            ownedChunk->removeBlockLight(chunkRelPos, 0, neighborOffset.y, neighborOffset.z, true, channel);
-                            ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, 0, -neighborOffset.y, -neighborOffset.z, true, channel);
+                            ownedChunk->removeBlockLight(chunkRelPos, 0, neighborOffset.y, neighborOffset.z, channel);
+                            ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, 0, -neighborOffset.y, -neighborOffset.z, channel);
                         
                         }
 
@@ -3643,8 +3617,8 @@ namespace VoxelEng {
 
                     if (intensityMinus1 > currentIntensity) {
                     
-                        ownedChunk->removeBlockLight(chunkRelPos, 0, neighborOffset.y, 0, true, channel);
-                        ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, 0, -neighborOffset.y, 0, true, channel);
+                        ownedChunk->removeBlockLight(chunkRelPos, 0, neighborOffset.y, 0, channel);
+                        ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, 0, -neighborOffset.y, 0, channel);
                     
                     }
 
@@ -3659,8 +3633,8 @@ namespace VoxelEng {
 
                     if (intensityMinus1 > currentIntensity) {
                     
-                        ownedChunk->removeBlockLight(chunkRelPos, 0, 0, neighborOffset.z, true, channel);
-                        ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, 0, 0, -neighborOffset.z, true, channel);
+                        ownedChunk->removeBlockLight(chunkRelPos, 0, 0, neighborOffset.z, channel);
+                        ownedChunks.at(neighborPos)->removeBlockLight(neighborRelPos, 0, 0, -neighborOffset.z, channel);
                     
                     }
                     
@@ -3668,25 +3642,82 @@ namespace VoxelEng {
 
                 // Spread 'light removal'
 
-                blockLight newBlockLight = floodLight.color.decreased(colorChannel::ALL);
+                if (checkIfNeighborsAreLightSources) {
+                
+                    blockLight newBlockLight = floodLight.color.decreased(colorChannel::ALL);
 
-                //+x
-                floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedNorth, newBlockLight);
+                    //+x
+                    neighborRelPos = blockGlobalPos + ivec3FixedNorth;
+                    neighborPos = getChunkCoords(neighborRelPos);
+                    if(ownedBlockData.at(neighborPos).blockLightColor_->at(neighborRelPos).intensity(channel) == kLightMaxIntensity)
+                        blockLightsToRepropagate.insert(neighborRelPos);
+                    else
+                        floodLightsInstances.emplace_back(neighborRelPos, newBlockLight);
 
-                //-x
-                floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedSouth, newBlockLight);
+                    //-x
+                    neighborRelPos = blockGlobalPos + ivec3FixedSouth;
+                    neighborPos = getChunkCoords(neighborRelPos);
+                    if (ownedBlockData.at(neighborPos).blockLightColor_->at(neighborRelPos).intensity(channel) == kLightMaxIntensity)
+                        blockLightsToRepropagate.insert(neighborRelPos);
+                    else
+                        floodLightsInstances.emplace_back(neighborRelPos, newBlockLight);
 
-                //+y
-                floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedUp, newBlockLight);
+                    //+y
+                    neighborRelPos = blockGlobalPos + ivec3FixedUp;
+                    neighborPos = getChunkCoords(neighborRelPos);
+                    if (ownedBlockData.at(neighborPos).blockLightColor_->at(neighborRelPos).intensity(channel) == kLightMaxIntensity)
+                        blockLightsToRepropagate.insert(neighborRelPos);
+                    else
+                        floodLightsInstances.emplace_back(neighborRelPos, newBlockLight);
 
-                //-y
-                floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedDown, newBlockLight);
+                    //-y
+                    neighborRelPos = blockGlobalPos + ivec3FixedDown;
+                    neighborPos = getChunkCoords(neighborRelPos);
+                    if (ownedBlockData.at(neighborPos).blockLightColor_->at(neighborRelPos).intensity(channel) == kLightMaxIntensity)
+                        blockLightsToRepropagate.insert(neighborRelPos);
+                    else
+                        floodLightsInstances.emplace_back(neighborRelPos, newBlockLight);
 
-                //+z
-                floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedEast, newBlockLight);
+                    //+z
+                    neighborRelPos = blockGlobalPos + ivec3FixedEast;
+                    neighborPos = getChunkCoords(neighborRelPos);
+                    if (ownedBlockData.at(neighborPos).blockLightColor_->at(neighborRelPos).intensity(channel) == kLightMaxIntensity)
+                        blockLightsToRepropagate.insert(neighborRelPos);
+                    else
+                        floodLightsInstances.emplace_back(neighborRelPos, newBlockLight);
 
-                //-z
-                floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedWest, newBlockLight);
+                    //-z
+                    neighborRelPos = blockGlobalPos + ivec3FixedWest;
+                    neighborPos = getChunkCoords(neighborRelPos);
+                    if (ownedBlockData.at(neighborPos).blockLightColor_->at(neighborRelPos).intensity(channel) == kLightMaxIntensity)
+                        blockLightsToRepropagate.insert(neighborRelPos);
+                    else
+                        floodLightsInstances.emplace_back(neighborRelPos, newBlockLight);
+                
+                }
+                else {
+                
+                    blockLight newBlockLight = floodLight.color.decreased(colorChannel::ALL);
+
+                    //+x
+                    floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedNorth, newBlockLight);
+
+                    //-x
+                    floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedSouth, newBlockLight);
+
+                    //+y
+                    floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedUp, newBlockLight);
+
+                    //-y
+                    floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedDown, newBlockLight);
+
+                    //+z
+                    floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedEast, newBlockLight);
+
+                    //-z
+                    floodLightsInstances.emplace_back(blockGlobalPos + ivec3FixedWest, newBlockLight);
+                
+                }
 
             }
             else if (currentIntensity >= intensity)
@@ -3696,28 +3727,293 @@ namespace VoxelEng {
     
     }
 
-    bool chunkManager::getDataForCalculatingBlockLight_(chunk& c, const std::unordered_map<ivec3, chunk*>& ownedChunks,
-        std::unordered_map<ivec3, chunkBlockData>& ownedBlockData) {
+    void chunkManager::recalculateBlockLightAfterNonTransparentPlaced_(
+        chunk& c, bool priorityUpdate, std::list<ivec3>& blockPositions, const block& placedBlock) {
+    
+        std::unique_lock<std::recursive_mutex> lock(c.ownedChunksMutex());
+        const std::unordered_map<ivec3, chunk*>& ownedChunks = c.ownedChunks();
 
-        bool isDataEnough = true;
+        if (!ownedChunks.empty() && !blockPositions.empty()) {
 
-        const ivec3& chunkPos = c.chunkPos();
-        chunk* neighbor = nullptr;
-        //std::unique_lock<std::recursive_mutex> lock(chunksMutex_); // Careful! This causes deadlock.
+            // Propagate every light across the chunk and its neighbors without taking into account chunk borders.
+            std::unordered_map<ivec3, chunkBlockData> ownedBlockData; // Chunk pos offset is used as key.
+            // MAÑANA. FACTORIZE THIS getDataForCalculatingBlockLight_ IN A WAY THAT CAN BE SHARED WITH OTHER TASKS INSIDE THE SAME JOB?
+            if (getDataForCalculatingBlockLight_(c, ownedChunks, ownedBlockData)) { 
 
-        chunkBlockData& blockData = ownedBlockData[vec3Zero] = c.blockData();
-        for (auto it = neighborsOffsets.cbegin(); isDataEnough && it != neighborsOffsets.cend(); it++) {
+                // This is for the flooding process not to end on the same blocklight that starts it if the block is opaque.
+                bool firstSecondLoopIteration = true;
 
-            const ivec3& chunkPosOffset = *it;
-            if (neighbor = ownedChunks.at(chunkPosOffset))
-                ownedBlockData[chunkPosOffset] = neighbor->blockData();
-            else
-                isDataEnough = false;
+                ivec3 chunkPosOffset = vec3Zero;
+                ivec3 chunkRelPos = vec3Zero;
+                std::unordered_set<ivec3> blockLightsToRepropagate;
+                do {
+
+                    // Add block's light and init second loop variables.
+                    const ivec3* blockGlobalPos = &blockPositions.front(); // We assume the chunk is the center of the coordinate system.
+                    chunkPosOffset = getChunkCoords(*blockGlobalPos);
+                    chunkRelPos = getChunkRelCoords(*blockGlobalPos);
+                   
+                    // MAÑANA. NO SE ESTÁ RECALCULANDO EL IS OPAQUE CUANDO SE DESERIALIZA UN CHUNK GUARDADO
+                    if (firstSecondLoopIteration || !ownedBlockData[chunkPosOffset].isOpaque_->at(chunkRelPos)) {
+
+                        removeLightFromPlacedBlock_(colorChannel::RED, ownedChunks, ownedBlockData, *blockGlobalPos,
+                            chunkPosOffset, chunkRelPos, blockPositions, firstSecondLoopIteration,
+                            blockLightsToRepropagate, placedBlock);
+                        removeLightFromPlacedBlock_(colorChannel::GREEN, ownedChunks, ownedBlockData, *blockGlobalPos,
+                            chunkPosOffset, chunkRelPos, blockPositions, firstSecondLoopIteration,
+                            blockLightsToRepropagate, placedBlock);
+                        removeLightFromPlacedBlock_(colorChannel::BLUE, ownedChunks, ownedBlockData, *blockGlobalPos,
+                            chunkPosOffset, chunkRelPos, blockPositions, firstSecondLoopIteration,
+                            blockLightsToRepropagate, placedBlock);
+                        removeLightFromPlacedBlock_(colorChannel::ALPHA, ownedChunks, ownedBlockData, *blockGlobalPos,
+                            chunkPosOffset, chunkRelPos, blockPositions, firstSecondLoopIteration,
+                            blockLightsToRepropagate, placedBlock);
+
+                    }
+                    blockPositions.pop_front();
+                    firstSecondLoopIteration = false;
+
+                } while (blockPositions.size() > 0);
+
+                // Repropagate the lights that have been affected by the removal but not have been eliminated.
+                recalculateBlockLight_(c, priorityUpdate, &blockLightsToRepropagate);
+
+                // Remesh chunks.
+                for (auto it = ownedChunks.cbegin(); it != ownedChunks.cend(); it++) {
+
+                    it->second->loadStatusMutex().lock();
+                    if (it->second->needsRemesh() && it->second->loadStatus() >= chunkLoadStatus::MESHED) {
+
+                        it->second->loadStatusMutex().unlock();
+                        remesh(it->second, priorityUpdate);
+
+                    }
+                    else
+                        it->second->loadStatusMutex().unlock();
+
+                }
+
+            }
 
         }
+    
+    }
 
-        return isDataEnough;
+    void chunkManager::removeLightFromPlacedBlock_(colorChannel channel, const std::unordered_map<ivec3, chunk*>& ownedChunks, 
+        std::unordered_map<ivec3, chunkBlockData>& ownedBlockData, const ivec3& blockGlobalPos, 
+        const ivec3& chunkPosOffset, const ivec3& chunkRelPos, std::list<ivec3>& blockPositions,
+        bool ignoreIntensityComparison, std::unordered_set<ivec3>& blockLightsToRepropagate, const block& placedBlock) {
 
+        lightIntensity intensity = ownedBlockData[chunkPosOffset].blockLightColor_->operator[](chunkRelPos).intensity(channel);
+        // chunkRelPos has a value that comes from assumming the chunk with offset 0 0 0 is the origin of the coordinates system.
+        lightIntensity expectedIntensity = expectedIntensityFromNeighbors_(chunkPosOffset, chunkRelPos, channel, ownedBlockData);
+
+        if (intensity) {
+
+            if (ignoreIntensityComparison || intensity > expectedIntensity) {
+
+                // Remove light.
+                chunk* ownedChunk = ownedChunks.at(chunkPosOffset);
+                lightIntensity intensityToSet = 0;
+                lightValue valueToSet = 0;
+                chunkUtility::setBlockLight(chunkRelPos, placedBlock.emittedLight(), channel, intensityToSet, valueToSet);
+                ownedChunk->setBlockLight(chunkRelPos, intensityToSet, valueToSet, channel);
+
+                // Search neighbors.
+                blockPositions.emplace_back(blockGlobalPos + ivec3FixedNorth);
+                blockPositions.emplace_back(blockGlobalPos + ivec3FixedSouth);
+                blockPositions.emplace_back(blockGlobalPos + ivec3FixedUp);
+                blockPositions.emplace_back(blockGlobalPos + ivec3FixedDown);
+                blockPositions.emplace_back(blockGlobalPos + ivec3FixedEast);
+                blockPositions.emplace_back(blockGlobalPos + ivec3FixedWest);
+
+                ivec3 neighborOffset(
+                    chunkRelPos.x >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.x <= 0 ? -1 : 0,
+                    chunkRelPos.y >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.y <= 0 ? -1 : 0,
+                    chunkRelPos.z >= CHUNK_SIZE_LIMIT ? 1 : chunkRelPos.z <= 0 ? -1 : 0
+                );
+
+                // Recalculate light blending across chunks.
+                ivec3 neighborPos = vec3Zero;
+                ivec3 neighborRelPos = vec3Zero;
+                if (neighborOffset.x != 0) {
+
+                    if (neighborOffset.y != 0) {
+
+                        // X Y Z
+                        if (neighborOffset.z != 0) {
+
+                            neighborPos = chunkPosOffset + neighborOffset;
+                            neighborRelPos = getChunkRelCoords(chunkRelPos + neighborOffset);
+
+                            // This light values used for bending across chunk will be properly readded in the repropagation step.
+                            ownedChunk->setBlockLight(chunkRelPos + neighborOffset, intensityToSet, valueToSet, channel);
+                            ownedChunks.at(neighborPos)->setBlockLight(neighborRelPos - neighborOffset, intensityToSet, valueToSet, channel);
+
+                        }
+
+                        // X Y 0
+                        neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z);
+                        neighborRelPos =
+                            getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
+
+                        ownedChunk->setBlockLight(chunkRelPos, neighborOffset.x, neighborOffset.y, 0, intensityToSet, valueToSet, channel);
+                        ownedChunks.at(neighborPos)->setBlockLight(neighborRelPos, -neighborOffset.x, -neighborOffset.y, 0, intensityToSet, valueToSet, channel);
+
+                    }
+
+                    // X 0 Z
+                    if (neighborOffset.z != 0) {
+
+                        neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
+                        neighborRelPos =
+                            getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
+
+                        ownedChunk->setBlockLight(chunkRelPos, neighborOffset.x, 0, neighborOffset.z, intensityToSet, valueToSet, channel);
+                        ownedChunks.at(neighborPos)->setBlockLight(neighborRelPos, -neighborOffset.x, 0, -neighborOffset.z, intensityToSet, valueToSet, channel);
+                    }
+
+                    // X 0 0
+                    neighborPos = ivec3(chunkPosOffset.x + neighborOffset.x, chunkPosOffset.y, chunkPosOffset.z);
+                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x + neighborOffset.x, chunkRelPos.y, chunkRelPos.z));
+
+                    ownedChunk->setBlockLight(chunkRelPos, neighborOffset.x, 0, 0, intensityToSet, valueToSet, channel);
+                    ownedChunks.at(neighborPos)->setBlockLight(neighborRelPos, -neighborOffset.x, 0, 0, intensityToSet, valueToSet, channel);
+
+                }
+
+                if (neighborOffset.y != 0) {
+
+                    // 0 Y Z
+                    if (neighborOffset.z != 0) {
+
+                        neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z + neighborOffset.z);
+                        neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z + neighborOffset.z));
+
+                        ownedChunk->setBlockLight(chunkRelPos, 0, neighborOffset.y, neighborOffset.z, intensityToSet, valueToSet, channel);
+                        ownedChunks.at(neighborPos)->setBlockLight(neighborRelPos, 0, -neighborOffset.y, -neighborOffset.z, intensityToSet, valueToSet, channel);
+
+                    }
+
+                    // 0 Y 0
+                    neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y + neighborOffset.y, chunkPosOffset.z);
+                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y + neighborOffset.y, chunkRelPos.z));
+
+                    ownedChunk->setBlockLight(chunkRelPos, 0, neighborOffset.y, 0, intensityToSet, valueToSet, channel);
+                    ownedChunks.at(neighborPos)->setBlockLight(neighborRelPos, 0, -neighborOffset.y, 0, intensityToSet, valueToSet, channel);
+
+                }
+
+                // 0 0 Z
+                if (neighborOffset.z != 0) {
+
+                    neighborPos = ivec3(chunkPosOffset.x, chunkPosOffset.y, chunkPosOffset.z + neighborOffset.z);
+                    neighborRelPos = getChunkRelCoords(ivec3(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z + neighborOffset.z));
+
+                    ownedChunk->setBlockLight(chunkRelPos, 0, 0, neighborOffset.z, intensityToSet, valueToSet, channel);
+                    ownedChunks.at(neighborPos)->setBlockLight(neighborRelPos, 0, 0, -neighborOffset.z, intensityToSet, valueToSet, channel);
+
+                }
+
+            }
+            else
+                blockLightsToRepropagate.insert(blockGlobalPos);
+        }
+
+    }
+
+    lightIntensity chunkManager::expectedIntensityFromNeighbors_(const ivec3& chunkPosOffset, const ivec3& chunkRelPos, colorChannel channel,
+        std::unordered_map<ivec3, chunkBlockData>& ownedBlockData) {
+
+        // MAÑANA. PROBAR ESTO.
+        lightIntensity intensity =
+            ownedBlockData[chunkPosOffset + ivec3(chunkRelPos.x >= CHUNK_SIZE_LIMIT, 0, 0)]
+            .blockLightColor_->get(getChunkRelCoords(chunkRelPos + ivec3FixedNorth)).intensity(channel);
+
+        intensity = std::max(intensity,
+            ownedBlockData[chunkPosOffset + ivec3(-(chunkRelPos.x <= 0), 0, 0)]
+            .blockLightColor_->get(getChunkRelCoords(chunkRelPos + ivec3FixedSouth)).intensity(channel));
+
+        intensity = std::max(intensity,
+            ownedBlockData[chunkPosOffset + ivec3(0, chunkRelPos.y >= CHUNK_SIZE_LIMIT, 0)]
+            .blockLightColor_->get(getChunkRelCoords(chunkRelPos + ivec3FixedUp)).intensity(channel));
+
+        intensity = std::max(intensity,
+            ownedBlockData[chunkPosOffset + ivec3(0, -(chunkRelPos.y <= 0), 0)]
+            .blockLightColor_->get(getChunkRelCoords(chunkRelPos + ivec3FixedDown)).intensity(channel));
+
+        intensity = std::max(intensity,
+            ownedBlockData[chunkPosOffset + ivec3(0, 0, chunkRelPos.z >= CHUNK_SIZE_LIMIT)]
+            .blockLightColor_->get(getChunkRelCoords(chunkRelPos + ivec3FixedEast)).intensity(channel));
+
+        intensity = std::max(intensity,
+            ownedBlockData[chunkPosOffset + ivec3(0, 0, -(chunkRelPos.z <= 0))]
+            .blockLightColor_->get(getChunkRelCoords(chunkRelPos + ivec3FixedWest)).intensity(channel));
+    
+        return intensity > 0 ? intensity - 1 : 0;
+    }
+
+    bool chunkManager::pushChunkTask_(chunkJobType type, void* data, job& j) {
+    
+        bool shouldBeProcessed = true;
+        chunk* c = nullptr;
+
+        // Set the task.
+        switch (type) {
+
+        case chunkJobType::NONE:
+            logger::errorLog("No chunk job type was specified");
+            break;
+        case chunkJobType::LOAD:
+            j.pushBackTask(loadChunkJob, static_cast<chunk*>(data));
+            break;
+        case chunkJobType::LOAD2:
+            c = static_cast<chunk*>(data);
+            c->loadStatusMutex().lock();
+            if (c->loadStatus() == chunkLoadStatus::BASICTERRAIN || c->loadStatus() == chunkLoadStatus::BASICTERRAINFROMDISK) {
+                c->loadStatus(chunkLoadStatus::PENDING_DECORATED);
+                j.pushBackTask(loadChunkJobPass2, c);
+            }
+            else
+                shouldBeProcessed = false;
+            c->loadStatusMutex().unlock();
+            break;
+        case chunkJobType::ONLYREMESH:
+            // MAÑANA. METER LOS CHUNK JOBS O EN UN NAMESPACE DENTRO DE LA CLASE O DE ALGUNA MANERA SIMILAR PARA PODER
+            // QUITARLES EL SUFIJO DE CHUNKJOB. 
+            j.pushBackTask(remeshChunkJob, static_cast<chunk*>(data));
+            break;
+        case chunkJobType::UNLOADANDSAVE:
+            j.pushBackTask(unloadAndSaveChunkJob, static_cast<chunk*>(data));
+            break;
+        case chunkJobType::PRIORITYREMESH:
+            j.pushBackTask(priorityRemeshChunkJob, static_cast<chunk*>(data));
+            break;
+        case chunkJobType::PRIORITYREMESH_ADDEDLIGHT:
+            j.pushBackTask(priorityRemeshAddedLightChunkJob, static_cast<chunk*>(data));
+            break;
+        case chunkJobType::PRIORITYREMESH_REMOVEDLIGHT:
+            j.pushBackTask(priorityRemeshRemovedLightChunkJob, data);
+            break;
+        case chunkJobType::SOLID_BLOCK_PLACED_ON_LIGHT:
+            j.pushBackTask(solidBlockPlacedOnLightChunkJob, data);
+            break;
+        default:
+            logger::errorLog("Unsupported chunkJobType type " + std::to_string(static_cast<int>(type)));
+            break;
+        }
+
+        return shouldBeProcessed;
+    
+    }
+
+    void chunkManager::sendJob_(job& j, bool pushJobBack, bool isPriority) {
+    
+        if(isPriority)
+            priorityChunkTasks_->submitJob(j, pushJobBack);
+        else
+            chunkTasks_->submitJob(j, pushJobBack);
+    
     }
 
     void chunkManager::loadChunkJob(void* data) {
@@ -3823,6 +4119,23 @@ namespace VoxelEng {
         delete lightsToRemove;
         delete data;
 
+    }
+
+    void chunkManager::solidBlockPlacedOnLightChunkJob(void* rawData) {
+    
+        std::tuple<chunk*, std::list<ivec3>*, const block*>* data = static_cast<std::tuple<chunk*, std::list<ivec3>*, const block*>*>(rawData);
+        chunk* c = std::get<chunk*>(*data);
+        std::list<ivec3>* nonTransparentPlaced = std::get<std::list<ivec3>*>(*data);
+        const block* placedBlock = std::get<const block*>(*data);
+        c->needsRemesh(true);
+        c->getAndOwnChunks(); // MAÑANA. FACTORIZE THIS SO THAT THIS CAN ONLY BE DONE ONCE FOR THE ENTIRE JOB, NOT FOR EACH TASK.
+        recalculateBlockLightAfterNonTransparentPlaced_(*c, true, *nonTransparentPlaced, *placedBlock);
+        c->disownChunks();
+
+        // Delete the objects that were created just for this operation.
+        delete nonTransparentPlaced;
+        delete data;
+    
     }
 
     void chunkManager::processLightJob(void* rawData) {

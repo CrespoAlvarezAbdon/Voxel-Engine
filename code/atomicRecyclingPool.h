@@ -5,6 +5,9 @@
 
 namespace VoxelEng {
 
+	/**
+	* @brief Atomic version of the recycling pool class.
+	*/
 	template <typename T>
 	class atomicRecyclingPool : public recyclingPool<T> {
 
@@ -24,9 +27,9 @@ namespace VoxelEng {
 
 		// Modifiers.
 
-		const T& getConst();
+		virtual const T& getConst();
 
-		T& get();
+		virtual T& get();
 
 		void free(T& element);
 

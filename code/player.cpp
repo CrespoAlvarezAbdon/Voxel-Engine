@@ -146,52 +146,60 @@ namespace VoxelEng {
                 chunk* neighbor = nullptr;
                 const ivec3& chunkPos = selectedChunk->chunkPos();
                 ivec3 chunkRelPos = getChunkRelCoords(selectedBlockPos_);
+                std::list<std::pair<chunkJobType, void*>> jobsData;
 
                 const block& oldB = selectedChunk->setBlock(chunkRelPos, block::emptyBlock());
 
                 if (oldB.emittedLight().isNull()) {
                 
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, selectedChunk, false);
+                    //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, selectedChunk, false);
+                    jobsData.emplace_back(chunkJobType::PRIORITYREMESH, selectedChunk);
 
                     if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos))) {
 
                         neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(chunkPos))) {
 
                         neighbor->setBlock(-1, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z, block::emptyBlock());
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, -1, chunkRelPos.z, block::emptyBlock());
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE, block::emptyBlock());
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, block::emptyBlock());
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
                 
@@ -216,12 +224,14 @@ namespace VoxelEng {
                     if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos)))
                         neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, block::emptyBlock());
 
-                    std::list<ivec3>* lightsToRemove = new std::list<ivec3>();
-                    lightsToRemove->push_back(chunkRelPos);
-                    std::tuple<chunk*, std::list<ivec3>*>* data = new std::tuple<chunk*, std::list<ivec3>*>(selectedChunk, lightsToRemove);
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH_REMOVEDLIGHT, data);
+                    std::tuple<chunk*, std::list<ivec3>*>* data = 
+                        new std::tuple<chunk*, std::list<ivec3>*>(selectedChunk, new std::list<ivec3>{ chunkRelPos });
+                    //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH_REMOVEDLIGHT, data);
+                    jobsData.emplace_back(chunkJobType::PRIORITYREMESH_REMOVEDLIGHT, data);
                 
                 }
+
+                chunkManager::issueChunkJob(jobsData, false);
 
             }
 
@@ -266,53 +276,72 @@ namespace VoxelEng {
                 ivec3 chunkRelPos{ floorMod(xOld, CHUNK_SIZE),
                                    floorMod(yOld, CHUNK_SIZE),
                                    floorMod(zOld, CHUNK_SIZE) };
+                std::list<std::pair<chunkJobType, void*>> jobsData;
 
-                const block& oldB = selectedChunk->setBlock(chunkRelPos, *blockToPlace_);
+                const block& oldB = selectedChunk->setBlock(chunkRelPos, *blockToPlace_, true);
 
+                if (!selectedChunk->getBlockLight(chunkRelPos).isZero() && blockToPlace_.load()->opacity() > blockOpacity::FULLTRANSPARENT ) {
+                
+                    //chunkManager::issueChunkJob(chunkJobType::SOLID_BLOCK_PLACED_ON_LIGHT, selectedChunk);
+                    std::tuple<chunk*, std::list<ivec3>*, const block*>* data =
+                        new std::tuple<chunk*, std::list<ivec3>*, const block*>(
+                            selectedChunk, new std::list<ivec3>{ chunkRelPos }, blockToPlace_);
+                    jobsData.emplace_back(chunkJobType::SOLID_BLOCK_PLACED_ON_LIGHT, data);
+                
+                }
 
                 if (blockToPlace_.load()->emittedLight().isNull()) {
 
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, selectedChunk);
+                    //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, selectedChunk);
+                    jobsData.emplace_back(chunkJobType::PRIORITYREMESH, selectedChunk);
 
+                    // MAÑANA. FACTORIZE THE NEIGHBOR SET BLOCK INSIDE THE PRIORITYREMESH 
+                    // AND MAKE THE PRIORITY REMESH OF ADDED AND DELETE LIGHTS BE A TASK AT THE END OF ITS CORRESPONDING JOB.
                     if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos))) {
 
                         neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, *blockToPlace_);
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(chunkPos))) {
 
                         neighbor->setBlock(-1, chunkRelPos.y, chunkRelPos.z, *blockToPlace_);
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z, *blockToPlace_);
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, -1, chunkRelPos.z, *blockToPlace_);
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE, *blockToPlace_);
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, *blockToPlace_);
-                        chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
@@ -337,9 +366,12 @@ namespace VoxelEng {
                     if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos)))
                         neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, *blockToPlace_);
 
-                    chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH_ADDEDLIGHT, selectedChunk);
+                    //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH_ADDEDLIGHT, selectedChunk);
+                    jobsData.emplace_back(chunkJobType::PRIORITYREMESH_ADDEDLIGHT, selectedChunk);
                 
                 }
+
+                chunkManager::issueChunkJob(jobsData, false);
 
             }
 
