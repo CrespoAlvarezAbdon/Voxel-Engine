@@ -16,6 +16,14 @@ namespace VoxelEng {
 
 	public:
 
+		// Initializers.
+
+		/**
+		* @brief Initialize the blockLight system.
+		*/
+		static void init();
+
+
 		// Constructors.
 
 		/**
@@ -42,7 +50,7 @@ namespace VoxelEng {
 		* @param rgbaI RGBA vector to get each channel intensity from.
 		* @param rgbaV RGBA vector to get each channel values from.
 		*/
-		explicit blockLight(const basicUVec4& rgbaI, const basicVec4& rgbaV);
+		explicit blockLight(const basicUVec4& rgbaI, const basicVec4& rgbaColor);
 
 
 		// Observers.
@@ -55,6 +63,10 @@ namespace VoxelEng {
 		* @return Whether the light intensity from c1 is greather than the one from c2 (true) or otherwise (false).
 		*/
 		static bool greaterThan(lightIntensity c1, lightIntensity c2);
+
+		static bool initialised();
+
+		static const blockLight& zero();
 
 		lightValue getWithIntensity(colorChannel channel) const;
 
@@ -84,12 +96,18 @@ namespace VoxelEng {
 		*/
 		bool isZero() const;
 
-
 		/**
 		* @brief Obtain this block light's with a specified atenuation applied to all specified channels.
 		* @param channel Channels to apply the atenuation.
 		*/
 		blockLight decreased(colorChannel channel, byte atenuation = 1) const;
+
+		/**
+		* @brief Get whether the block lights are equal or not.
+		* @param l Left operand.
+		* @return Whether the block lights are equal (true) or not (false).
+		*/
+		bool operator==(const blockLight& l) const;
 
 
 		// Modifiers.
@@ -122,34 +140,68 @@ namespace VoxelEng {
 
 		void clear();
 
+
+		// Deinitializers.
+
+		/**
+		* @brief Deinitialize the blockLight system.
+		*/
+		static void reset();
+
 	private:
 
+		static blockLight kBlockLightZero_;
+		static bool initialised_;
+
 		uint16_t intensityBits_;
-		basicVec4 value_;
+		basicUVec4 values_;
+		basicUVec4 negativeValues_;
 
 	};
 
+	inline void blockLight::init() {
+	
+		kBlockLightZero_ = blockLight();
+	
+	}
+
 	inline blockLight::blockLight()
-	: intensityBits_(0), value_(basicVec4Zero)
+	: intensityBits_(0), values_(basicUVec4Zero), negativeValues_(basicUVec4Zero)
 	{}
 
 	inline blockLight::blockLight(
 		lightIntensity redI, lightIntensity greenI, lightIntensity blueI, lightIntensity alphaI,
-		lightValue red, lightValue greenV, lightValue blueV, lightValue alphaV)
-	: intensityBits_(0), value_(basicVec4Zero) {
+		lightValue redV, lightValue greenV, lightValue blueV, lightValue alphaV)
+	: intensityBits_(0), values_(basicUVec4Zero), negativeValues_(basicUVec4Zero) {
 	
 		redIntensity(redI);
 		greenIntensity(greenI);
 		blueIntensity(blueI);
 		alphaIntensity(alphaI);
+		redValue(redV);
+		greenValue(greenV);
+		blueValue(blueV);
+		alphaValue(alphaV);
 	
 	}
 
-	inline blockLight::blockLight(const basicUVec4& rgbaI, const basicVec4& rgbaC)
-		: intensityBits_(0), value_(basicVec4Zero) {
+	inline blockLight::blockLight(const basicUVec4& rgbaI, const basicVec4& rgbaColor)
+	: intensityBits_(0), values_(basicUVec4Zero), negativeValues_(basicUVec4Zero) {
 
-		fromRGBA(rgbaI, rgbaC);
+		fromRGBA(rgbaI, rgbaColor);
 
+	}
+
+	inline bool blockLight::initialised() {
+	
+		return initialised_;
+	
+	}
+
+	inline const blockLight& blockLight::zero() {
+	
+		return kBlockLightZero_;
+	
 	}
 
 	inline lightValue blockLight::getWithIntensity(colorChannel channel) const {
@@ -160,26 +212,32 @@ namespace VoxelEng {
 
 	inline lightIntensity blockLight::redIntensity() const {
 	
-		return static_cast<sbyte>((intensityBits_ >> 12) & 0xF);
+		return static_cast<byte>((intensityBits_ >> 12) & 0xF);
 	
 	}
 
 	inline lightIntensity blockLight::greenIntensity() const {
 
-		return static_cast<sbyte>((intensityBits_ >> 8) & 0xF);
+		return static_cast<byte>((intensityBits_ >> 8) & 0xF);
 
 	}
 
 	inline lightIntensity blockLight::blueIntensity() const {
 
-		return static_cast<sbyte>((intensityBits_ >> 4) & 0xF);
+		return static_cast<byte>((intensityBits_ >> 4) & 0xF);
 
 	}
 
 	inline lightIntensity blockLight::alphaIntensity() const {
 
-		return static_cast<sbyte>(intensityBits_ & 0xF);
+		return static_cast<byte>(intensityBits_ & 0xF);
 
+	}
+
+	inline bool blockLight::operator==(const blockLight& l) const {
+	
+		return intensityBits_ == l.intensityBits_ && values_ == l.values_ && negativeValues_ == l.negativeValues_;
+	
 	}
 
 	inline void blockLight::redIntensity(lightIntensity intensity) {
@@ -208,64 +266,104 @@ namespace VoxelEng {
 
 	inline void blockLight::redValue(lightValue value) {
 
-		value_.x = value;
+		if (value > 0)
+			values_.x = value;
+		else if (value < 0)
+			negativeValues_.x = value;
+		else {
+		
+			values_.x = value;
+			negativeValues_.x = value;
+		
+		}
 
 	}
 
 	inline void blockLight::greenValue(lightValue value) {
 
-		value_.y = value;
+		if (value > 0)
+			values_.y = value;
+		else if (value < 0)
+			negativeValues_.y = value;
+		else {
+
+			values_.y = value;
+			negativeValues_.y = value;
+
+		}
 
 	}
 
 	inline void blockLight::blueValue(lightValue value) {
 
-		value_.z = value;
+		if (value > 0)
+			values_.z = value;
+		else if (value < 0)
+			negativeValues_.z = value;
+		else {
+
+			values_.z = value;
+			negativeValues_.z = value;
+
+		}
 
 	}
 
 	inline void blockLight::alphaValue(lightValue value) {
 
-		value_.w = value;
+		if (value > 0)
+			values_.w = value;
+		else if (value < 0)
+			negativeValues_.w = value;
+		else {
+
+			values_.w = value;
+			negativeValues_.w = value;
+
+		}
 
 	}
 
 	inline lightValue blockLight::redValue() const {
-
-		return value_.x;
+		
+		return values_.x - negativeValues_.x;
 
 	}
 
 	inline lightValue blockLight::greenValue() const {
 
-		return value_.y;
+		return values_.y - negativeValues_.y;
 
 	}
 
 	inline lightValue blockLight::blueValue() const {
 
-		return value_.z;
+		return values_.z - negativeValues_.z;
 
 	}
 
 	inline lightValue blockLight::alphaValue() const {
 
-		return value_.w;
+		return values_.w - negativeValues_.w;
 
 	}
 
 	inline bool blockLight::isZero() const {
 	
-		return intensityBits_ == 0 && value_ == basicVec4Zero;
+		return *this == kBlockLightZero_;
 	
 	}
 
 	inline void blockLight::clear() {
 	
 		intensityBits_ = 0;
-		value_ = basicVec4Zero;
+		values_ = basicUVec4Zero;
+		negativeValues_ = basicUVec4Zero;
 	
 	}
+
+	inline void blockLight::reset() 
+	{}
 
 }
 

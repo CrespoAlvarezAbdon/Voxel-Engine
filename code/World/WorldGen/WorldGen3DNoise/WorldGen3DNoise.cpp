@@ -75,8 +75,8 @@ namespace VoxelEng {
 			std::optional<unsigned short> stoneBlockLocalID = c.getPalette().getT1Opt(layer2_.intID());
 			if (waterBlockLocalID.has_value() && stoneBlockLocalID.has_value()) {
 
-				Padded3DArray<unsigned short>& cBlockLocalIDs = *c.blockData().blocksLocalIDs_;
-				Padded3DArray<unsigned short>& cAboveBlockLocalIDs = *cAbove->blockData().blocksLocalIDs_;
+				Padded3DArray<unsigned short>& cBlockLocalIDs = c.blockData().blocksLocalIDs;
+				Padded3DArray<unsigned short>& cAboveBlockLocalIDs = cAbove->blockData().blocksLocalIDs;
 				bool isAboveWaterLevel = false;
 				bool blockAboveIsWater = false;
 				int x, y, z;

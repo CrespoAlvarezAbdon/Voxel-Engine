@@ -218,10 +218,6 @@ namespace VoxelEng {
 		
 	};
 
-	// MAÑANA. 
-	// 1º. CREAR EL PROPIO WORLDGEN DE MONTAÑAS PERLIN Y QUITAR YA LA PARTE DE LA IA.
-	// 2º. EMPEZAR A DIVIDIR LA GENERACIÓN DE CHUNKS EN CAPAS. DE MOMENTO TRES CAPAS: NOISE, SURFACE Y LIGHTS.
-
 	inline const worldGen& worldGen::cSelectedGen() {
 
 		return *selectedGen_;

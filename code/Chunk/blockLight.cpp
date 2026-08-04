@@ -2,6 +2,9 @@
 
 namespace VoxelEng {
 
+	blockLight blockLight::kBlockLightZero_;
+	bool blockLight::initialised_;
+
 	bool blockLight::greaterThan(lightIntensity c1, lightIntensity c2) {
 
 		return 
@@ -79,35 +82,35 @@ namespace VoxelEng {
 		lightIntensity green = bl.greenIntensity();
 		lightIntensity blue = bl.blueIntensity();
 		lightIntensity alpha = bl.alphaIntensity();
-		
+
 		switch (channel) {
 
-		case colorChannel::RED:
-			bl.redIntensity(red > 0 ? red - atenuation : red < 0 ? red + atenuation : red);
-			break;
-		case colorChannel::GREEN:
-			bl.greenIntensity(green > 0 ? green - atenuation : green < 0 ? green + atenuation : green);
-			break;
-		case colorChannel::BLUE:
-			bl.blueIntensity(blue > 0 ? blue - atenuation : blue < 0 ? blue + atenuation : blue);
-			break;
-		case colorChannel::ALPHA:
-			bl.alphaIntensity(alpha > 0 ? alpha - atenuation : alpha < 0 ? alpha + atenuation : alpha);
-			break;
-		case colorChannel::ALL:
-			bl.redIntensity(red > 0 ? red - atenuation : red < 0 ? red + atenuation : red);
-			bl.greenIntensity(green > 0 ? green - atenuation : green < 0 ? green + atenuation : green);
-			bl.blueIntensity(blue > 0 ? blue - atenuation : blue < 0 ? blue + atenuation : blue);
-			bl.alphaIntensity(alpha > 0 ? alpha - atenuation : alpha < 0 ? alpha + atenuation : alpha);
-			break;
-		case colorChannel::RGB:
-			bl.redIntensity(red > 0 ? red - atenuation : red < 0 ? red + atenuation : red);
-			bl.greenIntensity(green > 0 ? green - atenuation : green < 0 ? green + atenuation : green);
-			bl.blueIntensity(blue > 0 ? blue - atenuation : blue < 0 ? blue + atenuation : blue);
-			break;
-		default:
-			logger::errorLog("Unsupported color channel");
-			break;
+			case colorChannel::RED:
+				bl.redIntensity(red >= atenuation ? red - atenuation : 0);
+				break;
+			case colorChannel::GREEN:
+				bl.greenIntensity(green >= atenuation ? green - atenuation : 0);
+				break;
+			case colorChannel::BLUE:
+				bl.blueIntensity(blue >= atenuation ? blue - atenuation : 0);
+				break;
+			case colorChannel::ALPHA:
+				bl.alphaIntensity(alpha >= atenuation ? alpha - atenuation : 0);
+				break;
+			case colorChannel::ALL:
+				bl.redIntensity(red >= atenuation ? red - atenuation : 0);
+				bl.greenIntensity(green >= atenuation ? green - atenuation : 0);
+				bl.blueIntensity(blue >= atenuation ? blue - atenuation : 0);
+				bl.alphaIntensity(alpha >= atenuation ? alpha - atenuation : 0);
+				break;
+			case colorChannel::RGB:
+				bl.redIntensity(red >= atenuation ? red - atenuation : 0);
+				bl.greenIntensity(green >= atenuation ? green - atenuation : 0);
+				bl.blueIntensity(blue >= atenuation ? blue - atenuation : 0);
+				break;
+			default:
+				logger::errorLog("Unsupported color channel");
+				break;
 
 		}
 
@@ -115,7 +118,7 @@ namespace VoxelEng {
 	
 	}
 
-	void blockLight::fromRGBA(const basicUVec4& rgbaI, const basicVec4& rgbaC) {
+	void blockLight::fromRGBA(const basicUVec4& rgbaI, const basicVec4& rgbaColor) {
 
 		intensityBits_ =
 			(static_cast<uint16_t>(rgbaI.x & 0xF) << 12) |
@@ -124,7 +127,10 @@ namespace VoxelEng {
 			(static_cast<uint16_t>(rgbaI.w & 0xF)
 		);
 
-		value_ = rgbaC;
+		redValue(rgbaColor.x);
+		greenValue(rgbaColor.y);
+		blueValue(rgbaColor.z);
+		alphaValue(rgbaColor.w);
 	
 	}
 

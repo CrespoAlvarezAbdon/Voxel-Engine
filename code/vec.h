@@ -294,6 +294,13 @@ namespace VoxelEng {
 		basicUVec4 operator/(byte scalar) const;
 
 		/**
+		* @brief Get whether the two vectors are equal or not.
+		* @param v Left operand.
+		* @returns Whether the two vectors are equal (true) or not (false).
+		*/
+		bool operator==(const basicUVec4& v) const;
+
+		/**
 		* @brief Component-based add the right operand vector to the left operand vector.
 		* NOTE. If the sum of two components would surpass the data range limit, the result will be clamped to said limit
 		* @param v The right operand vector.
@@ -356,6 +363,12 @@ namespace VoxelEng {
 			static_cast<byte>(z / scalar),
 			static_cast<byte>(w / scalar) };
 
+	}
+
+	inline bool basicUVec4::operator==(const basicUVec4& v) const {
+
+		return x == v.x && y == v.y && z == v.z && w == v.w;
+	
 	}
 
 	// Constants.

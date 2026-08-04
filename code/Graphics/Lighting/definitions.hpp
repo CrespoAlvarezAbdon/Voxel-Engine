@@ -13,9 +13,9 @@ namespace VoxelEng {
 	typedef byte lightIntensity;
 
 	/**
-	* @brief Value for a light channel. Range is [-127, 128].
+	* @brief Value for a light channel. Range is [-255, 255].
 	*/
-	typedef sbyte lightValue;
+	typedef unsigned short lightValue;
 
 
 	/////////////////
@@ -28,10 +28,10 @@ namespace VoxelEng {
 	* GREEN = Green color channel.
 	* BLUE = Blue color channel.
 	* ALPHA = Alpha color channel.
+	* RGB = All RGB color channels.
 	* ALL = All RGBA color channels.
-	* RGB = Only RGB color channels.
 	*/
-	enum class colorChannel {RED = 0, GREEN, BLUE, ALPHA, ALL, RGB};
+	enum class colorChannel {RED = 0, GREEN, BLUE, ALPHA, RGB, ALL};
 
 
 	//////////////

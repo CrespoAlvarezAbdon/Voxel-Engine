@@ -289,23 +289,24 @@ namespace VoxelEng {
 
 		colorChannel channel = colorChannel::BLUE;
 
-		const Padded3DArray<blockLight>& blockLight = *c->blockData().blockLightColor_;
+		const Padded3DArray<blockLight>* blockLight = c->blockData().blockLightColor;
 		ivec3 chunkRelPos = getChunkRelCoords(player::globalPos());
-		logger::debugLog("blockLight.get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z):" + 
-			std::to_string(blockLight.get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z).intensity(channel)) + " " + 
-			std::to_string(blockLight.get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z).value(channel)) + '\n');
-		logger::debugLog("blockLight.get(chunkRelPos.x+1, chunkRelPos.y, chunkRelPos.z):" +
-			std::to_string(blockLight.get(chunkRelPos.x+1, chunkRelPos.y, chunkRelPos.z).intensity(channel)) + " " +
-			std::to_string(blockLight.get(chunkRelPos.x + 1, chunkRelPos.y, chunkRelPos.z).value(channel)) + '\n');
-		logger::debugLog("blockLight.get(chunkRelPos.x-1, chunkRelPos.y, chunkRelPos.z):" +
-			std::to_string(blockLight.get(chunkRelPos.x-1, chunkRelPos.y, chunkRelPos.z).intensity(channel)) + " " +
-			std::to_string(blockLight.get(chunkRelPos.x - 1, chunkRelPos.y, chunkRelPos.z).value(channel)) + '\n');
-		logger::debugLog("blockLight.get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z+1):" +
-			std::to_string(blockLight.get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z+1).intensity(channel)) + " " +
-			std::to_string(blockLight.get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z + 1).value(channel)) + '\n');
-		logger::debugLog("blockLight.get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z-1):" +
-			std::to_string(blockLight.get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z-1).intensity(channel)) + " " +
-			std::to_string(blockLight.get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z - 1).value(channel)) + '\n');
+		logger::debugLog("Current pos: " + std::to_string(chunkRelPos));
+		logger::debugLog("blockLight->get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z):" + 
+			std::to_string(blockLight->get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z).intensity(channel)) + " " + 
+			std::to_string(blockLight->get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z).value(channel)) + '\n');
+		logger::debugLog("blockLight->get(chunkRelPos.x+1, chunkRelPos.y, chunkRelPos.z):" +
+			std::to_string(blockLight->get(chunkRelPos.x+1, chunkRelPos.y, chunkRelPos.z).intensity(channel)) + " " +
+			std::to_string(blockLight->get(chunkRelPos.x + 1, chunkRelPos.y, chunkRelPos.z).value(channel)) + '\n');
+		logger::debugLog("blockLight->get(chunkRelPos.x-1, chunkRelPos.y, chunkRelPos.z):" +
+			std::to_string(blockLight->get(chunkRelPos.x-1, chunkRelPos.y, chunkRelPos.z).intensity(channel)) + " " +
+			std::to_string(blockLight->get(chunkRelPos.x - 1, chunkRelPos.y, chunkRelPos.z).value(channel)) + '\n');
+		logger::debugLog("blockLight->get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z+1):" +
+			std::to_string(blockLight->get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z+1).intensity(channel)) + " " +
+			std::to_string(blockLight->get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z + 1).value(channel)) + '\n');
+		logger::debugLog("blockLight->get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z-1):" +
+			std::to_string(blockLight->get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z-1).intensity(channel)) + " " +
+			std::to_string(blockLight->get(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z - 1).value(channel)) + '\n');
 	
 	}
 

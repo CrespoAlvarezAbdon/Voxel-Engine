@@ -185,36 +185,36 @@ namespace VoxelEng {
 
 	private:
 
-		static bool initialised_,
-					moveUp_,
-					moveDown_,
-					moveNorth_,
-					moveSouth_,
-					moveEast_,
-					moveWest_,
-					rollRight_,
-					rollLeft_,
-			        firstTransformUpdate_;
+		static bool initialised_;
+		static bool moveUp_;
+		static bool moveDown_;
+		static bool	moveNorth_;
+		static bool	moveSouth_;
+		static bool	moveEast_;
+		static bool	moveWest_;
+		static bool	rollRight_;
+		static bool	rollLeft_;
+		static bool firstTransformUpdate_;
 		static window* window_;
 		static camera* camera_;
-		static float blockReachRange_,
-					 blockSearchIncrement_,
-					 movementSpeed_,
-			         rollSpeed_,
-					 pitchAngle_,
-					 yawAngle_,
-					 mouseSensibility_;
-		static double mouseX_,
-					  mouseY_,
-					  oldMouseX_,
-					  oldMouseY_;
+		static float blockReachRange_;
+		static float blockSearchIncrement_;
+		static float movementSpeed_;
+		static float rollSpeed_;
+		static float pitchAngle_;
+		static float yawAngle_;
+		static float mouseSensibility_;
+		static double mouseX_;
+		static double mouseY_;
+		static double oldMouseX_;
+		static double oldMouseY_;
 		static const block* selectedBlock_;
 		static std::atomic<const block*> blockToPlace_;
-		static vec3 selectedBlockPos_,
-					oldSelectedBlockPos_,
-					pitchAxis_,
-					yawAxis_,
-					rollAxis_;
+		static vec3 selectedBlockPos_;
+		static vec3	oldSelectedBlockPos_;
+		static vec3	pitchAxis_;
+		static vec3	yawAxis_;
+		static vec3	rollAxis_;
 		static transform playerTransform_;
 
 		/*

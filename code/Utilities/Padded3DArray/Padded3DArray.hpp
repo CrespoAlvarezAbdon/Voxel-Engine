@@ -35,6 +35,12 @@ namespace VoxelEng {
 		Padded3DArray(unsigned int sizeX, unsigned int sizeY, unsigned int sizeZ, unsigned int padding, T defaultValue = T());
 
 		/**
+		* @brief Copy constructor
+		* @param a Array to copy
+		*/
+		Padded3DArray(const Padded3DArray& a);
+
+		/**
 		* @brief Get the pointer to the array's raw data.
 		* @returns The pointer to the array's raw data.
 		*/
@@ -184,6 +190,13 @@ namespace VoxelEng {
 	sizeYPadded_(sizeY + padding * 2), sizeZPadded_(sizeZ + padding * 2),
 	array_((sizeX + padding*2) * sizeYPadded_* sizeZPadded_, defaultValue),
 	defaultValue_(defaultValue) {}
+
+	template <typename T>
+	inline Padded3DArray<T>::Padded3DArray(const Padded3DArray<T>& a)
+	: sizeX_(a.sizeX_), sizeY_(a.sizeY_), sizeZ_(a.sizeZ_), padding_(a.padding_),
+	sizeYPadded_(sizeY_ + padding_ * 2), sizeZPadded_(sizeZ_ + padding_ * 2),
+	array_(a.array_),
+	defaultValue_(a.defaultValue_) {}
 
 	template <typename T>
 	inline const T* Padded3DArray<T>::data() const {

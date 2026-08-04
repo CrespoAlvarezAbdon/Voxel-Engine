@@ -19,6 +19,7 @@
 #include <list>
 #include <thread>
 #include <mutex>
+#include <memory>
 #include <set>
 #include <shared_mutex>
 #include <string>
@@ -138,7 +139,7 @@ namespace VoxelEng {
 		* @brief Get the block data of this chunk.
 		* @returns The block data of this chunk (local IDs, whether they are opaque or not, and their block light values).
 		*/
-		chunkBlockData blockData();
+		const chunkBlockData& blockData() const;
 
 		/**
 		* @brief Get the block at the specified chunk-local coordinates.
@@ -333,7 +334,7 @@ namespace VoxelEng {
 		/**
 		* @brief Get the block light color at the given chunk relative pos.
 		*/
-		const blockLight& getBlockLight(const ivec3& chunkRelPos);
+		const blockLight& getBlockLight(const ivec3& chunkRelPos) const;
 
 		/**
 		* @brief Get whether this chunk has owners or not.
@@ -354,6 +355,22 @@ namespace VoxelEng {
 		*/
 		const std::unordered_map<ivec3, chunk*>& ownedChunks() const;
 
+		/**
+		* @brief Get whether the 6 neighbor blocks surrounding 
+		* the specified one have non-zero blocklight or not.
+		* @param chunkRelPos The position of the specified block in
+		* chunk-local coordinates.
+		* @returns Whether the 6 neighbor blocks surrounding 
+		* the specified one have non-zero blocklight (true) or not (false).
+		*/
+		bool hasNoNeighborBlockLight(const ivec3& chunkRelPos) const;
+
+		/**
+		* @brief Get whether the chunk has its block light structures initialised or not.
+		* @returns Whether the chunk has its block light structures initialised (true) or not (false).
+		*/
+		bool hasBlockLightInitialised() const;
+
 
 		// Modifiers.
 
@@ -362,6 +379,12 @@ namespace VoxelEng {
 		* @returns The chunk's block array.
 		*/
 		Padded3DArray<unsigned short>& blocks();
+
+		/**
+		* @brief Get the block data of this chunk.
+		* @returns The block data of this chunk (local IDs, whether they are opaque or not, and their block light values).
+		*/
+		chunkBlockData& blockData();
 
 		/**
 		* @brief Returns the chunk's palette that maps the local block IDs with the global block IDs.
@@ -402,7 +425,25 @@ namespace VoxelEng {
 		* chunk's generation process or otherwise.
 		* WARNING. For world generators that use this method: 'modification' must be set to false.
 		*/
+		const block& setEmptyBlock(sbyte x, sbyte y, sbyte z, bool modification = true);
+
+		/**
+		* @brief Sets the value of a block within the chunk.
+		* Returns the replaced block.
+		* 'modification' tells if the call to this method is NOT part of the
+		* chunk's generation process or otherwise.
+		* WARNING. For world generators that use this method: 'modification' must be set to false.
+		*/
 		const block& setBlock(const ivec3& chunkRelPos, const block& block, bool modification = true);
+
+		/**
+		* @brief Sets the value of a block within the chunk.
+		* Returns the replaced block.
+		* 'modification' tells if the call to this method is NOT part of the
+		* chunk's generation process or otherwise.
+		* WARNING. For world generators that use this method: 'modification' must be set to false.
+		*/
+		const block& setEmptyBlock(const ivec3& chunkRelPos, bool modification = true);
 
 		/**
 		* @brief Sets the value of a block within the chunk.
@@ -863,6 +904,8 @@ namespace VoxelEng {
 		*/
 		std::unordered_map<ivec3, chunk*>& ownedChunks();
 
+		void initBlockLight();
+
 
 		// Destructors.
 
@@ -893,10 +936,7 @@ namespace VoxelEng {
 		std::unordered_set<unsigned short> freeLocalIDs_;
 
 		// Chunk block data (serializable).
-		Padded3DArray<unsigned short> blocksLocalIDs_;
-		Padded3DArray<byte> isOpaque_;
-		Padded3DArray<blockLight> blockLightColor_; // Lighting color value in the specific block without light level applied. 4ºth value is alpha.
-		std::unordered_set<ivec3> floodPointLightPositions_;
+		chunkBlockData blockData_;
 
 		bool modified_;
 		
@@ -938,7 +978,7 @@ namespace VoxelEng {
 		*/
 		std::shared_mutex blocksMutex_;
 
-		// TO BE USED WHEN THE CHUNK IS BEING LOADED.
+		// TO BE USED ONLY WHEN THE CHUNK IS BEING LOADED.
 		std::recursive_mutex ownedChunksMutex_;
 		std::unordered_map<ivec3, chunk*> ownedChunks_;
 
@@ -964,13 +1004,13 @@ namespace VoxelEng {
 
 	inline const Padded3DArray<unsigned short>& chunk::blocks() const {
 
-		return blocksLocalIDs_;
+		return blockData_.blocksLocalIDs;
 
 	}
 
-	inline chunkBlockData chunk::blockData() {
+	inline const chunkBlockData& chunk::blockData() const {
 	
-		return { &blocksLocalIDs_, &isOpaque_, &blockLightColor_, &floodPointLightPositions_};
+		return blockData_;
 	
 	}
 
@@ -1143,7 +1183,7 @@ namespace VoxelEng {
 
 	inline bool chunk::isEmptyBlock(GLbyte x, GLbyte y, GLbyte z) const {
 	
-		return blocksLocalIDs_.at(x,y,z) == 0;
+		return blockData_.blocksLocalIDs.at(x,y,z) == 0;
 	
 	}
 
@@ -1179,13 +1219,13 @@ namespace VoxelEng {
 
 	inline const std::unordered_set<ivec3>& chunk::getFloodPointLightPositions() const {
 	
-		return floodPointLightPositions_;
+		return blockData_.floodPointLightPositions;
 	
 	}
 
-	inline const blockLight& chunk::getBlockLight(const ivec3& chunkRelPos) {
+	inline const blockLight& chunk::getBlockLight(const ivec3& chunkRelPos) const {
 	
-		return blockLightColor_.at(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z);
+		return blockData_.blockLightColor ? blockData_.blockLightColor->at(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z) : blockLight::zero();
 	
 	}
 
@@ -1207,9 +1247,32 @@ namespace VoxelEng {
 	
 	}
 
+	inline bool chunk::hasNoNeighborBlockLight(const ivec3& chunkRelPos) const {
+
+		return getBlockLight(chunkRelPos + ivec3FixedNorth).isZero() &&
+			getBlockLight(chunkRelPos + ivec3FixedSouth).isZero() &&
+			getBlockLight(chunkRelPos + ivec3FixedUp).isZero() &&
+			getBlockLight(chunkRelPos + ivec3FixedDown).isZero() &&
+			getBlockLight(chunkRelPos + ivec3FixedEast).isZero() &&
+			getBlockLight(chunkRelPos + ivec3FixedWest).isZero();
+
+	}
+
+	inline bool chunk::hasBlockLightInitialised() const {
+	
+		return blockData_.blockLightColor;
+	
+	}
+
 	inline Padded3DArray<unsigned short>& chunk::blocks() {
 	
-		return blocksLocalIDs_;
+		return blockData_.blocksLocalIDs;
+	
+	}
+
+	inline chunkBlockData& chunk::blockData() {
+	
+		return blockData_;
 	
 	}
 
@@ -1233,13 +1296,25 @@ namespace VoxelEng {
 
 	inline std::unordered_set<ivec3>& chunk::getFloodPointLightPositions() {
 
-		return floodPointLightPositions_;
+		return blockData_.floodPointLightPositions;
 
+	}
+
+	inline const block& chunk::setEmptyBlock(sbyte x, sbyte y, sbyte z, bool modification) {
+	
+		return setBlock(x, y, z, block::emptyBlock(), modification);
+	
 	}
 
 	inline const block& chunk::setBlock(const ivec3& chunkRelPos, const block& b, bool modification) {
 
 		return setBlock(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z, b, modification);
+
+	}
+
+	inline const block& chunk::setEmptyBlock(const ivec3& chunkRelPos, bool modification) {
+
+		return setBlock(chunkRelPos.x, chunkRelPos.y, chunkRelPos.z, block::emptyBlock(), modification);
 
 	}
 
@@ -2293,32 +2368,43 @@ namespace VoxelEng {
 
 		// Used in recalculateBlockLight_ to get required data related to the lighting of the chunk and its neighbors 
 		// that are going to get recalculated.
-		static bool getDataForCalculatingBlockLight_(chunk& c, const std::unordered_map<ivec3, chunk*>& ownedChunks,
-			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData);
+		static bool getDataForCalculatingBlockLight_(chunk& c, const std::unordered_map<ivec3, chunk*>& ownedChunks);
 
-		static void addLightChannelSource_(colorChannel channel, blockLightMod& floodLight, const std::unordered_map<ivec3, chunk*>& ownedChunks,
-			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData,
+		static void addLightChannelSource_(colorChannel channel, blockLightMod& floodLight, std::unordered_map<ivec3, chunk*>& ownedChunks,
 			const ivec3& chunkPosOffset, const ivec3& chunkRelPos, std::deque<blockLightMod>& floodLightsInstances,
 			const ivec3& blockGlobalPos, bool ignoreIntensityComparison);
 
 		// Recalculate all blocklights from chunk c towards itself and its neighbors after a block light removal.
 		static void recalculateBlockLightAfterRemoval_(chunk& c, bool priorityUpdate, std::list<ivec3> blockLightsToRemove);
 
-		static void removeLightChannelSource_(colorChannel channel, blockLightMod& floodLight, const std::unordered_map<ivec3, chunk*>& ownedChunks,
-			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData,
+		static void removeLightChannelSource_(colorChannel channel, blockLightMod& floodLight, std::unordered_map<ivec3, chunk*>& ownedChunks,
 			const ivec3& chunkPosOffset, const ivec3& chunkRelPos, std::deque<blockLightMod>& floodLightsInstances,
 			const ivec3& blockGlobalPos, std::unordered_set<ivec3>& blockLightsToRepropagate, bool checkIfNeighborsAreLightSources);
 
 		static void recalculateBlockLightAfterNonTransparentPlaced_(
 			chunk& c, bool priorityUpdate, std::list<ivec3>& blockPositions, const block& placedBlock);
 
-		static void removeLightFromPlacedBlock_(colorChannel channel, const std::unordered_map<ivec3, chunk*>& ownedChunks,
-			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData, const ivec3& blockGlobalPos,
+		static void recalculateBlockLightAfterNonTransparentRemoved_(
+			chunk& c, bool priorityUpdate, std::list<ivec3>& blockPositions);
+
+		static void removeLightFromPlacedBlock_(colorChannel channel, std::unordered_map<ivec3, chunk*>& ownedChunks,
+			const ivec3& blockGlobalPos,
 			const ivec3& chunkPosOffset, const ivec3& chunkRelPos, std::list<ivec3>& blockPositions,
 			bool ignoreIntensityComparison, std::unordered_set<ivec3>& blockLightsToRepropagate, const block& placedBlock);
 
+		static void recoverLightFromRemovedBlock_(colorChannel channel, std::unordered_map<ivec3, chunk*>& ownedChunks,
+			const ivec3& blockGlobalPos,
+			const ivec3& chunkPosOffset, const ivec3& chunkRelPos, std::list<ivec3>& blockPositions,
+			std::unordered_set<ivec3>& blockLightsToRepropagate);
+
+		static const blockLight& expectedBlockLightFromNeighbors_(const ivec3& chunkPosOffset, const ivec3& globalBlockPos, colorChannel channel,
+			std::unordered_map<ivec3, chunk*>& ownedChunks);
+
 		static lightIntensity expectedIntensityFromNeighbors_(const ivec3& chunkPosOffset, const ivec3& globalBlockPos, colorChannel channel,
-			std::unordered_map<ivec3, chunkBlockData>& ownedBlockData);
+			std::unordered_map<ivec3, chunk*>& ownedChunks);
+
+		static const blockLight& expectedBlockLightFromNeighbors_(const ivec3& chunkPosOffset, const ivec3& globalBlockPos, colorChannel channel,
+			std::unordered_map<ivec3, chunk*>& ownedChunks, std::vector<lightIntensity>* neighborsIntensity);
 
 		
 		/*
@@ -2344,7 +2430,9 @@ namespace VoxelEng {
 
 		static void priorityRemeshRemovedLightChunkJob(void* data);
 
-		static void solidBlockPlacedOnLightChunkJob(void* data);
+		static void nonTransparentBlockPlacedOnLightChunkJob(void* data);
+
+		static void nonTransparentBlockRemovedOnLightChunkJob(void* data);
 
 		static void processLightJob(void*);
 
@@ -2554,6 +2642,13 @@ namespace VoxelEng {
 
 		std::unique_lock<std::recursive_mutex> lock(chunksMutex_);
 		return clientChunks_.contains(chunkPos) ? clientChunks_[chunkPos] : simulatedChunks_.contains(chunkPos) ? simulatedChunks_[chunkPos] : nullptr;
+
+	}
+
+	inline lightIntensity chunkManager::expectedIntensityFromNeighbors_(const ivec3& chunkPosOffset, const ivec3& globalBlockPos, colorChannel channel,
+		std::unordered_map<ivec3, chunk*>& ownedChunks) {
+
+		return expectedBlockLightFromNeighbors_(chunkPosOffset, globalBlockPos, channel, ownedChunks).intensity(channel);
 
 	}
 

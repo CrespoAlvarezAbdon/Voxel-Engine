@@ -7,40 +7,39 @@ namespace VoxelEng {
 
     // 'player' class.
 
-    bool player::initialised_ = false,
-         player::moveUp_ = false,
-         player::moveDown_ = false,
-         player::moveNorth_ = false,
-         player::moveSouth_ = false,
-         player::moveEast_ = false,
-         player::moveWest_ = false,
-         player::rollRight_ = false,
-         player::rollLeft_ = false,
-         player::firstTransformUpdate_ = false;
+    bool player::initialised_ = false;
+    bool player::moveUp_ = false;
+    bool player::moveDown_ = false;
+    bool player::moveNorth_ = false;
+    bool player::moveSouth_ = false;
+    bool player::moveEast_ = false;
+    bool player::moveWest_ = false;
+    bool player::rollRight_ = false;
+    bool player::rollLeft_ = false;
+    bool player::firstTransformUpdate_ = false;
     window* player::window_ = nullptr;
     camera* player::camera_ = nullptr;
-    float player::blockReachRange_ = 0.0f,
-          player::blockSearchIncrement_ = 0.0f,
-          player::movementSpeed_ = 0.0f,
-          player::rollSpeed_ = 0.0f,
-          player::pitchAngle_ = 0.0f,
-          player::yawAngle_ = 0.0f,
-          player::mouseSensibility_ = 0.0f;
-    double player::mouseX_ = 0.0,
-           player::mouseY_ = 0.0,
-           player::oldMouseX_ = 0.0,
-           player::oldMouseY_ = 0.0;
+    float player::blockReachRange_ = 0.0f;
+    float player::blockSearchIncrement_ = 0.0f;
+    float player::movementSpeed_ = 0.0f;
+    float player::rollSpeed_ = 0.0f;
+    float player::pitchAngle_ = 0.0f;
+    float player::yawAngle_ = 0.0f;
+    float player::mouseSensibility_ = 0.0f;
+    double player::mouseX_ = 0.0;
+    double player::mouseY_ = 0.0;
+    double player::oldMouseX_ = 0.0;
+    double player::oldMouseY_ = 0.0;
     const block* player::selectedBlock_ = nullptr;
     std::atomic<const block*> player::blockToPlace_ = nullptr;
-    vec3 player::selectedBlockPos_ = vec3Zero,
-         player::oldSelectedBlockPos_ = vec3Zero,
-         player::pitchAxis_ = vec3Zero,
-         player::yawAxis_ = vec3Zero,
-         player::rollAxis_ = vec3Zero;
-    std::atomic<bool> player::destroyBlock_ = false,
-                      player::placeBlock_ = false;
+    vec3 player::selectedBlockPos_ = vec3Zero;
+    vec3 player::oldSelectedBlockPos_ = vec3Zero;
+    vec3 player::pitchAxis_ = vec3Zero;
+    vec3 player::yawAxis_ = vec3Zero;
+    vec3 player::rollAxis_ = vec3Zero;
+    std::atomic<bool> player::destroyBlock_ = false;
+    std::atomic<bool> player::placeBlock_ = false;
     transform player::playerTransform_;
-
 
     void player::init(float FOV, float zNear, float zFar, window& window, unsigned int blockReachRange) {
 
@@ -73,7 +72,7 @@ namespace VoxelEng {
                 oldMouseX_ = 0.0;
                 oldMouseY_ = 0.0;
                 selectedBlock_ = block::emptyBlockP();
-                blockToPlace_ = block::emptyBlockP();
+                blockToPlace_ = selectedBlock_;
                 selectedBlockPos_ = vec3Zero;
                 oldSelectedBlockPos_ = vec3Zero;
                 pitchAxis_ = vec3Zero;
@@ -148,85 +147,86 @@ namespace VoxelEng {
                 ivec3 chunkRelPos = getChunkRelCoords(selectedBlockPos_);
                 std::list<std::pair<chunkJobType, void*>> jobsData;
 
-                const block& oldB = selectedChunk->setBlock(chunkRelPos, block::emptyBlock());
+                const block& oldB = selectedChunk->setEmptyBlock(chunkRelPos);
+
+                if (!selectedChunk->hasNoNeighborBlockLight(chunkRelPos) && blockToPlace_.load()->opacity() > blockOpacity::FULLTRANSPARENT) {
+
+                    std::tuple<chunk*, std::list<ivec3>*>* data =
+                        new std::tuple<chunk*, std::list<ivec3>*>(
+                            selectedChunk, new std::list<ivec3>{ chunkRelPos });
+                    jobsData.emplace_back(chunkJobType::NON_TRANSPARENT_BLOCK_REMOVED_ON_LIGHT, data);
+
+                }
 
                 if (oldB.emittedLight().isNull()) {
-                
-                    //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, selectedChunk, false);
+
                     jobsData.emplace_back(chunkJobType::PRIORITYREMESH, selectedChunk);
 
                     if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos))) {
 
-                        neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        neighbor->setEmptyBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(chunkPos))) {
 
-                        neighbor->setBlock(-1, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        neighbor->setEmptyBlock(-1, chunkRelPos.y, chunkRelPos.z);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(chunkPos))) {
 
-                        neighbor->setBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z, block::emptyBlock());
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        neighbor->setEmptyBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(chunkPos))) {
 
-                        neighbor->setBlock(chunkRelPos.x, -1, chunkRelPos.z, block::emptyBlock());
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        neighbor->setEmptyBlock(chunkRelPos.x, -1, chunkRelPos.z);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(chunkPos))) {
 
-                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE, block::emptyBlock());
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        neighbor->setEmptyBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                     if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos))) {
 
-                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, block::emptyBlock());
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
+                        neighbor->setEmptyBlock(chunkRelPos.x, chunkRelPos.y, -1);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
-                
+
                 }
                 else { // Old block had light.
 
                     if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos)))
-                        neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
+                        neighbor->setEmptyBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z);
 
                     if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(chunkPos)))
-                        neighbor->setBlock(-1, chunkRelPos.y, chunkRelPos.z, block::emptyBlock());
+                        neighbor->setEmptyBlock(-1, chunkRelPos.y, chunkRelPos.z);
 
                     if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(chunkPos)))
-                        neighbor->setBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z, block::emptyBlock());
+                        neighbor->setEmptyBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z);
 
                     if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(chunkPos)))
-                        neighbor->setBlock(chunkRelPos.x, -1, chunkRelPos.z, block::emptyBlock());
+                        neighbor->setEmptyBlock(chunkRelPos.x, -1, chunkRelPos.z);
 
                     if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(chunkPos)))
-                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE, block::emptyBlock());
+                        neighbor->setEmptyBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE);
 
                     if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos)))
-                        neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, block::emptyBlock());
+                        neighbor->setEmptyBlock(chunkRelPos.x, chunkRelPos.y, -1);
 
                     std::tuple<chunk*, std::list<ivec3>*>* data = 
                         new std::tuple<chunk*, std::list<ivec3>*>(selectedChunk, new std::list<ivec3>{ chunkRelPos });
-                    //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH_REMOVEDLIGHT, data);
                     jobsData.emplace_back(chunkJobType::PRIORITYREMESH_REMOVEDLIGHT, data);
                 
                 }
@@ -278,21 +278,19 @@ namespace VoxelEng {
                                    floorMod(zOld, CHUNK_SIZE) };
                 std::list<std::pair<chunkJobType, void*>> jobsData;
 
-                const block& oldB = selectedChunk->setBlock(chunkRelPos, *blockToPlace_, true);
+                // If placed block blocks some light that was previously there, recalculate lights.
+                if (!selectedChunk->getBlockLight(chunkRelPos).isZero() && blockToPlace_.load()->opacity() > blockOpacity::FULLTRANSPARENT) {
 
-                if (!selectedChunk->getBlockLight(chunkRelPos).isZero() && blockToPlace_.load()->opacity() > blockOpacity::FULLTRANSPARENT ) {
-                
-                    //chunkManager::issueChunkJob(chunkJobType::SOLID_BLOCK_PLACED_ON_LIGHT, selectedChunk);
                     std::tuple<chunk*, std::list<ivec3>*, const block*>* data =
                         new std::tuple<chunk*, std::list<ivec3>*, const block*>(
                             selectedChunk, new std::list<ivec3>{ chunkRelPos }, blockToPlace_);
-                    jobsData.emplace_back(chunkJobType::SOLID_BLOCK_PLACED_ON_LIGHT, data);
-                
+                    jobsData.emplace_back(chunkJobType::NON_TRANSPARENT_BLOCK_PLACED_ON_LIGHT, data);
+
                 }
 
+                // If placed block doesn't propagate new light, just remesh the chunk.
                 if (blockToPlace_.load()->emittedLight().isNull()) {
 
-                    //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, selectedChunk);
                     jobsData.emplace_back(chunkJobType::PRIORITYREMESH, selectedChunk);
 
                     // MAÑANA. FACTORIZE THE NEIGHBOR SET BLOCK INSIDE THE PRIORITYREMESH 
@@ -300,7 +298,6 @@ namespace VoxelEng {
                     if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos))) {
 
                         neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, *blockToPlace_);
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
@@ -308,7 +305,6 @@ namespace VoxelEng {
                     if (chunkRelPos.x == 15 && (neighbor = chunkManager::neighborPlusX(chunkPos))) {
 
                         neighbor->setBlock(-1, chunkRelPos.y, chunkRelPos.z, *blockToPlace_);
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
@@ -316,7 +312,6 @@ namespace VoxelEng {
                     if (chunkRelPos.y == 0 && (neighbor = chunkManager::neighborMinusY(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, CHUNK_SIZE, chunkRelPos.z, *blockToPlace_);
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
@@ -324,7 +319,6 @@ namespace VoxelEng {
                     if (chunkRelPos.y == 15 && (neighbor = chunkManager::neighborPlusY(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, -1, chunkRelPos.z, *blockToPlace_);
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
@@ -332,7 +326,6 @@ namespace VoxelEng {
                     if (chunkRelPos.z == 0 && (neighbor = chunkManager::neighborMinusZ(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, CHUNK_SIZE, *blockToPlace_);
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
@@ -340,14 +333,13 @@ namespace VoxelEng {
                     if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos))) {
 
                         neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, *blockToPlace_);
-                        //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH, neighbor);
                         jobsData.emplace_back(chunkJobType::PRIORITYREMESH, neighbor);
 
                     }
 
                 }
-                else { // If the block to place provides light.
-                
+                else { // If placed block to place provides light, propagate said light.
+
                     if (chunkRelPos.x == 0 && (neighbor = chunkManager::neighborMinusX(chunkPos)))
                         neighbor->setBlock(CHUNK_SIZE, chunkRelPos.y, chunkRelPos.z, *blockToPlace_);
 
@@ -366,11 +358,11 @@ namespace VoxelEng {
                     if (chunkRelPos.z == 15 && (neighbor = chunkManager::neighborPlusZ(chunkPos)))
                         neighbor->setBlock(chunkRelPos.x, chunkRelPos.y, -1, *blockToPlace_);
 
-                    //chunkManager::issueChunkJob(chunkJobType::PRIORITYREMESH_ADDEDLIGHT, selectedChunk);
                     jobsData.emplace_back(chunkJobType::PRIORITYREMESH_ADDEDLIGHT, selectedChunk);
-                
+
                 }
 
+                const block& oldB = selectedChunk->setBlock(chunkRelPos, *blockToPlace_, true);
                 chunkManager::issueChunkJob(jobsData, false);
 
             }

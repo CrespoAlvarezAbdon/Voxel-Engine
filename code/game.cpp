@@ -251,6 +251,8 @@ namespace VoxelEng {
             // Block registration.
             block::init();
             blockProperty::init();
+            blockLight::init();
+
             // TODO. CONVERT THIS INTO A REGISTRY OF BLOCKS.
             block::registerBlock("starminer::grass", blockOpacity::OPAQUEBLOCK, { {"all", 1} }, "UltraShiny"); // TODO. Manual texture ID assignment is temporary.
             block::registerBlock("starminer::stone", blockOpacity::OPAQUEBLOCK, { {"all", 2} });
@@ -1213,6 +1215,7 @@ namespace VoxelEng {
         
             block::reset();
             blockProperty::reset();
+            blockLight::reset();
         
         }
             

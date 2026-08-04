@@ -134,6 +134,11 @@ namespace VoxelEng {
 	*/
 	const int nChunkNeighbors = 26;
 
+	/**
+	* @brief Number of neigbors that are directly colliding with the block.
+	*/
+	const int N_BLOCK_DIRECT_NEIGHBORS = 6;
+
 
 	/////////////////////
 	//Type definitions.//
