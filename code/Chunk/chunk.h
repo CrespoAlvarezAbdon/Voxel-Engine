@@ -371,6 +371,11 @@ namespace VoxelEng {
 		*/
 		bool hasBlockLightInitialised() const;
 
+		/**
+		* @brief Get whether the chunk's mesh is empty (including terrain from neighboring chunks that technically gets rendered in this chunk).
+		*/
+		bool isMeshEmpty() const;
+
 
 		// Modifiers.
 
@@ -1261,6 +1266,15 @@ namespace VoxelEng {
 	inline bool chunk::hasBlockLightInitialised() const {
 	
 		return blockData_.blockLightColor;
+	
+	}
+
+	inline bool chunk::isMeshEmpty() const {
+
+		return !nTotalBlocks_ &&
+			!nTotalBlocksPlusX_ && !nTotalBlocksMinusX_ &&
+			!nTotalBlocksPlusY_ && !nTotalBlocksMinusY_ &&
+			!nTotalBlocksPlusZ_ && !nTotalBlocksMinusZ_;
 	
 	}
 

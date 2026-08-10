@@ -8,6 +8,7 @@
 // - ARREGLAR BUG EN EL QUE SI TAPAS UN BLOQUE DE LUZ CON OTROS BLOQUES DE LUZ Y LO DESTAPAS LA LUZ DE ESE BLOQUE NO VUELVE A PROPAGARSE. <- ARREGLADO
 // - EL CASO NONTRANSPARENTBLOCKREMOVEDONLIGHT HACE OVERRIDE DE LUZ ROJA AL LIBERAR LUZ AZUL DE CARCEL DE LUCES ROJAS <- ARREGLADO
 // - GHOSTING DE LUCES AL HACER LO DE ENCERRAR ROJA EN AZULES DOS VECES (SE NOTA LA PRIMERA VEZ TAMBIÉN COMO QUE PARECE QUE NO SE PROPAGA EL CAMBIO A CHUNKS PUEDE QUE SE DEBA A LO QUE HICIMOS PARA ARREGLAR EL ANTERIOR BUG)
+// - ARREGLAR CHUNKS SIN BLOQUES MANDANDOSE A RENDERIZAR CON LA ULTIMA GEOMETRÍA QUE TENÍAN (ES DECIR, QUE DE ALGÚN MODO CUANDO SE QUEDAN SIN BLOQUES NO SE BORRA SU VBO O SE SIGUE MANDANDO CON LO ULTIMO MIRA EL CONTADOR DE BLOQUES PARA SABER QUE PASA)
 
 #include <algorithm>
 #include <ctime>
@@ -1595,8 +1596,13 @@ namespace VoxelEng {
             chunkRenderingData& data = c->renderingData();
             if (data.totalSize)
                 chunkVBOopsPriorityWrite_->operator[](c->chunkPos()) = chunkVBOop(VBOop::PUSH, data);
+            else
+                chunkVBOopsPriorityWrite_->operator[](c->chunkPos()) = chunkVBOop(VBOop::FREE);
             c->unlockSharedRenderingDataMutex();
             it = priorityNewChunkMeshes_.erase(it);
+            // MAÑANA. ALGO PASA CON LOS TRANSLUCIDOS QUE NO SE BORRAN.
+            // - NO ES ESO, LO QUE OCURRE ES QUE SI HAY GEOMETRÍA OPACA Y TRANSLÚCIDA Y MODIFICO LA TRANSLÚCIDA QUITANDO BLOQUES, NO SE ACTUALIZA
+            // LA TRANSLÚCIDA
 
         }
 
@@ -1610,7 +1616,7 @@ namespace VoxelEng {
 
             const ivec3& chunkPos = *it;
             chunk* c = getChunk_(chunkPos);
-            if (!c) {
+            if (!c || c->isMeshEmpty()) {
 
                 chunkVBOopsWrite_->operator[](chunkPos) = chunkVBOop(VBOop::FREE);
                 it = chunkMeshes_->erase(it);
@@ -2910,7 +2916,7 @@ namespace VoxelEng {
     void chunkManager::pushNewChunkMesh_(bool isPriorityUpdate, chunk* c, std::size_t meshSize) {
 
         //c->poraqui20 = true;
-
+        
         if (isPriorityUpdate) {
 
             //c->poraqui21 = true;
@@ -2929,7 +2935,7 @@ namespace VoxelEng {
             newChunkMeshesMutex_.unlock();
 
         }
-
+       
     }
 
     void chunkManager::simulatedChunkToCommon_(chunk* c) {
