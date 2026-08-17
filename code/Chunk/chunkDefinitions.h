@@ -37,8 +37,6 @@ namespace VoxelEng {
     */
     const unsigned int CHUNK_NEIGHBORS_PLUS_ONE = CHUNK_NEIGHBORS + 1;
 
-    
-
 }
 
 #endif

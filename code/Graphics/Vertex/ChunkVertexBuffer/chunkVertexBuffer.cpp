@@ -5,8 +5,12 @@
 
 namespace VoxelEng {
 
-    const chunkVertexBufferZone& chunkVertexBuffer::bufferZone(const ivec3& chunkPos, bool isTranslucidGeometry) {
+    const chunkVertexBufferZone& chunkVertexBuffer::bufferZone(const ivec3& chunkPos, geometryType chunkGeometryType) {
 
+        if (chunkGeometryType == geometryType::NONE)
+            throw std::runtime_error("Invalid chunk geometry type NONE");
+
+        bool isTranslucidGeometry = chunkGeometryType == geometryType::TRANSLUCENT;
         std::unordered_map<ivec3, chunkVertexBufferZone>& bufferZones =
             isTranslucidGeometry ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
 
@@ -18,8 +22,12 @@ namespace VoxelEng {
 
     }
 
-    void chunkVertexBuffer::pushDynamicData(const ivec3& chunkPos, const chunkRenderingData& chunkRenderData, bool isTranslucidGeometry) {
+    void chunkVertexBuffer::pushDynamicData(const ivec3& chunkPos, const chunkRenderingData& chunkRenderData, geometryType chunkGeometryType) {
 
+        if (chunkGeometryType == geometryType::NONE)
+            throw std::runtime_error("Invalid chunk geometry type NONE");
+
+        bool isTranslucidGeometry = chunkGeometryType == geometryType::TRANSLUCENT;
         const void* data = isTranslucidGeometry ? chunkRenderData.translucentVertices.data() : chunkRenderData.vertices.data();
         long long size = (isTranslucidGeometry ? chunkRenderData.translucentVertices.size() : chunkRenderData.vertices.size()) * sizeof(vertex);
         const chunkExtraRenderingData& extraRenderData = chunkRenderData.extraRenderingData;
@@ -182,10 +190,13 @@ namespace VoxelEng {
 
     }
 
-    void chunkVertexBuffer::freeDynamicData(const ivec3& chunkPos, bool isTranslucidGeometry) {
+    void chunkVertexBuffer::freeDynamicData(const ivec3& chunkPos, geometryType chunkGeometryType) {
+
+        if (chunkGeometryType == geometryType::NONE)
+            throw std::runtime_error("Invalid chunk geometry type NONE");
 
         std::unordered_map<ivec3, chunkVertexBufferZone>& bufferZones =
-            isTranslucidGeometry ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
+            chunkGeometryType == geometryType::TRANSLUCENT ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
 
         if (bufferZones.contains(chunkPos)) {
 

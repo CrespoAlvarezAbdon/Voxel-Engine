@@ -27,6 +27,7 @@
 #include <Entities/plane.h>
 #include <Registry/registries.h> // This header also includes the classes that derive from 'registeredElement'.
 #include <Registry/registry.h>
+#include <Graphics/graphicsDefinitions.h>
 #include <Graphics/graphics.h>
 #include <Graphics/Frustum/frustum.h>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
@@ -727,7 +728,7 @@ namespace VoxelEng {
         for (const ivec3& chunkPos : opaqueChunkGeometryToDraw) {
 
             // Draw terrain.
-            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, false);
+            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, geometryType::OPAQUE);
             renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
 
         }
@@ -740,7 +741,7 @@ namespace VoxelEng {
         for (const ivec3& chunkPos : translucentChunkGeometryToDraw) {
 
             // Draw terrain.
-            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, true);
+            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, geometryType::TRANSLUCENT);
             renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
 
         }
@@ -768,7 +769,7 @@ namespace VoxelEng {
         bool once = false;
         for (const ivec3& chunkPos : opaqueChunkGeometryToDraw) {
 
-            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, false);
+            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, geometryType::OPAQUE);
             if (playerCamera_->isInsideFrustum(bufferZone.extraRenderingData.globalChunkPos)) {
 
                 // MAÑANA. globalChunkPos POR ALGÚN MOTIVO ES 0 0 0 ALWAYS. ALSO RECUERDA QUE ALGUNOS CHUNKS NO ENTRAN EN LOAD1 PERO SI HAN DEJADO SU TICKET A SUS NEIGHBORS PARA PASAR A FASE2
@@ -824,7 +825,7 @@ namespace VoxelEng {
         translucentShadowFB_->getTexture(textureType::DEPTH, 0)->bind(3);
         for (const ivec3& chunkPos : translucentChunkGeometryToDraw) {
 
-            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, true);
+            const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, geometryType::TRANSLUCENT);
             if (playerCamera_->isInsideFrustum(bufferZone.extraRenderingData.globalChunkPos))
                 renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
 
@@ -1315,25 +1316,39 @@ namespace VoxelEng {
                     const chunkRenderingData& chunkRenderData = it->second.renderingData;
                     if (chunkRenderData.vertices.size()) {
 
-                        chunksVbo_->pushDynamicData(chunkPos, chunkRenderData, false);
-
+                        chunksVbo_->pushDynamicData(chunkPos, chunkRenderData, geometryType::OPAQUE);
                         opaqueChunkGeometryToDraw.insert(chunkPos);
 
                     }
+                    else {
+                    
+                        chunksVbo_->freeDynamicData(chunkPos, geometryType::OPAQUE);
+                        opaqueChunkGeometryToDraw.erase(chunkPos);
 
+                    }
+
+                    // MAÑANA. CONDICIONES ESPECIALES AQUI. SI HAY VERTICES PERO NO TRANSLUCENT VERTICES Y ANTES SÍ HABÍA, BORRAR TRANSLUCENT
+                    // HACER LO MISMO PARA EL CASO CONTRARIO.
+                    // - METER ENUM PARA DIFERENCIAR ENTRE GEOMETRÍA OPACA Y TRANSLÚCIDA <- DONE
+                    // - METER MÉTODO CONTAINSDATA Y DELETEDATA PARA CHUNKSVBO
                     if (chunkRenderData.translucentVertices.size()) {
 
-                        chunksVbo_->pushDynamicData(chunkPos, chunkRenderData, true);
-
+                        chunksVbo_->pushDynamicData(chunkPos, chunkRenderData, geometryType::TRANSLUCENT);
                         translucentChunkGeometryToDraw.insert(chunkPos);
+
+                    }
+                    else {
+                    
+                        chunksVbo_->freeDynamicData(chunkPos, geometryType::TRANSLUCENT);
+                        translucentChunkGeometryToDraw.erase(chunkPos);
 
                     }
 
                 }
                 else if (it->second.op == VBOop::FREE) {
 
-                    chunksVbo_->freeDynamicData(chunkPos, false);
-                    chunksVbo_->freeDynamicData(chunkPos, true);
+                    chunksVbo_->freeDynamicData(chunkPos, geometryType::OPAQUE);
+                    chunksVbo_->freeDynamicData(chunkPos, geometryType::TRANSLUCENT);
                     opaqueChunkGeometryToDraw.erase(chunkPos);
                     translucentChunkGeometryToDraw.erase(chunkPos);
 

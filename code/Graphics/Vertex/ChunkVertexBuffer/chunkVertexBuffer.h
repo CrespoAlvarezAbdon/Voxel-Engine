@@ -6,6 +6,7 @@
 #include <utility>
 #include <vec.h>
 #include <Chunk/chunkRenderingData.hpp>
+#include <Graphics/graphicsDefinitions.h>
 #include <Graphics/Vertex/ChunkVertexBuffer/chunkVertexBufferZone.hpp>
 #include <Graphics/Vertex/VertexBuffer/vertexBuffer.h>
 
@@ -41,7 +42,7 @@ namespace VoxelEng {
 		* or not (false).
 		* @returns The buffer zone for the specified chunk.
 		*/
-		const chunkVertexBufferZone& bufferZone(const ivec3& chunkPos, bool isTranslucidGeometry);
+		const chunkVertexBufferZone& bufferZone(const ivec3& chunkPos, geometryType chunkGeometryType);
 
 
 		// Modifiers.
@@ -55,7 +56,7 @@ namespace VoxelEng {
 		* @param isTranslucidGeometry Whether the given vertex data corresponds to translucid geometry (true)
 		* or not (false).
 		*/
-		void pushDynamicData(const ivec3& chunkPos, const chunkRenderingData& chunkRenderData, bool isTranslucidGeometry);
+		void pushDynamicData(const ivec3& chunkPos, const chunkRenderingData& chunkRenderData, geometryType chunkGeometryType);
 
 		/**
 		* @brief Will mark the zone of the buffer memory reserved for the given chunk as free.
@@ -65,7 +66,7 @@ namespace VoxelEng {
 		* @param isTranslucidGeometry Whether the given vertex data corresponds to translucid geometry (true)
 		* or not (false).
 		*/
-		void freeDynamicData(const ivec3& chunkPos, bool isTranslucidGeometry);
+		void freeDynamicData(const ivec3& chunkPos, geometryType chunkGeometryType);
 
 	private:
 
