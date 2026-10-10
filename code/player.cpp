@@ -149,7 +149,7 @@ namespace VoxelEng {
 
                 const block& oldB = selectedChunk->setEmptyBlock(chunkRelPos);
 
-                if (!selectedChunk->hasNoNeighborBlockLight(chunkRelPos) && blockToPlace_.load()->opacity() > blockOpacity::FULLTRANSPARENT) {
+                if (!selectedChunk->hasNoNeighborBlockLight(chunkRelPos) && blockToPlace_.load()->opacity() > blockOpacity::TRANSPARENT) {
 
                     std::tuple<chunk*, std::list<ivec3>*>* data =
                         new std::tuple<chunk*, std::list<ivec3>*>(
@@ -279,7 +279,7 @@ namespace VoxelEng {
                 std::list<std::pair<chunkJobType, void*>> jobsData;
 
                 // If placed block blocks some light that was previously there, recalculate lights.
-                if (!selectedChunk->getBlockLight(chunkRelPos).isZero() && blockToPlace_.load()->opacity() > blockOpacity::FULLTRANSPARENT) {
+                if (!selectedChunk->getBlockLight(chunkRelPos).isZero() && blockToPlace_.load()->opacity() > blockOpacity::TRANSPARENT) {
 
                     std::tuple<chunk*, std::list<ivec3>*, const block*>* data =
                         new std::tuple<chunk*, std::list<ivec3>*, const block*>(

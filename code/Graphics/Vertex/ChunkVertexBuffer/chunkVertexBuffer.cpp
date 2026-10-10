@@ -14,11 +14,23 @@ namespace VoxelEng {
         std::unordered_map<ivec3, chunkVertexBufferZone>& bufferZones =
             isTranslucidGeometry ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
 
-        if (bufferZones.contains(chunkPos))
-            return bufferZones[chunkPos];
-        else
+        auto it = bufferZones.find(chunkPos);
+        if (it == bufferZones.cend())
             throw std::runtime_error("There is no chunk position " + std::to_string(chunkPos)
                 + " with an associated buffer zone for " + (isTranslucidGeometry ? "translucid" : "opaque/transparent") + " geometry");
+        else
+            return it->second;
+
+    }
+
+    const chunkExtraRenderingData* chunkVertexBuffer::extraData(const ivec3& chunkPos) {
+    
+        auto it = chunkExtraData_.find(chunkPos);
+        if (it == chunkExtraData_.cend())
+            throw std::runtime_error("There is no chunk position " + std::to_string(chunkPos)
+                + " with an associated extra data to use in its renderign");
+        else
+            return it->second;
 
     }
 
@@ -30,7 +42,6 @@ namespace VoxelEng {
         bool isTranslucidGeometry = chunkGeometryType == geometryType::TRANSLUCENT;
         const void* data = isTranslucidGeometry ? chunkRenderData.translucentVertices.data() : chunkRenderData.vertices.data();
         long long size = (isTranslucidGeometry ? chunkRenderData.translucentVertices.size() : chunkRenderData.vertices.size()) * sizeof(vertex);
-        const chunkExtraRenderingData& extraRenderData = chunkRenderData.extraRenderingData;
 
         if (size <= 0)
             throw std::runtime_error("Size of the data to push cannot be equal to or lower than 0");
@@ -53,7 +64,7 @@ namespace VoxelEng {
 
                 if (lastPushedBytePos_ + size < maxSize_) {
 
-                    bufferZones[chunkPos] = { lastPushedBytePos_ , size, extraRenderData };
+                    bufferZones[chunkPos] = { lastPushedBytePos_ , size };
                     glBufferSubData(GL_ARRAY_BUFFER, lastPushedBytePos_, size, data);
                     lastPushedBytePos_ += size;
 
@@ -69,7 +80,7 @@ namespace VoxelEng {
 
                 if (itFit->size == size) {
 
-                    bufferZones[chunkPos] = { itFit->startPos , size, extraRenderData };
+                    bufferZones[chunkPos] = { itFit->startPos , size };
                     glBufferSubData(GL_ARRAY_BUFFER, itFit->startPos, size, data);
 
                     freedZones_.erase(itFit);
@@ -78,7 +89,7 @@ namespace VoxelEng {
                 }
                 else { // itFit->size > size
 
-                    bufferZones[chunkPos] = { itFit->startPos , size, extraRenderData };
+                    bufferZones[chunkPos] = { itFit->startPos , size };
                     glBufferSubData(GL_ARRAY_BUFFER, itFit->startPos, size, data);
 
                     freedZonesBySize::iterator itSize = freedZonesBySize_.insert(
@@ -107,13 +118,11 @@ namespace VoxelEng {
 
                 // Update buffer zone.
                 preexistingZone.size = size;
-                preexistingZone.extraRenderingData = extraRenderData;
                 glBufferSubData(GL_ARRAY_BUFFER, preexistingZone.startPos, preexistingZone.size, data);
             
             }
             else if (size == preexistingZone.size) {
             
-                preexistingZone.extraRenderingData = extraRenderData;
                 glBufferSubData(GL_ARRAY_BUFFER, preexistingZone.startPos, preexistingZone.size, data);
             
             }
@@ -124,7 +133,6 @@ namespace VoxelEng {
                     // If this preexisting zone is the last buffer zone.
 
                     preexistingZone.size = size;
-                    preexistingZone.extraRenderingData = extraRenderData;
                     if (preexistingZone.startPos + preexistingZone.size < maxSize_)
                         lastPushedBytePos_ = preexistingZone.startPos + preexistingZone.size;
                     else
@@ -142,7 +150,6 @@ namespace VoxelEng {
                         // There is no freed zone with size greater than or equal to the required by this chunk's vertex data.
                         preexistingZone.startPos = lastPushedBytePos_;
                         preexistingZone.size = size;
-                        preexistingZone.extraRenderingData = extraRenderData;
                         if (preexistingZone.startPos + preexistingZone.size < maxSize_)
                             lastPushedBytePos_ = preexistingZone.startPos + preexistingZone.size;
                         else
@@ -158,7 +165,6 @@ namespace VoxelEng {
 
                             preexistingZone.startPos = itFit->startPos;
                             preexistingZone.size = size;
-                            preexistingZone.extraRenderingData = extraRenderData;
 
                             freedZones_.erase(itFit);
                             freedZonesBySize_.erase(itFit);
@@ -168,7 +174,6 @@ namespace VoxelEng {
 
                             preexistingZone.startPos = itFit->startPos;
                             preexistingZone.size = size;
-                            preexistingZone.extraRenderingData = extraRenderData;
 
                             freedZonesBySize::iterator itSize = freedZonesBySize_.insert({ itFit->startPos + size, itFit->size - size }).first;
                             auto itDebug = freedZones_.insert(itSize);
@@ -198,9 +203,10 @@ namespace VoxelEng {
         std::unordered_map<ivec3, chunkVertexBufferZone>& bufferZones =
             chunkGeometryType == geometryType::TRANSLUCENT ? chunkTranslucidVertexBufferZones_ : chunkVertexBufferZones_;
 
-        if (bufferZones.contains(chunkPos)) {
+        auto itBufferZone = bufferZones.find(chunkPos);
+        if (itBufferZone != bufferZones.end()) {
 
-            freedZonesBySize::iterator itSize = freedZonesBySize_.insert(bufferZones[chunkPos]).first;
+            freedZonesBySize::iterator itSize = freedZonesBySize_.insert(itBufferZone->second).first;
             freedZones::iterator it = freedZones_.insert(itSize).first;
             bufferZones.erase(chunkPos);
 

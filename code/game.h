@@ -19,11 +19,13 @@
 
 #include <definitions.h>
 #include <gameWindow.h>
-#include <indexBuffer.h>
 #include <vec.h>
+#include <Block/DataStructures/blockOpacity.hpp>
 #include <Chunk/chunk.h>
+#include <Chunk/DataStructures/chunkVBOop.hpp>
 #include <Graphics/Textures/texture.h>
 #include <Graphics/framebuffer.h>
+#include <Graphics/indexBuffer.h>
 #include <Graphics/SSBO/SSBO.h>
 #include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 #include <Graphics/Vertex/VertexArray/vertexArray.h>
@@ -31,6 +33,7 @@
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
 #include <Settings/Settings.hpp>
 #include <Utilities/Logger/logger.h>
+#include <Utilities/Padded3DArray/Padded3DArray.hpp>
 #include <World/world.h>
 
 namespace VoxelEng {
@@ -305,6 +308,7 @@ namespace VoxelEng {
         static SSBO<lightInstance>* directionalLightsInstances_;
         static SSBO<lightInstance>* pointLightsInstances_;
         static SSBO<lightInstance>* spotLightsInstances_;
+        static SSBO<blockOpacity>* chunkDynamicData_;
         
         // Gameloop-exclusive variables.
         static std::unordered_set<ivec3> opaqueChunkGeometryToDraw;

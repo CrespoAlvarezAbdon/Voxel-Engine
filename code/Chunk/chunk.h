@@ -38,18 +38,16 @@
 #include <listener.h>
 #include <palette.h>
 #include <vec.h>
-#include <utilities.h>
 #include <Block/block.h>
-#include <Block/blockState.hpp>
-#include <Block/Properties/blockProperty.hpp>
+#include <Block/DataStructures/blockState.hpp>
 #include <Chunk/blockLight.hpp>
-#include <Chunk/blockLightMod.h>
-#include <Chunk/chunkBlockData.hpp>
 #include <Chunk/chunkDefinitions.h>
 #include <Chunk/chunkEnums.hpp>
-#include <Chunk/chunkRenderingData.hpp>
-#include <Chunk/chunkVBOop.hpp>
-#include <Chunk/neighborsInfo.h>
+#include <Chunk/DataStructures/blockLightMod.h>
+#include <Chunk/DataStructures/chunkBlockData.hpp>
+#include <Chunk/DataStructures/chunkRenderingData.hpp>
+#include <Chunk/DataStructures/chunkVBOop.hpp>
+#include <Chunk/DataStructures/neighborsInfo.h>
 #include <Graphics/Lighting/definitions.hpp>
 #include <Graphics/Textures/texture.h>
 #include <Graphics/Shaders/shader.h>
@@ -59,6 +57,7 @@
 #include <Registry/RegistryInsOrdered/registryInsOrdered.h>
 #include <Threading/threadPool.hpp>
 #include <Threading/Job/atomicJobPool.hpp>
+#include <Utilities/utilities.h>
 #include <Utilities/BlockViewDir/blockViewDir.hpp>
 #include <Utilities/Padded3DArray/Padded3DArray.hpp>
 
@@ -1814,31 +1813,49 @@ namespace VoxelEng {
 		static bool isEmptyBlock(int posX, int posY, int posZ);
 
 		/**
-		* @brief Returns true if the specified chunk is inside the player's render distance or
-		* false otherwise.
+		* @brief Get whether the specified chunk is inside the player's render distance or not.
+		* @param chunk The specified chunk.
+		* @returns Whether the specified chunk is inside the player's render distance (true) or not (false).
 		*/
 		static bool chunkInRenderDistance(const chunk* chunk);
 
 		/**
-		* @brief Returns true if the specified chunk position is inside the player's render distance or
-		* false otherwise.
+		* @brief Get whether the specified chunk position is inside the player's render distance or not.
 		* @param chunkPos The specified chunk's position.
+		* @returns Whether the specified chunk position is inside the player's render distance (true) or not (false).
 		*/
 		static bool chunkInRenderDistance(const ivec3& chunkPos);
 
 		/**
-		* @brief Returns true if the specified chunk position is inside the player's render distance or
-		* false otherwise.
+		* @brief Get whether the specified chunk position is inside the player's render distance or not.
 		* @param chunkPos The specified chunk's position.
-		* @param The player's position.
+		* @param playerChunkPos The player's chunk position.
+		* @returns Whether the specified chunk position is inside the player's render distance (true) or
+		* not (false).
 		*/
-		static bool chunkInRenderDistance(const ivec3& chunkPos, const vec3& playerPos);
+		static bool chunkInRenderDistance(const ivec3& chunkPos, const ivec3& playerChunkPos);
 
 		/**
-		* @brief Returns true if the specified chunk position is inside the player's render distance or
-		* false otherwise.
+		* @brief Get whether the specified chunk position is inside the player's distance 
+		* for chunks with dynamic lighting or not.
+		* @param chunkPos The specified chunk's position.
+		* @param playerChunkPos The player's chunk position.
+		* @returns Whether the specified chunk position is inside the player's distance
+		* for chunks with dynamic lighting (true) or not (false).
+		*/
+		static bool chunkInDynamicLightingDistance(const ivec3& chunkPos, const ivec3& playerChunkPos);
+
+		/**
+		* @brief Get whether the specified chunk position is inside the player's render distance or not
+		* @param chunkPosX The chunk's chunk-grid position in the X axis.
+		* @param chunkPosY The chunk's chunk-grid position in the Y axis.
+		* @param chunkPosZ The chunk's chunk-grid position in the Z axis.
+		* @returns Whether the specified chunk position is inside the player's render distance or not.
 		*/
 		static bool chunkInRenderDistance(int chunkPosX, int chunkPosY, int chunkPosZ);
+
+		static bool chunkDistanceBetweenRange(const ivec3& chunkPos1, const ivec3& chunkPos2,
+			int chunkMaxDistanceX, int chunkMaxDistanceY, int chunkMaxDistanceZ);
 
 		/**
 		* @brief Returns distance between the player and the specified chunk position in the three axes in chunk coordinates.
@@ -1909,8 +1926,15 @@ namespace VoxelEng {
 
 		/**
 		* @brief Set the number of chunks to compute in the X and Z axes.
+		* @param nChunksToCompute The number of chunks to compute in the X and Z axes.
 		*/
 		static void setNChunksToCompute(unsigned int nChunksToCompute);
+
+		/**
+		* @brief Set the maximum distance from the player for chunks with dynamic lighting enabled.
+		* @param maxDistance The maximum distance from the player for chunks with dynamic lighting enabled.
+		*/
+		static void setMaxDistanceDynamicLightChunks(unsigned int maxDistance);
 
 		/**
 		* @brief Set the block ID of a specfied block position.
@@ -2269,6 +2293,7 @@ namespace VoxelEng {
 		static bool initialised_;
 		static bool chunkJobSystemOverloaded_;
 		static int nChunksToCompute_;
+		static int maxDistanceDynamicLightChunks_;
 
 		static std::atomic<bool> clearChunksFlag_;
 
@@ -2497,6 +2522,26 @@ namespace VoxelEng {
 	inline bool chunkManager::chunkInRenderDistance(const chunk* chunk) {
 
 		return chunkInRenderDistance(chunk->chunkPos());
+
+	}
+
+	inline bool chunkManager::chunkInRenderDistance(const ivec3& chunkPos) {
+
+		return chunkInRenderDistance(chunkPos, playerChunkPosCopy_);
+
+	}
+
+	inline bool chunkManager::chunkInRenderDistance(const ivec3& chunkPos, const ivec3& playerChunkPos) {
+
+		return chunkDistanceBetweenRange(chunkPos, playerChunkPos,
+			nChunksToCompute_, yChunksRange, nChunksToCompute_);
+
+	}
+
+	inline bool chunkManager::chunkInDynamicLightingDistance(const ivec3& chunkPos, const ivec3& playerChunkPos) {
+
+		return chunkDistanceBetweenRange(chunkPos, playerChunkPos,
+			maxDistanceDynamicLightChunks_, maxDistanceDynamicLightChunks_, maxDistanceDynamicLightChunks_);
 
 	}
 

@@ -24,7 +24,7 @@ int main() {
 
     } catch (std::exception e) {
     
-        VoxelEng::logger::errorLog(e.what());
+        VoxelEng::logger::say(e.what());
         VoxelEng::logger::say("Error was detected during engine execution. Shutting down.");
         return 1;
     

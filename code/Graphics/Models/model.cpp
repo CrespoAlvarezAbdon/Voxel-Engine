@@ -9,9 +9,10 @@
 #include <sstream>
 #include <string>
 #include <filesystem>
+
 #include <Chunk/chunk.h>
-#include <utilities.h>
 #include <Graphics/Textures/texture.h>
+#include <Utilities/utilities.h>
 #include <Utilities/Logger/logger.h>
 
 #if GRAPHICS_API == OPENGL

@@ -5,8 +5,8 @@
 #include <cstddef>
 #include <string>
 #include <vector>
-#include <Registry/RegistryInsOrdered/registryInsOrdered.h>
 #include <Utilities/Logger/logger.h>
+#include <Utilities/Padded3DArray/Padded3DArray.hpp>
 
 #if GRAPHICS_API == OPENGL
 
@@ -38,15 +38,6 @@ namespace VoxelEng {
 		*/
 		SSBO(const std::string& name, std::size_t maxSize, unsigned int bindingPoint);
 
-		/**
-		* @brief Class constructor. Automatically uploads the given data into GPU.
-		* @param name SSBO's name in the shaders it is going to be bound to.
-		* @param elements. The elements to make a copy of and store inside the SSBO.
-		* @param bindingPoint The SSBO's binding point that is referenced in the shader where it
-		* is going to be used.
-		*/
-		SSBO(const std::string& name, const registryInsOrdered<std::string, T>& elements, unsigned int bindingPoint);
-
 
 		// Observers.
 
@@ -60,40 +51,8 @@ namespace VoxelEng {
 		*/
 		unsigned int bindingPoint() const;
 
-		/**
-		* @brief Get a specified element of the SSBO.
-		* WARNING. Throws exception if the provided index points to an invalid or nonexistent element.
-		*/
-		const T& get(unsigned int index) const;
-
 
 		// Modifiers.
-
-		/**
-		* @brief Get a specified element of the SSBO.
-		* WARNING. Throws exception if the provided index points to an invalid or nonexistent element.
-		*/
-		T& get(unsigned int index);
-
-		/**
-		* @brief Reupload the UBO's entire current data into the GPU.
-		* WARNING. Not thread-safe.
-		*/
-		void reupload();
-
-		/**
-		* @brief Reupload the UBO's current data for the specified element into the GPU.
-		* WARNING. Not thread-safe.
-		* WARNING. Throws exception if the provided index points to an invalid or nonexistent element.
-		*/
-		void reuploadElement(unsigned int index);
-
-		/**
-		* @brief Set the SSBO's contents and reupload them. Will reallocate buffer if the current size is lower
-		* than the number of the new elements.
-		* @param elements The new contents of the SSBO.
-		*/
-		void setContentsAndReupload(const registryInsOrdered<std::string, T>& elements);
 
 		/**
 		* @brief Set the SSBO's contents and reupload them. Will reallocate buffer if the current size is lower
@@ -104,10 +63,17 @@ namespace VoxelEng {
 
 		/**
 		* @brief Set the SSBO's contents and reupload them. Will reallocate buffer if the current size is lower
+		* than the number of the new elements.
+		* @param elements The new contents of the SSBO.
+		*/
+		void setContentsAndReupload(const Padded3DArray<T>& elements);
+
+		/**
+		* @brief Set the SSBO's contents and reupload them. Will reallocate buffer if the current size is lower
 		* than for the element to upload.
 		* @param elements The new contents of the SSBO.
 		*/
-		void setContentsAndReupload(const T& element);
+		void setContentsAndReupload(const T& element, std::size_t index);
 
 
 		// Destructors.
@@ -120,46 +86,24 @@ namespace VoxelEng {
 	private:
 
 		/*
-		Methods.
-		*/
-
-		void setElements_(const registryInsOrdered<std::string, T>& elements);
-
-		/*
 		Attributes.
 		*/
 
 		unsigned int graphicsAPIID_;
 		unsigned int bindingPoint_;
+		unsigned int nElements_;
 		std::string name_;
-		std::vector<T> elements_;
 
 	};
 
 	template <class T>
 	requires std::default_initializable<T>
 	SSBO<T>::SSBO(const std::string& name, std::size_t maxSize, unsigned int bindingPoint)
-	: name_(name), bindingPoint_(bindingPoint), elements_(maxSize) {
+	: name_(name), bindingPoint_(bindingPoint), nElements_(maxSize) {
 	
 		glGenBuffers(1, &graphicsAPIID_);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(T) * elements_.size(), nullptr, GL_DYNAMIC_DRAW);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint_, graphicsAPIID_);
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-	
-	}
-
-	template <typename T>
-	requires std::default_initializable<T>
-	SSBO<T>::SSBO(const std::string& name, const registryInsOrdered<std::string, T>& elements, unsigned int bindingPoint)
-	: bindingPoint_(bindingPoint), name_(name), elements_(elements.size()) {
-
-		glGenBuffers(1, &graphicsAPIID_);
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
-
-		setElements_(elements);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(T) * elements_.size(), elements_.data(), GL_DYNAMIC_DRAW);
-
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(T) * nElements_, nullptr, GL_DYNAMIC_DRAW);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint_, graphicsAPIID_);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 	
@@ -183,98 +127,22 @@ namespace VoxelEng {
 
 	template <typename T>
 	requires std::default_initializable<T>
-	const T& SSBO<T>::get(unsigned int index) const {
-
-		if (index < elements_.size())
-			return elements_[index];
-		else
-			throw std::runtime_error("There is no element at index " + std::to_string(index) + " on SSBO " + name_);
-
-	}
-
-	template <typename T>
-	requires std::default_initializable<T>
-	T& SSBO<T>::get(unsigned int index) {
-
-		if (index < elements_.size())
-			return elements_[index];
-		else
-			throw std::runtime_error("There is no element at index " + std::to_string(index) + " on SSBO " + name_);
-
-	}
-
-	template <typename T>
-	requires std::default_initializable<T>
-	void SSBO<T>::reupload() {
-
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(T) * elements_.size(), nullptr, GL_DYNAMIC_DRAW);
-		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(T) * elements_.size(), elements_.data());
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-	}
-
-	template <typename T>
-	requires std::default_initializable<T>
-	void SSBO<T>::reuploadElement(unsigned int index) {
-
-		if (index < elements_.size()) {
-		
-			T& element = elements_[index];
-
-			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
-			glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(T) * index, sizeof(T), &element);
-			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-		
-		}
-		else
-			throw std::runtime_error("There is no element at index " + std::to_string(index) + " on SSBO " + name_);
-
-	}
-
-	template <typename T>
-	requires std::default_initializable<T>
-	void SSBO<T>::setContentsAndReupload(const registryInsOrdered<std::string, T>& elements) {
-	
-		if (elements.size() > elements_.size()) {
-		
-			elements_ = std::vector<T>(elements.size());
-			setElements_(elements);
-
-			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
-			glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(T) * elements_.size(), elements_.data(), GL_DYNAMIC_DRAW);
-			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-		
-		}
-		else {
-		
-			setElements_(elements);
-			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
-			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(T) * elements.size(), elements_.data());
-			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-		
-		}
-	
-	}
-
-	template <typename T>
-	requires std::default_initializable<T>
 	void SSBO<T>::setContentsAndReupload(const std::vector<T>& elements) {
 
-		if (elements.size() > elements_.size()) {
+		std::size_t elementsSize = elements.size();
 
-			elements_ = elements;
+		if (elementsSize > nElements_) {
+
+			nElements_ = elementsSize;
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
-			glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(T) * elements_.size(), elements_.data(), GL_DYNAMIC_DRAW);
+			glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(T) * nElements_, elements.data(), GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 		}
 		else {
 
-			for (int i = 0; i < elements.size(); i++)
-				elements_[i] = elements[i];
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
-			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(T) * elements.size(), elements_.data());
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(T) * elementsSize, elements.data());
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 		}
@@ -283,26 +151,41 @@ namespace VoxelEng {
 
 	template <typename T>
 	requires std::default_initializable<T>
-	void SSBO<T>::setContentsAndReupload(const T& element) {
+	void SSBO<T>::setContentsAndReupload(const Padded3DArray<T>& elements) {
 
-		if (elements_.empty()) {
-		
-			elements_.emplace_back(element);
+		std::size_t elementsSize = elements.size();
 
+		if (elementsSize > nElements_) {
+
+			nElements_ = elementsSize;
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
-			glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(T), elements_.data(), GL_DYNAMIC_DRAW);
+			glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(T) * nElements_, elements.data(), GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-		
+
 		}
 		else {
-		
-			elements_[0] = element;
 
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, graphicsAPIID_);
-			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(T), elements_.data());
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(T) * elementsSize, elements.data());
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+		}
+
+	}
+
+	template <typename T>
+	requires std::default_initializable<T>
+	void SSBO<T>::setContentsAndReupload(const T& element, std::size_t index) {
+
+		if (index < nElements_) {
+
+			glBindBuffer(GL_UNIFORM_BUFFER, graphicsAPIID_);
+			glBufferSubData(GL_UNIFORM_BUFFER, sizeof(T) * index, sizeof(T), &element);
+			glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		
-		}	
+		}
+		else
+			throw std::runtime_error("There is no element at index " + std::to_string(index) + " on UBO " + name_);
 
 	}
 	
@@ -312,23 +195,6 @@ namespace VoxelEng {
 
 		glDeleteBuffers(1, &graphicsAPIID_);
 
-	}
-
-	template <typename T>
-	requires std::default_initializable<T>
-	void SSBO<T>::setElements_(const registryInsOrdered<std::string, T>& elements) {
-	
-		typename registryInsOrdered<std::string, T>::const_iterator it = elements.orderedCbegin();
-		int i = 0;
-		while (it != elements.orderedCend()) {
-
-			elements_[i] = *(it->second);
-
-			it++;
-			i++;
-
-		}
-	
 	}
 
 }

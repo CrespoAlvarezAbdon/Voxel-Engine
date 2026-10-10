@@ -8,7 +8,7 @@
 
 #include <definitions.h>
 #include <game.h>
-#include <utilities.h>
+#include <Utilities/utilities.h>
 #include <Utilities/Logger/logger.h>
 
 namespace VoxelEng {

@@ -2,7 +2,7 @@
 #define _VOXELENG_CHUNK_VBO_OP_
 
 #include <Chunk/chunkEnums.hpp>
-#include <Chunk/chunkRenderingData.hpp>
+#include <Chunk/DataStructures/chunkRenderingData.hpp>
 
 namespace VoxelEng {
 

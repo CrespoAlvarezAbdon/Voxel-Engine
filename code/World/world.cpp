@@ -6,9 +6,10 @@
 #include <palette.h>
 #include <player.h>
 #include <game.h>
-#include <utilities.h>
 #include <Block/block.h>
+
 #include <Utilities/Logger/logger.h>
+#include <Utilities/utilities.h>
 #include <World/WorldGen/worldGen.h>
 
 namespace VoxelEng {
@@ -23,6 +24,7 @@ namespace VoxelEng {
 	unsigned int world::currentWorldSlot_ = 0;
 	std::string world::currentWorldPath_;
 	database* world::regions_ = nullptr;
+	lightInstance world::sunLightInstance_;
 
 
 	void world::init() {
@@ -35,10 +37,23 @@ namespace VoxelEng {
 
 			currentWorldSlot_ = 0;
 			currentWorldPath_.clear();
+			
+			sunLightInstance_.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, .0f, 0.0f);
+			sunLightInstance_.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
+			sunLightInstance_.lightTypeIndex = 0;
 
 			initialised_ = true;
 		
 		}
+
+	}
+
+	bool world::isSaved(const ivec3& chunkPos) {
+
+		if (regions_)
+			return regions_->exists(std::to_string(chunkPos));
+		else
+			logger::errorLog("The regions database is not initialised");
 
 	}
 

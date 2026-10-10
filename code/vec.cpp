@@ -1,7 +1,9 @@
 #include "vec.h"
+
 #include <algorithm>
+
 #include <quaternion.h>
-#include <utilities.h>
+#include <Utilities/utilities.h>
 #include <Utilities/BlockViewDir/blockViewDir.hpp>
 
 namespace glm {
@@ -47,19 +49,19 @@ namespace VoxelEng {
 
 	basicVec4 basicVec4::clampAdd(const basicVec4& v, const basicVec4& min, const basicVec4& max) const {
 
-		return basicVec4(utilities::clampAdd(x, v.x, min.x, max.x), 
-			utilities::clampAdd(y, v.y, min.y, max.y),
-			utilities::clampAdd(z, v.z, min.z, max.z),
-			utilities::clampAdd(w, v.w, min.w, max.w));
+		return basicVec4(VoxelEng::clampAdd(x, v.x, min.x, max.x),
+			VoxelEng::clampAdd(y, v.y, min.y, max.y),
+			VoxelEng::clampAdd(z, v.z, min.z, max.z),
+			VoxelEng::clampAdd(w, v.w, min.w, max.w));
 
 	}
 
 	basicVec4& basicVec4::clampAdd(const basicVec4& v, const basicVec4& min, const basicVec4& max) {
 	
-		x = utilities::clampAdd(x, v.x, min.x, max.x);
-		y = utilities::clampAdd(y, v.y, min.y, max.y);
-		z = utilities::clampAdd(z, v.z, min.z, max.z);
-		w = utilities::clampAdd(w, v.w, min.w, max.w);
+		x = VoxelEng::clampAdd(x, v.x, min.x, max.x);
+		y = VoxelEng::clampAdd(y, v.y, min.y, max.y);
+		z = VoxelEng::clampAdd(z, v.z, min.z, max.z);
+		w = VoxelEng::clampAdd(w, v.w, min.w, max.w);
 
 		return *this;
 
@@ -67,19 +69,19 @@ namespace VoxelEng {
 
 	basicUVec4 basicUVec4::clampAdd(const basicUVec4& v, const basicUVec4& min, const basicUVec4& max) const {
 
-		return basicUVec4(utilities::clampAdd(x, v.x, min.x, max.x),
-			utilities::clampAdd(y, v.y, min.y, max.y),
-			utilities::clampAdd(z, v.z, min.z, max.z),
-			utilities::clampAdd(w, v.w, min.w, max.w));
+		return basicUVec4(VoxelEng::clampAdd(x, v.x, min.x, max.x),
+			VoxelEng::clampAdd(y, v.y, min.y, max.y),
+			VoxelEng::clampAdd(z, v.z, min.z, max.z),
+			VoxelEng::clampAdd(w, v.w, min.w, max.w));
 
 	}
 
 	basicUVec4& basicUVec4::clampAdd(const basicUVec4& v, const basicUVec4& min, const basicUVec4& max) {
 
-		x = utilities::clampAdd(x, v.x, min.x, max.x);
-		y = utilities::clampAdd(y, v.y, min.y, max.y);
-		z = utilities::clampAdd(z, v.z, min.z, max.z);
-		w = utilities::clampAdd(w, v.w, min.w, max.w);
+		x = VoxelEng::clampAdd(x, v.x, min.x, max.x);
+		y = VoxelEng::clampAdd(y, v.y, min.y, max.y);
+		z = VoxelEng::clampAdd(z, v.z, min.z, max.z);
+		w = VoxelEng::clampAdd(w, v.w, min.w, max.w);
 
 		return *this;
 

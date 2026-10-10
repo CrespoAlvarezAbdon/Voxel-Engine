@@ -14,8 +14,6 @@ namespace VoxelEng {
 	
 	}
 
-	
-
 	bool isalnum(const std::string& string) {
 	
 		for (size_t i = 0; i < string.size(); i++) {
@@ -124,28 +122,11 @@ namespace VoxelEng {
 
 	}
 
-	uint32_t packNormalIntoGL_INT_2_10_10_10_REV(float normalX, float normalY, float normalZ) {
+	char clampAdd(char c, char c2, char min, char max) {
 
-		// Convert from [-1.0, 1.0] normal component range to [-512, 511] 10-bit range.
-		int32_t x = static_cast<int32_t>(normalX * 511.0f);
-		int32_t y = static_cast<int32_t>(normalY * 511.0f);
-		int32_t z = static_cast<int32_t>(normalZ * 511.0f);
-		int32_t w = 0; // Unused space.
+		int result = c + c2;
+		return result > max ? max : result < min ? min : (char)result;
 
-		// Put the bits in their proper places according to OpenGL specification.
-		return (w & 0x3) | ((z & 0x3FF) << 2) | ((y & 0x3FF) << 12) | ((x & 0x3FF) << 22);
-
-	}
-
-	namespace utilities {
-	
-		char clampAdd(char c, char c2, char min, char max) {
-
-			int result = c + c2;
-			return result > max ? max : result < min ? min : (char)result;
-
-		}
-	
 	}
 
 }

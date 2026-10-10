@@ -7,7 +7,7 @@
 #include <vector>
 
 #include <vec.h>
-#include <Chunk/blockLightMod.h>
+#include <Chunk/DataStructures/blockLightMod.h>
 #include <Utilities/Thread/threadsafe.hpp>
 
 namespace VoxelEng {

@@ -1,6 +1,7 @@
 #include "graphics.h"
 
 #include <definitions.h>
+#include <Block/DataStructures/blockOpacity.hpp>
 #include <Registry/registries.h>
 #include <Registry/RegistryInsOrdered/registryInsOrdered.h>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
@@ -12,6 +13,7 @@
 #include <Graphics/Materials/materials.h>
 #include <Graphics/Vertex/ChunkVertexBuffer/chunkVertexBuffer.h>
 #include <Utilities/Logger/logger.h>
+#include <Utilities/Padded3DArray/Padded3DArray.hpp>
 
 #if GRAPHICS_API == OPENGL
 
@@ -47,144 +49,18 @@ namespace VoxelEng {
 
 			#if GRAPHICS_API == OPENGL
 
-				// GLFW initialization.
-				if (!glfwInit())
-					logger::errorLog("Failed to initialize the GLFW library!");
+				initOpenGL(mainWindow);
 
-				// Select GLFW version.
-				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-				glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-				glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-				glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-				// Create API rendering window.
-				mainWindow.windowAPIpointer() = glfwCreateWindow((int)mainWindow.width(), (int)mainWindow.height(), mainWindow.name().data(), NULL, NULL);
-
-				if (!mainWindow.windowAPIpointer()) {
-
-					glfwTerminate();
-					logger::errorLog("Failed to create window named " + mainWindow.name());
-
-				}
-
-				mainWindow_ = &mainWindow;
-				glfwMakeContextCurrent(mainWindow.windowAPIpointer());
-
-				// With the previously created context, now we can initialize the GLEW library.
-				if (glewInit() != GLEW_OK)
-					logger::errorLog("GLEW_INIT_FAILED");
-
-				graphics::setVSync(true);
-				graphics::setDepthTest(true);
-				graphics::setBasicFaceCulling(true);
-				graphics::blending(true);
-
-				// Initialise VBO, VAO and VBO layouts.
-
-				vaos_.insert({ "3D", vertexArray()});
-				vaos_.insert({ "3Dentities", vertexArray() });
-				vaos_.insert({ "2D", vertexArray() });
-				vaos_.insert({ "screen", vertexArray() });
-
-				vbos_.insert({ "chunks", new chunkVertexBuffer() });
-				vbos_.insert({ "entities", new vertexBuffer() });
-				vbos_.insert({ "GUI", new vertexBuffer() });
-				vbos_.insert({ "screen", new vertexBuffer() });
-
-				vaos_.at("3D").generate();
-				vaos_.at("3Dentities").generate();
-				vaos_.at("2D").generate();
-				vaos_.at("screen").generate();
-				vbos_.at("chunks")->generate();
-				vbos_.at("entities")->generate();
-				vbos_.at("GUI")->generate();
-				vbos_.at("screen")->generate();
-
-				vertexBufferLayout& layout3D = vboLayouts_.insert({ "3D", vertexBufferLayout() }).first->second;
-				vertexBufferLayout& layout2D = vboLayouts_.insert({ "2D", vertexBufferLayout() }).first->second;
-				vertexBufferLayout& layoutScreen = vboLayouts_.insert({ "screen", vertexBufferLayout() }).first->second;
-
-				// Configure the vertex layout for 3D rendering.
-				layout3D.push<GLfloat>(3, true);
-				layout3D.push<GLfloat>(2, true);
-				layout3D.push<unsigned char>(4, true);
-				layout3D.push<char>(4, true);
-				layout3D.push<char>(4, false);
-				layout3D.push<char>(4, true);
-				vaos_.at("3D").bind();
-				vbos_.at("chunks")->bind();
-				vaos_.at("3D").addLayout(layout3D);
-
-				vaos_.at("3Dentities").bind();
-				vbos_.at("entities")->bind();
-				vaos_.at("3Dentities").addLayout(layout3D);
-
-				// The same for 2D rendering.
-				layout2D.push<GLfloat>(2, true);
-				layout2D.push<GLfloat>(2, true);
-				vaos_.at("2D").bind();
-				vbos_.at("GUI")->bind();
-				vaos_.at("2D").addLayout(layout2D);
-
-				// The same for screen rendering.
-				layoutScreen.push<GLfloat>(2, true);
-				layoutScreen.push<GLfloat>(2, true);
-				vaos_.at("screen").bind();
-				vbos_.at("screen")->bind();
-				vaos_.at("screen").addLayout(layoutScreen);
+				initGPUObjects();
 
 				// NOTE. UBOs and SSBOs have do not share binding points between them. So you can have both an UBO and A SSBO with binding point 1.
 				// HAY QUE AÑADIR SPECULAR Y DIFFUSE	
-				// Initialise UBOs.
-				registry<std::string, var>* UBORegistry = registries::get("UBOs")->pointer<registry<std::string, var>>();
-				UBORegistry->insert("Materials",
-					static_cast<void*>(new UBO<material>("Materials",
-						*registries::getInsOrdered("Materials")->pointer<registryInsOrdered<std::string, material>>(), 1)),
-					var::varType::UBO_OF_MATERIALS);
+				initUBOs();
 
-				UBORegistry->insert("DirectionalLights",
-					static_cast<void*>(new UBO<packedDirectionalLight>("DirectionalLightsPacked",
-						*registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>(), 
-						packedDirectionalLight::pack, 2)),
-					var::varType::UBO_OF_DIRECTIONALLIGHTS);
+				initSSBOs();
 
-				UBORegistry->insert("PointLights",
-					static_cast<void*>(new UBO<pointLight>("PointLights",
-						*registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>(), 3)),
-					var::varType::UBO_OF_POINTLIGHTS);
-
-				UBORegistry->insert("SpotLights",
-					static_cast<void*>(new UBO<spotLight>("SpotLights",
-						*registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>(), 4)),
-					var::varType::UBO_OF_SPOTLIGHTS);
-
-				// Initialise SSBOs.
-				registry<std::string, var>* SSBORegistry = registries::get("SSBOs")->pointer<registry<std::string, var>>();
-				SSBORegistry->insert("DirectionalLightsInstances",
-					static_cast<void*>(new SSBO<lightInstance>("DirectionalLightsInstances", 1000, 1)), var::varType::SSBO_OF_LIGHTINSTANCES);
-
-				SSBORegistry->insert("PointLightsInstances",
-					static_cast<void*>(new SSBO<lightInstance>("PointLightsInstances", 1000, 2)), var::varType::SSBO_OF_LIGHTINSTANCES);
-
-				SSBORegistry->insert("SpotLightsInstances",
-					static_cast<void*>(new SSBO<lightInstance>("SpotLightsInstances", 1000, 3)), var::varType::SSBO_OF_LIGHTINSTANCES);
-
-				// TODO. MOVE DIRECTIONAL LIGHT INSTANCE CREATION TO WORLD.H SO THAT EACH WORLD/DIMENSION HAS ITS PROPER DIRECTIONAL LIGHTS.
-				SSBO<lightInstance>* directionalLightsInstances = SSBORegistry->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
-				lightInstance& instance = directionalLightsInstances->get(0);
-				instance.pos = vec4(CHUNK_SIZE * 20 * -1, 200.0f, .0f, 0.0f); 
-				instance.dir = vec4(0.7f, -0.7f, 0.0f, 0.0f);
-				instance.lightTypeIndex = 0;
-				directionalLightsInstances->reuploadElement(0);
-
-				// Initialize shaders.
-				shadowShader_ = new shader("shadow", "resources/Shaders/shadowVertex.shader", "resources/Shaders/shadowFragment.shader", { }, { "DirectionalLightsInstances"});
-				translucentShadowShader_ = new shader("translucentShadow", "resources/Shaders/translucentShadowVertex.shader", "resources/Shaders/translucentShadowFragment.shader", { }, { "DirectionalLightsInstances" });
-				opaqueShader_ = new shader("opaqueGeometry", "resources/Shaders/opaqueVertex.shader", "resources/Shaders/opaqueFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances"});
-				translucidShader_ = new shader("translucidGeometry", "resources/Shaders/translucidVertex.shader", "resources/Shaders/translucidFragment.shader", { "Materials", "DirectionalLights", "PointLights", "SpotLights" }, { "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances" });
-				compositeShader_ = new shader("composite", "resources/Shaders/compositeVertex.shader", "resources/Shaders/compositeFragment.shader");
-				screenShader_ = new shader("screenQuad", "resources/Shaders/screenVertex.shader", "resources/Shaders/screenFragment.shader");
-
+				initShaders();
+				
 			#else
 
 				
@@ -494,6 +370,184 @@ namespace VoxelEng {
 		else
 			logger::errorLog("Graphics system is not initialised when accessing screen shader");
 
+	}
+
+	void graphics::initOpenGL(window& mainWindow) {
+	
+		// GLFW initialization.
+		if (!glfwInit())
+			logger::errorLog("Failed to initialize the GLFW library!");
+
+		// Select GLFW version.
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+		// Create API rendering window.
+		mainWindow.windowAPIpointer() = 
+			glfwCreateWindow((int)mainWindow.width(), (int)mainWindow.height(), mainWindow.name().data(), NULL, NULL);
+
+		if (!mainWindow.windowAPIpointer()) {
+
+			glfwTerminate();
+			logger::errorLog("Failed to create window named " + mainWindow.name());
+
+		}
+
+		mainWindow_ = &mainWindow;
+		glfwMakeContextCurrent(mainWindow.windowAPIpointer());
+
+		// With the previously created context, now we can initialize the GLEW library.
+		if (glewInit() != GLEW_OK)
+			logger::errorLog("GLEW_INIT_FAILED");
+
+		graphics::setVSync(true);
+		graphics::setDepthTest(true);
+		graphics::setBasicFaceCulling(true);
+		graphics::blending(true);
+	
+	}
+
+	void graphics::initGPUObjects() {
+	
+		vaos_.insert({ "3D", vertexArray() });
+		vaos_.insert({ "3Dentities", vertexArray() });
+		vaos_.insert({ "2D", vertexArray() });
+		vaos_.insert({ "screen", vertexArray() });
+
+		vbos_.insert({ "chunks", new chunkVertexBuffer() });
+		vbos_.insert({ "entities", new vertexBuffer() });
+		vbos_.insert({ "GUI", new vertexBuffer() });
+		vbos_.insert({ "screen", new vertexBuffer() });
+
+		vaos_.at("3D").generate();
+		vaos_.at("3Dentities").generate();
+		vaos_.at("2D").generate();
+		vaos_.at("screen").generate();
+		vbos_.at("chunks")->generate();
+		vbos_.at("entities")->generate();
+		vbos_.at("GUI")->generate();
+		vbos_.at("screen")->generate();
+
+		vertexBufferLayout& layout3D = vboLayouts_.insert({ "3D", vertexBufferLayout() }).first->second;
+		vertexBufferLayout& layout2D = vboLayouts_.insert({ "2D", vertexBufferLayout() }).first->second;
+		vertexBufferLayout& layoutScreen = vboLayouts_.insert({ "screen", vertexBufferLayout() }).first->second;
+
+		// Configure the vertex layout for 3D rendering.
+		layout3D.push<GLfloat>(3, true);
+		layout3D.push<GLfloat>(2, true);
+		layout3D.push<unsigned char>(4, true);
+		layout3D.push<char>(4, true);
+		layout3D.push<char>(4, false);
+		layout3D.push<char>(4, true);
+		vaos_.at("3D").bind();
+		vbos_.at("chunks")->bind();
+		vaos_.at("3D").addLayout(layout3D);
+
+		vaos_.at("3Dentities").bind();
+		vbos_.at("entities")->bind();
+		vaos_.at("3Dentities").addLayout(layout3D);
+
+		// The same for 2D rendering.
+		layout2D.push<GLfloat>(2, true);
+		layout2D.push<GLfloat>(2, true);
+		vaos_.at("2D").bind();
+		vbos_.at("GUI")->bind();
+		vaos_.at("2D").addLayout(layout2D);
+
+		// The same for screen rendering.
+		layoutScreen.push<GLfloat>(2, true);
+		layoutScreen.push<GLfloat>(2, true);
+		vaos_.at("screen").bind();
+		vbos_.at("screen")->bind();
+		vaos_.at("screen").addLayout(layoutScreen);
+	
+	}
+
+	void graphics::initUBOs() {
+	
+		registry<std::string, var>* UBORegistry = registries::get("UBOs")->pointer<registry<std::string, var>>();
+		UBORegistry->insert("Materials",
+			static_cast<void*>(new UBO<material>("Materials",
+				*registries::getInsOrdered("Materials")->pointer<registryInsOrdered<std::string, material>>(), 1)),
+			var::varType::UBO_OF_MATERIALS);
+
+		UBORegistry->insert("DirectionalLights",
+			static_cast<void*>(new UBO<packedDirectionalLight>("DirectionalLightsPacked",
+				*registries::getInsOrdered("DirectionalLights")->pointer<registryInsOrdered<std::string, directionalLight>>(),
+				packedDirectionalLight::pack, 2)),
+			var::varType::UBO_OF_DIRECTIONALLIGHTS);
+
+		UBORegistry->insert("PointLights",
+			static_cast<void*>(new UBO<pointLight>("PointLights",
+				*registries::getInsOrdered("PointLights")->pointer<registryInsOrdered<std::string, pointLight>>(), 3)),
+			var::varType::UBO_OF_POINTLIGHTS);
+
+		UBORegistry->insert("SpotLights",
+			static_cast<void*>(new UBO<spotLight>("SpotLights",
+				*registries::getInsOrdered("SpotLights")->pointer<registryInsOrdered<std::string, spotLight>>(), 4)),
+			var::varType::UBO_OF_SPOTLIGHTS);
+	
+	}
+
+	void graphics::initSSBOs() {
+
+		registry<std::string, var>* SSBORegistry = registries::get("SSBOs")->pointer<registry<std::string, var>>();
+		SSBORegistry->insert("DirectionalLightsInstances",
+			static_cast<void*>(new SSBO<lightInstance>("DirectionalLightsInstances", 1000, 1)), var::varType::SSBO_OF_LIGHTINSTANCES);
+
+		SSBORegistry->insert("PointLightsInstances",
+			static_cast<void*>(new SSBO<lightInstance>("PointLightsInstances", 1000, 2)), var::varType::SSBO_OF_LIGHTINSTANCES);
+
+		SSBORegistry->insert("SpotLightsInstances",
+			static_cast<void*>(new SSBO<lightInstance>("SpotLightsInstances", 1000, 3)), var::varType::SSBO_OF_LIGHTINSTANCES);
+
+		SSBORegistry->insert("ChunkDynamicData",
+			static_cast<void*>(new SSBO<blockOpacity>("ChunkDynamicData", 1, 4)), var::varType::SSBO_OF_BLOCK_OPACITY);
+
+	}
+
+	void graphics::initShaders() {
+	
+		shadowShader_ = new shader(
+			"shadow", 
+			"resources/Shaders/shadowVertex.shader", 
+			"resources/Shaders/shadowFragment.shader", 
+			{ }, 
+			{ "DirectionalLightsInstances" });
+
+		translucentShadowShader_ = new shader(
+			"translucentShadow", 
+			"resources/Shaders/translucentShadowVertex.shader", 
+			"resources/Shaders/translucentShadowFragment.shader", 
+			{ }, 
+			{ "DirectionalLightsInstances" });
+
+		opaqueShader_ = new shader(
+			"opaqueGeometry", 
+			"resources/Shaders/opaqueVertex.shader", 
+			"resources/Shaders/opaqueFragment.shader", 
+			{ "Materials", "DirectionalLights", "PointLights", "SpotLights" }, 
+			{ "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances", "ChunkDynamicData" });
+
+		translucidShader_ = new shader(
+			"translucidGeometry", 
+			"resources/Shaders/translucidVertex.shader", 
+			"resources/Shaders/translucidFragment.shader", 
+			{ "Materials", "DirectionalLights", "PointLights", "SpotLights" }, 
+			{ "DirectionalLightsInstances", "PointLightsInstances", "SpotLightsInstances", "ChunkDynamicData" });
+
+		compositeShader_ = new shader(
+			"composite", 
+			"resources/Shaders/compositeVertex.shader", 
+			"resources/Shaders/compositeFragment.shader");
+
+		screenShader_ = new shader(
+			"screenQuad", 
+			"resources/Shaders/screenVertex.shader", 
+			"resources/Shaders/screenFragment.shader");
+	
 	}
 
 }

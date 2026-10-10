@@ -1,7 +1,8 @@
 #ifndef _VOXELENG_CHUNK_RENDERING_DATA_
 #define _VOXELENG_CHUNK_RENDERING_DATA_
 
-#include <Chunk/chunkExtraRenderingData.hpp>
+#include <definitions.h>
+#include <Chunk/DataStructures/chunkExtraRenderingData.hpp>
 #include <Graphics/Models/model.h>
 
 namespace VoxelEng {
@@ -42,15 +43,13 @@ namespace VoxelEng {
 		*/
 		unsigned int totalSize;
 
-		/**
-		* @brief Part of the chunk rendering data that is not mesh itself.
-		*/
-		chunkExtraRenderingData extraRenderingData;
+		chunkExtraRenderingData extraData;
 
 	};
 
 	inline chunkRenderingData::chunkRenderingData() 
-	: totalSize(0) {}
+	: totalSize(0)
+	{}
 
 }
 

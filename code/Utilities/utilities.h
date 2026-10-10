@@ -360,21 +360,12 @@ namespace VoxelEng {
 		return basicVec3{ (char)std::abs(v.x), (char)std::abs(v.y), (char)std::abs(v.z) };
 
 	}
-
+	
 	/**
-	* @brief Encode the given normal vector into a OpenGL's GL_INT_2_10_10_10_REV 32-bit unsigned integer.
+	* @brief Performs addition of two char but clamping the result to one of the char value range's limits if the result
+	* surpasses it.
 	*/
-	uint32_t packNormalIntoGL_INT_2_10_10_10_REV(float normalX, float normalY, float normalZ);
-
-	namespace utilities {
-	
-		/**
-		* @brief Performs addition of two char but clamping the result to one of the char value range's limits if the result
-		* surpasses it.
-		*/
-		char clampAdd(char c, char c2, char min, char max);
-	
-	}
+	char clampAdd(char c, char c2, char min, char max);
 
 }
 

@@ -4,6 +4,8 @@
 #include <ios>
 #include <fstream>
 #include <stdexcept>
+
+#include <Block/DataStructures/blockOpacity.hpp>
 #include <Registry/registries.h>
 #include <Registry/registry.h>
 #include <Graphics/Materials/materials.h>
@@ -84,89 +86,91 @@ namespace VoxelEng {
         std::initializer_list<std::string> requiredUBOsNames, std::initializer_list<std::string> requiredSSBOsNames)
 	    : name_(name), rendererID_(0) {
 
-        // Load the two shaders from the files and compile them later in the Shader::createShader() private method.
-        std::ifstream vertex_shader_file(vertexShaderPath);
-        std::noskipws(vertex_shader_file); // Don't skip whitespaces.
-        std::istream_iterator<char> vertex_It(vertex_shader_file);
-
-        std::ifstream fragment_shader_file(fragmentShaderPath);
-        std::noskipws(fragment_shader_file);
-        std::istream_iterator<char> fragment_It(fragment_shader_file);
-
-        std::istream_iterator<char> end;
-        std::string vertex_shader(vertex_It, end);
-        std::string fragment_shader(fragment_It, end);
-
-        vertex_shader_file.close();
-        fragment_shader_file.close();
-
-        rendererID_ = createShader(vertex_shader, fragment_shader);
-
-        registry<std::string, var>* UBOs = registries::get("UBOs")->pointer<registry<std::string, var>>();
-        registry<std::string, var>* SSBOs = registries::get("SSBOs")->pointer<registry<std::string, var>>();
-        bind();
-        // Bind UBOs.
-        for (auto it = requiredUBOsNames.begin(); it != requiredUBOsNames.end(); it++) {
+        try {
         
-            var* ubo = UBOs->get(*it);
-            switch (ubo->getVarType()) {
-           
-            case var::varType::UBO_OF_MATERIALS:
-                bindUBO(*ubo->pointer<UBO<material>>());
-                break;
+            // Load the two shaders from the files and compile them later in the Shader::createShader() private method.
+            std::ifstream vertex_shader_file(vertexShaderPath);
+            std::noskipws(vertex_shader_file); // Don't skip whitespaces.
+            std::istream_iterator<char> vertex_It(vertex_shader_file);
 
-            case var::varType::UBO_OF_DIRECTIONALLIGHTS:
-                bindUBO(*ubo->pointer<UBO<directionalLight>>());
-                break;
+            std::ifstream fragment_shader_file(fragmentShaderPath);
+            std::noskipws(fragment_shader_file);
+            std::istream_iterator<char> fragment_It(fragment_shader_file);
 
-            case var::varType::UBO_OF_POINTLIGHTS:
-                bindUBO(*ubo->pointer<UBO<pointLight>>());
-                break;
+            std::istream_iterator<char> end;
+            std::string vertex_shader(vertex_It, end);
+            std::string fragment_shader(fragment_It, end);
 
-            case var::varType::UBO_OF_SPOTLIGHTS:
-                bindUBO(*ubo->pointer<UBO<spotLight>>());
-                break;
+            vertex_shader_file.close();
+            fragment_shader_file.close();
 
-            default:
-            case var::varType::UNKNOWN:
-                logger::errorLog("Unsupported UBO var type specified");
-                break;
-            
-            }
-        
-        }
+            rendererID_ = createShader(vertex_shader, fragment_shader);
 
-        // Bind SSBOs.
-        for (auto it = requiredSSBOsNames.begin(); it != requiredSSBOsNames.end(); it++) {
+            registry<std::string, var>* UBOs = registries::get("UBOs")->pointer<registry<std::string, var>>();
+            registry<std::string, var>* SSBOs = registries::get("SSBOs")->pointer<registry<std::string, var>>();
+            bind();
 
-            var* ssbo = SSBOs->get(*it);
-            switch (ssbo->getVarType()) {
+            // Bind UBOs.
+            for (auto it = requiredUBOsNames.begin(); it != requiredUBOsNames.end(); it++) {
 
-            case var::varType::SSBO_OF_LIGHTINSTANCES:
-                bindSSBO(*ssbo->pointer<SSBO<lightInstance>>());
-                break;
+                var* ubo = UBOs->get(*it);
+                switch (ubo->getVarType()) {
 
-            default:
-            case var::varType::UNKNOWN:
-                logger::errorLog("Unsupported SSBO var type specified");
-                break;
+                case var::varType::UBO_OF_MATERIALS:
+                    bindUBO(*ubo->pointer<UBO<material>>());
+                    break;
+
+                case var::varType::UBO_OF_DIRECTIONALLIGHTS:
+                    bindUBO(*ubo->pointer<UBO<directionalLight>>());
+                    break;
+
+                case var::varType::UBO_OF_POINTLIGHTS:
+                    bindUBO(*ubo->pointer<UBO<pointLight>>());
+                    break;
+
+                case var::varType::UBO_OF_SPOTLIGHTS:
+                    bindUBO(*ubo->pointer<UBO<spotLight>>());
+                    break;
+
+                case var::varType::UNKNOWN:
+                default:
+                    logger::errorLog("Unsupported UBO var type specified");
+                    break;
+
+                }
 
             }
 
+            // Bind SSBOs.
+            for (auto it = requiredSSBOsNames.begin(); it != requiredSSBOsNames.end(); it++) {
+
+                var* ssbo = SSBOs->get(*it);
+                switch (ssbo->getVarType()) {
+
+                case var::varType::SSBO_OF_LIGHTINSTANCES:
+                    bindSSBO(*ssbo->pointer<SSBO<lightInstance>>());
+                    break;
+
+                case var::varType::SSBO_OF_BLOCK_OPACITY:
+                    bindSSBO(*ssbo->pointer<SSBO<blockOpacity>>());
+                    break;
+
+                case var::varType::UNKNOWN:
+                default:
+                    logger::errorLog("Unsupported SSBO var type specified");
+                    break;
+
+                }
+
+            }
+            unbind();
+        
         }
-        unbind();
-    }
-
-    void shader::bind() const {
-
-        glUseProgram(rendererID_);
-
-    }
-
-    void shader::unbind() const {
-
-        glUseProgram(0);
-
+        catch (const std::exception& e) { 
+        
+            logger::errorLog("Error when compiling shader " + name + ":\n" + e.what());
+        
+        }
     }
 
     GLint shader::getUniformLocation(const std::string& name) const {
@@ -187,30 +191,6 @@ namespace VoxelEng {
 
     }
 
-    void shader::setUniform1i(const std::string& name, int i1) {
-
-        glUniform1i(getUniformLocation(name), i1);
-
-    }
-
-    void shader::setUniform1iv(const std::string& name, const int* v, int vSize) {
-
-        glUniform1iv(getUniformLocation(name), vSize, v);
-
-    }
-
-    void shader::setUniformVec4f(const std::string& name, float f1, float f2, float f3, float f4) {
-
-        glUniform4f(getUniformLocation(name), f1, f2, f3, f4);
-
-    }
-
-    void shader::setUniformVec3f(const std::string& name, const vec3& vec) {
-
-        glUniform3f(getUniformLocation(name), vec.x, vec.y, vec.z);
-
-    }
-
     void shader::setUniformMatrix4f(const std::string& name, const glm::mat4& matrix) {
 
         /* 
@@ -218,12 +198,6 @@ namespace VoxelEng {
         creates matrices that OpenGL doesn't need to transpose in order to understand them.
         */
         glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &matrix[0][0]); 
-
-    }
-
-    shader::~shader() {
-
-        glDeleteProgram(rendererID_);
 
     }
 

@@ -14,10 +14,11 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <Graphics/Vertex/vertex.h>
-#include <Block/block.h>
+
 #include <definitions.h>
+#include <Block/block.h>
 #include <Graphics/transform.h>
+#include <Graphics/Vertex/vertex.h>
 
 
 namespace VoxelEng {

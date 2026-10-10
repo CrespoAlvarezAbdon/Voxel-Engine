@@ -5,7 +5,8 @@
 #include <set>
 #include <utility>
 #include <vec.h>
-#include <Chunk/chunkRenderingData.hpp>
+#include <Chunk/DataStructures/chunkRenderingData.hpp>
+#include <Chunk/DataStructures/chunkExtraRenderingData.hpp>
 #include <Graphics/graphicsDefinitions.h>
 #include <Graphics/Vertex/ChunkVertexBuffer/chunkVertexBufferZone.hpp>
 #include <Graphics/Vertex/VertexBuffer/vertexBuffer.h>
@@ -19,6 +20,7 @@ namespace VoxelEng {
 	* It's purpose is to store all the chunk data at once in GPU and be able to keep track
 	* of changes in those chunks (loading, modification and unloading of chunks) and properly
 	* update the corresponding vertex data in GPU.
+	* It also includes any data that is to be uploaded to the GPU per chunk.
 	*/
 	class chunkVertexBuffer : public vertexBuffer {
 	
@@ -44,6 +46,14 @@ namespace VoxelEng {
 		*/
 		const chunkVertexBufferZone& bufferZone(const ivec3& chunkPos, geometryType chunkGeometryType);
 
+		/**
+		* @brief Get the extra rendering data associated with the specified chunk. Throws exception if there is no buffer zone associated
+		* with the specified chunk.
+		* @param chunkPos The position in chunk coordinates of the specified chunk.
+		* @returns The extra rendering data associated with the specified chunk.
+		*/
+		const chunkExtraRenderingData* extraData(const ivec3& chunkPos);
+
 
 		// Modifiers.
 
@@ -67,6 +77,14 @@ namespace VoxelEng {
 		* or not (false).
 		*/
 		void freeDynamicData(const ivec3& chunkPos, geometryType chunkGeometryType);
+
+		/**
+		* @brief Register the extra rendering data of the specified chunk for use in the chunk's rendering.
+		* @param chunkPos The position in chunk coordinates of the specified chunk.
+		* @param extraData The extra rendering data to use in the chunk's rendering.
+		*/
+		void insert(const ivec3& chunkPos, const chunkExtraRenderingData* extraData);
+
 
 	private:
 
@@ -99,6 +117,7 @@ namespace VoxelEng {
 
 		std::unordered_map<ivec3, chunkVertexBufferZone> chunkVertexBufferZones_;
 		std::unordered_map<ivec3, chunkVertexBufferZone> chunkTranslucidVertexBufferZones_;
+		std::unordered_map<ivec3, const chunkExtraRenderingData*> chunkExtraData_;
 		freedZones freedZones_;
 		freedZonesBySize freedZonesBySize_;
 	
@@ -106,6 +125,12 @@ namespace VoxelEng {
 
 	inline chunkVertexBuffer::chunkVertexBuffer()
 	{}
+
+	inline void chunkVertexBuffer::insert(const ivec3& chunkPos, const chunkExtraRenderingData* extraData) {
+
+		chunkExtraData_[chunkPos] = extraData;
+
+	}
 
 }
 

@@ -3,9 +3,9 @@
 
 #include <cstdint>
 
-#include <utilities.h>
 #include <vec.h>
 #include <Graphics/Lighting/definitions.hpp>
+#include <Utilities/utilities.h>
 
 namespace VoxelEng {
 

@@ -1,7 +1,7 @@
 #include "blockViewDir.hpp"
 
+#include <Utilities/utilities.h>
 #include <Utilities/Logger/logger.h>
-#include <utilities.h>
 
 namespace VoxelEng {
 

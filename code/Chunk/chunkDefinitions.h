@@ -8,7 +8,7 @@
 
 #include <definitions.h>
 #include <vec.h>
-#include <Block/blockState.hpp>
+#include <Block/DataStructures/blockState.hpp>
 #include <Chunk/blockLight.hpp>
 
 namespace VoxelEng {

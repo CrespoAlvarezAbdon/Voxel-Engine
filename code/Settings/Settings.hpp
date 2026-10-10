@@ -22,24 +22,38 @@ namespace VoxelEng {
 		// Observers.
 
 		/**
-		* @brief Maximum number of chunk generation/meshing simultaneous jobs being executed.
+		* @brief Get the maximum number of chunk generation/meshing simultaneous jobs being executed.
+		* @returns The maximum number of chunk generation/meshing simultaneous jobs being executed.
 		*/
-		//const unsigned int MAX_N_CHUNK_SIMULT_TASKS = 8;
-		unsigned int maxChunkhreads() const;
+		unsigned int maxChunkThreads() const;
 
 		/**
-		* @brief Default maximum distance in chunk coordinates for chunks to be computed in the X and Z axes.
+		* @brief Get the maximum distance in chunk coordinates for chunks to be computed in the X and Z axes.
+		* @returns The maximum distance in chunk coordinates for chunks to be computed in the X and Z axes.
 		*/
-		//const unsigned int DEF_N_CHUNKS_TO_COMPUTE = 20;
 		unsigned int chunkXZRenderDistance() const;
 
 		/**
-		* @brief Get the window's width.
+		* @brief Get whether the chunk dynamic lighting system is used or not.
+		* @returns Whether the chunk dynamic lighting system is used (true) or not (false).
+		*/
+		bool useDynamicLighting() const;
+
+		/**
+		* @brief Get maximum distance for chunks with enabled dynamic lighting.
+		* @returns The maximum distance for chunks with enabled dynamic lighting.
+		*/
+		unsigned int maxDistanceDynamicLightChunks() const;
+
+		/**
+		* @brief Get the engine window's width.
+		* @returns The engine window's width.
 		*/
 		unsigned int windowWidth() const;
 
 		/**
-		* @brief Get the window's height.
+		* @brief Get the engine window's height.
+		* @returns The engine window's height.
 		*/
 		unsigned int windowHeight() const;
 
@@ -47,20 +61,34 @@ namespace VoxelEng {
 
 		unsigned int maxChunkThreads_;
 		unsigned int chunkXZRenderDistance_;
+		bool useDynamicLighting_;
+		unsigned int maxDistanceDynamicLightChunks_;
 		unsigned int windowWidth_;
 		unsigned int windowHeight_;
 
 	};
 
-	inline unsigned int settings::maxChunkhreads() const {
+	inline unsigned int settings::maxChunkThreads() const {
 	
 		return maxChunkThreads_;
 	
 	}
 
 	inline unsigned int settings::chunkXZRenderDistance() const {
-	
+
 		return chunkXZRenderDistance_;
+
+	}
+
+	inline bool settings::useDynamicLighting() const {
+	
+		return useDynamicLighting_;
+	
+	}
+
+	inline unsigned int settings::maxDistanceDynamicLightChunks() const {
+	
+		return maxDistanceDynamicLightChunks_;
 	
 	}
 

@@ -13,6 +13,7 @@
 #include <initializer_list>
 #include <string>
 #include <unordered_map>
+
 #include <definitions.h>
 #include <vec.h>
 #include <Graphics/UBOs/UBOs.h>
@@ -94,6 +95,13 @@ namespace VoxelEng {
 		void setUniformVec3f(const std::string& name, const vec3& vec);
 
 		/**
+		* @brief Sets a previously existing vector of 3 floats named 'name' in the shader program.
+		* WARNING. Must be called in a thread with valid graphics API context.
+		* WARNING. Shader must be bound before calling this method.
+		*/
+		void setUniformVec3(const std::string& name, const ivec3& vec);
+
+		/**
 		* @brief Sets a previously existing uniform matrix named 'name' of 4x4 floats in the shader program.
 		* WARNING. Must be called in a thread with valid graphics API context.
 		* WARNING. Shader must be bound before calling this method.
@@ -158,6 +166,48 @@ namespace VoxelEng {
 
 	};
 
+	inline void shader::bind() const {
+
+		glUseProgram(rendererID_);
+
+	}
+
+	inline void shader::unbind() const {
+
+		glUseProgram(0);
+
+	}
+
+	inline void shader::setUniform1i(const std::string& name, int i1) {
+
+		glUniform1i(getUniformLocation(name), i1);
+
+	}
+
+	inline void shader::setUniform1iv(const std::string& name, const int* v, int vSize) {
+
+		glUniform1iv(getUniformLocation(name), vSize, v);
+
+	}
+
+	inline void shader::setUniformVec4f(const std::string& name, float f1, float f2, float f3, float f4) {
+
+		glUniform4f(getUniformLocation(name), f1, f2, f3, f4);
+
+	}
+
+	inline void shader::setUniformVec3f(const std::string& name, const vec3& vec) {
+
+		glUniform3f(getUniformLocation(name), vec.x, vec.y, vec.z);
+
+	}
+
+	inline void shader::setUniformVec3(const std::string& name, const ivec3& vec) {
+
+		glUniform3i(getUniformLocation(name), vec.x, vec.y, vec.z);
+
+	}
+
 	template <typename T>
 	void shader::bindUBO(const UBO<T>& ubo) {
 
@@ -179,6 +229,12 @@ namespace VoxelEng {
 			throw std::runtime_error("There is no SSBO block named " + ssboName + " in shader " + name_);
 		else
 			glShaderStorageBlockBinding(rendererID_, ssboBlockIndex, ssbo.bindingPoint());
+
+	}
+
+	inline shader::~shader() {
+
+		glDeleteProgram(rendererID_);
 
 	}
 

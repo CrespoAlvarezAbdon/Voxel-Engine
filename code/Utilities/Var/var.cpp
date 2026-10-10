@@ -1,6 +1,8 @@
 #include "var.h"
 #include <Utilities/Logger/logger.h>
 
+#include <Block/DataStructures/blockOpacity.hpp>
+
 // Includes of the headers that define the types supported by the var class.
 #include <Graphics/UBOs/UBOs.h>
 #include <Graphics/SSBO/SSBO.h>
@@ -54,6 +56,10 @@ namespace VoxelEng {
 
 		case varType::SSBO_OF_LIGHTINSTANCES:
 			delete static_cast<SSBO<lightInstance>*>(pointer_);
+			break;
+
+		case varType::SSBO_OF_BLOCK_OPACITY:
+			delete static_cast<SSBO<blockOpacity>*>(pointer_);
 			break;
 
 		case varType::REGISTRYINSORDERED_OF_STRINGS_MATERIALS:

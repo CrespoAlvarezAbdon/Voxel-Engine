@@ -1,8 +1,10 @@
 #include "gameWindow.h"
+
 #include <stdexcept>
-#include "camera.h"
-#include "gui.h"
-#include "Graphics/graphics.h"
+
+#include <gui.h>
+#include <Graphics/camera.h>
+#include <Graphics/graphics.h>
 
 
 namespace VoxelEng {

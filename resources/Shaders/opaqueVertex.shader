@@ -50,7 +50,7 @@ uniform mat4 u_MVPGUI;
 
 void main() {
 
-	if (u_renderMode == 0) { // 3D rendering.
+	if (u_renderMode == 1) { // 3D rendering.
 
 		LightInstance lightInstance = directionalLightsInstances[0];
 		
@@ -69,7 +69,7 @@ void main() {
 		gl_Position = u_MVP * vec4(position, 1.0);
 
 	}
-	else if (u_renderMode == 1) { // 2D rendering.
+	else if (u_renderMode == 2) { // 2D rendering.
 	
 		v_TexCoord = texCoord;
 

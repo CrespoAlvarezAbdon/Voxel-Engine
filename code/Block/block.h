@@ -14,6 +14,8 @@
 #include <utility>
 #include <unordered_map>
 #include <unordered_set>
+
+#include <Block/DataStructures/blockOpacity.hpp>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
 #include <Graphics/Lighting/Lights/PointLight/pointLight.h>
 #include <Graphics/Lighting/Lights/SpotLight/spotLight.h>
@@ -22,13 +24,6 @@
 #include <Utilities/VarRef/varRef.h>
 
 namespace VoxelEng {
-
-	//////////
-	//Enums.//
-	//////////
-
-	enum class blockOpacity {EMPTYBLOCK = -1, FULLTRANSPARENT = 0, TRANSLUCENTBLOCK = 1, OPAQUEBLOCK = 2};
-
 
 	////////////
 	//Classes.//
@@ -239,7 +234,7 @@ namespace VoxelEng {
 	inline block::block()
 	: name_(""),
 	  intID_(0),
-	  opacity_(blockOpacity::OPAQUEBLOCK),
+	  opacity_(blockOpacity::OPAQUE),
 	  materialIndex_(0),
 	  emittedLightIndex_(0)
 	{}

@@ -26,6 +26,7 @@
 #include <vec.h>
 #include <Chunk/chunk.h>
 #include <Graphics/graphics.h>
+#include <Graphics/Lighting/Lights/LightInstance/lightInstance.h>
 #include <Threading/threadPool.hpp>
 
 #if GRAPHICS_API == OPENGL
@@ -72,16 +73,24 @@ namespace VoxelEng {
 		// Observers.
 
 		/**
-		* @brief Returns whether the world system is initialised or not.
-		* @returns Whether the world system is initialised(true) or not (false).
+		* @brief Get whether the world system is initialised or not.
+		* @returns Whether the world system is initialised (true) or not (false).
 		*/
 		static bool initialised();
 
 		/**
-		* @brief Returns true if the specified chunkPos corresponds to a chunk that has been
-		* previously saved to the currently selected world or false otherwise.
+		* @brief Get whether the specified chunkPos corresponds to a chunk that has been
+		* previously saved to the currently selected world or not.
+		* @returns Whether the specified chunkPos corresponds to a chunk that has been
+		* previously saved to the currently selected world (true) or not (false).
 		*/
 		static bool isSaved(const ivec3& chunkPos);
+
+		/**
+		* @brief Get the directional light instance corresponding to the world's sun.
+		* @returns The directional light instance corresponding to the world's sun.
+		*/
+		static const lightInstance& sunLightInstanceC();
 
 
 		// Modifiers.
@@ -116,8 +125,6 @@ namespace VoxelEng {
 		* to a worker thread that is not created inside this method.
 		*/
 		static void processWorldTicks();
-
-		
 
 		/**
 		* @brief Save all data related to the currently opened world.
@@ -162,6 +169,12 @@ namespace VoxelEng {
 		*/
 		static void unloadWorld();
 
+		/**
+		* @brief Get the directional light instance corresponding to the world's sun.
+		* @returns The directional light instance corresponding to the world's sun.
+		*/
+		static lightInstance& sunLightInstance();
+
 
 		// Clean up.
 
@@ -184,6 +197,7 @@ namespace VoxelEng {
 		static unsigned int currentWorldSlot_;
 		static std::string currentWorldPath_;
 		static database* regions_;
+		static lightInstance sunLightInstance_;
 
 
 		/*
@@ -202,12 +216,9 @@ namespace VoxelEng {
 	
 	}
 
-	inline bool world::isSaved(const ivec3& chunkPos) {
+	inline const lightInstance& world::sunLightInstanceC() {
 	
-		if (regions_)
-			return regions_->exists(std::to_string(chunkPos));
-		else
-			logger::errorLog("The regions database is not initialised");
+		return sunLightInstance_;
 	
 	}
 
@@ -223,6 +234,12 @@ namespace VoxelEng {
 
 		#endif
 	
+	}
+
+	inline lightInstance& world::sunLightInstance() {
+
+		return sunLightInstance_;
+
 	}
 
 }

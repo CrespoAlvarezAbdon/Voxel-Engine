@@ -17,12 +17,12 @@
 #include <mutex>
 #include <unordered_map>
 #include <vector>
-#include <batch.h>
-#include <indexBuffer.h>
+
 #include <gameWindow.h>
+#include <Graphics/batch.h>
+#include <Graphics/indexBuffer.h>
 #include <Graphics/Shaders/shader.h>
 #include <Graphics/UBOs/UBOs.h>
-
 #include <Graphics/Vertex/VertexArray/vertexArray.h>
 #include <Graphics/Vertex/VertexBuffer/vertexBuffer.h>
 #include <Graphics/Vertex/VertexBufferLayout/vertexBufferLayout.h>
@@ -69,7 +69,7 @@ namespace VoxelEng {
 
 		/**
 		* @brief Gets the pointer to the 'VoxelEng::window' class object that is being used
-		* to handle the game window's callbacks..
+		* to handle the game window's callbacks.
 		*/
 		static window* getMainWindow();
 
@@ -231,6 +231,10 @@ namespace VoxelEng {
 
 	private:
 
+		/*
+		Attributes.
+		*/
+
 		static bool initialised_;
 		static window* mainWindow_;
 		static std::unordered_map<std::string, vertexBuffer*> vbos_;
@@ -242,6 +246,21 @@ namespace VoxelEng {
 		static shader* translucidShader_;
 		static shader* compositeShader_;
 		static shader* screenShader_;
+
+
+		/*
+		Methods.
+		*/
+
+		static void initOpenGL(window& mainWindow);
+
+		static void initGPUObjects();
+
+		static void initUBOs();
+
+		static void initSSBOs();
+
+		static void initShaders();
 
 	};
 

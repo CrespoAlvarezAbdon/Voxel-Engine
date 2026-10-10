@@ -1,15 +1,5 @@
 ﻿#include "chunk.h"
 
-// MAÑANA. PROBAR TODOS LOS CASOS DE LAS LUCES 1 A 1
-// - LA MEJORA DE MEMORIA ES DE 3GB ASÍ QUE EL LAZY INITIALIZATION DE LUCES SE QUEDA. <- OK
-// - HAY UN BUG QUE HACE QUE SI PONES UN BLOQUE DE LUZ NO SE ACTUALIZA EL CHUNK HASTA QUE AÑADES UN BLOQUE QUE NO DE LUZ. <- ARREGLADO
-// - HAY UN BUG EN EL QUE SI PONES UNA LUZ Y LUEGO INTENTAS PONER OTRA NO SE RENDERIZAN ALGUNAS CARAS Y LA LUZ DEL NUEVO BLOQUE NO SE PROPAGA <- ARREGLADO
-// - SEGUIR PROBANDO TODOS LOS CASOS DE LAS LUCES DE 1 EN 1
-// - ARREGLAR BUG EN EL QUE SI TAPAS UN BLOQUE DE LUZ CON OTROS BLOQUES DE LUZ Y LO DESTAPAS LA LUZ DE ESE BLOQUE NO VUELVE A PROPAGARSE. <- ARREGLADO
-// - EL CASO NONTRANSPARENTBLOCKREMOVEDONLIGHT HACE OVERRIDE DE LUZ ROJA AL LIBERAR LUZ AZUL DE CARCEL DE LUCES ROJAS <- ARREGLADO
-// - GHOSTING DE LUCES AL HACER LO DE ENCERRAR ROJA EN AZULES DOS VECES (SE NOTA LA PRIMERA VEZ TAMBIÉN COMO QUE PARECE QUE NO SE PROPAGA EL CAMBIO A CHUNKS PUEDE QUE SE DEBA A LO QUE HICIMOS PARA ARREGLAR EL ANTERIOR BUG)
-// - ARREGLAR CHUNKS SIN BLOQUES MANDANDOSE A RENDERIZAR CON LA ULTIMA GEOMETRÍA QUE TENÍAN (ES DECIR, QUE DE ALGÚN MODO CUANDO SE QUEDAN SIN BLOQUES NO SE BORRA SU VBO O SE SIGUE MANDANDO CON LO ULTIMO MIRA EL CONTADOR DE BLOQUES PARA SABER QUE PASA)
-
 #include <algorithm>
 #include <ctime>
 #include <cstdlib>
@@ -23,14 +13,14 @@
 #include <stdexcept>
 #include <tuple>
 
-#include <camera.h>
 #include <player.h>
 #include <input.h>
 #include <gui.h>
 #include <game.h>
-#include <Chunk/chunkNeighbors.hpp>
+#include <Chunk/DataStructures/chunkNeighbors.hpp>
 #include <Chunk/Utilities/utilities.hpp>
 #include <Time/Timer/timer.h>
+#include <Graphics/camera.h>
 #include <Graphics/graphics.h>
 #include <Graphics/Lighting/Lights/light.hpp>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
@@ -41,7 +31,6 @@
 #include <Utilities/Logger/logger.h>
 #include <Utilities/Var/var.h>
 #include <World/WorldGen/worldGen.h>
-
 
 namespace VoxelEng {
 
@@ -213,19 +202,24 @@ namespace VoxelEng {
 
     const block& chunk::setBlock(sbyte x, sbyte y, sbyte z, const block& b, bool modification) {
 
-        bool isNewBlockOpaque = b.opacity() == blockOpacity::OPAQUEBLOCK;
         unsigned short& actualLocalID = blockData_.blocksLocalIDs.get(x, y, z);
         unsigned short oldLocalID = actualLocalID;
         unsigned int oldGlobalID = actualLocalID ? palette_.getT2(actualLocalID) : 0;
         const block& oldB = block::getBlockC(oldGlobalID);
         ivec3 neighborOffset;
 
+        blockOpacity opacity = b.opacity();
+        blockOpacity oldOpacity = oldB.opacity();
+        bool isNewBlockOpaque = opacity == blockOpacity::TRANSPARENT || opacity == blockOpacity::OPAQUE; // MAÑAN. NOMBRAR ESTO MEJOR A NONTRANSLUCENT, ALSO PONER ESO A LOS NOMBRES DE LOS DOS MODELOS DE CHUNK QUE HAY
+        bool isOldBlockOpaque = oldOpacity == blockOpacity::TRANSPARENT || oldOpacity == blockOpacity::OPAQUE;
+        unsigned int opaqueDiff = isNewBlockOpaque - isOldBlockOpaque;
+
         const bool blockWasModified = placeNewBlock_(actualLocalID, b);
 
         needsRemesh_ = needsRemesh_ || blockWasModified;
         modified_ = modified_ || (blockWasModified && modification);
 
-        blockData_.isOpaque.get(x, y, z) = isNewBlockOpaque;
+        renderingData_.extraData.opacity_.get(x, y, z) = opacity;
 
         neighborOffset.x = x >= CHUNK_SIZE ? 1 : x <= -1 ? -1 : 0;
         neighborOffset.y = y >= CHUNK_SIZE ? 1 : y <= -1 ? -1 : 0;
@@ -236,7 +230,7 @@ namespace VoxelEng {
                 nTotalBlocks_++;
             else if (oldLocalID && !actualLocalID)
                 nTotalBlocks_--;
-            nOpaqueBlocks_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+            nOpaqueBlocks_ += opaqueDiff;
 
             replaceBlockLight(oldB, b, x, y, z);
 
@@ -248,7 +242,7 @@ namespace VoxelEng {
             else if (oldLocalID && !actualLocalID)
                 nTotalBlocksPlusX_--;
 
-            nOpaqueBlocksPlusX_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+            nOpaqueBlocksPlusX_ += opaqueDiff;
 
         }
         else if (neighborOffset == ivec3FixedSouth) {
@@ -257,7 +251,7 @@ namespace VoxelEng {
                 nTotalBlocksMinusX_++;
             else if (oldLocalID && !actualLocalID)
                 nTotalBlocksMinusX_--;
-            nOpaqueBlocksMinusX_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+            nOpaqueBlocksMinusX_ += opaqueDiff;
 
         }
         else if (neighborOffset == ivec3FixedUp) {
@@ -266,7 +260,7 @@ namespace VoxelEng {
                 nTotalBlocksPlusY_++;
             else if (oldLocalID && !actualLocalID)
                 nTotalBlocksPlusY_--;
-            nOpaqueBlocksPlusY_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+            nOpaqueBlocksPlusY_ += opaqueDiff;
 
         }
         else if (neighborOffset == ivec3FixedDown) {
@@ -275,7 +269,7 @@ namespace VoxelEng {
                 nTotalBlocksMinusY_++;
             else if (oldLocalID && !actualLocalID)
                 nTotalBlocksMinusY_--;
-            nOpaqueBlocksMinusY_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+            nOpaqueBlocksMinusY_ += opaqueDiff;
 
         }
         else if (neighborOffset == ivec3FixedEast) {
@@ -284,7 +278,7 @@ namespace VoxelEng {
                 nTotalBlocksPlusZ_++;
             else if (oldLocalID && !actualLocalID)
                 nTotalBlocksPlusZ_--;
-            nOpaqueBlocksPlusZ_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+            nOpaqueBlocksPlusZ_ += opaqueDiff;
 
         }
         else if (neighborOffset == ivec3FixedWest) {
@@ -293,7 +287,7 @@ namespace VoxelEng {
                 nTotalBlocksMinusZ_++;
             else if (oldLocalID && !actualLocalID)
                 nTotalBlocksMinusZ_--;
-            nOpaqueBlocksMinusZ_ += (isNewBlockOpaque)-(oldB.opacity() == blockOpacity::OPAQUEBLOCK);
+            nOpaqueBlocksMinusZ_ += opaqueDiff;
 
         }
 
@@ -322,6 +316,34 @@ namespace VoxelEng {
 
             setBlockLight(pos, blockLight(pointL->intensity(), pointL->ambient()), colorChannel::ALL);
 
+
+            // TODO. ADD OPTION FOR DISABLING DYNAMIC LIGHTING.
+            // MAÑANA.
+            // 1º. ESTRUCTURA PARA POINTLIGHTS Y SPOTLIGHTS.
+            // 2º. RELLENADO Y VACIADO DE DICHAS ESTRUCTURAS.
+            // 3º. SUBIDA DE DICHAS ESTRUCTURAS AL SSBO AL RENDERIZAR SI SE CUMPLEN LAS CONDICIONES PARA RENDERIZAR CON LUCES DINÁMICAS.
+            // 4º. PONER LUCES DINÁMICAS DE VUELTA EN LAS SHADERS.
+            // 5º. PROBAR.
+            /*
+            if (emittedLight.getVarType() == var::varType::POINTLIGHT) {
+
+                lightInstance& instance = renderingData_.pointLights.emplace_back();
+                instance.pos = getGlobalPos(chunkPos_.x, chunkPos_.y, chunkPos_.z, x, y, z);
+                instance.lightTypeIndex = b.emittedLightIndex();
+
+            }
+            else if (emittedLight.getVarType() == var::varType::SPOTLIGHT) {
+
+                lightInstance& instance = renderingData_.spotLights.emplace_back();
+                instance.pos = getGlobalPos(chunkPos_.x, chunkPos_.y, chunkPos_.z, x, y, z);
+                instance.lightTypeIndex = b.emittedLightIndex();
+
+            }
+            else if (emittedLight.getVarType() == var::varType::DIRECTIONALLIGHT)
+                throw std::runtime_error("Directional lights cannot be applied by blocks");
+            else
+                throw std::runtime_error("Unknown light type for block specified (varType number is " + std::to_string((int)emittedLight.getVarType()) + ")");
+            */
         }
 
     }
@@ -329,9 +351,9 @@ namespace VoxelEng {
     void chunk::chunkPos(const ivec3& newChunkPos) {
 
         chunkPos_ = newChunkPos;
-        renderingData_.extraRenderingData.globalChunkPos.x = newChunkPos.x * CHUNK_SIZE + CHUNK_SIZE / 2;
-        renderingData_.extraRenderingData.globalChunkPos.y = newChunkPos.y * CHUNK_SIZE + CHUNK_SIZE / 2;
-        renderingData_.extraRenderingData.globalChunkPos.z = newChunkPos.z * CHUNK_SIZE + CHUNK_SIZE / 2;
+        renderingData_.extraData.globalChunkPos.x = newChunkPos.x * CHUNK_SIZE + CHUNK_SIZE / 2;
+        renderingData_.extraData.globalChunkPos.y = newChunkPos.y * CHUNK_SIZE + CHUNK_SIZE / 2;
+        renderingData_.extraData.globalChunkPos.z = newChunkPos.z * CHUNK_SIZE + CHUNK_SIZE / 2;
 
     }
 
@@ -371,7 +393,7 @@ namespace VoxelEng {
                             const varRef& emittedLight = b.emittedLight();
 
                             // Add block's model to the mesh if necessary.
-                            if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK) {
+                            if (b.opacity() < blockOpacity::OPAQUE) {
 
                                 // Draw face for block at x + 1.
                                 if (x < CHUNK_SIZE_LIMIT && (neighborLocalID = blockData_.blocksLocalIDs.get(x + 1, y, z))) {
@@ -380,7 +402,7 @@ namespace VoxelEng {
 
                                     if (b != *bNeighbor) {
 
-                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                        chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                         // Create the face's vertices for face x-.
                                         for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -438,7 +460,7 @@ namespace VoxelEng {
 
                                     if (b != *bNeighbor) {
 
-                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                        chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                         // Create the face's vertices for face x+.
                                         for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -496,7 +518,7 @@ namespace VoxelEng {
 
                                     if (b != *bNeighbor) {
 
-                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                        chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                         // Create the face's vertices for face y-.
                                         for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -554,7 +576,7 @@ namespace VoxelEng {
 
                                     if (b != *bNeighbor) {
 
-                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                        chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                         // Create the face's vertices for face y+.
                                         for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -612,7 +634,7 @@ namespace VoxelEng {
 
                                     if (b != *bNeighbor) {
 
-                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                        chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                         // Create the face's vertices for face z-.
                                         for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -670,7 +692,7 @@ namespace VoxelEng {
 
                                     if (b != *bNeighbor) {
 
-                                        chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                        chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                         // Create the face's vertices for z+.
                                         for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -735,13 +757,13 @@ namespace VoxelEng {
                             blockData_.blockLightColor ? blockData_.blockLightColor->get(CHUNK_SIZE_LIMIT, y, z) : blockLightZero;
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blockData_.blocksLocalIDs.get(CHUNK_SIZE, y, z))) {
+                        if (b.opacity() < blockOpacity::OPAQUE && (neighborLocalID = blockData_.blocksLocalIDs.get(CHUNK_SIZE, y, z))) {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                 // Create the face's vertices for face x-.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -806,13 +828,13 @@ namespace VoxelEng {
                             blockData_.blockLightColor ? blockData_.blockLightColor->get(0, y, z) : blockLightZero;
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blockData_.blocksLocalIDs.get(-1, y, z))) {
+                        if (b.opacity() < blockOpacity::OPAQUE && (neighborLocalID = blockData_.blocksLocalIDs.get(-1, y, z))) {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                 // Create the face's vertices for face x+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -877,13 +899,13 @@ namespace VoxelEng {
                             blockData_.blockLightColor ? blockData_.blockLightColor->get(x, CHUNK_SIZE_LIMIT, z) : blockLightZero;
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blockData_.blocksLocalIDs.get(x, CHUNK_SIZE, z))) {
+                        if (b.opacity() < blockOpacity::OPAQUE && (neighborLocalID = blockData_.blocksLocalIDs.get(x, CHUNK_SIZE, z))) {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                 // Create the face's vertices for face y-.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -948,13 +970,13 @@ namespace VoxelEng {
                             blockData_.blockLightColor ? blockData_.blockLightColor->get(x, 0, z) : blockLightZero;
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blockData_.blocksLocalIDs.get(x, -1, z))) {
+                        if (b.opacity() < blockOpacity::OPAQUE && (neighborLocalID = blockData_.blocksLocalIDs.get(x, -1, z))) {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                 // Create the face's vertices for face y+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -1019,14 +1041,14 @@ namespace VoxelEng {
                             blockData_.blockLightColor ? blockData_.blockLightColor->get(x, y, CHUNK_SIZE_LIMIT) : blockLightZero;
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blockData_.blocksLocalIDs.get(x, y, CHUNK_SIZE))) {
+                        if (b.opacity() < blockOpacity::OPAQUE && (neighborLocalID = blockData_.blocksLocalIDs.get(x, y, CHUNK_SIZE))) {
 
                             // Front face vertices with culling of non-visible faces. z-
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                 // Create the face's vertices for face z-.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -1091,13 +1113,13 @@ namespace VoxelEng {
                             blockData_.blockLightColor ? blockData_.blockLightColor->get(x, y, 0) : blockLightZero;
                         const block& b = localID ? block::getBlockC(palette_.getT2(localID)) : block::emptyBlock();
 
-                        if (b.opacity() <= blockOpacity::TRANSLUCENTBLOCK && (neighborLocalID = blockData_.blocksLocalIDs.get(x, y, -1))) {
+                        if (b.opacity() < blockOpacity::OPAQUE && (neighborLocalID = blockData_.blocksLocalIDs.get(x, y, -1))) {
 
                             bNeighbor = &block::getBlockC(palette_.getT2(neighborLocalID));
 
                             if (b != *bNeighbor) {
 
-                                chunkModel = (bNeighbor->opacity() == blockOpacity::TRANSLUCENTBLOCK) ? &renderingData_.translucentVertices : &renderingData_.vertices;
+                                chunkModel = isTranslucent(bNeighbor->opacity()) ? &renderingData_.translucentVertices : &renderingData_.vertices;
 
                                 // Create the face's vertices for z+.
                                 for (int vertex = 0; vertex < blockTriangles_->operator[](0).size(); vertex++) {
@@ -1170,7 +1192,6 @@ namespace VoxelEng {
 
     void chunk::clearBlockLight() {
 
-        blockData_.isOpaque.clear();
         blockData_.floodPointLightPositions.clear();
         if (blockData_.blockLightColor)
             blockData_.blockLightColor->clear();
@@ -1225,6 +1246,7 @@ namespace VoxelEng {
         palette_.clear();
         paletteCount_.clear();
         freeLocalIDs_.clear();
+        renderingData_.extraData.opacity_.clear();
         clearBlockLight();
         blockData_.blocksLocalIDs.clear();
 
@@ -1315,8 +1337,11 @@ namespace VoxelEng {
 
     void chunk::initBlockLight() {
 
-        if (!blockData_.blockLightColor)
+        if (!blockData_.blockLightColor) {
+        
             blockData_.blockLightColor = new Padded3DArray<blockLight>(16, 16, 16, 1, blockLight::zero());
+        
+        }
 
     }
 
@@ -1394,9 +1419,9 @@ namespace VoxelEng {
 
         const char AOLight = 0;
 
-        bool isOpaqueCoords1 = blockData_.isOpaque.get(blockLightCoords1.x, blockLightCoords1.y, blockLightCoords1.z);
-        bool isOpaqueCoords2 = blockData_.isOpaque.get(blockLightCoords2.x, blockLightCoords2.y, blockLightCoords2.z);
-        bool isOpaqueCoords3 = blockData_.isOpaque.get(blockLightCoords3.x, blockLightCoords3.y, blockLightCoords3.z);
+        bool isOpaqueCoords1 = !isTranslucent(renderingData_.extraData.opacity_.get(blockLightCoords1.x, blockLightCoords1.y, blockLightCoords1.z));
+        bool isOpaqueCoords2 = !isTranslucent(renderingData_.extraData.opacity_.get(blockLightCoords2.x, blockLightCoords2.y, blockLightCoords2.z));
+        bool isOpaqueCoords3 = !isTranslucent(renderingData_.extraData.opacity_.get(blockLightCoords3.x, blockLightCoords3.y, blockLightCoords3.z));
         const blockLight& colorCoords1 = blockData_.blockLightColor->get(blockLightCoords1.x, blockLightCoords1.y, blockLightCoords1.z);
         const blockLight& colorCoords2 = blockData_.blockLightColor->get(blockLightCoords2.x, blockLightCoords2.y, blockLightCoords2.z);
         const blockLight& colorCoords3 = blockData_.blockLightColor->get(blockLightCoords3.x, blockLightCoords3.y, blockLightCoords3.z);
@@ -1476,6 +1501,7 @@ namespace VoxelEng {
     bool chunkManager::initialised_ = false;
     bool chunkManager::chunkJobSystemOverloaded_ = false;
     int chunkManager::nChunksToCompute_ = 0;
+    int chunkManager::maxDistanceDynamicLightChunks_ = 0;
 
     std::atomic<bool> chunkManager::clearChunksFlag_ = false;
 
@@ -1562,9 +1588,9 @@ namespace VoxelEng {
             chunkVBOopsRead_ = new std::unordered_map<ivec3, chunkVBOop>;
             chunkVBOopsPriorityRead_ = new std::unordered_map<ivec3, chunkVBOop>;
 
-            chunkTasks_ = new threadPool(game::getSettings().maxChunkhreads());
+            chunkTasks_ = new threadPool(game::getSettings().maxChunkThreads());
             priorityChunkTasks_ = new threadPool(2);
-            loadChunkJobs_ = new atomicRecyclingPool<job>(game::getSettings().maxChunkhreads());
+            loadChunkJobs_ = new atomicRecyclingPool<job>(game::getSettings().maxChunkThreads());
             loadChunkJobs_->setAllFreeOnClear(true);
             chunksPool_.setAllFreeOnClear(false);
             vbo_ = static_cast<chunkVertexBuffer*>(graphics::pVbo("chunks"));
@@ -1600,9 +1626,6 @@ namespace VoxelEng {
                 chunkVBOopsPriorityWrite_->operator[](c->chunkPos()) = chunkVBOop(VBOop::FREE);
             c->unlockSharedRenderingDataMutex();
             it = priorityNewChunkMeshes_.erase(it);
-            // MAÑANA. ALGO PASA CON LOS TRANSLUCIDOS QUE NO SE BORRAN.
-            // - NO ES ESO, LO QUE OCURRE ES QUE SI HAY GEOMETRÍA OPACA Y TRANSLÚCIDA Y MODIFICO LA TRANSLÚCIDA QUITANDO BLOQUES, NO SE ACTUALIZA
-            // LA TRANSLÚCIDA
 
         }
 
@@ -1651,6 +1674,9 @@ namespace VoxelEng {
                 chunkRenderingData& data = c->renderingData();
                 if (data.totalSize) {
 
+                    // MAÑANA. HAY QUE AVERIGUAR AGAIN COMO NO COPIAR OPACITY. PORQUE AQUI SE HACE LA COPIA, 
+                    // PERO CUANDO ESTE WRITE_ PASA A READ_, SE USA, Y LUEGO VUELVE A PASAR A WRITE_, 
+                    // EN RENDERING THREAD ESTA PILLANDO LA DIRECCION DE MEMORIA QUE AHORA ESTA EN WRITE_
                     chunkMeshes_->insert(chunkPos);
                     chunkVBOopsWrite_->operator[](chunkPos) = chunkVBOop(VBOop::PUSH, data);
                     //c->poraqui23 = true;
@@ -1735,22 +1761,14 @@ namespace VoxelEng {
 
     }
 
-    bool chunkManager::chunkInRenderDistance(const ivec3& chunkPos) {
-
-        ivec3 distancePlayer = chunkDistance(chunkPos, playerChunkPosCopy_);
-        return distancePlayer.x <= nChunksToCompute_ &&
-            distancePlayer.z <= nChunksToCompute_ &&
-            distancePlayer.y <= yChunksRange;
-
-    }
-
-    bool chunkManager::chunkInRenderDistance(const ivec3& chunkPos, const vec3& playerPos) {
-
-        ivec3 distancePlayer = chunkDistance(chunkPos, playerPos);
-        return distancePlayer.x <= nChunksToCompute_ &&
-            distancePlayer.z <= nChunksToCompute_ &&
-            distancePlayer.y <= yChunksRange;
-
+    bool chunkManager::chunkDistanceBetweenRange(const ivec3& chunkPos1, const ivec3& chunkPos2,
+        int chunkMaxDistanceX, int chunkMaxDistanceY, int chunkMaxDistanceZ) {
+    
+        ivec3 distancePlayer = chunkDistance(chunkPos1, chunkPos2);
+        return distancePlayer.x <= chunkMaxDistanceX &&
+            distancePlayer.y <= chunkMaxDistanceY &&
+            distancePlayer.z <= chunkMaxDistanceZ;
+    
     }
 
     ivec3 chunkManager::chunkDistanceToPlayer(const ivec3& chunkPos) {
@@ -1800,6 +1818,16 @@ namespace VoxelEng {
             nChunksToCompute_ = nChunksToCompute;
         else
             logger::errorLog("Cannot change the number of chunks to compute in the current engine mode " + std::to_string((unsigned int)mode));
+
+    }
+
+    void chunkManager::setMaxDistanceDynamicLightChunks(unsigned int maxDistance) {
+
+        engineMode mode = game::selectedEngineMode();
+        if (mode == engineMode::INITLEVEL || mode == engineMode::EDITLEVEL)
+            maxDistanceDynamicLightChunks_ = maxDistance;
+        else
+            logger::errorLog("Cannot change the maximum distance of chunks with dynamic lighting in the current engine mode " + std::to_string((unsigned int)mode));
 
     }
 
@@ -2355,15 +2383,17 @@ namespace VoxelEng {
         c->blocksDataMutex().lock_shared();
 
         // Save local ID data (including duplicated data about neighbors).
-        const chunkBlockData& cBlockData = c->blockData();
+        const chunkRenderingData& renderingData = c->renderingData();
         const Padded3DArray<unsigned short>& blocks = c->blocks();
-        std::string data(c->blocks().size() * sizeof(unsigned short), 0);
-        std::memcpy(data.data(), c->blocks().data(), c->blocks().size() * sizeof(unsigned short));
+        std::size_t extraDataSizeBytes = renderingData.extraData.opacity_.size() * sizeof(blockOpacity);
+        std::size_t blocksSizeBytes = blocks.size() * sizeof(unsigned short);
+        std::string data(blocksSizeBytes, 0);
+        std::memcpy(data.data(), blocks.data(), blocksSizeBytes);
 
         data += '@';
 
-        std::string isOpaqueData(cBlockData.isOpaque.size() * sizeof(bool), 0);
-        std::memcpy(isOpaqueData.data(), cBlockData.isOpaque.data(), cBlockData.isOpaque.size() * sizeof(bool));
+        std::string isOpaqueData(extraDataSizeBytes, 0);
+        std::memcpy(isOpaqueData.data(), renderingData.extraData.opacity_.data(), extraDataSizeBytes);
 
         data += isOpaqueData;
         data += '@';
@@ -2419,13 +2449,17 @@ namespace VoxelEng {
         chunk->blocksDataMutex().lock();
 
         // Deserialize local block ID data.
-        chunkBlockData cBlockData = chunk->blockData();
-        Padded3DArray<unsigned short>& blocks = chunk->blocks();
-        std::memcpy(blocks.data(), dataBegin, blocks.size() * sizeof(unsigned short));
-        index += blocks.size() * sizeof(unsigned short) + 1; // +1 to skip the '@' delimiter character.
 
-        std::memcpy(cBlockData.isOpaque.data(), dataBegin + index, cBlockData.isOpaque.size() * sizeof(bool));
-        index += cBlockData.isOpaque.size() * sizeof(bool) + 1; // +1 to skip the '@' delimiter character.
+        chunkRenderingData& renderingData = chunk->renderingData();
+        Padded3DArray<unsigned short>& blocks = chunk->blocks();
+        std::size_t renderingDataSizeBytes = renderingData.extraData.opacity_.size() * sizeof(blockOpacity);
+        std::size_t blocksSizeBytes = blocks.size() * sizeof(unsigned short);
+
+        std::memcpy(blocks.data(), dataBegin, blocksSizeBytes);
+        index += blocksSizeBytes + 1; // +1 to skip the '@' delimiter character.
+
+        std::memcpy(renderingData.extraData.opacity_.data(), dataBegin + index, renderingDataSizeBytes);
+        index += renderingDataSizeBytes + 1; // +1 to skip the '@' delimiter character.
 
         // Deserialize palette.
         palette<unsigned short, unsigned int>& chunkPalette = chunk->getPalette();
@@ -2552,8 +2586,8 @@ namespace VoxelEng {
             floodPointLightPositions.insert(pos);
 
             // MAÑANA. QUEDA PENDIENTE EL SAVE Y LOAD DE LUCES.
-            unsigned short localID = cBlockData.blocksLocalIDs.at(x,y,z);
-            unsigned int globalID = localID ? chunkPalette.getT2(localID) : 0;
+            //unsigned short localID = chunk->blockData().blocksLocalIDs.at(x,y,z);
+            //unsigned int globalID = localID ? chunkPalette.getT2(localID) : 0;
             //chunk->setBlockLight(block::getBlockC(globalID), pos);
 
         }
@@ -3152,16 +3186,18 @@ namespace VoxelEng {
                     const ivec3* blockGlobalPos = &*it; // We assume the chunk is the center of the coordinate system.
                     chunkPosOffset = getChunkCoords(*blockGlobalPos);
                     chunkRelPos = getChunkRelCoords(*blockGlobalPos);
-                    const chunkBlockData* blockData = &ownedChunks[chunkPosOffset]->blockData(); // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
+                    const chunk* c = ownedChunks[chunkPosOffset];
+                    const chunkBlockData* blockData = &c->blockData(); // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
                     floodLightsInstances.emplace_back(*blockGlobalPos, 
                         blockData->blockLightColor ? blockData->blockLightColor->get(chunkRelPos) : blockLight::zero());
+                    const chunkRenderingData& renderingData = c->renderingData();
 
                     firstSecondLoopIteration = true; // To spread beyond the block light source's position.
                     blockLightMod* floodLight = &floodLightsInstances.front();
                     do {
 
                         // MAÑANA. NO SE ESTÁ RECALCULANDO EL IS OPAQUE CUANDO SE DESERIALIZA UN CHUNK GUARDADO
-                        if (firstSecondLoopIteration || !blockData->isOpaque.at(chunkRelPos)) {
+                        if (firstSecondLoopIteration || renderingData.extraData.opacity_.at(chunkRelPos) == blockOpacity::TRANSPARENT) {
 
                             addLightChannelSource_(colorChannel::RED, *floodLight, ownedChunks,
                                 chunkPosOffset, chunkRelPos, floodLightsInstances, *blockGlobalPos, firstSecondLoopIteration);
@@ -3452,15 +3488,18 @@ namespace VoxelEng {
                     const ivec3* blockGlobalPos = &*it; // We assume chunk c is the center of the coordinate system for this method.
                     chunkPosOffset = getChunkCoords(*blockGlobalPos);
                     chunkRelPos = getChunkRelCoords(*blockGlobalPos);
-                    const chunkBlockData* blockData = &ownedChunks[chunkPosOffset]->blockData(); // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
+                    const chunk* c = ownedChunks[chunkPosOffset];
+                    const chunkBlockData* blockData = &c->blockData(); // TODO. AÑADIR FUNCION SWITCH PARA NO USAR EL HASH DE DICCIONARIO
                     floodLightsInstances.emplace_back(*blockGlobalPos, 
                         blockData->blockLightColor ? blockData->blockLightColor->at(chunkRelPos) : blockLight::zero());
+                    const chunkRenderingData& renderingData = c->renderingData();
+
                     firstSecondLoopIteration = true;
                     blockLightMod* floodLight = &floodLightsInstances.front();
                     do {
 
                         // MAÑANA. NO SE ESTÁ RECALCULANDO EL IS OPAQUE CUANDO SE DESERIALIZA UN CHUNK GUARDADO
-                        if (firstSecondLoopIteration || !blockData->isOpaque.at(chunkRelPos)) {
+                        if (firstSecondLoopIteration || renderingData.extraData.opacity_.at(chunkRelPos) == blockOpacity::TRANSPARENT) {
 
                             removeLightChannelSource_(colorChannel::RED, *floodLight, ownedChunks,
                                 chunkPosOffset, chunkRelPos, floodLightsInstances, *blockGlobalPos, 
@@ -3524,10 +3563,7 @@ namespace VoxelEng {
         const ivec3& blockGlobalPos, std::unordered_set<ivec3>& blockLightsToRepropagate, bool checkIfNeighborsAreLightSources) {
 
         lightIntensity intensity = floodLight.color.intensity(channel);
-        // MAÑANA. HAY QUE TENER EN CUENTA SI HAY OTRO BLOQUE DE SOURCE DE LIGHT QUE ESTÉ DANDO ESTA INTENSIDAD PARA CUANDO INTESITY=CURRENTINTENSITY
 
-        //logger::debugLog(std::to_string(blockGlobalPos));
-        
         if (intensity) {
 
             chunk* ownedChunk = ownedChunks[chunkPosOffset];
@@ -3804,7 +3840,8 @@ namespace VoxelEng {
                     chunkRelPos = getChunkRelCoords(*blockGlobalPos);
                    
                     // MAÑANA. NO SE ESTÁ RECALCULANDO EL IS OPAQUE CUANDO SE DESERIALIZA UN CHUNK GUARDADO
-                    if (firstSecondLoopIteration || !ownedChunks[chunkPosOffset]->blockData().isOpaque.at(chunkRelPos)) {
+                    if (firstSecondLoopIteration || 
+                        ownedChunks[chunkPosOffset]->renderingData().extraData.opacity_.at(chunkRelPos) == blockOpacity::TRANSPARENT) {
 
                         removeLightFromPlacedBlock_(colorChannel::RED, ownedChunks, *blockGlobalPos,
                             chunkPosOffset, chunkRelPos, blockPositions, firstSecondLoopIteration,
@@ -3875,7 +3912,7 @@ namespace VoxelEng {
                     chunkRelPos = getChunkRelCoords(*blockGlobalPos);
 
                     // MAÑANA. NO SE ESTÁ RECALCULANDO EL IS OPAQUE CUANDO SE DESERIALIZA UN CHUNK GUARDADO
-                    if (firstSecondLoopIteration || !ownedChunks[chunkPosOffset]->blockData().isOpaque.at(chunkRelPos)) {
+                    if (firstSecondLoopIteration || ownedChunks[chunkPosOffset]->renderingData().extraData.opacity_.at(chunkRelPos) == blockOpacity::TRANSPARENT) {
 
                         recoverLightFromRemovedBlock_(colorChannel::RED, ownedChunks, *blockGlobalPos,
                             chunkPosOffset, chunkRelPos, blockPositions, blockLightsToRepropagate);

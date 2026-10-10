@@ -1,7 +1,9 @@
 #include "vertexBuffer.h"
+
 #include <stdexcept>
-#include <renderer.h>
+
 #include <Graphics/graphics.h>
+#include <Graphics/renderer.h>
 #include <Utilities/Logger/logger.h>
 
 #if GRAPHICS_API == OPENGL

@@ -18,11 +18,12 @@
 #include <unordered_set>
 #include <vector>
 #include <mutex>
-#include <batch.h>
-#include <camera.h>
-#include <Chunk/chunk.h>
+
 #include <definitions.h>
 #include <vec.h>
+#include <Chunk/chunk.h>
+#include <Graphics/batch.h>
+#include <Graphics/camera.h>
 #include <Graphics/transform.h>
 #include <Graphics/Models/model.h>
 

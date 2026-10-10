@@ -1,11 +1,12 @@
 #include "entity.h"
+
 #include <cmath>
 #include <cstddef>
 #include <string>
-#include "camera.h"
-#include "game.h"
-#include "utilities.h"
+
+#include <game.h>
 #include <Graphics/graphics.h>
+#include <Utilities/utilities.h>
 #include <Utilities/Logger/logger.h>
 #include <World/WorldGen/worldGen.h>
 

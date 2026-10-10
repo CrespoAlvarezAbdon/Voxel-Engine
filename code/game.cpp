@@ -11,24 +11,23 @@
 #include <unordered_map>
 #include <utility>
 
-#include "batch.h"
-#include "camera.h"
-#include "entity.h"
-#include "player.h"
-#include "tickFunctions.h"
-#include "gui.h"
-#include "GUIfunctions.h"
-#include "input.h"
-#include "inputFunctions.h"
-#include "renderer.h"
-#include "utilities.h"
+#include <entity.h>
+#include <player.h>
+#include <tickFunctions.h>
+#include <gui.h>
+#include <GUIfunctions.h>
+#include <input.h>
+#include <inputFunctions.h>
 #include <Block/block.h>
-#include <Block/Properties/blockProperty.hpp>
 #include <Entities/plane.h>
 #include <Registry/registries.h> // This header also includes the classes that derive from 'registeredElement'.
 #include <Registry/registry.h>
+#include <Graphics/batch.h>
+#include <Graphics/camera.h>
 #include <Graphics/graphicsDefinitions.h>
 #include <Graphics/graphics.h>
+#include <Graphics/renderer.h>
+#include <Graphics/DataStructures/renderMode.h>
 #include <Graphics/Frustum/frustum.h>
 #include <Graphics/Lighting/Lights/DirectionalLight/directionalLight.h>
 #include <Graphics/Lighting/Lights/PointLight/pointLight.h>
@@ -38,6 +37,7 @@
 #include <Graphics/Vertex/vertex.h>
 #include <Graphics/Vertex/ChunkVertexBuffer/chunkVertexBuffer.h>
 #include <Time/Timer/timer.h>
+#include <Utilities/utilities.h>
 #include <Utilities/Var/var.h>
 #include <World/WorldGen/worldGen.h>
 
@@ -115,6 +115,7 @@ namespace VoxelEng {
     SSBO<lightInstance>* game::directionalLightsInstances_ = nullptr;
     SSBO<lightInstance>* game::pointLightsInstances_ = nullptr;
     SSBO<lightInstance>* game::spotLightsInstances_ = nullptr;
+    SSBO<blockOpacity>* game::chunkDynamicData_ = nullptr;
 
     std::unordered_set<ivec3> game::opaqueChunkGeometryToDraw;
     std::unordered_set<ivec3> game::translucentChunkGeometryToDraw;
@@ -255,21 +256,21 @@ namespace VoxelEng {
             blockLight::init();
 
             // TODO. CONVERT THIS INTO A REGISTRY OF BLOCKS.
-            block::registerBlock("starminer::grass", blockOpacity::OPAQUEBLOCK, { {"all", 1} }, "UltraShiny"); // TODO. Manual texture ID assignment is temporary.
-            block::registerBlock("starminer::stone", blockOpacity::OPAQUEBLOCK, { {"all", 2} });
-            block::registerBlock("starminer::sand", blockOpacity::OPAQUEBLOCK, { {"all", 3} });
-            block::registerBlock("starminer::marbleBlock", blockOpacity::OPAQUEBLOCK, { {"all", 4}}, "AlphaBlue", "PointLight:BluePointLight");
-            block::registerBlock("starminer::dirt", blockOpacity::OPAQUEBLOCK, { {"all", 6} });
-            block::registerBlock("starminer::coalOre", blockOpacity::OPAQUEBLOCK, { {"all", 7} });
-            block::registerBlock("starminer::ironOre", blockOpacity::OPAQUEBLOCK, { {"all", 8} });
-            block::registerBlock("starminer::goldOre", blockOpacity::OPAQUEBLOCK, { {"all", 9} });
-            block::registerBlock("starminer::diamondOre", blockOpacity::OPAQUEBLOCK, { {"all", 10}});
-            block::registerBlock("starminer::log", blockOpacity::OPAQUEBLOCK, { {"all", 11}, {"faceY+", 12}, {"faceY-", 12}});
-            block::registerBlock("starminer::glass", blockOpacity::FULLTRANSPARENT, { {"all", 13} });
-            block::registerBlock("starminer::glassRed", blockOpacity::TRANSLUCENTBLOCK, { {"all", 14} });
-            block::registerBlock("starminer::glassBlue", blockOpacity::TRANSLUCENTBLOCK, { {"all", 15} });
-            block::registerBlock("starminer::marbleBlock2", blockOpacity::OPAQUEBLOCK, { {"all", 16} }, "OmegaRed", "PointLight:RedPointLight");
-            block::registerBlock("starminer::water", blockOpacity::TRANSLUCENTBLOCK, { {"all", 17 } });
+            block::registerBlock("starminer::grass", blockOpacity::OPAQUE, { {"all", 1} }, "UltraShiny"); // TODO. Manual texture ID assignment is temporary.
+            block::registerBlock("starminer::stone", blockOpacity::OPAQUE, { {"all", 2} });
+            block::registerBlock("starminer::sand", blockOpacity::OPAQUE, { {"all", 3} });
+            block::registerBlock("starminer::marbleBlock", blockOpacity::OPAQUE, { {"all", 4}}, "AlphaBlue", "PointLight:BluePointLight");
+            block::registerBlock("starminer::dirt", blockOpacity::OPAQUE, { {"all", 6} });
+            block::registerBlock("starminer::coalOre", blockOpacity::OPAQUE, { {"all", 7} });
+            block::registerBlock("starminer::ironOre", blockOpacity::OPAQUE, { {"all", 8} });
+            block::registerBlock("starminer::goldOre", blockOpacity::OPAQUE, { {"all", 9} });
+            block::registerBlock("starminer::diamondOre", blockOpacity::OPAQUE, { {"all", 10}});
+            block::registerBlock("starminer::log", blockOpacity::OPAQUE, { {"all", 11}, {"faceY+", 12}, {"faceY-", 12}});
+            block::registerBlock("starminer::glass", blockOpacity::TRANSPARENT, { {"all", 13} });
+            block::registerBlock("starminer::glassRed", blockOpacity::OPACITY_FOUR, { {"all", 14} });
+            block::registerBlock("starminer::glassBlue", blockOpacity::OPACITY_FOUR, { {"all", 15} });
+            block::registerBlock("starminer::marbleBlock2", blockOpacity::OPAQUE, { {"all", 16} }, "OmegaRed", "PointLight:RedPointLight");
+            block::registerBlock("starminer::water", blockOpacity::OPACITY_FOUR, { {"all", 17 } });
 
             // Worldgen initialisation.
             worldGen::init();
@@ -312,6 +313,7 @@ namespace VoxelEng {
             directionalLightsInstances_ = SSBORegistry->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
             pointLightsInstances_ = SSBORegistry->get("PointLightsInstances")->pointer<SSBO<lightInstance>>();
             spotLightsInstances_ = SSBORegistry->get("SpotLightsInstances")->pointer<SSBO<lightInstance>>();
+            chunkDynamicData_ = SSBORegistry->get("ChunkDynamicData")->pointer<SSBO<blockOpacity>>();
 
             chunksVbo_ = static_cast<chunkVertexBuffer*>(graphics::pVbo("chunks"));
             entitiesVbo_ = &graphics::vbo("entities");
@@ -525,8 +527,8 @@ namespace VoxelEng {
             opaqueShader_->bind();
             blockTextureAtlas_->bind();
 
-            // Set 3D rendering mode uniforms.
-            opaqueShader_->setUniform1i("u_renderMode", 1);
+            // Set renderer configs.
+            opaqueShader_->setUniform1i("u_renderMode", toInt(renderMode::MODE_2D));
             graphics::setDepthTest(false);
 
             /*
@@ -584,7 +586,9 @@ namespace VoxelEng {
         if (!graphicalModeInitialised_)
             initGraphicalMode();
 
-        chunkManager::setNChunksToCompute(game::getSettings().chunkXZRenderDistance());
+        const settings& gameSettings = game::getSettings();
+        chunkManager::setNChunksToCompute(gameSettings.chunkXZRenderDistance());
+        chunkManager::setMaxDistanceDynamicLightChunks(gameSettings.maxDistanceDynamicLightChunks());
 
         /*
         Level loading.
@@ -652,7 +656,7 @@ namespace VoxelEng {
         nFramesDrawn++;
         if (actualTime - lastSecondTime >= 1.0) {
 
-            //std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame and total vertices is " << std::to_string(totalVertices);
+            std::cout << "\r" << 1000.0 / nFramesDrawn << "ms/frame";
             //logger::debugLog(std::to_string(1000.0 / nFramesDrawn) + "ms/frame");
             nFramesDrawn = 0;
             lastSecondTime = glfwGetTime();
@@ -670,12 +674,13 @@ namespace VoxelEng {
         blockTextureAtlas_->bind(0);
 
         // Set the sun's directional light MVP matrix.
-        SSBO<lightInstance>* directionalLightsInstances = registries::get("SSBOs")->pointer<registry<std::string, var>>()->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
-        lightInstance& instance = directionalLightsInstances->get(0);
+        //SSBO<lightInstance>* directionalLightsInstances = registries::get("SSBOs")->pointer<registry<std::string, var>>()->get("DirectionalLightsInstances")->pointer<SSBO<lightInstance>>();
+        // MAÑANA. ARREGLAR ERRORES DE COMPILACIÓN Y PROBAR EN LAS SHADERS QUE ESTO SE HA SUBIDO BIEN.
+        lightInstance& instance = world::sunLightInstance();
         glm::mat4 proj = glm::ortho(-320.0f, 320.0f, -384.0f, 384.0f, zNear_, zFar_);
         glm::mat4 view = glm::lookAt(instance.pos, vec3Zero, vec3FixedUp);
         instance.MVP = proj * view;
-        directionalLightsInstances->reuploadElement(0);
+        directionalLightsInstances_->setContentsAndReupload(instance, 0);
     
     }
 
@@ -752,7 +757,7 @@ namespace VoxelEng {
     }
 
     void game::opaquePass() {
-    
+
         // Terrain rendering.
         graphics::setDepthTest(true);
         graphics::setOpaquePassConfig();
@@ -760,29 +765,37 @@ namespace VoxelEng {
         opaqueFB_->clearAllTextures();
         opaqueShader_->bind();
         opaqueShader_->setUniformVec3f("u_viewPos", playerCamera_->globalPos());
-        opaqueShader_->setUniform1i("u_renderMode", 0); // TODO. ENUM FOR RENDER MODE.
+        opaqueShader_->setUniform1i("u_renderMode", toInt(renderMode::MODE_3D)); // TODO. ENUM FOR RENDER MODE.
         opaqueShader_->setUniform1i("u_useComplexLighting", useComplexLighting_ ? 1 : 0);
         opaqueShader_->setUniformMatrix4f("u_MVP", MVPmatrix_);
         shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
         translucentShadowFB_->getTexture(textureType::COLOR, 0)->bind(2);
         translucentShadowFB_->getTexture(textureType::DEPTH, 0)->bind(3);
-        bool once = false;
+        vec3 playerChunkPos = player::chunkPos();
         for (const ivec3& chunkPos : opaqueChunkGeometryToDraw) {
 
             const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, geometryType::OPAQUE);
-            if (playerCamera_->isInsideFrustum(bufferZone.extraRenderingData.globalChunkPos)) {
+            const chunkExtraRenderingData* extraRenderData = chunksVbo_->extraData(chunkPos);
+            if (playerCamera_->isInsideFrustum(extraRenderData->globalChunkPos)) {
 
-                // MAÑANA. globalChunkPos POR ALGÚN MOTIVO ES 0 0 0 ALWAYS. ALSO RECUERDA QUE ALGUNOS CHUNKS NO ENTRAN EN LOAD1 PERO SI HAN DEJADO SU TICKET A SUS NEIGHBORS PARA PASAR A FASE2
-            
+                if (chunkManager::chunkInDynamicLightingDistance(chunkPos, playerChunkPos)) {
+                
+                    opaqueShader_->setUniform1i("u_useDynamicLights", true);
+
+                    if (extraRenderData->opacity_.size() > 18 * 18 * 18)
+                        logger::errorLog("");
+                    // Upload SSBO data exclusive to this chunk.
+                    chunkDynamicData_->setContentsAndReupload(extraRenderData->opacity_);
+                
+                }
+                else
+                    opaqueShader_->setUniform1i("u_useDynamicLights", false);
+                
                 renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
-                once = true;
             
             }
 
         }
-
-        if (!once && !opaqueChunkGeometryToDraw.empty())
-            int a = 3 + 2;
 
         // Entity rendering. // TODO. HAY QUE METER TAMBIÉN LO DE VERTICES TRANSLÚCIDOS PARA LAS ENTIDADES.
         entitiesVao_->bind();
@@ -823,12 +836,18 @@ namespace VoxelEng {
         shadowFB_->getTexture(textureType::DEPTH, 0)->bind(1);
         translucentShadowFB_->getTexture(textureType::COLOR, 0)->bind(2);
         translucentShadowFB_->getTexture(textureType::DEPTH, 0)->bind(3);
+        vec3 playerChunkPos = player::chunkPos();
         for (const ivec3& chunkPos : translucentChunkGeometryToDraw) {
 
             const chunkVertexBufferZone& bufferZone = chunksVbo_->bufferZone(chunkPos, geometryType::TRANSLUCENT);
-            if (playerCamera_->isInsideFrustum(bufferZone.extraRenderingData.globalChunkPos))
+            const chunkExtraRenderingData* extraRenderData = chunksVbo_->extraData(chunkPos);
+            if (playerCamera_->isInsideFrustum(extraRenderData->globalChunkPos)) {
+            
+                translucidShader_->setUniform1i("u_useDynamicLights", chunkManager::chunkInDynamicLightingDistance(chunkPos, playerChunkPos));
                 renderer::draw3D(bufferZone.startPos / sizeof(vertex), bufferZone.size / sizeof(vertex));
-
+            
+            }
+            
         }
 
     }
@@ -861,8 +880,10 @@ namespace VoxelEng {
         opaqueFB_->bind();
 
         opaqueShader_->bind();
-        opaqueShader_->setUniform1i("u_renderMode", 1);
+        opaqueShader_->setUniform1i("u_renderMode", toInt(renderMode::MODE_2D));
         blockTextureAtlas_->bind();
+
+        // TODO. SUPPORT FOR TRANSLUCENT GUI ELEMENTS.
 
         GUImanager::drawGUI();
     
@@ -1214,12 +1235,11 @@ namespace VoxelEng {
 
         if (block::initialised()) {
         
-            block::reset();
-            blockProperty::reset();
             blockLight::reset();
+            blockProperty::reset();
+            block::reset();
         
-        }
-            
+        }     
 
         if (registries::initialised())
             registries::reset();
@@ -1314,6 +1334,9 @@ namespace VoxelEng {
                 if (it->second.op == VBOop::PUSH) {
 
                     const chunkRenderingData& chunkRenderData = it->second.renderingData;
+
+                    chunksVbo_->insert(chunkPos, &chunkRenderData.extraData);
+
                     if (chunkRenderData.vertices.size()) {
 
                         chunksVbo_->pushDynamicData(chunkPos, chunkRenderData, geometryType::OPAQUE);
@@ -1327,10 +1350,6 @@ namespace VoxelEng {
 
                     }
 
-                    // MAÑANA. CONDICIONES ESPECIALES AQUI. SI HAY VERTICES PERO NO TRANSLUCENT VERTICES Y ANTES SÍ HABÍA, BORRAR TRANSLUCENT
-                    // HACER LO MISMO PARA EL CASO CONTRARIO.
-                    // - METER ENUM PARA DIFERENCIAR ENTRE GEOMETRÍA OPACA Y TRANSLÚCIDA <- DONE
-                    // - METER MÉTODO CONTAINSDATA Y DELETEDATA PARA CHUNKSVBO
                     if (chunkRenderData.translucentVertices.size()) {
 
                         chunksVbo_->pushDynamicData(chunkPos, chunkRenderData, geometryType::TRANSLUCENT);

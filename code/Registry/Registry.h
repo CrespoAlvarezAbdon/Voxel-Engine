@@ -238,7 +238,7 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	registry<KeyT, T>::registry(factoryFunc factory, onInsertFunc onInsert)
+	inline registry<KeyT, T>::registry(factoryFunc factory, onInsertFunc onInsert)
 	: Tname_(T::typeName()),
 	  onInsertFunc_(onInsert),
 	  factoryFunc_(factory),
@@ -247,7 +247,7 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	registry<KeyT, T>::~registry() 
+	inline registry<KeyT, T>::~registry() 
 	{}
 
 	template <typename KeyT, typename T>
@@ -271,7 +271,7 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	std::size_t registry<KeyT, T>::size() const {
+	inline std::size_t registry<KeyT, T>::size() const {
 	
 		return elements_.size();
 	
@@ -279,7 +279,7 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	registry<KeyT, T>::const_iterator registry<KeyT, T>::begin() const {
+	inline registry<KeyT, T>::const_iterator registry<KeyT, T>::begin() const {
 
 		return elements_.begin();
 
@@ -287,7 +287,7 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	registry<KeyT, T>::const_iterator registry<KeyT, T>::cbegin() const {
+	inline registry<KeyT, T>::const_iterator registry<KeyT, T>::cbegin() const {
 	
 		return elements_.cbegin();
 	
@@ -295,7 +295,7 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-		registry<KeyT, T>::const_iterator registry<KeyT, T>::end() const {
+	inline registry<KeyT, T>::const_iterator registry<KeyT, T>::end() const {
 
 		return elements_.end();
 
@@ -303,7 +303,7 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-		registry<KeyT, T>::const_iterator registry<KeyT, T>::cend() const {
+	inline registry<KeyT, T>::const_iterator registry<KeyT, T>::cend() const {
 
 		return elements_.cend();
 
@@ -322,7 +322,7 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	T* registry<KeyT, T>::getLastInsertedElement() {
+	inline T* registry<KeyT, T>::getLastInsertedElement() {
 
 		return lastInsertedElement_;
 
@@ -353,7 +353,7 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	registry<KeyT, T>::iterator registry<KeyT, T>::begin() {
+	inline registry<KeyT, T>::iterator registry<KeyT, T>::begin() {
 
 		return elements_.begin();
 
@@ -361,7 +361,7 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-	registry<KeyT, T>::iterator registry<KeyT, T>::end() {
+	inline registry<KeyT, T>::iterator registry<KeyT, T>::end() {
 
 		return elements_.end();
 
@@ -369,11 +369,11 @@ namespace VoxelEng {
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-		bool registry<KeyT, T>::initialised_ = false;
+	bool registry<KeyT, T>::initialised_ = false;
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
-		std::string registry<KeyT, T>::typeName_ = "";
+	std::string registry<KeyT, T>::typeName_ = "";
 
 	template <typename KeyT, typename T>
 	requires std::derived_from<T, registryElement>
@@ -385,7 +385,6 @@ namespace VoxelEng {
 		else {
 		
 			auto tuple = std::make_tuple(std::forward<Args>(args)...);
-			std::any wrappedTuple = tuple;
 			elements_[key] = factoryFunc_(tuple);
 			lastInsertedElement_ = elements_[key].get();
 		

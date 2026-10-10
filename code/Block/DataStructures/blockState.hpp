@@ -2,7 +2,7 @@
 #define _VOXELENG_BLOCKSTATE_
 
 #include <Block/block.h>
-#include <Block/Properties/blockProperty.hpp>
+#include <Block/DataStructures/blockProperty.hpp>
 
 namespace VoxelEng {
 

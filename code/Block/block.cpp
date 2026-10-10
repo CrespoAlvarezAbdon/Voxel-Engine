@@ -22,7 +22,7 @@ namespace VoxelEng {
 			logger::errorLog("Block system is already initialised");
 		else {
 		
-			auto it = blocks_.emplace(std::pair<std::string, block>(emptyBlockName_, block(emptyBlockName_, 0, blockOpacity::EMPTYBLOCK, {}, "Default", "")));
+			auto it = blocks_.emplace(std::pair<std::string, block>(emptyBlockName_, block(emptyBlockName_, 0, blockOpacity::NONE, {}, "Default", "")));
 			emptyBlock_ = &it.first->second;
 			blocksIntIDs_.insert(std::pair<unsigned int, block*>(0, emptyBlock_));
 

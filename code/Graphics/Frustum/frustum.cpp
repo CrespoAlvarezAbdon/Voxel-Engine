@@ -1,12 +1,12 @@
 #include "frustum.h"
 
-#include "../../camera.h"
-#include "../../game.h"
-#include "../../gameWindow.h"
-#include "../../entity.h"
-#include "../../Entities/plane.h"
-
 #include <cmath>
+
+#include <game.h>
+#include <gameWindow.h>
+#include <entity.h>
+#include <Graphics/camera.h>
+#include <Entities/plane.h>
 
 #if GRAPHICS_API == OPENGL
 

@@ -11,6 +11,7 @@ layout(binding = 3) uniform sampler2D translucentDepthMap;
 #define MAX_DIRECTIONAL_LIGHTS 256
 #define MAX_POINT_LIGHTS 256
 #define MAX_SPOT_LIGHTS 256
+#define CHUNK_SIZE 16 // TODO. UNIFY THIS DEFINITIONS THAT ARE ALSO IN CPP IN A CUSTOM FILE FORMAT THAT THE ENGINE 'COMPILES'
 
 // This are input varyings.
 in vec2 v_TexCoord; 
@@ -26,6 +27,7 @@ flat in int v_materialIndex;
 uniform vec3 u_viewPos;
 uniform int u_renderMode;
 uniform int u_useComplexLighting;
+uniform int u_useDynamicLights;
 
 // Structs.
 struct Material {
@@ -77,6 +79,11 @@ struct LightInstance {
     mat4 MVP;
 };
 
+// MAÑANA. HACER EL INDEXING DE ESTA HISTORIA
+struct ChunkDynamicLightData {
+    uint isSolid[1458]; // 1458 32-bit unsigned integers = 5832 bytes = 18x18x18, which is the size used in the isOpaque array of a chunk
+};
+
 // UBOs.
 layout(std140, binding = 1) uniform Materials {
     Material materials[MAX_MATERIALS];
@@ -105,6 +112,10 @@ layout(std430, binding = 2) buffer PointLightsInstances {
 
 layout(std430, binding = 3) buffer SpotLightsInstances {
     LightInstance spotLightsInstances[];
+};
+
+layout(std430, binding = 4) buffer ChunkDynamicData {
+    ChunkDynamicLightData chunkDynamicLightData;
 };
 
 // Variables.
@@ -163,29 +174,100 @@ float floorMod(float a, float b) {
 
 }
 
+vec3 globalCoordsToChunkRelCoords(vec3 global) {
+
+    vec3 chunkRelPos = global;
+    chunkRelPos.x = int(floor(chunkRelPos.x));
+    chunkRelPos.y = int(floor(chunkRelPos.y));
+    chunkRelPos.z = int(floor(chunkRelPos.z));
+    chunkRelPos.x = int(floorMod(int(chunkRelPos.x >= 0 ? chunkRelPos.x : CHUNK_SIZE + chunkRelPos.x), CHUNK_SIZE));
+    chunkRelPos.y = int(floorMod(int(chunkRelPos.y >= 0 ? chunkRelPos.y : CHUNK_SIZE + chunkRelPos.y), CHUNK_SIZE));
+    chunkRelPos.z = int(floorMod(int(chunkRelPos.z >= 0 ? chunkRelPos.z : CHUNK_SIZE + chunkRelPos.z), CHUNK_SIZE));
+    return chunkRelPos;
+
+}
+
+uint GetVoxelSolid(int x, int y, int z)
+{
+    int byteIndex = x * 324 + y * 18 + z;
+
+    uint uintIndex = uint(byteIndex) >> 2u;
+    uint byteOffset = uint(byteIndex) & 3u;
+
+    uint packedData = chunkDynamicLightData.isSolid[uintIndex];
+
+    return (packedData >> (byteOffset * 8u)) & 0xFFu;
+}
+
 vec4 CalcPointLight(PointLight light, LightInstance lightInstance, vec3 n, vec3 viewDir, Material material) {
-    
-    vec3 lightDir = normalize(lightInstance.pos - v_pos);
 
-    // Diffuse shading calculations.
-    float diff = max(dot(n, lightDir), 0.0);
+    // First, check if the fragment is actually hit by this light with DDA algorithm.
+    vec3 chunkLightPos = globalCoordsToChunkRelCoords(lightInstance.pos);
+    vec3 chunkPos = globalCoordsToChunkRelCoords(v_pos);
 
-    // Specular shading calculations.
-    vec3 reflectDir = reflect(-lightDir, n);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x);
+    vec3 blockToLightDir = chunkLightPos - chunkPos;
 
-    // Get light attenuation.
-    float distance = length(lightInstance.pos - v_pos);
-    float attenuation = max(1.0 - distance / (light.maxDistance), 0.0);
+    float step = max(abs(blockToLightDir.x), max(abs(blockToLightDir.y), abs(blockToLightDir.z)));
+    float stepX = blockToLightDir.x / step;
+    float stepY = blockToLightDir.y / step;
+    float stepZ = blockToLightDir.z / step;
 
-    vec4 ambient = light.ambient * material.ambient;
-    vec4 diffuse = light.diffuse * diff * material.diffuse;
-    vec4 specular = light.specular * spec * material.specular;
-    ambient *= attenuation;
-    diffuse *= attenuation;
-    specular *= attenuation;
-    return (ambient + diffuse + specular);
+    vec3 currentPos = chunkPos;
 
+    int voxelX = int(currentPos.x); // TODO. WHY NO ROUND HERE?
+    int voxelY = int(currentPos.y);
+    int voxelZ = int(currentPos.z);
+
+    bool hitByLight = false;
+    for(int i = 0; i <= int(step) && !hitByLight; i++) {
+
+        if (voxelX < 0 || voxelX >= 16 || voxelY < 0 || voxelY >= 16 || voxelZ < 0 || voxelZ >= 16)
+            break;
+
+        if (GetVoxelSolid(voxelX, voxelY, voxelZ) == 1)
+            break;
+
+        if(voxelX == chunkLightPos.x && voxelY == chunkLightPos.y && voxelZ == chunkLightPos.z)
+            hitByLight = true;
+
+        currentPos.x += stepX;
+        currentPos.y += stepY;
+        currentPos.z += stepZ;
+
+        voxelX = int(round(currentPos.x));
+        voxelY = int(round(currentPos.y));
+        voxelZ = int(round(currentPos.z));
+
+    }
+
+    // Then, if actually hit by the light, apply it.
+    if(hitByLight)
+    {
+        vec3 lightDir = normalize(lightInstance.pos - v_pos);
+
+        // Diffuse shading calculations.
+        float diff = max(dot(n, lightDir), 0.0);
+
+        // Specular shading calculations.
+        vec3 reflectDir = reflect(-lightDir, n);
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x);
+
+        // Get light attenuation.
+        float distance = length(lightInstance.pos - v_pos);
+        float attenuation = max(1.0 - distance / (light.maxDistance), 0.0);
+
+        vec4 ambient = light.ambient * material.ambient;
+        vec4 diffuse = light.diffuse * diff * material.diffuse;
+        vec4 specular = light.specular * spec * material.specular;
+        ambient *= attenuation;
+        diffuse *= attenuation;
+        specular *= attenuation;
+        return (ambient + diffuse + specular);
+    }
+    else
+    {
+        return vec4(0.0);
+    }
 }
 
 void ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstance) {
@@ -230,7 +312,7 @@ void ShadowCalculation(vec4 fragPosLightSpace, vec3 n, LightInstance lightInstan
 // Main.
 void main() {
 	
-	if (u_renderMode == 0) {
+	if (u_renderMode == 1) {
 	
 		/*
 		3D rendering.
@@ -261,7 +343,9 @@ void main() {
         ShadowCalculation(v_LightSpacePos, norm, lightInstance);
 
 		// Apply lights.
-        vec4 blockLit = (v_blockLightColor + v_baryCoords.x * v_baryCoords.y * v_mixedVertexColorData);
+        vec4 blockLit = vec4(0.0);
+        if(u_useDynamicLights == 0)
+            blockLit = (v_blockLightColor + v_baryCoords.x * v_baryCoords.y * v_mixedVertexColorData);
         vec4 dirLight = CalcDirLight(light, lightInstance, norm, viewDir, (1 - shadow), (1 - translucentShadow), hitDirLightModifier, material) * u_useComplexLighting;
         
         // Final color calculation.
@@ -273,7 +357,7 @@ void main() {
         }
 
 	}
-	else {
+	else if (u_renderMode == 2) {
 	
 		/*
 		2D rendering

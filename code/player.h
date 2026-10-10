@@ -51,7 +51,7 @@ namespace VoxelEng {
 		/**
 		* @brief Returns the player's chunk position.
 		*/
-		static const vec3& chunkPos();
+		static const ivec3& chunkPos();
 
 		/**
 		* @brief Returns the player camera's pitch angle.
@@ -232,7 +232,7 @@ namespace VoxelEng {
 
 	}
 
-	inline const vec3& player::chunkPos() {
+	inline const ivec3& player::chunkPos() {
 
 		return playerTransform_.chunkPosition;
 
